@@ -1,0 +1,39 @@
+---
+import type { SpecItemProps } from '@kometio/shared-types';
+
+type Props = SpecItemProps & { instanceClass?: string | null };
+
+const { label, value, instanceClass } = Astro.props;
+---
+
+{/* A <div> grouping one <dt> with its <dd> is what HTML allows inside a
+    <dl>, and what lets a row have a border of its own. */}
+<div class:list={['kometio-spec-item', instanceClass]}>
+  <dt class="kometio-spec-item__label" data-kometio-field="label">{label}</dt>
+  <dd class="kometio-spec-item__value" data-kometio-field="value">{value}</dd>
+</div>
+
+<style>
+  .kometio-spec-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    border-block-end: 1px solid var(--border);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    padding: var(--kometio-override-padding-y, 0.5rem)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-spec-item__label {
+    color: var(--muted-foreground);
+  }
+
+  .kometio-spec-item__value {
+    margin: 0;
+    font-weight: 500;
+    text-align: end;
+    overflow-wrap: anywhere;
+  }
+</style>

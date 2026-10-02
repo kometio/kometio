@@ -1,0 +1,782 @@
+@import 'tailwindcss';
+
+/*
+ * The order of our own cascade layers, declared once and up front (ADR-0050).
+ *
+ * A layer's position is fixed by the FIRST rule that names it, and ours
+ * are emitted from three different places — this file, and two inline
+ * `<style>` tags PageLayout.astro builds per request. Leaving the order to
+ * whichever happened to be parsed first made it depend on markup order in
+ * a file nobody would think to look at while debugging a style that did
+ * not apply. Named here, the layers rank the same way whatever the page
+ * emits and in whatever order:
+ *
+ *   base     — what a block looks like before anyone touched it
+ *   class    — the site's per-TYPE override (every Button on the site)
+ *   instance — this one block, on this one page
+ *
+ * Later layers win regardless of specificity, which is the property being
+ * bought: `.kometio-root-block:last-child` is a more specific selector than
+ * `.kometio-rb-<id>`, and without layers the default would beat the value
+ * somebody typed.
+ */
+@layer kometio.base, kometio.class, kometio.instance;
+
+/**
+ * Fallback defaults only — the active theme's theme.css (docs/adr/0021,
+ * resolved via the `~theme` alias in astro.config.mjs) is imported after
+ * this file by PageLayout.astro and overrides every one of these `:root`
+ * values via the normal CSS cascade (same selector, later wins). A
+ * misconfigured KOMETIO_THEME (a folder with no theme.css) still renders a
+ * plain, readable page instead of an unstyled one.
+ */
+@theme inline {
+  --font-sans: var(--font-sans-value);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+}
+
+:root {
+  --font-sans-value: ui-sans-serif, system-ui, sans-serif;
+  --background: #fff;
+  --foreground: #18181b;
+  --primary: #18181b;
+  --primary-foreground: #fff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --radius: 0.5rem;
+  /* The heading scale. Tailwind's preflight sets every h1-h6 to
+     `font-size: inherit; font-weight: inherit`, so without these a
+     Heading block renders identically to a paragraph — which is what
+     both shipped themes did until this existed.
+
+     Named `--kometio-*` and not `--text-*` deliberately: `--text-sm`,
+     `--text-2xl` and friends are Tailwind's OWN theme variables, the
+     ones every `text-2xl` utility class reads. Redefining those to
+     drive headings would resize every utility on the site as a side
+     effect. A theme retunes the scale by declaring these in its
+     `:root` — PageLayout emits a theme's root custom properties with
+     `!important`, so they win. */
+  --kometio-heading-weight: 650;
+  --kometio-heading-leading: 1.2;
+  /* A display face for headings, and the tracking it usually wants — by
+     default the body's own font, spaced as it is. `--kometio-h1-weight` is
+     separate because a display face is often at its best lighter than
+     the bold a sans-serif h1 needs. */
+  --kometio-heading-font: inherit;
+  /* Code — the Code block and a `code` in a sentence. A theme that ships a
+     monospace face of its own names it here. */
+  --kometio-code-font: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --kometio-heading-tracking: normal;
+  --kometio-h1-weight: 700;
+  --kometio-h1-size: clamp(1.875rem, 1.5rem + 1.8vw, 2.75rem);
+  --kometio-h2-size: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --kometio-h3-size: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --kometio-h4-size: 1.125rem;
+  --kometio-h5-size: 1rem;
+  --kometio-h6-size: 0.875rem;
+  /* The space after every root block of a page — see .kometio-root-block. */
+  --kometio-block-gap: 4rem;
+  /* The space after a Heading block, smaller: it belongs to what follows. */
+  --kometio-heading-gap: 1.5rem;
+  /* The space above a page's first root block, between it and the header. */
+  --kometio-page-start-gap: 2.5rem;
+  --kometio-content-width: 64rem;
+  --kometio-content-width-wide: 80rem;
+  --kometio-content-gutter: 1.5rem;
+  /* Links: every block that renders one reads these, so a theme changes
+     them all in one place. */
+  --link: var(--primary);
+  --link-hover: var(--foreground);
+  /* States a block reports — a sent form and a failed one, a callout's
+     tone, a status badge — each as three colours: the tone itself (a
+     border, a dot), its text, and the tint behind it. They were written
+     into each block by hand, the same greens and reds twice over, where
+     no theme could reach them. The defaults are those values, chosen to
+     stay recognisable on any theme; a theme restates them in its :root.
+     Text on its tint, measured: 9.5:1 info, 6.8:1 success, 8.8:1
+     warning, 7.6:1 error. */
+  --kometio-info: #3b82f6;
+  --kometio-info-text: #1e3a8a;
+  --kometio-info-surface: #eff6ff;
+  --kometio-success: #22c55e;
+  --kometio-success-text: #166534;
+  --kometio-success-surface: #f0fdf4;
+  --kometio-warning: #f59e0b;
+  --kometio-warning-text: #78350f;
+  --kometio-warning-surface: #fffbeb;
+  --kometio-error: #ef4444;
+  --kometio-error-text: #991b1b;
+  --kometio-error-surface: #fef2f2;
+  /* A filled star (Rating, Testimonial): a rating colour, not a brand one. */
+  --kometio-rating: #f59e0b;
+  /* The shadow scale (ADR-0047), Tailwind's own values: a theme without
+     one of its own (docs-showcase) got whatever each block wrote as a
+     fallback, a different shadow in every block. classic tints them. */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+}
+
+/* A form's trap for bots (Form, NewsletterSignup): out of sight and out
+   of reach for a person, still in the page for a script that fills
+   every field. Two blocks kept their own copy of it. */
+.kometio-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* The one global link rule this site had none of before — every block
+     that renders its own <a> (Button, Breadcrumb, PromoBar, ...) still
+     sets its own look on purpose (a button must not look like a text
+     link), but a bare <a> with no block-specific styling — the new Link
+     block, EmbedHtml, anything else — now gets the theme's primary color
+     instead of falling back to the browser's default blue. */
+  a {
+    @apply text-primary underline-offset-2 hover:underline;
+  }
+  /* Same story as the link rule above, and the same fix: preflight
+     flattens h1-h6 to body size and weight, and nothing put them back —
+     not this file, not either shipped theme — so every Heading block
+     read as a paragraph. No margins here on purpose: a heading is a
+     root block, and `.kometio-root-block` already owns the space around
+     it. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--kometio-heading-font);
+    font-weight: var(--kometio-heading-weight);
+    line-height: var(--kometio-heading-leading);
+    letter-spacing: var(--kometio-heading-tracking);
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: var(--kometio-h1-size);
+    font-weight: var(--kometio-h1-weight);
+  }
+  h2 {
+    font-size: var(--kometio-h2-size);
+  }
+  h3 {
+    font-size: var(--kometio-h3-size);
+  }
+  h4 {
+    font-size: var(--kometio-h4-size);
+  }
+  h5 {
+    font-size: var(--kometio-h5-size);
+  }
+  h6 {
+    font-size: var(--kometio-h6-size);
+  }
+}
+
+/*
+ * Rich text (ADR-0046) arrives as paragraphs, so the element holding it
+ * has to be one that may contain them — a `<div>`, not the `<p>` these
+ * fields used when they held a single plain string.
+ *
+ * Swapping the tag alone would change the spacing of every page: the old
+ * `<p>` carried the browser's own margin, and the new `<div>` does not
+ * while its inner paragraphs do. Collapsing the first and last of those
+ * puts the block back exactly where it was, and leaves the spacing
+ * BETWEEN paragraphs — which is new, because until now there could only
+ * ever be one.
+ */
+.kometio-rich-text > :first-child {
+  margin-top: 0;
+}
+
+.kometio-rich-text > :last-child {
+  margin-bottom: 0;
+}
+
+/* Lists inside body copy: without this they lose their markers, because
+   the reset above them zeroes list styling site-wide. */
+.kometio-rich-text ul,
+.kometio-rich-text ol {
+  padding-inline-start: 1.5rem;
+  list-style: revert;
+}
+
+/* The theme's link colour. This read `--kometio-link`, which nothing ever
+   set, so a link in body copy took the colour of the text around it in
+   every theme, whatever `--link` the theme declared. */
+.kometio-rich-text a {
+  color: var(--link, var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.kometio-rich-text a:hover {
+  color: var(--link-hover, var(--link, var(--primary)));
+}
+
+/* A command or a path in a sentence is one long "word" to the browser: on
+   a phone, `docker compose -f docker-compose.prod.yml up -d` pushed the
+   whole page 56px wider than the screen. It may break anywhere instead. */
+.kometio-rich-text code {
+  font-family: var(--kometio-code-font);
+  font-size: 0.9em;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Container queries need somewhere to measure (ADR-0047), and this is
+ * every place a block can live: the page itself, and every block that can
+ * contain other blocks.
+ *
+ * `body` and NOT the `<main>` column, which is the trap this cost an
+ * afternoon to find. That column is `max-w-5xl px-6` — at most 1024px
+ * wide minus 48px of padding, so its inline size NEVER exceeds 976px.
+ * Measured there, `(max-width: 1024px)` would match on a 4K monitor and
+ * every "Tablet" value anyone set would apply on desktop, always. Against
+ * `body` a top-level block measures the viewport and behaves exactly like
+ * the media query people expect, while a block nested in a narrow column
+ * still measures that column, which is the whole point of ADR-0047.
+ *
+ * The list below is not a matter of diligence. When an ancestor is
+ * missing the declaration, an `@container` rule simply NEVER MATCHES --
+ * no error, no warning, nothing in devtools marking it inert. Somebody
+ * would have watched the same control work on a page block minutes
+ * earlier and concluded they had made a mistake. `container-type.spec.ts`
+ * derives the list from the registry and fails, naming the block, when a
+ * new container type is added without appearing here.
+ *
+ * `inline-size` and not `size`: `size` makes the element depend on its own
+ * height, which collapses it. Only the width is ever asked about here.
+ *
+ * Verified in Chrome before choosing this: `container-type` does NOT make
+ * the element a containing block for `position: fixed` or `absolute`
+ * descendants (a CSSWG resolution from 2024), so BackToTop, the WhatsApp
+ * button and the cookie banner stay anchored to the viewport.
+ */
+body,
+.kometio-accordion,
+/* A Hero holds blocks since ADR-0056, so it is somewhere a block can
+   live and has to be measurable like every other container here. */
+.kometio-hero,
+.kometio-card,
+/* A section instance is not a container in the EDITOR's sense — nothing
+   can be dropped into one (docs/adr/0059) — but it does have blocks
+   inside it at render time, so a container query in one of them needs
+   this exactly as much as any other. `container-type.spec.ts` derives its
+   list from `isContainer` and so cannot see this one; it checks it by
+   name instead. */
+.kometio-section,
+.kometio-column,
+.kometio-columns,
+.kometio-container,
+.kometio-feature-grid,
+.kometio-hamburger-menu,
+.kometio-nav,
+.kometio-nav-dropdown,
+.kometio-pricing-table,
+.kometio-stats-counter,
+.kometio-tab,
+.kometio-tabs,
+.kometio-team,
+.kometio-testimonials,
+.kometio-timeline,
+.kometio-carousel,
+.kometio-social-links,
+.kometio-list,
+.kometio-faq,
+.kometio-marquee,
+.kometio-product-grid,
+.kometio-product-reviews,
+.kometio-comparison-table,
+.kometio-restaurant-menu,
+.kometio-event-list,
+.kometio-steps,
+.kometio-spec-list,
+.kometio-file-list,
+.kometio-glossary,
+.kometio-image-hotspots,
+.kometio-video-playlist {
+  container-type: inline-size;
+}
+
+/*
+ * Words for a screen reader that a sighted reader gets from the layout —
+ * "Original price" before a struck-through number, "Included" behind a
+ * tick. Clipped rather than `display: none`, which would hide them from
+ * the screen reader too.
+ *
+ * In the flow, and NOT the usual `position: absolute`. Measured on the
+ * comparison table at 390px: an absolutely positioned span takes the page
+ * as its containing block, so inside a box that scrolls sideways it
+ * escapes the scrolling and the clipping, and the cells scrolled out of
+ * view made the whole PAGE 20px wider. A 1px inline box stays inside
+ * whatever clips it — a table that scrolls, a carousel track. No negative
+ * margin to win that pixel back: measured, it made a button holding one
+ * of these a pixel narrower than its own label, and "Copy link" wrapped.
+ */
+.kometio-visually-hidden {
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * How a collection arranges what it holds (ADR-0052).
+ *
+ * One engine for every collection block, replacing the arrangement each
+ * one had hard-wired: `Testimonials` was a slider and `Team` a grid, and
+ * neither could be the other. The block keeps its own class and its own
+ * look; these rules only decide the arrangement.
+ *
+ * `grid` declares nothing here on purpose — each block already has its
+ * own `grid-template-columns` with a minimum column width chosen for what
+ * it holds (140px for a stat, 220px for a pricing plan), and flattening
+ * those into one number would make every collection look the same.
+ */
+.kometio-collection {
+  position: relative;
+}
+
+/*
+ * `grid-auto-columns`, not a width on the children, and that is the whole
+ * trick: in the editor every block is wrapped in a `display: contents`
+ * element (BlockRenderer.astro), so a rule matching the track's direct
+ * children hits that wrapper — which generates no box, so flex/width
+ * declarations on it are ignored and never reach the real card. Sizing
+ * the TRACK's implicit columns instead works either way, because the
+ * children the wrapper passes through become the grid items themselves.
+ */
+.kometio-collection--slider .kometio-collection__track,
+.kometio-collection--carousel .kometio-collection__track {
+  display: grid;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  gap: var(--kometio-override-gap, 1.5rem);
+}
+
+.kometio-collection--slider .kometio-collection__track::-webkit-scrollbar,
+.kometio-collection--carousel .kometio-collection__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* One at a time — the full visible width per item. */
+.kometio-collection--slider .kometio-collection__track {
+  grid-auto-columns: 100%;
+}
+
+/* Several at a time, at the width a card wants to be. */
+.kometio-collection--carousel .kometio-collection__track {
+  grid-auto-columns: min(320px, 85vw);
+}
+
+/*
+ * Room for the arrows. They sit over the track, and an item filling it
+ * ran under them: the first words of a testimonial were behind the "‹".
+ * The track keeps a lane on each side as wide as a button and its inset,
+ * and snaps inside it.
+ */
+.kometio-collection:has(> .kometio-collection__nav) .kometio-collection__track {
+  padding-inline: 3.5rem;
+  scroll-padding-inline: 3.5rem;
+}
+
+/*
+ * The one place the `display: contents` wrapper has to be named. Snapping
+ * is a property of the ITEM, so unlike the sizing above it cannot be
+ * hoisted onto the track — and the item is one level deeper in the
+ * editor than it is on the published page.
+ */
+.kometio-collection--slider .kometio-collection__track > *,
+.kometio-collection--carousel .kometio-collection__track > *,
+.kometio-collection--slider .kometio-collection__track > * > *,
+.kometio-collection--carousel .kometio-collection__track > * > * {
+  scroll-snap-align: start;
+}
+
+/*
+ * Positive insets, not negative: a track can end near the block's own
+ * edge with little margin around it, and a negative offset pushed the
+ * button past the page's right edge and caused horizontal overflow —
+ * found on a real preview page, kept from Testimonials.astro where this
+ * engine came from.
+ */
+.kometio-collection__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--background) 90%, transparent);
+  color: var(--foreground);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.kometio-collection__nav--prev {
+  inset-inline-start: 0.5rem;
+}
+.kometio-collection__nav--next {
+  inset-inline-end: 0.5rem;
+}
+/* The glyph is directional, so it mirrors with the writing direction —
+   the arrow has to point the way the track actually moves. */
+.kometio-collection__nav:dir(rtl) {
+  transform: translateY(-50%) scaleX(-1);
+}
+
+/*
+ * The width a root-level block gets (ADR-0049).
+ *
+ * This used to be `<main class="mx-auto flex max-w-5xl flex-col px-6">` in
+ * PublicPageContent.astro — one literal number, on every page of every
+ * site, and unreachable: the constraint sat INSIDE the slot a theme's
+ * ContentShell wraps, so even a theme that owned the whole page could not
+ * widen it. The audit called it the single biggest limitation of the
+ * canvas, and it is the reason a hero could never run edge-to-edge.
+ *
+ * `max-width` + `padding-inline` on ONE element, with the border-box
+ * sizing Tailwind's preflight already sets, reproduces the old pair
+ * exactly: 64rem outer, 61rem of content inside 1.5rem gutters, the same
+ * numbers `max-w-5xl px-6` produced. A page that sets nothing renders
+ * byte-for-byte as before.
+ *
+ * `<main>` keeps `flex flex-col` deliberately. Margins do not collapse
+ * between flex items and they do between block-flow siblings, so a page
+ * where one block sets `marginTop` under a neighbour's `marginBottom`
+ * would silently lose the smaller of the two if this became block flow —
+ * a spacing change nobody asked for, on saved content.
+ */
+/*
+ * A block that rendered to nothing, in the editor only.
+ *
+ * `data-kometio-empty` is set by the preview bridge (markEmptyBlocks), and
+ * the bridge runs on the canvas and nowhere else — a visitor never sees
+ * this, which is the point: an Icon with no icon should print nothing on
+ * a real page, and should be a thing you can click on the one where you
+ * are choosing the icon.
+ *
+ * The name comes from the attribute the wrapper already carries, so this
+ * needs no list of types to stay in step with.
+ */
+[data-kometio-empty] {
+  min-height: 2.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.375rem;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
+[data-kometio-empty]::after {
+  content: attr(data-kometio-block-type);
+}
+
+@layer kometio.base {
+  /*
+   * The rhythm between root blocks, and the reason it is a rule rather
+   * than the inline style it used to be (ADR-0050).
+   *
+   * Every block keeps the space after it, the last one included: the
+   * last block used to get none, which left a page's final button or
+   * paragraph touching the footer on every theme. A block that should
+   * meet the footer flush (a full-width band) says so with its own
+   * margin, which `@layer kometio.instance` lets win, like every other
+   * value somebody sets on one block.
+   *
+   * `--kometio-block-gap` is the rhythm, a theme token: an airy theme
+   * widens it rather than restyling every block.
+   */
+  .kometio-root-block {
+    margin-bottom: var(--kometio-block-gap);
+  }
+  /* A heading introduces what follows it, so it sits closer to that than
+     to the section before: a whole block gap under "Selected work" left
+     the heading floating on its own. */
+  .kometio-root-block:has(> .kometio-heading) {
+    margin-bottom: var(--kometio-heading-gap);
+  }
+  /* And the first block keeps a space above it: without one, a page's
+     opening card or heading sat on the header's bottom edge on every
+     theme. A full-bleed band is the exception, since meeting the header
+     is what a band under it is for. */
+  .kometio-root-block:first-child:not([data-kometio-align='full']) {
+    margin-top: var(--kometio-page-start-gap);
+  }
+  /* A block with no box of its own in the flow — a point a link lands on,
+     a bar fixed to the window — takes no share of the rhythm either.
+     Otherwise dropping an anchor between two paragraphs pushed them a
+     whole gap further apart, for a block nobody can see. Still in kometio.base, so a
+     margin somebody sets on the block itself wins as usual. Not
+     `:only-child`: a root wrapper holds exactly one block, and a block with
+     behaviour also emits its <script> beside it. */
+  .kometio-root-block:has(> .kometio-anchor),
+  .kometio-root-block:has(> .kometio-reading-progress),
+  .kometio-root-block:has(> .kometio-sticky-contact-bar--live),
+  /* And a block that rendered nothing at all — an event that is over, a
+     cookie link on a site with no banner: nothing there, no gap either.
+     Its <script>, when it has one, is all that is left beside it. */
+  .kometio-root-block:not(:has(> :not(script))) {
+    margin-bottom: 0;
+  }
+}
+
+.kometio-root-block {
+  max-width: var(--kometio-content-width);
+  padding-inline: var(--kometio-content-gutter);
+  margin-inline: auto;
+  /* Belt and braces: the tokens above are theme-supplied and a theme is
+     allowed to be wrong. Without this, a theme shipping a width in a unit
+     that does not resolve leaves the block at its flex default — full
+     width, no gutters — and the page looks broken rather than plain. */
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/*
+ * `max()` and not a bare `var()`: the wide tier belongs to the theme, the
+ * content width can be raised by the site (Tier 1, Style settings). A site
+ * that widens its column past its theme's wide tier would otherwise make
+ * "wide" render NARROWER than the default it is supposed to exceed —
+ * silently, and only on the sites that customized the number.
+ */
+.kometio-root-block[data-kometio-align='wide'] {
+  max-width: max(
+    var(--kometio-content-width-wide),
+    var(--kometio-content-width)
+  );
+}
+
+/*
+ * Full-bleed: the whole viewport, gutters included. A block that paints a
+ * background is the reason this exists, so the padding goes too — a
+ * full-width band with 1.5rem of blank page either side is the exact thing
+ * it was asked not to be.
+ */
+.kometio-root-block[data-kometio-align='full'] {
+  max-width: none;
+  padding-inline: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion (docs/adr/0060)
+ * ------------------------------------------------------------------ */
+
+/*
+ * Every entrance animation moves `opacity` and `transform` and NOTHING
+ * else. That is not a stylistic preference: those two are the properties
+ * a browser can animate on the compositor without laying the page out
+ * again, so an entrance cannot push the content below it around while it
+ * plays. An animation that moved a height or a margin would be a
+ * Cumulative Layout Shift on the most visible content a site has.
+ *
+ * The distances are small (24px, and 8% for the zoom) for the same
+ * reason a fade is the default: a block that flies in from the edge of
+ * the screen reads as a demo, not as a website.
+ */
+@keyframes kometio-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes kometio-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+@keyframes kometio-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+@keyframes kometio-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@keyframes kometio-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+@keyframes kometio-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+/*
+ * The whole entrance mechanism, and the reason it is shaped this way.
+ *
+ * `.kometio-motion-ready` is put on <html> by `entrance-animation.ts` — so
+ * with JavaScript off, or before the behaviour has run, NONE of this
+ * applies and every block is simply visible. That order matters more than
+ * it looks: the animation's first frame is `opacity: 0`, so a mechanism
+ * that started from the animated state and waited for JS to release it
+ * would hide the entire page for any reader without JavaScript. This one
+ * fails to "no animation", never to "no content".
+ *
+ * `paused` plus `both`: the block sits on the animation's first frame
+ * until the observer says it has entered the viewport, then runs. The
+ * alternative — adding the animation only on entry — restarts layout and
+ * makes the first frame flash at full opacity on slow machines.
+ *
+ * `--kometio-anim-name` is unset for a block nobody animated, so the
+ * shorthand resolves to `none` and the rule costs that block nothing.
+ */
+.kometio-motion-ready .kometio-root-block {
+  animation: var(--kometio-anim-name, none) var(--kometio-anim-duration, 600ms)
+    var(--kometio-anim-easing, ease-out) var(--kometio-anim-delay, 0s) both
+    paused;
+}
+.kometio-motion-ready .kometio-root-block[data-kometio-in-view] {
+  animation-play-state: running;
+}
+
+/*
+ * What a block does under the pointer. `--kometio-hover-effect` is set per
+ * instance (block-style-overrides.ts) and read here as a NAME, because a
+ * hover effect is two declarations and a transition rather than one
+ * value — there is nothing a single custom property could hold.
+ */
+.kometio-root-block {
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out,
+    opacity 200ms ease-out;
+}
+.kometio-root-block[data-kometio-hover='lift']:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.kometio-root-block[data-kometio-hover='grow']:hover {
+  transform: scale(1.02);
+}
+.kometio-root-block[data-kometio-hover='dim']:hover {
+  opacity: 0.75;
+}
+
+/*
+ * Accessibility, not polish (docs/adr/0060).
+ *
+ * Before this rule the product had not one `prefers-reduced-motion` block
+ * anywhere, while shipping transitions and four smooth scrolls. For a
+ * reader with vestibular disorders those are not decoration, they are a
+ * reason to close the tab.
+ *
+ * `!important` and a blanket selector, deliberately: this has to beat a
+ * per-instance rule in `@layer kometio.instance`, a theme's own stylesheet
+ * and a block's scoped style alike. A reader who asked the operating
+ * system for less motion is not overridden by a site's design.
+ *
+ * `0.01ms` rather than `none`: an animation that never runs never fires
+ * `animationend`, and code waiting on that event would hang. This lets
+ * every animation complete instantly instead.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* The entrance is dropped outright rather than merely shortened: `both`
+     would otherwise leave the block on its first frame — invisible —
+     until the observer got to it. */
+  .kometio-motion-ready .kometio-root-block {
+    animation: none !important;
+  }
+  .kometio-root-block[data-kometio-hover]:hover {
+    transform: none;
+  }
+}
+
+/*
+ * The full-size view a lightbox opens (ADR-0057).
+ *
+ * In global.css rather than in a block's scoped style because the overlay
+ * is created by `block-behaviors/lightbox.ts` and appended to `<body>` —
+ * it is nobody's child, so no scoped rule can reach it.
+ */
+.kometio-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgb(0 0 0 / 85%);
+}
+
+.kometio-lightbox__image {
+  max-width: 100%;
+  /* Both dimensions, or a tall picture on a short window overflows the
+     viewport and cannot be seen whole — which is the one thing this view
+     exists to do. */
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.kometio-lightbox__close {
+  position: absolute;
+  top: 1rem;
+  inset-inline-end: 1rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 40%);
+  background: rgb(0 0 0 / 40%);
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}

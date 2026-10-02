@@ -1,0 +1,66 @@
+---
+import { Image } from 'astro:assets';
+import type { PickedMedia } from '@kometio/shared-types';
+import { FULL_WIDTH_SIZES, responsiveWidths } from '../lib/image-sizes';
+import { isMediaUrl, mediaBaseUrls } from '../lib/media-url';
+
+interface Props {
+  media: PickedMedia;
+  alt: string;
+  class?: string;
+  /** Defaults to 'lazy' (astro:assets' own default) — pass 'eager' for a block that can be the page's own LCP element. */
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'sync' | 'auto';
+  /**
+   * How wide this block draws the image — see lib/image-sizes.ts. The
+   * browser uses it to pick a variant, so an avatar drawn at 40px stops
+   * downloading the same file as a full-width photo. Defaults to the full
+   * width, which is never too small, only sometimes too big.
+   */
+  sizes?: string;
+}
+
+const {
+  media,
+  alt,
+  class: className,
+  loading = 'lazy',
+  decoding = 'async',
+  sizes = FULL_WIDTH_SIZES,
+} = Astro.props;
+
+// astro:assets' <Image> requires explicit width/height for a remote src
+// (it has no filesystem access to infer them) — media picked before that
+// field existed on PickedMedia can still have null/undefined width/height,
+// so those fall back to a plain <img>, same as every block did before this
+// component existed.
+function hasKnownDimensions(
+  m: PickedMedia,
+): m is PickedMedia & { width: number; height: number } {
+  return m.width != null && m.height != null;
+}
+
+// Only this site's own media is resized on the server: `/_image` refuses
+// anything else. An address from elsewhere — media from before a change of
+// domain, say — stays a plain <img> the browser loads itself, rather than
+// an image the endpoint would refuse.
+const optimisable = isMediaUrl(media.url, mediaBaseUrls());
+---
+
+{
+  optimisable && hasKnownDimensions(media) ? (
+    <Image
+      src={media.url}
+      alt={alt}
+      width={media.width}
+      height={media.height}
+      widths={responsiveWidths(media.width)}
+      sizes={sizes}
+      class={className}
+      loading={loading}
+      decoding={decoding}
+    />
+  ) : (
+    <img src={media.url} alt={alt} class={className} loading={loading} decoding={decoding} />
+  )
+}

@@ -1,0 +1,76 @@
+---
+import type { NavLinkProps } from '@kometio/shared-types';
+import { resolveLinkHref } from '@kometio/theme-runtime';
+
+type Props = NavLinkProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+
+  /** Already resolved by BlockRenderer — see its comment on `iconName`. */
+  iconSvg?: string | null;
+  themeName: string;
+};
+
+const {
+  label,
+  linkType,
+  page,
+  url,
+  position,
+  visibility,
+  iconSvg,
+  instanceClass,
+} =
+  Astro.props;
+// See ADR-0063: a menu entry pointing at a page that does not exist in
+// this locale stays visible and stops being a link, rather than linking
+// to whatever is in the url field.
+const href = resolveLinkHref({ linkType, page, url });
+---
+
+<a
+  href={href ?? undefined}
+  class:list={[
+    'kometio-nav-link',
+    { 'kometio-nav-link--right': position === 'right' },
+    { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+    { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+    instanceClass,
+  ]}
+>
+  {iconSvg && <span class="kometio-nav-link__icon" set:html={iconSvg} />}
+  <span data-kometio-field="label">{label}</span>
+</a>
+
+<style>
+  /* Fallbacks are what a nav link already rendered. Padding and a
+     background are what turn one into a pill or a highlighted CTA in the
+     header, which until now needed a Button in the middle of a menu. */
+  .kometio-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kometio-override-gap, 0.4em);
+    /* `var(--primary)`, NOT `inherit`: global.css gives a bare `<a>`
+       `text-primary`, and a nav link IS one. A scoped rule here outranks
+       that layer, so `inherit` turned every menu link the colour of its
+       surrounding text — measured against the built site before and
+       after, which is the only way this shows up. */
+    color: var(--kometio-override-text, var(--primary));
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  .kometio-nav-link--right {
+    margin-left: auto;
+  }
+  .kometio-nav-link__icon {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+  }
+  .kometio-nav-link__icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>

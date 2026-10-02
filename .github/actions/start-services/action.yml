@@ -1,0 +1,68 @@
+name: Start Postgres and Mailpit
+description: >-
+  A fresh, migrated and seeded Postgres and a Mailpit to catch email, for
+  the jobs that run code against them (test, e2e). Leaves POSTGRES_PASSWORD
+  and POSTGRES_APP_PASSWORD in the job's environment for the steps after it.
+
+runs:
+  using: composite
+  steps:
+    # GitHub Actions doesn't expose repository secrets to workflows
+    # triggered by Dependabot (by design, to stop a malicious dependency
+    # bump from exfiltrating them) — so a services:-block password
+    # sourced from secrets.* silently comes through empty on every
+    # Dependabot PR. Instead, generate a random password here, in-job,
+    # for every run regardless of trigger: never a literal value
+    # anywhere, never dependent on secrets access at all.
+    - name: Start Postgres
+      shell: bash
+      run: |
+        admin_password=$(openssl rand -hex 24)
+        app_password=$(openssl rand -hex 24)
+        echo "::add-mask::$admin_password"
+        echo "::add-mask::$app_password"
+        echo "POSTGRES_PASSWORD=$admin_password" >> "$GITHUB_ENV"
+        echo "POSTGRES_APP_PASSWORD=$app_password" >> "$GITHUB_ENV"
+
+        docker run -d --name postgres \
+          -e POSTGRES_USER="$POSTGRES_USER" \
+          -e POSTGRES_PASSWORD="$admin_password" \
+          -e POSTGRES_DB="$POSTGRES_DB" \
+          -p 5432:5432 \
+          postgres:16-alpine
+
+        # The official image starts Postgres twice: once internally to run
+        # initdb, then for real. pg_isready can report ready during that
+        # first, transient instance, right before it shuts down to
+        # restart — a bare "until pg_isready" loop can catch that window
+        # and then get "server closed the connection unexpectedly" on the
+        # very next command. Wait for the *second* "ready to accept
+        # connections" in the logs, which only appears once the real
+        # server is up.
+        until [ "$(docker logs postgres 2>&1 | grep -c 'database system is ready to accept connections')" -ge 2 ]; do
+          sleep 1
+        done
+
+    # No auth required (matches .env.example) — smtp-email-adapter's
+    # integration test sends a real email through this and checks
+    # Mailpit's HTTP API for it, see docs/adr/0011; the e2e suite reads
+    # the form notifications from it the same way.
+    - name: Start Mailpit
+      shell: bash
+      run: |
+        docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit
+        until curl -sf http://localhost:8025/api/v1/info > /dev/null; do
+          sleep 1
+        done
+
+    - name: Bootstrap kometio_app role
+      shell: bash
+      run: PGHOST=localhost PGPASSWORD="$POSTGRES_PASSWORD" bash db/init/000_roles.sh
+
+    - name: Migrate and seed
+      shell: bash
+      run: |
+        pnpm --filter @kometio/postgres-db run db:migrate
+        pnpm --filter @kometio/postgres-db run db:seed
+      env:
+        POSTGRES_HOST: localhost

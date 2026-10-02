@@ -1,0 +1,38 @@
+---
+import type { NavProps } from '@kometio/shared-types';
+
+type Props = NavProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { visibility, instanceClass } = Astro.props;
+---
+
+<nav
+  class:list={[
+    'kometio-nav',
+    { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+    { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+    instanceClass,
+  ]}
+>
+  <slot />
+</nav>
+
+<style>
+  /* Every fallback is what this block already rendered. `gap` matters
+     most here: the space between nav links was a fixed 1rem, so a dense
+     header and an airy one were not expressible. */
+  .kometio-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--kometio-override-gap, 1rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+</style>

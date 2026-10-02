@@ -1,0 +1,27 @@
+---
+import type { TabProps } from '@kometio/shared-types';
+
+type Props = TabProps & { instanceClass?: string | null };
+
+const { label, instanceClass } = Astro.props;
+---
+
+<div
+  class:list={['kometio-tab-panel kometio-tab', instanceClass]}
+  data-tab-label={label}
+  role="tabpanel"
+>
+  <slot />
+</div>
+
+<style>
+  .kometio-tab-panel {
+    padding: var(--kometio-override-padding-y, 1rem) var(--kometio-override-padding-x, 0);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+  }
+  .kometio-tab-panel[hidden] {
+    display: none;
+  }
+</style>

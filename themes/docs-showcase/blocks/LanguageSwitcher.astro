@@ -1,0 +1,170 @@
+---
+// Override of apps/public-site/src/components/blocks/LanguageSwitcher.astro
+// (docs/adr/0021's per-block escalation) — same data/logic as core (which
+// enabled locale to link where), the difference is purely presentational:
+// a compact icon toggle (globe + current locale) instead of a plain
+// "EN | IT" text list. Restyle only, per themes/README's boundary — no
+// new block type needed for this, LanguageSwitcher already carries
+// everything a toggle needs (2026-08-30, user explicitly asked whether a
+// new generic icon-button block was warranted here — it wasn't: this is a
+// one-off restyle of an existing data-driven block, not a new reusable
+// content primitive).
+import type { LanguageSwitcherProps } from '@kometio/shared-types';
+import type { PublishedPageTranslation, PublishedSite } from '@kometio/api-contracts';
+import { localePathFromAncestors } from '@kometio/theme-runtime';
+import { Translator } from '@kometio/theme-runtime';
+
+interface Props extends LanguageSwitcherProps {
+  locale: string;
+  translations: PublishedPageTranslation[];
+  site: PublishedSite;
+  /**
+   * The per-instance style class, from BlockRenderer. A theme override
+   * has to accept and render it exactly as core does: the block became
+   * stylable (ADR-0051), and a theme that swallowed the class would make
+   * styling this block silently do nothing on sites using that theme —
+   * which `theme-block-override-styling.spec.ts` fails on, by name.
+   */
+  instanceClass?: string | null;
+}
+
+const { position, visibility, locale, translations, site, instanceClass } =
+  Astro.props;
+
+const defaultTranslation = translations.find(
+  (translation) => translation.locale === site.defaultLocale,
+);
+
+interface LocaleLink {
+  locale: string;
+  href: string;
+}
+
+const links = site.enabledLocales
+  .map((enabledLocale): LocaleLink | null => {
+    const translation = translations.find(
+      (candidate) => candidate.locale === enabledLocale,
+    );
+    if (translation) {
+      return {
+        locale: enabledLocale,
+        // The ancestor chain, not the bare slug: slugs are scoped to
+        // their siblings (ADR-0029), so `/it/first-run` is not where a
+        // nested page lives and linking there 404s.
+        href: localePathFromAncestors(
+          translation.locale,
+          translation.ancestorSlugs,
+          translation.slug,
+        ),
+      };
+    }
+    if (site.untranslatedPageFallback === 'redirect-to-default' && defaultTranslation) {
+      return {
+        locale: enabledLocale,
+        href: localePathFromAncestors(
+          defaultTranslation.locale,
+          defaultTranslation.ancestorSlugs,
+          defaultTranslation.slug,
+        ),
+      };
+    }
+    return null;
+  })
+  .filter((link): link is LocaleLink => link !== null);
+
+const i18n = new Translator(locale);
+const globeSvg = Astro.locals.resolveIcon('globe', site.themeName);
+
+// Exactly 2 enabled locales (this site's real config, and the common
+// case) renders as a single toggle: current locale + globe, clicking
+// jumps straight to the other one. 3+ locales falls back to the plain
+// list core already renders — a toggle stops making sense once there's
+// more than one "other" option to pick between.
+const isToggle = links.length === 2;
+const otherLink = isToggle
+  ? links.find((link) => link.locale !== locale)
+  : null;
+---
+
+{
+  links.length > 1 && (
+    <nav
+      class:list={[
+        'kometio-language-switcher',
+        { 'kometio-language-switcher--right': position === 'right' },
+        { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+        { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+        instanceClass,
+      ]}
+      aria-label={i18n.t('languageSwitcher.label')}
+    >
+      {isToggle && otherLink ? (
+        <a
+          class="kometio-language-toggle"
+          href={otherLink.href}
+          aria-label={`${locale.toUpperCase()} → ${otherLink.locale.toUpperCase()}`}
+        >
+          {globeSvg && <span class="kometio-language-toggle__icon" aria-hidden="true" set:html={globeSvg} />}
+          <span class="kometio-language-toggle__current">{locale.toUpperCase()}</span>
+        </a>
+      ) : (
+        links.map((link) => (
+          <a
+            href={link.href}
+            aria-current={link.locale === locale ? 'true' : undefined}
+          >
+            {link.locale.toUpperCase()}
+          </a>
+        ))
+      )}
+    </nav>
+  )
+}
+
+<style>
+  /* Same fallbacks as core's own, so this override behaves identically
+     under a per-instance style. */
+  .kometio-language-switcher {
+    display: flex;
+    gap: var(--kometio-override-gap, 0.5rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  .kometio-language-switcher--right {
+    margin-left: auto;
+  }
+  .kometio-language-switcher a[aria-current='true'] {
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .kometio-language-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .kometio-language-toggle:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .kometio-language-toggle__icon {
+    display: inline-flex;
+    width: 1rem;
+    height: 1rem;
+  }
+  .kometio-language-toggle__icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>

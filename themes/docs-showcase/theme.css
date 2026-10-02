@@ -1,0 +1,58 @@
+/**
+ * "docs-showcase" — a product site with its documentation (docs/adr/0021):
+ * light, for reading at length, in the manner of a developer tool. One
+ * accent, a "carta da zucchero" (sugar-paper) blue darkened to hold its
+ * own on white; Geist for text, Geist Mono for code; 8px corners.
+ *
+ * Design tokens only, same contract as classic/theme.css: only the `:root`
+ * custom properties below reach the page, and core's global.css maps them
+ * to Tailwind utilities. A theme cannot follow the system's light/dark
+ * preference (a media query here never reaches the page), so this one is
+ * light, as documentation mostly is.
+ */
+
+:root {
+  /* The content column, its gutter, the link colours, the shadow scale
+     and the state colours are core's (apps/public-site/src/styles/
+     global.css): a theme states only what it changes, so the defaults
+     cannot drift apart between themes. A roomier site sets
+     `--kometio-content-width` here. */
+
+  /* Geist, a file of this theme (fonts.css), and Geist Mono for code, in
+     the Code block and in a sentence. Headings are Geist too, tracked
+     tight. The family name matches the @font-face in fonts.css exactly: a
+     near-miss is silent, the browser just falls through to the next entry. */
+  --font-sans-value: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --kometio-code-font:
+    'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --kometio-heading-weight: 600;
+  --kometio-heading-tracking: -0.035em;
+
+  /* Colour. Contrast measured on these values (WCAG AA is 4.5:1): text
+     17.6:1; muted text 6.4:1 on the page and 5.8:1 on a muted surface;
+     white on the blue, and the blue as a link, 5.8:1. */
+  --background: oklch(0.99 0.003 250);
+  --foreground: oklch(0.2 0.02 255);
+  --primary: oklch(0.5 0.12 250);
+  --primary-foreground: oklch(0.99 0.003 250);
+  --secondary: oklch(0.96 0.008 250);
+  --secondary-foreground: oklch(0.2 0.02 255);
+  --muted: oklch(0.96 0.008 250);
+  --muted-foreground: oklch(0.48 0.02 255);
+  --border: oklch(0.9 0.01 250);
+
+  /* One radius for the whole site, the theme's choice rather than a
+     per-block one: 8px, precise rather than soft. */
+  --radius: 0.5rem;
+
+  /* This is the actual mechanism that makes "rounded corners" apply
+     site-wide: every block's own scoped style already reads
+     `var(--kometio-override-radius, <literal fallback>)` (docs/adr/0022) —
+     normally only ever set inline, per-instance, by a real style
+     override. Defining it here at :root gives every block that has no
+     instance/site-level override of its own a themed default instead of
+     that literal fallback, via ordinary CSS custom-property inheritance
+     — an inline instance override (higher specificity) still wins over
+     this exactly like it always did. */
+  --kometio-override-radius: var(--radius);
+}

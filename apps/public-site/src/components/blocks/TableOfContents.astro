@@ -1,0 +1,86 @@
+---
+import type { TableOfContentsProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = TableOfContentsProps & {
+  instanceClass?: string | null;
+  locale?: string;
+};
+
+const { title, numbered, entries, instanceClass, locale } = Astro.props;
+const i18n = new Translator(locale ?? '');
+const ListTag = numbered ? 'ol' : 'ul';
+// `entries` comes from resolveTableOfContents, which also gave every
+// heading it lists the id these links point at.
+---
+
+{
+  entries.length > 0 && (
+    <nav
+      class:list={['kometio-table-of-contents', 'kometio-toc', numbered && 'kometio-toc--numbered', instanceClass]}
+      aria-label={title || i18n.t('tableOfContents.label')}
+    >
+      {title && <p class="kometio-toc__title">{title}</p>}
+      <ListTag class="kometio-toc__list">
+        {entries.map((entry) => (
+          <li class:list={['kometio-toc__item', `kometio-toc__item--${entry.level}`]}>
+            <a class="kometio-toc__link" href={`#${entry.anchorId}`}>
+              {entry.text}
+            </a>
+          </li>
+        ))}
+      </ListTag>
+    </nav>
+  )
+}
+
+<style>
+  .kometio-toc {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-toc__title {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+
+  .kometio-toc__list {
+    display: grid;
+    gap: var(--kometio-override-gap, 0.375rem);
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  /* Stated, not inherited: the global reset takes every list's markers
+     away, so an <ol> left to its defaults shows no numbers at all. */
+  .kometio-toc--numbered .kometio-toc__list {
+    list-style: decimal;
+  }
+
+  .kometio-toc:not(.kometio-toc--numbered) .kometio-toc__list {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+
+  /* Indented with a logical property, so an h3 steps in from the right in a
+     right-to-left page. */
+  .kometio-toc__item--h3 {
+    margin-inline-start: 1rem;
+    font-size: 0.9375em;
+  }
+
+  .kometio-toc__link {
+    color: inherit;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-toc__link:hover,
+  .kometio-toc__link:focus-visible {
+    text-decoration: underline;
+  }
+</style>

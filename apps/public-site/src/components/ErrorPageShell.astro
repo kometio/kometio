@@ -1,0 +1,28 @@
+---
+// The standalone <html>/<head>/<body> wrapper for a truly bare error page
+// — used only when there's no site chrome to show (site/locale
+// unresolvable, or the chrome fetch itself failed). Deliberately minimal
+// and self-contained: no theme.css import, no API call, nothing that
+// could itself fail while already handling a failure. Split out of
+// NotFound.astro/ServerError.astro so those two can also render as plain
+// content inside a real PageLayout when chrome IS available (see
+// PublicPageContent.astro) — an .astro file can't conditionally wrap its
+// own markup in <html> vs. not, so the two shapes need two components.
+interface Props {
+  locale?: string;
+  title: string;
+}
+
+const { locale, title } = Astro.props;
+---
+
+<html lang={locale ?? 'it'}>
+	<head>
+		<meta charset="utf-8" />
+		<title>{title}</title>
+		<meta name="viewport" content="width=device-width" />
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>

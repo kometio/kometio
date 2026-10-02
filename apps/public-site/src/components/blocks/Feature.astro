@@ -1,0 +1,81 @@
+---
+import type { FeatureProps } from '@kometio/shared-types';
+
+type Props = FeatureProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The variant's modifier class, from BlockRenderer — see blockVariantClassName. */
+  variantClass?: string | null;
+  /** Already resolved by BlockRenderer — see its comment on `iconName`. */
+  iconSvg?: string | null;
+  themeName: string;
+};
+
+const { title, text, iconSvg, instanceClass, variantClass } = Astro.props;
+---
+
+<div class:list={['kometio-feature', variantClass, instanceClass]}>
+  {iconSvg && <div class="kometio-feature__icon" aria-hidden="true" data-kometio-field="icon" set:html={iconSvg} />}
+  <h3 class="kometio-feature__title" data-kometio-field="title">{title}</h3>
+  <div class="kometio-feature__text kometio-rich-text" data-kometio-field="text" set:html={text} />
+</div>
+
+<style>
+  .kometio-feature {
+    text-align: center;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  .kometio-feature__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--primary);
+  }
+  .kometio-feature__icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  .kometio-feature__title {
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+  }
+  .kometio-feature__text {
+    margin: 0.25rem 0 0;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+  }
+
+  /*
+   * The look where the icon sits beside the words instead of above them
+   * (ADR-0058) — a variant rather than a prop, because it is presentation
+   * and a theme may want to add its own or restyle this one (ADR-0048).
+   *
+   * `align-items: start` and not `center`: a feature with three lines of
+   * text and a one-line title looks broken with the icon floating in the
+   * vertical middle of it.
+   */
+  .kometio-feature--inline {
+    display: flex;
+    align-items: start;
+    gap: var(--kometio-override-gap, 1rem);
+    text-align: start;
+  }
+  /* The icon must not shrink when the text is long — the classic defect
+     of a flex row whose first child is an icon. */
+  .kometio-feature--inline .kometio-feature__icon {
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  /* The same stacked feature, ranged left. Centred text is right for a
+     row of three short features and wrong for one paragraph of prose, and
+     until now the block only had the first opinion. */
+  .kometio-feature--start {
+    text-align: start;
+  }
+</style>

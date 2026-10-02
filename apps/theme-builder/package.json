@@ -1,0 +1,25 @@
+{
+  "name": "@kometio/theme-builder",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "nx": {
+    "tags": [
+      "app"
+    ]
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "run-builds": "tsx src/runner.ts"
+  },
+  "dependencies": {
+    "@kometio/shared-types": "workspace:*",
+    "@kometio/theme-archive": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/yazl": "^3.3.0",
+    "tsx": "^4.23.15",
+    "yazl": "^3.3.1"
+  }
+}

@@ -1,0 +1,63 @@
+---
+import type { TimelineStepProps } from '@kometio/shared-types';
+
+type Props = TimelineStepProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { label, title, description, instanceClass } = Astro.props;
+---
+
+<div class:list={['kometio-timeline-step', instanceClass]}>
+  <div class="kometio-timeline-step__marker" aria-hidden="true"></div>
+  <div class="kometio-timeline-step__body">
+    {label && <div class="kometio-timeline-step__label" data-kometio-field="label">{label}</div>}
+    <div class="kometio-timeline-step__title" data-kometio-field="title">{title}</div>
+    {description && <div class="kometio-timeline-step__description kometio-rich-text" data-kometio-field="description" set:html={description} />}
+  </div>
+</div>
+
+<style>
+  /* Fallbacks are what a step already rendered. The block padding is
+     the rhythm between steps, which was fixed. */
+  .kometio-timeline-step {
+    position: relative;
+    padding-block-end: var(--kometio-override-padding-y, 1.5rem);
+    padding-inline-start: var(--kometio-override-padding-x, 1rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+  }
+  .kometio-timeline-step:last-child {
+    padding-block-end: 0;
+  }
+  /* No dedicated "accent" token distinct from primary — a timeline marker
+     uses the same "draw attention" role as a primary CTA. Changes the
+     default marker color from the original indigo to the classic theme's
+     primary (near-black); still fully theme-responsive going forward.
+     inset-inline-start (not left) so the marker stays on the rail side
+     under dir="rtl". */
+  .kometio-timeline-step__marker {
+    position: absolute;
+    inset-inline-start: -1.75rem;
+    top: 0.375rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+  .kometio-timeline-step__label {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+  .kometio-timeline-step__title {
+    font-weight: 600;
+    margin-top: 0.125rem;
+  }
+  .kometio-timeline-step__description {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

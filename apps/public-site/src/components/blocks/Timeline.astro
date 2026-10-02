@@ -1,0 +1,59 @@
+---
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+export interface Props {
+  /** The locale this page renders in — see EmptyContainerHint. */
+  locale?: string;
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+  editable?: boolean;
+  hasChildren?: boolean;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+}
+
+const { editable, hasChildren, instanceClass, locale, emptyChildLabel} = Astro.props;
+---
+
+<div class:list={['kometio-timeline', instanceClass]} data-kometio-editable-outline={editable && hasChildren ? '' : undefined}>
+  <slot />
+  <EmptyContainerHint
+  show={!hasChildren && Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>
+</div>
+
+<style>
+  /* No paddingX/paddingY here: padding-inline-start is structural (room
+     for the vertical ::before line), and a generic override would replace
+     it and break the layout. Logical properties (not left/padding-left),
+     so the line and the text mirror themselves under dir="rtl". */
+  .kometio-timeline {
+    position: relative;
+    padding-inline-start: 1.5rem;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+  }
+  .kometio-timeline::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.25rem;
+    top: 0.375rem;
+    bottom: 0.375rem;
+    width: 2px;
+    background: var(--border);
+  }
+
+  /* Editor only, and only once it has content — when empty it already
+     shows its own dashed border through EmptyContainerHint, and a second
+     one here would be redundant. Without this, a container holding real
+     content loses every visible boundary while you work (user feedback
+     from live use, the same reason as Column.astro/Container.astro). */
+  .kometio-timeline[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

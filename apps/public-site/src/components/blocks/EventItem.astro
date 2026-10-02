@@ -1,0 +1,312 @@
+---
+import type { EventItemProps } from '@kometio/shared-types';
+import { richTextToPlainText } from '@kometio/shared-types';
+import { resolveLinkHref, Translator } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+import { GRID_ITEM_SIZES } from '../../lib/image-sizes';
+import {
+  isEventOver,
+  readEventDates,
+  schemaOrgStart,
+} from '../../lib/event-dates';
+import { absoluteSchemaUrl } from '../../lib/schema-org';
+
+type Props = EventItemProps & {
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const {
+  title,
+  startDate,
+  startTime,
+  endDate,
+  location,
+  description,
+  image,
+  linkType,
+  page,
+  url,
+  hideWhenPast,
+  structuredData,
+  locale,
+  editable,
+  instanceClass,
+} = Astro.props;
+const i18n = new Translator(locale);
+const dates = readEventDates({ startDate, startTime, endDate });
+const over = isEventOver(dates, new Date().toISOString().slice(0, 10));
+// Hidden from visitors only. In the canvas it stays, marked, or the
+// author could not find the event to update it.
+const hidden = hideWhenPast && over && !editable;
+const href = resolveLinkHref({ linkType, page, url });
+
+// Dates are calendar days, not instants: formatted in UTC so that "20
+// September" is the 20th wherever the server happens to run.
+const asDay = (day: string) => new Date(`${day}T00:00:00Z`);
+const dayFormat = new Intl.DateTimeFormat(locale || undefined, {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+});
+const dateText = dates.start
+  ? dates.end
+    ? dayFormat.formatRange(asDay(dates.start), asDay(dates.end))
+    : dayFormat.format(asDay(dates.start))
+  : '';
+const timeText = dates.time
+  ? new Intl.DateTimeFormat(locale || undefined, {
+      timeStyle: 'short',
+      timeZone: 'UTC',
+    }).format(new Date(`${dates.start}T${dates.time}:00Z`))
+  : '';
+const badgeDay = dates.start
+  ? new Intl.DateTimeFormat(locale || undefined, { day: 'numeric', timeZone: 'UTC' }).format(asDay(dates.start))
+  : '';
+const badgeMonth = dates.start
+  ? new Intl.DateTimeFormat(locale || undefined, { month: 'short', timeZone: 'UTC' }).format(asDay(dates.start))
+  : '';
+const isEmpty = !title.trim() && !dates.start;
+
+
+/*
+ * schema.org Event — only with a title, a date and a place, the three
+ * things Google refuses an event without. No time zone: the site has none
+ * to give, and a wrong offset would move the event, where a missing one
+ * only leaves it local.
+ */
+const jsonLd =
+  structuredData && !hidden && title.trim() && dates.start && location.trim()
+    ? JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: title.trim(),
+        startDate: schemaOrgStart(dates),
+        ...(dates.end ? { endDate: dates.end } : {}),
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        eventStatus: 'https://schema.org/EventScheduled',
+        location: {
+          '@type': 'Place',
+          name: location.trim(),
+          address: location.trim(),
+        },
+        ...(description.trim()
+          ? { description: richTextToPlainText(description).trim() }
+          : {}),
+        ...(absoluteSchemaUrl(image?.url, Astro.url.origin)
+          ? { image: absoluteSchemaUrl(image?.url, Astro.url.origin) }
+          : {}),
+        ...(absoluteSchemaUrl(href, Astro.url.origin)
+          ? { url: absoluteSchemaUrl(href, Astro.url.origin) }
+          : {}),
+      }).replace(/</g, '\\u003c')
+    : null;
+---
+
+{
+  isEmpty ? (
+    editable && (
+      <p class="kometio-event-item kometio-event-item--empty">
+        {i18n.t('eventItem.empty')}
+      </p>
+    )
+  ) : (
+    !hidden && (
+      <article
+        class:list={[
+          'kometio-event-item',
+          { 'kometio-event-item--editable': editable, 'kometio-event-item--over': over },
+          instanceClass,
+        ]}
+      >
+        {image && (
+          <div class="kometio-event-item__media">
+            <OptimizedImage
+              media={image}
+              alt=""
+              class="kometio-event-item__image"
+              sizes={GRID_ITEM_SIZES}
+            />
+          </div>
+        )}
+        <div class="kometio-event-item__body">
+          {dates.start && (
+            <p class="kometio-event-item__badge" aria-hidden="true">
+              <span class="kometio-event-item__badge-day">{badgeDay}</span>
+              <span class="kometio-event-item__badge-month">{badgeMonth}</span>
+            </p>
+          )}
+          <div class="kometio-event-item__text">
+            {editable && over && (
+              <p class="kometio-event-item__past-note">
+                {hideWhenPast
+                  ? i18n.t('eventItem.pastHidden')
+                  : i18n.t('eventItem.past')}
+              </p>
+            )}
+            <h3 class="kometio-event-item__title">
+              {href ? (
+                <a class="kometio-event-item__link" href={href} data-kometio-field="title">
+                  {title}
+                </a>
+              ) : (
+                <span data-kometio-field="title">{title}</span>
+              )}
+            </h3>
+            {dateText && (
+              <p class="kometio-event-item__when">
+                <time datetime={schemaOrgStart(dates)}>
+                  {timeText ? `${dateText} · ${timeText}` : dateText}
+                </time>
+              </p>
+            )}
+            {location && <p class="kometio-event-item__where">{location}</p>}
+            {description && (
+              <div
+                class="kometio-event-item__description kometio-rich-text"
+                data-kometio-field="description"
+                set:html={description}
+              />
+            )}
+          </div>
+        </div>
+        {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
+      </article>
+    )
+  )
+}
+
+<style>
+  .kometio-event-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    border-width: var(--kometio-override-border-width, 1px);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+  }
+
+  .kometio-event-item--over {
+    opacity: 0.7;
+  }
+
+  .kometio-event-item__media {
+    aspect-ratio: 16 / 9;
+    background: var(--muted);
+  }
+
+  :global(.kometio-event-item__image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .kometio-event-item__body {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: var(--kometio-override-padding-y, 1rem)
+      var(--kometio-override-padding-x, 1rem);
+  }
+
+  .kometio-event-item__badge {
+    display: grid;
+    flex-shrink: 0;
+    justify-items: center;
+    min-width: 3.25rem;
+    margin: 0;
+    padding: 0.375rem 0.5rem;
+    border-radius: calc(var(--radius) * 0.75);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    line-height: 1.1;
+  }
+
+  .kometio-event-item__badge-day {
+    font-size: 1.375rem;
+    font-weight: 700;
+  }
+
+  .kometio-event-item__badge-month {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .kometio-event-item__text {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .kometio-event-item__past-note {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-event-item__title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-event-item__link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* ProductCard's reason: the whole card opens the event, the title is
+     still the link's only name. */
+  .kometio-event-item__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .kometio-event-item--editable .kometio-event-item__link::after {
+    content: none;
+  }
+
+  .kometio-event-item:hover .kometio-event-item__link {
+    text-decoration: underline;
+  }
+
+  .kometio-event-item__link:focus-visible {
+    outline: none;
+  }
+
+  .kometio-event-item:has(.kometio-event-item__link:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .kometio-event-item__when,
+  .kometio-event-item__where {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+
+  .kometio-event-item__where {
+    color: var(--muted-foreground);
+  }
+
+  .kometio-event-item__description {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .kometio-event-item--empty {
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

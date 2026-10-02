@@ -1,0 +1,51 @@
+---
+import type { AudioProps } from '@kometio/shared-types';
+
+type Props = AudioProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { media, title, loop, instanceClass } = Astro.props;
+
+// The player is named by its own caption when there is one, so a screen
+// reader announces "Episode 3, audio player" rather than just "audio".
+// It falls back to nothing rather than to a made-up label: an unnamed
+// player is still usable, a wrongly named one is misleading.
+---
+
+{
+  media && (
+    <figure class:list={['kometio-audio', instanceClass]}>
+      {title && <figcaption class="kometio-audio__title">{title}</figcaption>}
+      <audio
+        class="kometio-audio__player"
+        src={media.url}
+        controls
+        loop={loop}
+        preload="metadata"
+        aria-label={title || undefined}
+      />
+    </figure>
+  )
+}
+
+<style>
+  .kometio-audio {
+    margin: 0;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  .kometio-audio__title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .kometio-audio__player {
+    /* The native control bar has no intrinsic width and collapses to a
+       browser default otherwise — this is what makes it fill its column. */
+    width: 100%;
+  }
+</style>

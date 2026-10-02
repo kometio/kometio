@@ -1,0 +1,45 @@
+---
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+export interface Props {
+  /** The locale this page renders in — see EmptyContainerHint. */
+  locale?: string;
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+  editable?: boolean;
+  hasChildren?: boolean;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+}
+
+const { editable, hasChildren, instanceClass, locale, emptyChildLabel} = Astro.props;
+---
+
+<div class:list={['kometio-accordion', instanceClass]} data-kometio-editable-outline={editable && hasChildren ? '' : undefined}>
+  <slot />
+  <EmptyContainerHint
+  show={!hasChildren && Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>
+</div>
+
+<style>
+  .kometio-accordion {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+
+  /* Editor only, and only once it has content — when empty it already
+     shows its own dashed border through EmptyContainerHint, and a second
+     one here would be redundant. Without this, a container holding real
+     content loses every visible boundary while you work (user feedback
+     from live use, the same reason as Column.astro/Container.astro). */
+  .kometio-accordion[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

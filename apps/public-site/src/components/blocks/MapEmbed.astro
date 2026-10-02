@@ -1,0 +1,31 @@
+---
+import type { MapEmbedProps } from '@kometio/shared-types';
+import ConsentGatedEmbed from '../ConsentGatedEmbed.astro';
+import { Translator } from '@kometio/theme-runtime';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = MapEmbedProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { address, locale, instanceClass } = Astro.props;
+const src = address
+  ? `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`
+  : null;
+const i18n = new Translator(locale);
+---
+
+{
+  src ? (
+    <ConsentGatedEmbed
+      instanceClass={delegatedRootClass('kometio-map-embed', instanceClass)}
+      src={src}
+      title={i18n.t('mapEmbed.title', { address: address ?? '' })}
+      buttonLabel={i18n.t('mapEmbed.buttonLabel')}
+    />
+  ) : (
+    <p>{i18n.t('mapEmbed.empty')}</p>
+  )
+}

@@ -1,0 +1,40 @@
+---
+import type { LinkProps } from '@kometio/shared-types';
+import { resolveLinkHref } from '@kometio/theme-runtime';
+
+type Props = LinkProps & {
+	/** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+	instanceClass?: string | null;
+};
+
+const { label, linkType, page, url, instanceClass } = Astro.props;
+// `null` = nothing to link to, and then no href at all rather than an
+// empty one, which would reload the current page (ADR-0063).
+const href = resolveLinkHref({ linkType, page, url });
+---
+
+<a
+	class:list={['kometio-link', instanceClass]}
+	href={href ?? undefined}
+	data-kometio-field="label"
+>{label}</a>
+
+<style>
+	/* Every fallback is what a bare `<a>` already looked like, so an
+	   untouched Link is unchanged. Padding and a background are offered
+	   because a link styled into a pill is a real and common thing to
+	   want, and until now the only way to get one was to use a Button —
+	   which carries a different meaning. */
+	.kometio-link {
+		/* `var(--primary)`, NOT `inherit`: global.css gives a bare `<a>`
+		   `text-primary` and names this very block in its comment for why.
+		   A scoped rule here outranks that layer, so `inherit` would have
+		   quietly turned every existing Link the colour of its surrounding
+		   text. The fallback has to be what the block already rendered. */
+		color: var(--kometio-override-text, var(--link, var(--primary)));
+		background: var(--kometio-override-bg, transparent);
+		border-radius: var(--kometio-override-radius, 0);
+		padding: var(--kometio-override-padding-y, 0)
+			var(--kometio-override-padding-x, 0);
+	}
+</style>

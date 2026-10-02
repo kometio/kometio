@@ -1,0 +1,86 @@
+---
+import type { PullQuoteProps } from '@kometio/shared-types';
+import { resolveThemeBlockOverride } from '../../lib/resolve-theme-block-override';
+import QuoteCore from './Quote.astro';
+
+type Props = PullQuoteProps & {
+  themeName: string;
+  instanceClass?: string | null;
+};
+
+const { quote, author, role, align, themeName, instanceClass } = Astro.props;
+// The theme's Quote when it has one: a pull quote is the site's quote,
+// set larger — not a second design for a quotation.
+const Quote = resolveThemeBlockOverride('Quote', QuoteCore, themeName);
+---
+
+<figure
+  class:list={['kometio-pull-quote', `kometio-pull-quote--${align}`, instanceClass]}
+>
+  {/* Lucide's quote: a drawn mark rather than a typed “, whose shape
+      changes with the language (« » in much of Europe). */}
+  <svg
+    class="kometio-pull-quote__mark"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />
+    <path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />
+  </svg>
+  <Quote quote={quote} author={author} role={role} />
+</figure>
+
+<style>
+  /* The block's styling lives on this frame; the Quote inside starts from
+     its own defaults, or a padding set here would be applied twice. */
+  .kometio-pull-quote {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    border-block: 2px solid var(--primary);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    padding: var(--kometio-override-padding-y, 1.5rem)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-pull-quote > :global(*) {
+    --kometio-override-bg: initial;
+    --kometio-override-padding-x: initial;
+    --kometio-override-padding-y: initial;
+  }
+
+  .kometio-pull-quote--center {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .kometio-pull-quote__mark {
+    width: 2rem;
+    height: 2rem;
+    color: var(--primary);
+  }
+
+  /* Display text, like a heading: it follows the theme's heading face. */
+  .kometio-pull-quote :global(blockquote) {
+    margin: 0;
+    font-family: var(--kometio-heading-font);
+    letter-spacing: var(--kometio-heading-tracking);
+    font-size: clamp(1.25rem, 1rem + 1.25vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .kometio-pull-quote :global(cite) {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 0.9375rem;
+    font-style: normal;
+    color: var(--muted-foreground);
+  }
+</style>

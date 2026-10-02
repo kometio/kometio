@@ -1,0 +1,56 @@
+---
+import type { CalloutProps } from '@kometio/shared-types';
+
+type Props = CalloutProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { message, tone, instanceClass } = Astro.props;
+---
+
+<div
+  class:list={[`kometio-callout kometio-callout--${tone}`, instanceClass]}
+  role="note"
+>
+  <div class="kometio-callout__message kometio-rich-text" data-kometio-field="message" set:html={message} />
+</div>
+
+<style>
+  /* Every fallback is the value this block already had, so a callout
+     nobody has styled renders exactly as before (ADR-0022's rule for
+     every stylable block). The tone colours below stay where they are:
+     they are set by a modifier class, and an override reaches this
+     element with higher precedence, so setting one wins and setting
+     nothing leaves the tone alone. */
+  .kometio-callout {
+    padding: var(--kometio-override-padding-y, 1rem)
+      var(--kometio-override-padding-x, 1.25rem);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    border-left: 4px solid;
+  }
+  .kometio-callout__message {
+    margin: 0;
+  }
+  /*
+    The state colours (global.css), not the theme's --primary: an
+    info/warning/success signal has to stay recognizable across every
+    theme. A theme may restate them; it cannot turn a warning blue by
+    changing its brand colour.
+  */
+  .kometio-callout--info {
+    background: var(--kometio-info-surface);
+    border-color: var(--kometio-info);
+    color: var(--kometio-info-text);
+  }
+  .kometio-callout--warning {
+    background: var(--kometio-warning-surface);
+    border-color: var(--kometio-warning);
+    color: var(--kometio-warning-text);
+  }
+  .kometio-callout--success {
+    background: var(--kometio-success-surface);
+    border-color: var(--kometio-success);
+    color: var(--kometio-success-text);
+  }
+</style>

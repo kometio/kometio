@@ -1,0 +1,1 @@
+export const PAGE_GENERATION_DEPS = Symbol('PAGE_GENERATION_DEPS');

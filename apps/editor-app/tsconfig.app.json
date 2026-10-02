@@ -1,0 +1,69 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "jsx": "react-jsx",
+    "lib": ["dom"],
+    "resolveJsonModule": true,
+    "types": [
+      "node",
+      "@nx/react/typings/cssmodule.d.ts",
+      "@nx/react/typings/image.d.ts",
+      "vite/client"
+    ],
+    "rootDir": "src",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.tsx",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.js",
+    "src/**/*.test.js",
+    "src/**/*.spec.jsx",
+    "src/**/*.test.jsx",
+    "src/**/*.test-fixture.ts",
+    "vite.config.ts",
+    "vite.config.mts",
+    "vitest.config.ts",
+    "vitest.config.mts",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ],
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json"
+  ],
+  "references": [
+    {
+      "path": "../../libs/api-contracts/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/shared-types/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/rich-text-editor/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/rich-text/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/block-registry/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/testing/tsconfig.lib.json"
+    }
+  ]
+}

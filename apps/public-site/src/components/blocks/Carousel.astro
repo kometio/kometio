@@ -1,0 +1,57 @@
+---
+import type { CarouselProps } from '@kometio/shared-types';
+import CollectionLayout from '../CollectionLayout.astro';
+
+type Props = CarouselProps & {
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+  locale: string;
+};
+
+const { display, editable, hasChildren, instanceClass, locale } = Astro.props;
+---
+
+<CollectionLayout
+  blockClass="kometio-carousel"
+  display={display}
+  editable={editable}
+  hasChildren={hasChildren}
+  instanceClass={instanceClass}
+  locale={locale}
+>
+  <slot />
+</CollectionLayout>
+
+<script>
+  import { collectionBehaviors } from '../../lib/block-behaviors/collection';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, collectionBehaviors);
+</script>
+
+<style>
+  /*
+     `:global()` for the same reason as every other collection: the
+     element is rendered by CollectionLayout.astro, so Astro's scoped
+     styles never reach it.
+  */
+  :global(.kometio-carousel.kometio-collection--grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--kometio-override-gap, 1.5rem);
+  }
+  :global(.kometio-carousel) {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  /* Editor only, and only once it has content — the same pattern as
+     Column.astro/Container.astro. */
+  :global(.kometio-carousel[data-kometio-editable-outline]) {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

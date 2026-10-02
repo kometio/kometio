@@ -1,0 +1,85 @@
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# compiled output
+dist
+tmp
+out-tsc
+*.tsbuildinfo
+
+# dependencies
+node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+
+.claude/worktrees
+.claude/settings.local.json
+.claude/agents
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs
+
+test-output
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+
+# env
+.env
+!.env.example
+
+# astro
+apps/*/.astro
+
+# local media uploads (MEDIA_UPLOAD_DIR, see docs/adr/0013) — dev-only,
+# never the actual storage in a real deployment (that's a mounted volume).
+# No leading slash: relative-path resolution depends on which tool runs
+# the api (Jest vs nx serve), so this can land at the repo root or under
+# apps/api/ depending on cwd.
+uploads/
+
+# TanStack Router — generated from apps/*/src/routes/, never edited by hand
+apps/*/src/routeTree.gen.ts
+
+# Private planning documents, never versioned: the project plan, the
+# security reviews and the feature plans live here rather than in docs/.
+planning/
+themes/*/.astro
+
+# Local database snapshots (tools/dump-database.sh). Never committed: a
+# dump carries password hashes, sessions and form submissions people sent
+# in confidence. Copy them off this machine if they are meant to survive
+# it — gitignored is not backed up.
+_data/

@@ -1,0 +1,89 @@
+/**
+ * "classic" — the default theme every deployment ships with (docs/adr/0021):
+ * a general-purpose site for a small business, readable and trustworthy
+ * before it is anything else. One deep forest green for the actions,
+ * greys from the same slightly warm family, Manrope for everything, soft
+ * 12px corners. A site sets its own primary colour in the editor, so the
+ * green is where a site starts, not what it has to be.
+ *
+ * A theme package's own identity: design tokens only, no block markup —
+ * every block in apps/public-site/src/components/blocks reads these same
+ * tokens, so swapping this file (or the whole active theme via
+ * KOMETIO_THEME) restyles the entire site without touching a single block.
+ * Only this file's `:root` custom properties reach the page: PageLayout.astro
+ * re-emits them with `!important` over the fallbacks in
+ * apps/public-site/src/styles/global.css, which also owns the Tailwind
+ * `@theme inline` mapping from these names to utilities (docs/adr/0042).
+ */
+
+:root {
+  /* Manrope, a file of this theme (fonts.css). Headings are the same
+     family, heavier and tracked tight, rather than a second face. */
+  --font-sans-value: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --kometio-heading-weight: 750;
+  --kometio-heading-tracking: -0.03em;
+
+  /* Colour. Contrast measured on these values (WCAG AA is 4.5:1): text
+     16.9:1 on the page; muted text 6.5:1 on the page and 5.9:1 on a muted
+     surface (the neutral theme this replaced had 4.34:1 there, under AA);
+     white on the green 7.8:1, and the green as a link 7.8:1. */
+  --background: oklch(0.985 0.003 100);
+  --foreground: oklch(0.21 0.012 150);
+  --primary: oklch(0.42 0.08 160);
+  --primary-foreground: oklch(0.985 0.003 100);
+  --secondary: oklch(0.95 0.008 120);
+  --secondary-foreground: oklch(0.21 0.012 150);
+  --muted: oklch(0.95 0.008 120);
+  --muted-foreground: oklch(0.47 0.02 150);
+  --border: oklch(0.89 0.012 120);
+  --radius: 0.75rem;
+
+  /* The content column, its gutter, the link colours, the shadow scale
+     and the state colours are core's (apps/public-site/src/styles/
+     global.css): a theme states only what it changes, so the defaults
+     cannot drift apart between themes. A roomier site sets
+     `--kometio-content-width` here. */
+
+  /* The shadow scale (ADR-0047). It exists because a shadow written by
+     hand inside a block no longer answers to the theme: changing it would
+     mean going through the blocks one by one. Six steps plus an inset
+     one, the granularity designs actually arrive in. Tinted with the ink's
+     own green-grey rather than neutral black, so they sit on this page. */
+  --shadow-xs: 0 1px 2px 0 oklch(0.21 0.012 150 / 0.04);
+  --shadow-sm:
+    0 1px 3px 0 oklch(0.21 0.012 150 / 0.08),
+    0 1px 2px -1px oklch(0.21 0.012 150 / 0.08);
+  --shadow-md:
+    0 4px 8px -2px oklch(0.21 0.012 150 / 0.1),
+    0 2px 4px -2px oklch(0.21 0.012 150 / 0.06);
+  --shadow-lg:
+    0 12px 20px -4px oklch(0.21 0.012 150 / 0.1),
+    0 4px 8px -4px oklch(0.21 0.012 150 / 0.06);
+  --shadow-xl:
+    0 20px 32px -8px oklch(0.21 0.012 150 / 0.12),
+    0 8px 12px -6px oklch(0.21 0.012 150 / 0.08);
+  --shadow-2xl: 0 32px 64px -16px oklch(0.21 0.012 150 / 0.2);
+  --shadow-inner: inset 0 2px 4px 0 oklch(0.21 0.012 150 / 0.06);
+
+  /* A spacing scale lived here — `--space-2xs`..`--space-3xl` — and
+     nothing ever read it: not a block, not this theme's own CSS, not
+     the public site. It survived because a dead custom property costs
+     nothing at runtime and so nothing complains about it. Removed with
+     the type scale that sat beside it (that one was worse: it collided
+     with Tailwind's own names). A theme that wants a spacing rhythm
+     should add the values back the day something consumes them. */
+
+  /* The type scale used to live here as `--text-sm`..`--text-4xl` and
+     `--leading-*`. Those are Tailwind's OWN theme variables — the ones
+     every `text-lg`/`leading-tight` utility class reads — and
+     PageLayout emits a theme's `:root` with `!important`, so declaring
+     them here silently resized utilities inside Kometio's own components
+     (Hero's title, below the `sm` breakpoint) without this theme ever
+     asking to. Nothing read them as `var(--text-*)` either.
+
+     The fluid heading scale they were written for now lives in
+     `apps/public-site/src/styles/global.css` and applies to every
+     theme. A theme that wants a different one declares
+     `--kometio-h1-size` and friends here instead — same mechanism, own
+     namespace, no collision. */
+}

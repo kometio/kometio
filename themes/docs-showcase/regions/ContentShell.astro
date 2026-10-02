@@ -1,0 +1,251 @@
+---
+import type { PageTreeNodeDto } from '@kometio/theme-runtime';
+import { localePathFromAncestors } from '@kometio/theme-runtime';
+import type { ThemeContentShellProps } from '@kometio/theme-runtime';
+import { DictionaryTranslator } from '@kometio/theme-runtime';
+import themeLocales from '../locales.json';
+
+/**
+ * This theme's docs sidebar and prev/next pager. It replaces the wholesale
+ * copy of PageLayout.astro the theme used to carry: <html>, <head>, the
+ * header, the footer, consent, CSP and the preview bridge all went back to
+ * core, and what stays here is only what genuinely belongs to this theme.
+ *
+ * The tree fetch, the domain guard and the error handling are no longer
+ * here either: they arrive already resolved through `pageTree()`, which
+ * core memoizes per request and resolves to [] on failure.
+ */
+type Props = ThemeContentShellProps;
+
+const { locale, currentPath, pageTree, route } = Astro.props;
+
+// This theme's own UI copy (../locales.json): core's dictionary is not the
+// place for a theme's words, and a theme outside this repository could not
+// reach it anyway (docs/adr/0089).
+const strings = new DictionaryTranslator(locale, themeLocales);
+
+// --- Sidebar: a docs section is a 2-level hierarchy (root → category →
+// doc page), all categories shown simultaneously (like inertiajs.com's own
+// /docs), not just the current page's own siblings. Built from the flat
+// page tree (docs/adr/0021's own list-published-page-tree endpoint, added
+// for this theme) rather than `ancestors`: `ancestors` alone can't tell a
+// section's *root* page (which has no ancestors of its own, being
+// top-level) that it should still show its own category tree.
+interface SidebarNode {
+	slug: string;
+	title: string;
+	href: string;
+}
+interface SidebarGroup {
+	title: string;
+	items: SidebarNode[];
+}
+// `order` (drag-to-reorder in the editor's pages list) is the sort key to
+// use now — `createdAt` is only a tiebreak for pages that predate manual
+// ordering, all sharing the same default `order` value (see
+// list-published-page-tree.use-case.ts), same "order asc, createdAt asc"
+// semantics as the editor's own pages list.
+const byOrderThenCreatedAtAsc = (a: PageTreeNodeDto, b: PageTreeNodeDto) =>
+	a.order - b.order || a.createdAt.localeCompare(b.createdAt);
+const toSidebarNode = (node: PageTreeNodeDto): SidebarNode => ({
+	slug: node.slug,
+	title: node.title,
+	href: localePathFromAncestors(locale, node.ancestorSlugs, node.slug),
+});
+
+let sidebarGroups: SidebarGroup[] = [];
+// Only on a real page: on search and error routes there is no current node
+// to walk up from, so calling pageTree() would be a fetch for nothing. Core
+// memoizes it per request either way.
+const tree: PageTreeNodeDto[] = route === 'page' ? await pageTree() : [];
+
+// The whole pathname, not just the last segment: slug uniqueness is
+// sibling-scoped (docs/adr/0029), so two docs pages under DIFFERENT parents
+// may legitimately end in the same slug (two "overview"s). Matching on the
+// slug alone picked whichever came first in the flattened tree, highlighting
+// the wrong sidebar entry and pointing the pager at the wrong node's
+// siblings. A node's href, built the same way, is unique instead.
+const currentNode =
+	tree.find(
+		(node) =>
+			localePathFromAncestors(locale, node.ancestorSlugs, node.slug) ===
+			currentPath,
+	) ?? null;
+
+if (currentNode) {
+	// Walk up to the section root (parentId === null). That root may be the
+	// current page itself (visiting the section's landing page), a category,
+	// or a leaf page.
+	let docsRoot = currentNode;
+	const visited = new Set<string>([docsRoot.id]);
+	while (docsRoot.parentId) {
+		const parent = tree.find((node) => node.id === docsRoot.parentId);
+		if (!parent || visited.has(parent.id)) break;
+		docsRoot = parent;
+		visited.add(docsRoot.id);
+	}
+
+	const categories = tree
+		.filter((node) => node.parentId === docsRoot.id)
+		.sort(byOrderThenCreatedAtAsc);
+	sidebarGroups = categories
+		.map((category) => ({
+			title: category.title,
+			items: tree
+				.filter((node) => node.parentId === category.id)
+				.sort(byOrderThenCreatedAtAsc)
+				.map(toSidebarNode),
+		}))
+		.filter((group) => group.items.length > 0);
+}
+const hasSidebar = sidebarGroups.length > 0;
+const flatDocs = sidebarGroups.flatMap((group) => group.items);
+const currentDocIndex = flatDocs.findIndex((node) => node.href === currentPath);
+const prevDoc = currentDocIndex > 0 ? flatDocs[currentDocIndex - 1] : null;
+const nextDoc =
+	currentDocIndex >= 0 && currentDocIndex < flatDocs.length - 1
+		? flatDocs[currentDocIndex + 1]
+		: null;
+---
+
+{
+	hasSidebar ? (
+		<div class="kometio-docs-shell">
+			<nav class="kometio-docs-sidebar" aria-label={strings.t('sidebarLabel')}>
+				{sidebarGroups.map((group) => (
+					<div class="kometio-docs-sidebar__group">
+						<div class="kometio-docs-sidebar__title">{group.title}</div>
+						<ul class="kometio-docs-sidebar__list">
+							{group.items.map((item) => (
+								<li>
+									<a
+										href={item.href}
+										aria-current={item.href === currentPath ? 'page' : undefined}
+									>
+										{item.title}
+									</a>
+								</li>
+							))}
+						</ul>
+					</div>
+				))}
+			</nav>
+			<div class="kometio-docs-shell__content">
+				<slot />
+				<nav class="kometio-docs-pagination" aria-label={strings.t('paginationLabel')}>
+					{prevDoc ? (
+						<a class="kometio-docs-pagination__link kometio-docs-pagination__link--prev" href={prevDoc.href}>
+							<span class="kometio-docs-pagination__label">{strings.t('previous')}</span>
+							<span class="kometio-docs-pagination__title">{prevDoc.title}</span>
+						</a>
+					) : (
+						<span />
+					)}
+					{nextDoc && (
+						<a class="kometio-docs-pagination__link kometio-docs-pagination__link--next" href={nextDoc.href}>
+							<span class="kometio-docs-pagination__label">{strings.t('next')}</span>
+							<span class="kometio-docs-pagination__title">{nextDoc.title}</span>
+						</a>
+					)}
+				</nav>
+			</div>
+		</div>
+	) : (
+		<slot />
+	)
+}
+
+<style>
+	.kometio-docs-shell {
+		display: grid;
+		grid-template-columns: 16rem minmax(0, 1fr);
+		gap: 2.5rem;
+		max-width: 72rem;
+		margin: 0 auto;
+		/* No space on top: core puts --kometio-page-start-gap above the first
+		   block, and the sidebar lines up with it. */
+		padding: 0 1.5rem 2.5rem;
+	}
+	.kometio-docs-sidebar {
+		padding-top: var(--kometio-page-start-gap);
+	}
+	.kometio-docs-sidebar__group + .kometio-docs-sidebar__group {
+		margin-top: 1.5rem;
+	}
+	.kometio-docs-sidebar__title {
+		font-weight: 700;
+		font-size: 0.9375rem;
+		margin-bottom: 0.75rem;
+	}
+	.kometio-docs-sidebar__list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.125rem;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		border-left: 2px solid var(--border);
+	}
+	.kometio-docs-sidebar__list a {
+		display: block;
+		padding: 0.375rem 0.875rem;
+		margin-left: -2px;
+		border-left: 2px solid transparent;
+		font-size: 0.875rem;
+		color: var(--muted-foreground);
+		text-decoration: none;
+	}
+	.kometio-docs-sidebar__list a:hover {
+		color: var(--foreground);
+	}
+	.kometio-docs-sidebar__list a[aria-current='page'] {
+		border-left-color: var(--primary);
+		color: var(--primary);
+		font-weight: 600;
+	}
+	.kometio-docs-pagination {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 3rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--border);
+	}
+	.kometio-docs-pagination__link {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		max-width: 45%;
+		text-decoration: none;
+		padding: 0.75rem 1rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--border);
+	}
+	.kometio-docs-pagination__link:hover {
+		border-color: var(--primary);
+	}
+	.kometio-docs-pagination__link--next {
+		margin-left: auto;
+		text-align: right;
+		align-items: flex-end;
+	}
+	.kometio-docs-pagination__label {
+		font-size: 0.75rem;
+		color: var(--muted-foreground);
+	}
+	.kometio-docs-pagination__title {
+		font-weight: 600;
+		color: var(--primary);
+	}
+	@media (max-width: 800px) {
+		/* Stacked, the first block's own start gap already separates it
+		   from the sidebar above. */
+		/* minmax(0, 1fr), as on a wide screen: a bare 1fr is
+		   minmax(auto, 1fr), and the longest line of a code block made
+		   the column — and the whole page — 919px wide on a 390px phone. */
+		.kometio-docs-shell {
+			grid-template-columns: minmax(0, 1fr);
+			row-gap: 0;
+		}
+	}
+</style>

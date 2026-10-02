@@ -1,0 +1,130 @@
+---
+import type { ShippingReturnsProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = ShippingReturnsProps & {
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const props = Astro.props;
+const i18n = new Translator(props.locale);
+
+/*
+ * Lucide's truck, rotate-ccw and life-buoy, inlined: these are part of the
+ * block's own design, like FileDownload's file icon, not a picked icon a
+ * theme's icon set would be asked for.
+ */
+const SECTIONS = [
+  {
+    key: 'shipping',
+    title: props.shippingTitle,
+    text: props.shippingText,
+    icon: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" /><path d="M15 18H9" /><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" /><circle cx="17" cy="18" r="2" /><circle cx="7" cy="18" r="2" />',
+  },
+  {
+    key: 'returns',
+    title: props.returnsTitle,
+    text: props.returnsText,
+    icon: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />',
+  },
+  {
+    key: 'support',
+    title: props.supportTitle,
+    text: props.supportText,
+    icon: '<circle cx="12" cy="12" r="10" /><path d="m4.93 4.93 4.24 4.24" /><path d="m14.83 9.17 4.24-4.24" /><path d="m14.83 14.83 4.24 4.24" /><path d="m9.17 14.83-4.24 4.24" /><circle cx="12" cy="12" r="4" />',
+  },
+] as const;
+
+// A section with neither a title nor a text is one this shop has nothing
+// to say about, and is not drawn — no heading over an empty space.
+const filled = SECTIONS.filter(
+  (section) => section.title.trim() || section.text.trim(),
+);
+---
+
+{
+  filled.length > 0 ? (
+    <div class:list={['kometio-shipping-returns', props.instanceClass]}>
+      {filled.map((section) => (
+        <section class="kometio-shipping-returns__section">
+          <svg
+            class="kometio-shipping-returns__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            set:html={section.icon}
+          />
+          {section.title && (
+            <h3
+              class="kometio-shipping-returns__title"
+              data-kometio-field={`${section.key}Title`}
+            >
+              {section.title}
+            </h3>
+          )}
+          {section.text && (
+            <div
+              class="kometio-shipping-returns__text kometio-rich-text"
+              data-kometio-field={`${section.key}Text`}
+              set:html={section.text}
+            />
+          )}
+        </section>
+      ))}
+    </div>
+  ) : (
+    props.editable && (
+      <p class="kometio-shipping-returns kometio-shipping-returns--empty">
+        {i18n.t('shippingReturns.empty')}
+      </p>
+    )
+  )
+}
+
+<style>
+  .kometio-shipping-returns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+    gap: var(--kometio-override-gap, 1.5rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-shipping-returns__section {
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .kometio-shipping-returns__icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--primary);
+  }
+
+  .kometio-shipping-returns__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .kometio-shipping-returns__text {
+    font-size: 0.9375rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-shipping-returns--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

@@ -1,0 +1,108 @@
+---
+import type { CollectionDisplay } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import EmptyContainerHint from './EmptyContainerHint.astro';
+
+/**
+ * The one arrangement engine every collection block uses (ADR-0052).
+ *
+ * Before this, `Testimonials` and `ImageSlider` each carried their own
+ * track, their own nav buttons and their own near-identical behaviour
+ * file — the two differed by a class name and by whether they scrolled a
+ * card width or a track width. Every other collection was a grid with no
+ * way to be anything else.
+ *
+ * The block keeps its own class and its own look; what it hands over is
+ * the ARRANGEMENT: how its children are laid out, and the controls that
+ * come with the arrangement it is in.
+ */
+interface Props {
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+  /** The block's own class, e.g. `kometio-team` — its styling still hangs off it. */
+  blockClass: string;
+  display: CollectionDisplay;
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+  locale: string;
+  /**
+   * How far one press of prev/next moves. `item` steps by the width of a
+   * single child, which is what a carousel of cards should do; `track`
+   * steps by the whole visible width, which is what a one-at-a-time
+   * slider should do. The two existing sliders differed on exactly this
+   * and nothing else.
+   */
+  step?: 'item' | 'track';
+}
+
+const {
+  blockClass,
+  display,
+  editable,
+  hasChildren,
+  instanceClass,
+  locale,
+  step = 'item',
+  emptyChildLabel,
+} = Astro.props;
+const i18n = new Translator(locale);
+// Nav buttons belong to the scrolling arrangements, and only once there
+// is something to scroll.
+const scrollable = display !== 'grid';
+const showNav = scrollable && hasChildren;
+---
+
+<div
+  class:list={[
+    blockClass,
+    'kometio-collection',
+    `kometio-collection--${display}`,
+    instanceClass,
+  ]}
+  data-kometio-collection-step={scrollable ? step : undefined}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  {
+    /*
+      The track exists ONLY for the scrolling arrangements. A grid lays
+      out its own children, so wrapping them in a track would give it a
+      single item to place — measured on the built page as one 976px
+      column and three empty ones, which is exactly what that mistake
+      looks like.
+    */
+  }
+  {hasChildren && !scrollable && <slot />}
+  {
+    hasChildren && scrollable && (
+      <div class="kometio-collection__track">
+        <slot />
+      </div>
+    )
+  }
+  {!hasChildren && <EmptyContainerHint
+  show={Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>}
+  {
+    showNav && (
+      <>
+        <button
+          type="button"
+          class="kometio-collection__nav kometio-collection__nav--prev"
+          aria-label={i18n.t('collection.prev')}
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          class="kometio-collection__nav kometio-collection__nav--next"
+          aria-label={i18n.t('collection.next')}
+        >
+          ›
+        </button>
+      </>
+    )
+  }
+</div>

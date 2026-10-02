@@ -1,0 +1,35 @@
+---
+import type { SubPagesProps } from '@kometio/shared-types';
+import PageGrid from './PageGrid.astro';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = SubPagesProps & {
+  instanceClass?: string | null;
+  locale?: string;
+};
+
+const { layout, items, instanceClass, locale } = Astro.props;
+
+// The same list and cards a page grid draws, delegated rather than copied
+// (RelatedPages does the same, for the same reason). The cap was applied
+// when the children were chosen, and a filter set on some other list on
+// the page has nothing to say about this one.
+---
+
+{
+  items.length > 0 && (
+    <PageGrid
+      termId={null}
+      authorId={null}
+      layout={layout}
+      order="title"
+      limit={0}
+      perPage={0}
+      emptyText=""
+      items={items}
+      filterable={false}
+      instanceClass={delegatedRootClass('kometio-sub-pages', instanceClass)}
+      locale={locale}
+    />
+  )
+}

@@ -1,0 +1,116 @@
+---
+import type { Block, ProductReviewsProps } from '@kometio/shared-types';
+import { richTextToPlainText } from '@kometio/shared-types';
+import CollectionLayout from '../CollectionLayout.astro';
+
+export type Props = ProductReviewsProps & {
+  /** The reviews, read off the block's own children for the structured data (Faq.astro's reason). */
+  items?: Block[];
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+  emptyChildLabel?: string | null;
+  locale: string;
+};
+
+const {
+  display,
+  structuredData,
+  productName,
+  items = [],
+  editable,
+  hasChildren,
+  instanceClass,
+  emptyChildLabel,
+  locale,
+} = Astro.props;
+
+/*
+ * schema.org Product with its reviews and their average — only when the
+ * author turned it on AND named the product, and only from reviews that
+ * say who wrote them: a review with no author is one Google rejects, and
+ * an average over reviews nobody signed is not a rating anyone gave.
+ */
+const reviews = items
+  .filter((item) => item.type === 'ProductReview')
+  .map((item) => ({
+    author: String(item.props['author'] ?? '').trim(),
+    body: richTextToPlainText(String(item.props['quote'] ?? '')).trim(),
+    rating: Number(item.props['rating']),
+  }))
+  .filter(
+    (review) =>
+      review.author && Number.isFinite(review.rating) && review.rating >= 1,
+  );
+const average =
+  reviews.length > 0
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    : 0;
+const jsonLd =
+  structuredData && productName.trim() && reviews.length > 0
+    ? JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: productName.trim(),
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: average.toFixed(1),
+          bestRating: 5,
+          reviewCount: reviews.length,
+        },
+        review: reviews.map((review) => ({
+          '@type': 'Review',
+          author: { '@type': 'Person', name: review.author },
+          reviewRating: {
+            '@type': 'Rating',
+            ratingValue: review.rating,
+            bestRating: 5,
+          },
+          ...(review.body ? { reviewBody: review.body } : {}),
+        })),
+      }).replace(/</g, '\\u003c')
+    : null;
+---
+
+<CollectionLayout
+  blockClass="kometio-product-reviews"
+  display={display}
+  editable={editable}
+  hasChildren={hasChildren}
+  instanceClass={instanceClass}
+  emptyChildLabel={emptyChildLabel}
+  locale={locale}
+  step="item"
+>
+  <slot />
+</CollectionLayout>
+{jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
+
+<script>
+  import { collectionBehaviors } from '../../lib/block-behaviors/collection';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, collectionBehaviors);
+</script>
+
+<style>
+  :global(.kometio-product-reviews) {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  :global(.kometio-product-reviews.kometio-collection--grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: var(--kometio-override-gap, 1.5rem);
+  }
+  :global(.kometio-product-reviews .kometio-collection__track) {
+    padding-block: 0.5rem;
+  }
+  :global(.kometio-product-reviews[data-kometio-editable-outline]) {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

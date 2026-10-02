@@ -1,0 +1,110 @@
+---
+import type { BreadcrumbProps } from '@kometio/shared-types';
+import type { PublishedPageAncestor } from '@kometio/api-contracts';
+import { localePath, localePathFromAncestors } from '@kometio/theme-runtime';
+import { Translator } from '@kometio/theme-runtime';
+
+interface Props extends BreadcrumbProps {
+  locale: string;
+  ancestors: PublishedPageAncestor[];
+  currentPageTitle: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+}
+
+const {
+  homeLabel,
+  visibility,
+  locale,
+  ancestors,
+  currentPageTitle,
+  instanceClass,
+} = Astro.props;
+
+interface Crumb {
+  title: string;
+  href: string | null;
+}
+
+// Each ancestor's own href is built from the slugs of the ancestors before
+// it in the chain (root-to-parent order) — the same nesting rule the
+// catch-all route uses to compute a page's own canonical URL
+// (locale-path.ts). The current page itself is never a link.
+const crumbs: Crumb[] = [
+  { title: homeLabel, href: localePath(locale, 'home') },
+  ...ancestors.map((ancestor, index) => ({
+    title: ancestor.title,
+    href: localePathFromAncestors(
+      locale,
+      ancestors.slice(0, index).map((a) => a.slug),
+      ancestor.slug,
+    ),
+  })),
+  { title: currentPageTitle, href: null },
+];
+const i18n = new Translator(locale);
+---
+
+<nav
+  class:list={[
+    'kometio-breadcrumb',
+    { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+    { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+    instanceClass,
+  ]}
+  aria-label={i18n.t('breadcrumb.label')}
+>
+  <ol>
+    {
+      crumbs.map((crumb, index) => (
+        <li>
+          {crumb.href ? (
+            <a href={crumb.href} data-kometio-field={index === 0 ? 'homeLabel' : undefined}>
+              {crumb.title}
+            </a>
+          ) : (
+            <span aria-current="page">{crumb.title}</span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  /* Every fallback is what this block already rendered, so a breadcrumb
+     nobody has styled is unchanged. */
+  .kometio-breadcrumb {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  .kometio-breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--kometio-override-gap, 0.4rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+  .kometio-breadcrumb li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .kometio-breadcrumb li:not(:first-child)::before {
+    content: '›';
+    color: var(--muted-foreground);
+  }
+  .kometio-breadcrumb a {
+    color: inherit;
+    text-decoration: underline;
+  }
+  .kometio-breadcrumb span[aria-current='page'] {
+    color: var(--muted-foreground);
+  }
+</style>

@@ -1,0 +1,233 @@
+---
+import type { ProductCardProps } from '@kometio/shared-types';
+import { richTextToPlainText } from '@kometio/shared-types';
+import { resolveLinkHref, Translator } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+import { GRID_ITEM_SIZES } from '../../lib/image-sizes';
+import Price from '../Price.astro';
+import { absoluteSchemaUrl } from '../../lib/schema-org';
+
+type Props = ProductCardProps & {
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const {
+  image,
+  alt,
+  name,
+  description,
+  price,
+  compareAtPrice,
+  currency,
+  badge,
+  linkType,
+  page,
+  url,
+  structuredData,
+  locale,
+  editable,
+  instanceClass,
+} = Astro.props;
+const i18n = new Translator(locale);
+const href = resolveLinkHref({ linkType, page, url });
+const isEmpty = !name.trim() && !image && price === null;
+
+
+/*
+ * schema.org Product with its Offer — what lets a search engine show the
+ * price under the result. Only with a name and a price: a Product without
+ * an offer is one Google reports as an error, and a card without a price
+ * is not selling anything yet. `<` escaped for Faq.astro's reason.
+ */
+const jsonLd =
+  structuredData && name.trim() && price !== null
+    ? JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: name.trim(),
+        ...(description.trim()
+          ? { description: richTextToPlainText(description).trim() }
+          : {}),
+        ...(absoluteSchemaUrl(image?.url, Astro.url.origin)
+          ? { image: absoluteSchemaUrl(image?.url, Astro.url.origin) }
+          : {}),
+        offers: {
+          '@type': 'Offer',
+          price: price.toFixed(2),
+          priceCurrency: currency,
+          ...(absoluteSchemaUrl(href, Astro.url.origin)
+            ? { url: absoluteSchemaUrl(href, Astro.url.origin) }
+            : {}),
+        },
+      }).replace(/</g, '\\u003c')
+    : null;
+---
+
+{
+  isEmpty ? (
+    editable && (
+      <p class="kometio-product-card kometio-product-card--empty">
+        {i18n.t('productCard.empty')}
+      </p>
+    )
+  ) : (
+    <article
+      class:list={[
+        'kometio-product-card',
+        // In the canvas the card has to stay clickable part by part, to
+        // select it and edit its words: no link stretched over it there.
+        { 'kometio-product-card--editable': editable },
+        instanceClass,
+      ]}
+    >
+      {image && (
+        <div class="kometio-product-card__media">
+          <OptimizedImage
+            media={image}
+            alt={alt}
+            class="kometio-product-card__image"
+            sizes={GRID_ITEM_SIZES}
+          />
+          {badge && (
+            <span class="kometio-product-card__badge" data-kometio-field="badge">
+              {badge}
+            </span>
+          )}
+        </div>
+      )}
+      <div class="kometio-product-card__body">
+        {!image && badge && (
+          <span class="kometio-product-card__badge kometio-product-card__badge--inline">
+            {badge}
+          </span>
+        )}
+        <h3 class="kometio-product-card__name">
+          {href ? (
+            <a class="kometio-product-card__link" href={href} data-kometio-field="name">
+              {name}
+            </a>
+          ) : (
+            <span data-kometio-field="name">{name}</span>
+          )}
+        </h3>
+        {description && (
+          <p class="kometio-product-card__description">{description}</p>
+        )}
+        <Price
+          price={price}
+          compareAtPrice={compareAtPrice}
+          currency={currency}
+          locale={locale}
+        />
+      </div>
+      {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
+    </article>
+  )
+}
+
+<style>
+  .kometio-product-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    border-width: var(--kometio-override-border-width, 1px);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+  }
+
+  .kometio-product-card__media {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background: var(--muted);
+  }
+
+  /* :global() because OptimizedImage renders the <img> (see Image.astro). */
+  :global(.kometio-product-card__image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .kometio-product-card__badge {
+    position: absolute;
+    inset-block-start: 0.75rem;
+    inset-inline-start: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .kometio-product-card__badge--inline {
+    position: static;
+    justify-self: start;
+  }
+
+  .kometio-product-card__body {
+    display: grid;
+    gap: 0.5rem;
+    padding: var(--kometio-override-padding-y, 1rem)
+      var(--kometio-override-padding-x, 1rem);
+  }
+
+  .kometio-product-card__name {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-product-card__link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* The whole card is the link, and the name is still the only thing a
+     screen reader announces as one — not a card-sized link reading out
+     the description and the price as its name. */
+  .kometio-product-card__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .kometio-product-card--editable .kometio-product-card__link::after {
+    content: none;
+  }
+
+  .kometio-product-card:hover .kometio-product-card__link {
+    text-decoration: underline;
+  }
+
+  .kometio-product-card__link:focus-visible {
+    outline: none;
+  }
+
+  .kometio-product-card:has(.kometio-product-card__link:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .kometio-product-card__description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-product-card--empty {
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

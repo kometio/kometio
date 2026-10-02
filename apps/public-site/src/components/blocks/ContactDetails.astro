@@ -1,0 +1,129 @@
+---
+import type { ContactDetailsProps } from '@kometio/shared-types';
+import type { PublishedSite } from '@kometio/api-contracts';
+import { formatBusinessAddressLines } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import { mapSearchHref, telHref } from '../../lib/contact-links';
+
+type Props = ContactDetailsProps & {
+  site: PublishedSite;
+  locale?: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const {
+  showAddress,
+  showPhone,
+  showEmail,
+  showMapLink,
+  site,
+  locale,
+  editable,
+  instanceClass,
+} =
+  Astro.props;
+const i18n = new Translator(locale ?? '');
+
+// The lines you would write on an envelope, in the page's own language —
+// the country comes out of the stored ISO code (docs/adr/0081), so the
+// Italian page says "Italia" and the English one says "Italy".
+const addressLines =
+  showAddress && site.businessAddress
+    ? formatBusinessAddressLines(site.businessAddress, locale ?? '')
+    : [];
+const address = addressLines.join(', ');
+const phone = showPhone ? site.businessPhone?.trim() : '';
+const email = showEmail ? site.businessEmail?.trim() : '';
+const phoneHref = phone ? telHref(phone) : '';
+const mapHref = address ? mapSearchHref(address) : '';
+---
+
+{
+  address || phone || email ? (
+    <address class:list={['kometio-contact-details', instanceClass]}>
+      {address && (
+        <p class="kometio-contact-details__row">
+          <span class="kometio-contact-details__label">{i18n.t('contactDetails.address')}</span>
+          <span class="kometio-contact-details__value">
+            {addressLines.map((line, index) => (
+              <>
+                {index > 0 && <br />}
+                {line}
+              </>
+            ))}
+          </span>
+          {showMapLink && (
+            <a class="kometio-contact-details__map" href={mapHref} rel="noopener" target="_blank">
+              {i18n.t('contactDetails.openMap')}
+            </a>
+          )}
+        </p>
+      )}
+      {phone && (
+        <p class="kometio-contact-details__row">
+          <span class="kometio-contact-details__label">{i18n.t('contactDetails.phone')}</span>
+          <a class="kometio-contact-details__value" href={phoneHref}>
+            {phone}
+          </a>
+        </p>
+      )}
+      {email && (
+        <p class="kometio-contact-details__row">
+          <span class="kometio-contact-details__label">{i18n.t('contactDetails.email')}</span>
+          <a class="kometio-contact-details__value" href={`mailto:${email}`}>
+            {email}
+          </a>
+        </p>
+      )}
+    </address>
+  ) : (
+    // Only in the editor: on the site, a block with nothing to show shows
+    // nothing, rather than a heading over an empty address.
+    editable && (
+      <p class="kometio-contact-details kometio-contact-details--empty">
+        {i18n.t('contactDetails.empty')}
+      </p>
+    )
+  )
+}
+
+<style>
+  .kometio-contact-details {
+    display: grid;
+    gap: var(--kometio-override-gap, 0.5rem);
+    margin: 0;
+    font-style: normal;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-contact-details__row {
+    display: grid;
+    gap: 0.125rem;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .kometio-contact-details__label {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-contact-details__value {
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-contact-details__map {
+    font-size: 0.875rem;
+    justify-self: start;
+  }
+
+  .kometio-contact-details--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

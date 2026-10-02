@@ -1,0 +1,138 @@
+---
+import type { ButtonProps } from '@kometio/shared-types';
+import { resolveLinkHref } from '@kometio/theme-runtime';
+
+type Props = ButtonProps & {
+  /** Resolved by BlockRenderer from the `icon` prop (docs/adr/0023). */
+  iconSvg?: string | null;
+  instanceClass?: string | null;
+  variantClass?: string | null;
+};
+
+const {
+  label,
+  linkType,
+  page,
+  url,
+  size,
+  fullWidth,
+  openInNewTab,
+  iconSvg,
+  instanceClass,
+  variantClass,
+} = Astro.props;
+// `null` when the block points nowhere — an author who chose "Site
+// page" and picked none, or a page with no translation in this locale.
+// The attribute is then left off entirely rather than set to the empty
+// string, which is a link back to the current page (ADR-0063).
+const href = resolveLinkHref({ linkType, page, url });
+
+// Neither class is built here: `variantClass` and `instanceClass` are
+// both computed in BlockRenderer.astro, from `Block.variant` and
+// `Block.id`. This component only has to put them on its root element —
+// which is also the contract a theme's own Button override has to keep
+// (see themes/README.md).
+//
+// `rel` travels with `target` and is not optional (ADR-0056): a link that
+// opens a new tab gives the opened page a handle on this one through
+// `window.opener` unless `noopener` says otherwise.
+---
+
+<a
+  class:list={[
+    'kometio-button',
+    `kometio-button--${size}`,
+    { 'kometio-button--full': fullWidth },
+    variantClass,
+    instanceClass,
+  ]}
+  href={href ?? undefined}
+  target={openInNewTab ? '_blank' : undefined}
+  rel={openInNewTab ? 'noopener' : undefined}
+>
+  {/* `aria-hidden`: the label beside it already says what the button
+      does, and announcing the icon as well repeats it. */}
+  {iconSvg && (
+    <span class="kometio-button__icon" aria-hidden="true" set:html={iconSvg} />
+  )}
+  <span data-kometio-field="label">{label}</span>
+</a>
+
+<style>
+  .kometio-button {
+    /* `inline-flex`, not `inline-block`: an icon and a label have to line
+       up on their centres, which block layout cannot do. With no icon the
+       result is identical to what it was. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--kometio-override-gap, 0.5em);
+    padding: var(--kometio-override-padding-y, var(--kometio-button-py))
+      var(--kometio-override-padding-x, var(--kometio-button-px));
+    font-size: var(--kometio-button-size, 1rem);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    background: var(--kometio-override-bg, var(--primary));
+    color: var(--kometio-override-text, var(--primary-foreground));
+    text-decoration: none;
+    border: 1px solid var(--kometio-override-bg, var(--primary));
+    /* The medium size is exactly the padding this block had before sizes
+       existed, so an existing button is unchanged. */
+    --kometio-button-py: 0.5rem;
+    --kometio-button-px: 1.25rem;
+  }
+  .kometio-button--sm {
+    --kometio-button-py: 0.3rem;
+    --kometio-button-px: 0.85rem;
+    --kometio-button-size: 0.875rem;
+  }
+  .kometio-button--lg {
+    --kometio-button-py: 0.75rem;
+    --kometio-button-px: 1.75rem;
+    --kometio-button-size: 1.125rem;
+  }
+  /* `flex`, so it actually fills the line rather than shrink-wrapping —
+     `width: 100%` on an inline-flex element would not. */
+  .kometio-button--full {
+    display: flex;
+    width: 100%;
+  }
+  .kometio-button__icon {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+  }
+  .kometio-button__icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  /*
+   * The looks a button can wear (ADR-0056). `secondary` is unchanged;
+   * the three new ones are the ones every design system ships, and each
+   * keeps reading as a button — `link` is the exception that deliberately
+   * does not, which is the point of it.
+   */
+  .kometio-button--secondary {
+    background: transparent;
+    color: var(--kometio-override-bg, var(--primary));
+  }
+  .kometio-button--outline {
+    background: transparent;
+    color: var(--kometio-override-bg, var(--primary));
+    border-color: var(--kometio-override-bg, var(--primary));
+  }
+  .kometio-button--ghost {
+    background: transparent;
+    color: var(--kometio-override-bg, var(--primary));
+    border-color: transparent;
+  }
+  .kometio-button--link {
+    background: transparent;
+    color: var(--kometio-override-bg, var(--primary));
+    border-color: transparent;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+</style>

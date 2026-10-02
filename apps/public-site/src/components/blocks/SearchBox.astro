@@ -1,0 +1,50 @@
+---
+import type { SearchBoxProps } from '@kometio/shared-types';
+import { localePath } from '@kometio/theme-runtime';
+import { Translator } from '@kometio/theme-runtime';
+
+interface Props extends SearchBoxProps {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+
+  locale: string;
+}
+
+const { placeholder, visibility, locale, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+---
+
+<form
+  method="get"
+  action={localePath(locale, 'search')}
+  class:list={[
+    'kometio-search-box',
+    { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+    { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+    instanceClass,
+  ]}
+  role="search"
+>
+  <input type="search" name="q" placeholder={placeholder} aria-label={placeholder} />
+  <button type="submit">{i18n.t('searchBox.submit')}</button>
+</form>
+
+<style>
+  /* Fallbacks are what this block already rendered. */
+  .kometio-search-box {
+    display: flex;
+    gap: var(--kometio-override-gap, 0.5rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  .kometio-search-box input {
+    padding: 0.4rem 0.6rem;
+  }
+  .kometio-search-box button {
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+  }
+</style>

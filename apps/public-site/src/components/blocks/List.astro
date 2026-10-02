@@ -1,0 +1,118 @@
+---
+import { parseMediaIcon, type ListProps } from '@kometio/shared-types';
+import { siteIconImageUrl } from '../../lib/media-icon-url';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = ListProps & {
+  /** Resolved by BlockRenderer from the `icon` prop (docs/adr/0023). */
+  iconSvg?: string | null;
+  locale?: string;
+  emptyChildLabel?: string | null;
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+};
+
+const { marker, icon, iconSvg, locale, emptyChildLabel, editable, hasChildren, instanceClass } =
+  Astro.props;
+
+// A numbered list is an <ol>, so a screen reader says "item 2 of 5"; the
+// other markers are decoration on a <ul>.
+const Tag = marker === 'number' ? 'ol' : 'ul';
+
+// The icon travels to the items as a CSS mask on a custom property: an
+// item is its own block and cannot see its list's props, but it inherits
+// its list's custom properties. Painted with `currentColor`, so the text
+// colour override colours the marker too.
+const iconStyle =
+  marker === 'icon' && iconSvg
+    ? `--kometio-list-icon: url("data:image/svg+xml,${encodeURIComponent(iconSvg)}")`
+    : undefined;
+
+// An image from the media library cannot go through that mask: an SVG
+// used as an image never loads what it points at, so the marker would be
+// empty. It is shown as a background instead — as it is, not in the text
+// colour, which is what a picture is. The address is the site's own
+// image endpoint (see media-icon-url.ts), with the media URL encoded
+// into its query: nothing in it can end the CSS string early.
+const mediaIcon = marker === 'icon' && icon ? parseMediaIcon(icon) : null;
+const markerStyle = mediaIcon
+  ? `--kometio-list-icon-image: url("${siteIconImageUrl(mediaIcon.url)}")`
+  : iconStyle;
+---
+
+<Tag
+  class:list={[
+    'kometio-list',
+    `kometio-list--${marker}`,
+    mediaIcon && 'kometio-list--icon-image',
+    instanceClass,
+  ]}
+  style={markerStyle}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  <slot />
+  <EmptyContainerHint
+    show={!hasChildren && Boolean(editable)}
+    locale={locale}
+    childLabel={emptyChildLabel}
+  />
+</Tag>
+
+<style>
+  .kometio-list {
+    display: grid;
+    gap: var(--kometio-override-gap, 0.5rem);
+    margin: 0;
+    /* Logical, so the markers sit on the right in a right-to-left page. */
+    padding-inline-start: 1.5rem;
+    padding-block: var(--kometio-override-padding-y, 0);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+  }
+
+  /* Stated, not inherited: the global reset takes every list's markers
+     away, so "bullets" and "numbers" left to the browser show nothing. */
+  .kometio-list--bullet {
+    list-style: disc;
+  }
+
+  .kometio-list--number {
+    list-style: decimal;
+  }
+
+  .kometio-list--check,
+  .kometio-list--icon {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+
+  .kometio-list--check :global(.kometio-list-item),
+  .kometio-list--icon :global(.kometio-list-item) {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    column-gap: 0.5rem;
+    align-items: baseline;
+  }
+
+  .kometio-list--check :global(.kometio-list-item)::before {
+    content: '✓';
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .kometio-list--icon :global(.kometio-list-item)::before {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    align-self: center;
+    background: currentColor;
+    mask: var(--kometio-list-icon) center / contain no-repeat;
+  }
+
+  .kometio-list--icon-image :global(.kometio-list-item)::before {
+    background: var(--kometio-list-icon-image) center / contain no-repeat;
+    mask: none;
+  }
+</style>

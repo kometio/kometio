@@ -1,0 +1,142 @@
+---
+import type { NewsletterSignupProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = NewsletterSignupProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { title, buttonLabel, locale, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+
+// Simple presence flags, not keyed by a block id the way Form.astro keys
+// by form.id — this block has no backing entity (docs/adr/0015's
+// deliberately-decoupled design) and in practice a page has at most one
+// newsletter signup, so there's nothing to disambiguate between.
+const subscribed = Astro.url.searchParams.has('newsletterSubscribed');
+const errored = Astro.url.searchParams.has('newsletterError');
+
+const redirectParams = new URLSearchParams(Astro.url.search);
+redirectParams.delete('newsletterSubscribed');
+redirectParams.delete('newsletterError');
+const redirectTo =
+  Astro.url.pathname + (redirectParams.size > 0 ? `?${redirectParams}` : '');
+
+// Same reasoning as Form.astro's own turnstileSiteKey.
+const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
+---
+
+<div class:list={['kometio-newsletter-signup', instanceClass]}>
+  {
+    subscribed && (
+      <p class="kometio-newsletter-signup__status kometio-newsletter-signup__status--success">
+        {i18n.t('newsletterSignup.submitSuccess')}
+      </p>
+    )
+  }
+  {
+    errored && (
+      <p class="kometio-newsletter-signup__status kometio-newsletter-signup__status--error">
+        {i18n.t('newsletterSignup.submitError')}
+      </p>
+    )
+  }
+  {
+    !subscribed && (
+      <form method="POST" action="/api/newsletter/subscribe">
+        <input type="hidden" name="_redirectTo" value={redirectTo} />
+        <p class="kometio-newsletter-signup__title" data-kometio-field="title">{title}</p>
+        {/* Honeypot: same reasoning as Form.astro's own. */}
+        <div class="kometio-honeypot" aria-hidden="true">
+          <label for="newsletter-hp">{i18n.t('form.honeypotLabel')}</label>
+          <input
+            type="text"
+            id="newsletter-hp"
+            name="_honeypot"
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </div>
+        <div class="kometio-newsletter-signup__row">
+          <input
+            type="email"
+            name="email"
+            placeholder={i18n.t('newsletterSignup.emailPlaceholder')}
+            required
+          />
+          <button type="submit" data-kometio-field="buttonLabel">{buttonLabel}</button>
+        </div>
+        {
+          turnstileSiteKey && (
+            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} />
+          )
+        }
+      </form>
+    )
+  }
+</div>
+
+<script>
+  // Turnstile rendered explicitly, not via its own auto-scan — see
+  // block-behaviors/turnstile.ts for why (and for the same reasoning
+  // Form.astro's own widget uses).
+  import { turnstileBehaviors } from '../../lib/block-behaviors/turnstile';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, turnstileBehaviors);
+</script>
+
+<style>
+  /* `max-width` was a hardcoded 24rem, so this block could never fill a
+     wide section — the most common complaint a fixed width causes.
+     Fallbacks are what it already rendered. */
+  .kometio-newsletter-signup {
+    max-width: var(--kometio-override-max-width, 24rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  .kometio-newsletter-signup__title {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+  .kometio-newsletter-signup__row {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .kometio-newsletter-signup__row input {
+    flex: 1;
+    min-width: 0;
+  }
+  .kometio-newsletter-signup input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+  }
+  .kometio-newsletter-signup button {
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font: inherit;
+    cursor: pointer;
+  }
+  .kometio-newsletter-signup__status {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+  }
+  /* The state colours (global.css), as Form.astro's own status. */
+  .kometio-newsletter-signup__status--success {
+    background: var(--kometio-success-surface);
+    color: var(--kometio-success-text);
+  }
+  .kometio-newsletter-signup__status--error {
+    background: var(--kometio-error-surface);
+    color: var(--kometio-error-text);
+  }
+</style>

@@ -1,0 +1,77 @@
+---
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+export interface Props {
+  /** The locale this page renders in — see EmptyContainerHint. */
+  locale?: string;
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+  editable?: boolean;
+  hasChildren?: boolean;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+}
+
+const { editable, hasChildren, instanceClass, locale, emptyChildLabel} = Astro.props;
+---
+
+<div
+  class:list={['kometio-tabs', instanceClass]}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  <slot />
+  <EmptyContainerHint
+  show={!hasChildren && Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>
+</div>
+
+<script>
+  // Builds the tab button bar from the panels actually present in the DOM,
+  // rather than requiring this component to know each Tab's label at
+  // compile time: Astro's <slot /> only ever gives a parent opaque
+  // rendered HTML from its children (see docs/adr/0007's Puck/render
+  // isolation), never their props, so the tablist has to be assembled
+  // client-side from what each Tab.astro already rendered
+  // (data-tab-label). No framework here on purpose — same vanilla DOM
+  // approach as HamburgerMenu.astro. Logic lives in a plain importable
+  // module (not inline here) so it can also be re-run after a live canvas
+  // insert/patch — see block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { tabsBehaviors } from '../../lib/block-behaviors/tabs';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, tabsBehaviors);
+</script>
+
+<style>
+  .kometio-tabs {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  .kometio-tabs__list {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .kometio-tabs__tab {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font: inherit;
+  }
+  .kometio-tabs__tab[aria-selected='true'] {
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  /* Editor only, and only once it has content — the same pattern as
+     Column.astro/Container.astro. */
+  .kometio-tabs[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

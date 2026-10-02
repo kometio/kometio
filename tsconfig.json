@@ -1,0 +1,155 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/api"
+    },
+    {
+      "path": "./apps/editor-app"
+    },
+    {
+      "path": "./apps/e2e"
+    },
+    {
+      "path": "./libs/domain-core"
+    },
+    {
+      "path": "./libs/ports"
+    },
+    {
+      "path": "./libs/shared-types"
+    },
+    {
+      "path": "./libs/adapters/postgres-page-repository"
+    },
+    {
+      "path": "./libs/adapters/postgres-site-layout-section-repository"
+    },
+    {
+      "path": "./libs/adapters/local-disk-media-storage"
+    },
+    {
+      "path": "./libs/adapters/s3-media-storage"
+    },
+    {
+      "path": "./libs/adapters/session-auth-adapter"
+    },
+    {
+      "path": "./libs/application"
+    },
+    {
+      "path": "./libs/adapters/postgres-db"
+    },
+    {
+      "path": "./libs/adapters/postgres-user-repository"
+    },
+    {
+      "path": "./libs/env-config"
+    },
+    {
+      "path": "./libs/opaque-token"
+    },
+    {
+      "path": "./libs/adapters/verification-token-adapter"
+    },
+    {
+      "path": "./libs/adapters/smtp-email-adapter"
+    },
+    {
+      "path": "./libs/adapters/postgres-site-repository"
+    },
+    {
+      "path": "./libs/adapters/postgres-media-repository"
+    },
+    {
+      "path": "./libs/adapters/postgres-form-repository"
+    },
+    {
+      "path": "./libs/adapters/postgres-search-repository"
+    },
+    {
+      "path": "./libs/adapters/turnstile-captcha"
+    },
+    {
+      "path": "./libs/adapters/mailchimp-newsletter"
+    },
+    {
+      "path": "./libs/adapters/brevo-newsletter"
+    },
+    {
+      "path": "./libs/adapters/local-disk-attachment-storage"
+    },
+    {
+      "path": "./libs/adapters/s3-attachment-storage"
+    },
+    {
+      "path": "./libs/adapters/preview-token-adapter"
+    },
+    {
+      "path": "./libs/adapters/postgres-dashboard-stats-repository"
+    },
+    {
+      "path": "./libs/block-registry"
+    },
+    {
+      "path": "./libs/block-sdk"
+    },
+    {
+      "path": "./themes/docs-showcase"
+    },
+    {
+      "path": "./themes/classic"
+    },
+    {
+      "path": "./libs/adapters/filesystem-theme-catalog"
+    },
+    {
+      "path": "./libs/theme-runtime"
+    },
+    {
+      "path": "./libs/rich-text"
+    },
+    {
+      "path": "./libs/rich-text-editor"
+    },
+    {
+      "path": "./libs/theme-archive"
+    },
+    {
+      "path": "./apps/theme-builder"
+    },
+    {
+      "path": "./libs/adapters/postgres-reusable-section-repository"
+    },
+    {
+      "path": "./libs/adapters/postgres-taxonomy-repository"
+    },
+    {
+      "path": "./libs/testing"
+    },
+    {
+      "path": "./libs/adapters/wordpress-wxr"
+    },
+    {
+      "path": "./libs/adapters/postgres-import-job-repository"
+    },
+    {
+      "path": "./libs/adapters/openai-compatible-page-generator"
+    },
+    {
+      "path": "./libs/adapters/anthropic-page-generator"
+    },
+    {
+      "path": "./libs/adapters/aes-secret-cipher"
+    },
+    {
+      "path": "./libs/api-contracts"
+    },
+    {
+      "path": "./libs/adapters/sharp-image-optimizer"
+    }
+  ],
+  "compilerOptions": {}
+}

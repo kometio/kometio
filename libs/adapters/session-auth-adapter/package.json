@@ -1,0 +1,32 @@
+{
+  "name": "@kometio/session-auth-adapter",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "nx": {
+    "tags": [
+      "adapter"
+    ]
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@kometio/domain-core": "workspace:*",
+    "@kometio/opaque-token": "workspace:*",
+    "@kometio/ports": "workspace:*",
+    "@kometio/postgres-db": "workspace:*",
+    "@node-rs/argon2": "^2.2.1",
+    "drizzle-orm": "^0.45.3"
+  },
+  "devDependencies": {
+    "dotenv": "^18.0.3"
+  }
+}

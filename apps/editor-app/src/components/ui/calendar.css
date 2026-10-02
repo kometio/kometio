@@ -1,0 +1,15 @@
+/*
+ * react-day-picker defines its colours on its own root, outside any cascade
+ * layer, so they beat both a variable set on an ancestor and a Tailwind
+ * class on the root itself: the arrows and today's date came out in the
+ * library's pure blue. Two classes outrank its one.
+ */
+.kometio-calendar.rdp-root {
+  --rdp-accent-color: var(--primary);
+  --rdp-accent-background-color: var(--accent);
+  --rdp-today-color: var(--primary);
+  --rdp-day-height: 2.25rem;
+  --rdp-day-width: 2.25rem;
+  --rdp-day_button-height: 2.25rem;
+  --rdp-day_button-width: 2.25rem;
+}

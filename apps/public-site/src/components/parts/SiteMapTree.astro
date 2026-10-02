@@ -1,0 +1,38 @@
+---
+import type { SiteMapNode } from '@kometio/shared-types';
+
+interface Props {
+  nodes: SiteMapNode[];
+}
+
+const { nodes } = Astro.props;
+// Recursive: Astro renders a component inside itself, which is exactly the
+// shape a page tree has.
+---
+
+<ul class="kometio-site-map__list">
+  {
+    nodes.map((node) => (
+      <li class="kometio-site-map__item">
+        <a class="kometio-site-map__link" href={node.path}>
+          {node.title}
+        </a>
+        {node.children.length > 0 && <Astro.self nodes={node.children} />}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .kometio-site-map__list {
+    display: grid;
+    gap: var(--kometio-override-gap, 0.25rem);
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  .kometio-site-map__link {
+    color: inherit;
+    overflow-wrap: anywhere;
+  }
+</style>

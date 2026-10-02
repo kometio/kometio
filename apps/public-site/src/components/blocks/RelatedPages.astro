@@ -1,0 +1,41 @@
+---
+import type { RelatedPagesProps } from '@kometio/shared-types';
+import PageGrid from './PageGrid.astro';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = RelatedPagesProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The language being rendered, so the cards' dates are written the way its readers write dates. */
+  locale?: string;
+};
+
+const { layout, items, instanceClass, locale } = Astro.props;
+
+// The same cards a Page list draws, delegated rather than copied: two
+// listings of pages that looked subtly different on the same site would
+// read as a mistake, and the card design would then have to be fixed in
+// two places every time.
+//
+// `limit` and `perPage` are zero here because the cap has already been
+// applied by the render pass that chose these pages, and an archive of
+// three related articles has nothing to page through.
+---
+
+{
+  items.length > 0 && (
+    <PageGrid
+      termId={null}
+      authorId={null}
+      layout={layout}
+      order="newest"
+      limit={0}
+      perPage={0}
+      emptyText=""
+      items={items}
+      filterable={false}
+      instanceClass={delegatedRootClass('kometio-related-pages', instanceClass)}
+      locale={locale}
+    />
+  )
+}

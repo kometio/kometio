@@ -1,0 +1,35 @@
+# docs/adr/0042 — keeps the build context small; every Dockerfile installs
+# and builds fresh inside its own stage, so none of this needs to travel in.
+node_modules
+**/node_modules
+dist
+**/dist
+out-tsc
+**/out-tsc
+coverage
+**/coverage
+.nx/cache
+.nx/workspace-data
+tmp
+**/*.tsbuildinfo
+test-output
+**/test-output
+
+# local-only, never needed inside a build
+.git
+.env
+.env.local
+.vscode
+*.log
+
+# Local data a checkout accumulates (all gitignored): database dumps, the
+# media library, planning notes. The production compose file builds from
+# the working directory, so without these lines a build from a developer's
+# checkout baked their database dumps into the images.
+_data
+uploads
+planning
+
+# gitignored planning docs — not part of the shipped product
+piano-progetto-astro-cms.md
+backlog-review-sicurezza-2026-08-26.md

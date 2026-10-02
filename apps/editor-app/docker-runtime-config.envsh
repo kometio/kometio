@@ -1,0 +1,29 @@
+# docs/adr/0076 — writes the editor's two addresses where the browser can
+# read them, at container start.
+#
+# `.envsh` and not `.sh` on purpose: nginx:alpine's entrypoint SOURCES the
+# former and merely executes the latter, and `KOMETIO_API_ORIGIN` below has
+# to reach the envsubst step that runs after this one (it is what the
+# Content-Security-Policy header in nginx.conf.template is built from).
+#
+# Both variables are optional: unset, the file ships empty values and the
+# bundle falls back to whatever it was built with, which is what makes the
+# image usable unchanged for local trials.
+
+KOMETIO_API_URL="${KOMETIO_API_URL:-}"
+KOMETIO_PUBLIC_SITE_URL="${KOMETIO_PUBLIC_SITE_URL:-}"
+
+# The origin alone: CSP source expressions match paths inconsistently
+# across browsers, so the policy allows the whole API host rather than
+# pinning "/api" (the same reasoning the old build-time plugin carried).
+KOMETIO_API_ORIGIN="$(printf '%s' "$KOMETIO_API_URL" | sed -E 's#^([a-zA-Z][a-zA-Z0-9+.-]*://[^/]+).*#\1#')"
+export KOMETIO_API_URL KOMETIO_PUBLIC_SITE_URL KOMETIO_API_ORIGIN
+
+cat > /usr/share/nginx/html/config.js <<EOF
+window.__KOMETIO_CONFIG__ = {
+  "apiUrl": "${KOMETIO_API_URL}",
+  "publicSiteUrl": "${KOMETIO_PUBLIC_SITE_URL}"
+};
+EOF
+
+echo "kometio: editor configured for API ${KOMETIO_API_URL:-<build default>} and site ${KOMETIO_PUBLIC_SITE_URL:-<build default>}"

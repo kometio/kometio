@@ -1,0 +1,77 @@
+---
+import type { SectionProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = SectionProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** True once the section has been resolved into blocks — see resolveSectionBlocks. */
+  hasChildren?: boolean;
+  /** True on the canvas preview routes only, never on a published page. */
+  editable?: boolean;
+};
+
+const { section, instanceClass, hasChildren, editable, locale } = Astro.props;
+const i18n = new Translator(locale);
+---
+
+{/*
+  `data-kometio-section-content` is what makes the section a single object on
+  the canvas (docs/adr/0059). The blocks inside it are real blocks with
+  real ids — they need them, or their per-instance style rules would not
+  match — but they do not belong to THIS page's block tree, so the editor
+  must not offer to select, drag or delete them. `collectBlockElements`
+  skips everything under this attribute, which locks the structure in the
+  one place that cannot be bypassed by a different code path.
+
+  It sits on the section's own root and not on the wrapper above it: the
+  wrapper is what carries `data-kometio-block-id` for the instance itself,
+  and the instance IS selectable.
+*/}
+<section
+  class:list={['kometio-section', instanceClass]}
+  data-kometio-section-content
+>
+  {
+    hasChildren ? (
+      <slot />
+    ) : (
+      /* Missing, unpublished, or deleted. The page still renders: an
+         instance that took the page down with it would turn one wrong
+         click in the sections list into a site outage. On the canvas it
+         says so; to a visitor it is simply nothing. */
+      editable && (
+        <p class="kometio-section__empty">
+          {section
+            ? i18n.t('section.notPublished')
+            : i18n.t('section.notChosen')}
+        </p>
+      )
+    )
+  }
+</section>
+
+<style>
+  /*
+   * No opinion of its own, deliberately: a section is whatever its blocks
+   * are, and a wrapper that added padding or a background would show up as
+   * an unexplained gap on every page using one. What it does provide is a
+   * box to measure — see global.css, where `.kometio-section` declares
+   * `container-type`, without which every container query inside a section
+   * would silently never match.
+   */
+  .kometio-section {
+    display: flow-root;
+  }
+
+  .kometio-section__empty {
+    margin: 0;
+    padding: 1.5rem;
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+</style>

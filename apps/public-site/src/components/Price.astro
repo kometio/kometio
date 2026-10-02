@@ -1,0 +1,107 @@
+---
+import type { Currency } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+/**
+ * A price the way this language writes one — "19,90 €" in Italian,
+ * "€19.90" in English — and, when there is a higher one it replaces, that
+ * one struck through beside it with the saving.
+ *
+ * Shared by ProductCard, DiscountPrice and BuyButton rather than
+ * formatted three times: the day a currency's spelling needs a fix, it is
+ * fixed once.
+ */
+interface Props {
+  price: number | null;
+  compareAtPrice?: number | null;
+  currency: Currency;
+  locale: string;
+  /** `large` when the price IS the block (DiscountPrice), `normal` inside a card. */
+  size?: 'normal' | 'large';
+}
+
+const {
+  price,
+  compareAtPrice = null,
+  currency,
+  locale,
+  size = 'normal',
+} = Astro.props;
+const i18n = new Translator(locale);
+const money = new Intl.NumberFormat(locale || undefined, {
+  style: 'currency',
+  currency,
+});
+// Only a HIGHER earlier price is a discount. An equal or lower one is a
+// typo, and striking it through would advertise a saving that is not
+// there.
+const wasPrice =
+  price !== null && compareAtPrice !== null && compareAtPrice > price
+    ? compareAtPrice
+    : null;
+const saving =
+  price !== null && wasPrice !== null
+    ? new Intl.NumberFormat(locale || undefined, {
+        style: 'percent',
+        maximumFractionDigits: 0,
+      }).format(price / wasPrice - 1)
+    : '';
+---
+
+{
+  price !== null && (
+    <span class:list={['kometio-price', `kometio-price--${size}`]}>
+      <span class="kometio-price__now">
+        {/* A struck-through number is read aloud as just a number: said
+            in words, which of the two is the price is not a guess. */}
+        {wasPrice !== null && (
+          <span class="kometio-visually-hidden">{`${i18n.t('price.now')} `}</span>
+        )}
+        {money.format(price)}
+      </span>
+      {wasPrice !== null && (
+        <s class="kometio-price__was">
+          <span class="kometio-visually-hidden">{`${i18n.t('price.was')} `}</span>
+          {money.format(wasPrice)}
+        </s>
+      )}
+      {saving && (
+        <span class="kometio-price__saving" aria-hidden="true">
+          {saving}
+        </span>
+      )}
+    </span>
+  )
+}
+
+<style>
+  .kometio-price {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kometio-price__now {
+    font-weight: 700;
+  }
+
+  .kometio-price--large .kometio-price__now {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  .kometio-price__was {
+    color: var(--muted-foreground);
+  }
+
+  .kometio-price__saving {
+    padding: 0.0625rem 0.375rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+</style>

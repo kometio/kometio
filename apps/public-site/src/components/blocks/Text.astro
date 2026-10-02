@@ -1,0 +1,19 @@
+---
+import type { TextProps } from '@kometio/shared-types';
+
+type Props = TextProps & { instanceClass?: string | null };
+
+const { body, instanceClass } = Astro.props;
+---
+
+<div
+  class:list={['kometio-text kometio-rich-text', instanceClass]}
+  data-kometio-field="body"
+  set:html={body}
+/>
+
+<style>
+  .kometio-text {
+    color: var(--kometio-override-text, inherit);
+  }
+</style>

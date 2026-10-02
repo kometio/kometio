@@ -1,0 +1,47 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    // Mirrors astro.config.mjs's `~theme` Vite alias, for the type-checker
+    // only (tsc/astro check resolve module specifiers via `paths`, not
+    // Vite's own alias config, so it needs its own copy of the mapping).
+    // Always points at the reference "classic" theme regardless of the
+    // KOMETIO_THEME actually building — good enough for type-checking, since
+    // every theme package (docs/adr/0021) is expected to export the same
+    // shape.
+    "paths": {
+      "~theme/*": ["../../themes/classic/*"]
+    }
+  },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"],
+  "references": [
+    {
+      "path": "../../libs/theme-runtime"
+    },
+    {
+      "path": "../../libs/api-contracts"
+    },
+    {
+      "path": "../../libs/shared-types"
+    },
+    {
+      "path": "../../libs/rich-text-editor"
+    },
+    {
+      "path": "../../libs/rich-text"
+    },
+    {
+      "path": "../../libs/env-config"
+    },
+    {
+      "path": "../../libs/block-sdk"
+    },
+    {
+      "path": "../../libs/block-registry"
+    }
+  ]
+}

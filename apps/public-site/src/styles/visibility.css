@@ -1,0 +1,25 @@
+/*
+ * Utility classes shared by every block whose `Visibility` prop
+ * (@kometio/shared-types) can hide it at a breakpoint — Nav, HamburgerMenu,
+ * NavLink, LanguageSwitcher. Global on purpose, not scoped per-component:
+ * Astro's per-file `<style>` scoping can't be shared across the several
+ * different .astro files that need the exact same two rules, and scoped
+ * styles can't reach into a child component's own root element anyway.
+ *
+ * `!important` is deliberate here, not a shortcut: each component sets
+ * its own `display` for unrelated layout reasons (flex row, block, ...),
+ * and this utility must always win over that regardless of which
+ * component applies it or how specific its own scoped rule is — the same
+ * role a `.hidden` utility class plays in any utility-CSS system.
+ */
+@media (max-width: 640px) {
+  .kometio-visibility-desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 641px) {
+  .kometio-visibility-mobile-only {
+    display: none !important;
+  }
+}

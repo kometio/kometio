@@ -1,0 +1,61 @@
+---
+import type { StatusBadgeProps } from './StatusBadge.block';
+
+// Same instance-style convention every core block uses, and since
+// ADR-0047 it costs a theme block nothing at all: the per-instance
+// override is a generated CSS RULE, not an inline attribute — an inline
+// `style` cannot hold the container query a per-breakpoint value needs.
+// A stylable block receives the class that rule targets and puts it on
+// its root element; the custom properties below
+// (`--kometio-override-bg`/`--kometio-override-text`, the fixed shared names
+// from libs/shared-types/src/lib/block-style-overrides.ts) arrive through
+// it. Nothing to build by hand, and no copy of those names in TypeScript
+// to drift from the real ones.
+interface Props extends StatusBadgeProps {
+  instanceClass?: string | null;
+}
+
+const { label, tone, instanceClass } = Astro.props;
+---
+
+<span
+  class:list={['kometio-status-badge', instanceClass]}
+  data-tone={tone}
+  data-kometio-field="label"
+>
+  <span class="kometio-status-badge__dot" aria-hidden="true"></span>
+  {label}
+</span>
+
+<style>
+  .kometio-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.15rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    background: var(--kometio-override-bg, var(--muted));
+    color: var(--kometio-override-text, var(--muted-foreground));
+  }
+  .kometio-status-badge__dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    /* The state colours core declares (global.css), as Callout's own
+       tones: a signal that stays recognisable whatever the palette. */
+    background: var(--kometio-info);
+  }
+  .kometio-status-badge[data-tone='success'] .kometio-status-badge__dot {
+    background: var(--kometio-success);
+  }
+  .kometio-status-badge[data-tone='warning'] .kometio-status-badge__dot {
+    background: var(--kometio-warning);
+  }
+  /* Neutral is no state: the theme's own quiet grey. */
+  .kometio-status-badge[data-tone='neutral'] .kometio-status-badge__dot {
+    background: var(--muted-foreground);
+  }
+</style>

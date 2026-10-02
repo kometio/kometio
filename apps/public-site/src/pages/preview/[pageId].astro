@@ -1,0 +1,40 @@
+---
+import { getPreviewPageById } from '../../lib/public-api-client';
+import PublicPageContent from '../../components/PublicPageContent.astro';
+import { buildContentSecurityPolicy } from '../../lib/content-security-policy';
+import { editorAppUrl } from '../../lib/editor-app-url';
+
+// SSR, never prerendered — the same reason as [locale]/[...slug].astro: the
+// content (here, the draft behind a token) is never known at build time.
+export const prerender = false;
+
+const { pageId } = Astro.params;
+const token = Astro.url.searchParams.get('token');
+// Only the canvas iframe (canvas-frame.tsx) passes this flag — see the
+// comment on buildPreviewUrl() for why: without distinguishing it from the
+// standalone "Preview" button (which opens this same route in an ordinary
+// tab), the page's links stayed broken even outside the editor.
+const isEmbedded = Astro.url.searchParams.get('embedded') === '1';
+
+const page =
+  pageId && token ? await getPreviewPageById(pageId, token) : null;
+
+if (!page) {
+  Astro.response.status = 404;
+}
+
+// Never indexable, and embeddable in an iframe only by editor-app — this
+// route exists solely because the editor's canvas (Day 2 onwards) loads it
+// in an <iframe>, it is never a public link to follow.
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+Astro.response.headers.set(
+  'Content-Security-Policy',
+  buildContentSecurityPolicy(
+    editorAppUrl(),
+    Astro.locals.cspNonce,
+    page?.site.themeSettings.allowedTrackerDomains,
+  ),
+);
+---
+
+<PublicPageContent page={page} editable={isEmbedded} />

@@ -1,0 +1,32 @@
+{
+  "name": "@kometio/testing",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "nx": {
+    "tags": [
+      "testing"
+    ]
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./records": {
+      "types": "./src/records.ts",
+      "import": "./src/records.ts",
+      "default": "./src/records.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@kometio/domain-core": "workspace:*",
+    "@kometio/ports": "workspace:*",
+    "@kometio/shared-types": "workspace:*",
+    "@kometio/api-contracts": "workspace:*"
+  }
+}

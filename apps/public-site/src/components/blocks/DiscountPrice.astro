@@ -1,0 +1,64 @@
+---
+import type { DiscountPriceProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import Price from '../Price.astro';
+
+type Props = DiscountPriceProps & {
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const { price, compareAtPrice, currency, note, locale, editable, instanceClass } =
+  Astro.props;
+const i18n = new Translator(locale);
+---
+
+{
+  price !== null ? (
+    <div class:list={['kometio-discount-price', instanceClass]}>
+      <Price
+        price={price}
+        compareAtPrice={compareAtPrice}
+        currency={currency}
+        locale={locale}
+        size="large"
+      />
+      {note && (
+        <p class="kometio-discount-price__note" data-kometio-field="note">
+          {note}
+        </p>
+      )}
+    </div>
+  ) : (
+    editable && (
+      <p class="kometio-discount-price kometio-discount-price--empty">
+        {i18n.t('discountPrice.empty')}
+      </p>
+    )
+  )
+}
+
+<style>
+  .kometio-discount-price {
+    display: grid;
+    gap: 0.25rem;
+    justify-items: start;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-discount-price__note {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-discount-price--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

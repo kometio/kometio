@@ -1,0 +1,97 @@
+---
+import type { ArticleMetaProps } from '@kometio/shared-types';
+
+type Props = ArticleMetaProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The language being rendered, so a date is written the way its readers write dates. */
+  locale?: string;
+};
+
+const {
+  showDate,
+  showAuthor,
+  publishedAt,
+  authorName,
+  authorPath,
+  instanceClass,
+  locale,
+} = Astro.props;
+
+/**
+ * The date as this language writes it, and `null` for one we cannot read:
+ * a byline is not the place to print "Invalid Date" at a reader.
+ */
+function readableDate(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString(locale ?? undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+const date = showDate ? readableDate(publishedAt) : null;
+const author = showAuthor ? authorName.trim() : '';
+---
+
+{
+  /* Nothing at all rather than an empty line: a page that has never been
+     published, or whose author never set a name, has no byline to show,
+     and a stray separator would read as something having gone missing. */
+  (date || author) && (
+    <p class:list={['kometio-article-meta', instanceClass]}>
+      {date && <time datetime={publishedAt ?? undefined}>{date}</time>}
+      {date && author && <span class="kometio-article-meta__sep">·</span>}
+      {author &&
+        (authorPath ? (
+          // To everything else they wrote, when they have a page for it.
+          <a class="kometio-article-meta__author" href={authorPath}>
+            {author}
+          </a>
+        ) : (
+          <span class="kometio-article-meta__author">{author}</span>
+        ))}
+    </p>
+  )
+}
+
+<style>
+  .kometio-article-meta {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--kometio-override-text, var(--muted-foreground));
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-article-meta__sep {
+    opacity: 0.6;
+  }
+
+  /* A name with no spaces in it — or an address used as one — breaks
+     wherever it has to rather than widening the page past the screen. */
+  .kometio-article-meta__author {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  a.kometio-article-meta__author {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    text-underline-offset: 0.2em;
+  }
+
+  a.kometio-article-meta__author:hover {
+    text-decoration-color: currentColor;
+  }
+</style>

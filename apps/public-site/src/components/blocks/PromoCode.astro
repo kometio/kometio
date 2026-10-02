@@ -1,0 +1,148 @@
+---
+import type { PromoCodeProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = PromoCodeProps & {
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const { code, description, expiresOn, locale, editable, instanceClass } =
+  Astro.props;
+const i18n = new Translator(locale);
+
+// `YYYY-MM-DD`, compared as text — the one date spelling for which that
+// is correct. The last valid day is the day itself, so "until the 30th"
+// still works on the 30th. Anything else in the field is ignored rather
+// than guessed at.
+const expiry = /^\d{4}-\d{2}-\d{2}$/.test(expiresOn) ? expiresOn : '';
+const today = new Date().toISOString().slice(0, 10);
+const expired = expiry !== '' && expiry < today;
+const expiryText = expiry
+  ? new Intl.DateTimeFormat(locale || undefined, {
+      dateStyle: 'long',
+      timeZone: 'UTC',
+    }).format(new Date(`${expiry}T00:00:00Z`))
+  : '';
+---
+
+{
+  code.trim() ? (
+    <div
+      class:list={[
+        'kometio-promo-code',
+        { 'kometio-promo-code--expired': expired },
+        instanceClass,
+      ]}
+    >
+      {description && (
+        <p class="kometio-promo-code__description" data-kometio-field="description">
+          {description}
+        </p>
+      )}
+      <div class="kometio-promo-code__row">
+        <code class="kometio-promo-code__code">{code.trim()}</code>
+        {/* An expired code stays readable — somebody may be looking for
+            the one they were given — but nothing invites using it. */}
+        {!expired && (
+          <button
+            type="button"
+            class="kometio-promo-code__copy"
+            data-kometio-copy-text={code.trim()}
+            data-kometio-copied-label={i18n.t('copyButton.copied')}
+            data-kometio-copy-failed-label={i18n.t('copyButton.failed')}
+          >
+            <span data-kometio-copy-label>{i18n.t('promoCode.copy')}</span>
+          </button>
+        )}
+      </div>
+      {expiry && (
+        <p class="kometio-promo-code__expiry">
+          {expired
+            ? i18n.t('promoCode.expired', { date: expiryText })
+            : i18n.t('promoCode.validUntil', { date: expiryText })}
+        </p>
+      )}
+    </div>
+  ) : (
+    editable && (
+      <p class="kometio-promo-code kometio-promo-code--empty">
+        {i18n.t('promoCode.empty')}
+      </p>
+    )
+  )
+}
+
+<script>
+  import { copyButtonBehaviors } from '../../lib/block-behaviors/copy-button';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, copyButtonBehaviors);
+</script>
+
+<style>
+  .kometio-promo-code {
+    display: grid;
+    gap: 0.5rem;
+    background: var(--kometio-override-bg, var(--muted));
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    padding: var(--kometio-override-padding-y, 0.75rem)
+      var(--kometio-override-padding-x, 1rem);
+    border-width: var(--kometio-override-border-width, 1px);
+    border-style: var(--kometio-override-border-style, dashed);
+    border-color: var(--kometio-override-border-color, var(--border));
+  }
+
+  .kometio-promo-code__description,
+  .kometio-promo-code__expiry {
+    margin: 0;
+  }
+
+  .kometio-promo-code__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .kometio-promo-code__code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-promo-code--expired .kometio-promo-code__code {
+    text-decoration: line-through;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-promo-code__copy {
+    padding: 0.375rem 0.875rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .kometio-promo-code__copy:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .kometio-promo-code__expiry {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-promo-code--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

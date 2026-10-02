@@ -1,0 +1,1 @@
+export const COLLECTIONS_DEPS = Symbol('COLLECTIONS_DEPS');

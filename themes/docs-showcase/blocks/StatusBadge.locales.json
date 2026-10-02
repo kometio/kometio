@@ -1,0 +1,32 @@
+{
+  "en": {
+    "label": "Status badge",
+    "fields": {
+      "label": { "fieldLabel": "Text" },
+      "tone": {
+        "fieldLabel": "Tone",
+        "options": {
+          "info": "Info",
+          "success": "New",
+          "warning": "Beta",
+          "neutral": "Deprecated"
+        }
+      }
+    }
+  },
+  "it": {
+    "label": "Etichetta di stato",
+    "fields": {
+      "label": { "fieldLabel": "Testo" },
+      "tone": {
+        "fieldLabel": "Tono",
+        "options": {
+          "info": "Info",
+          "success": "Nuovo",
+          "warning": "Beta",
+          "neutral": "Deprecato"
+        }
+      }
+    }
+  }
+}

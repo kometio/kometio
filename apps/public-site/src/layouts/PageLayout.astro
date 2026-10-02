@@ -1,0 +1,611 @@
+---
+import { buildBlockStyleOverridesCss, DEFAULT_THEME_TOKENS, safeCssDeclarationValue, type Block, type SeoMeta } from '@kometio/shared-types';
+import { type PublishedPageAncestor, type PublishedPageTranslation, type PublishedSite } from '@kometio/api-contracts';
+import BlockRenderer from '../components/BlockRenderer.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+import { buildCookieConsentBootstrap } from '../components/cookie-consent-bootstrap';
+import {
+	partitionTrackerScripts,
+	renderGatedScripts,
+	renderUngatedScripts,
+} from '../lib/consent-script-blocking';
+import { injectScriptNonce } from '../lib/content-security-policy';
+import { editorAppUrl } from '../lib/editor-app-url';
+import {
+	localeDirection,
+	localePathFromAncestors,
+} from '@kometio/theme-runtime';
+import { buildSchemaOrgGraph } from '../lib/schema-org';
+import { resolveThemeFont } from '../lib/theme-font';
+import { Translator } from '@kometio/theme-runtime';
+import { parseRootCustomProperties } from '../lib/resolve-theme-block-style-defaults-helpers';
+import {
+	getThemeCssRaw,
+	getThemeManifest,
+	resolveBundledThemeName,
+} from '../lib/theme-registry';
+import { resolveThemeRegion } from '../lib/resolve-theme-regions';
+import type {
+	ThemeHeaderProps,
+	ThemeRegionRoute,
+} from '@kometio/theme-runtime';
+import { listPublishedPageTree } from '../lib/public-api-client';
+import DefaultHeader from '../components/regions/DefaultHeader.astro';
+import DefaultFooter from '../components/regions/DefaultFooter.astro';
+import DefaultContentShell from '../components/regions/DefaultContentShell.astro';
+import '../lib/theme-fonts';
+import '../styles/global.css';
+import { CASCADE_LAYER_ORDER_CSS } from '../lib/cascade-layers';
+import '../styles/visibility.css';
+
+interface Props {
+	seoMeta: SeoMeta;
+	locale: string;
+	translations: PublishedPageTranslation[];
+	site: PublishedSite;
+	header: Block[] | null;
+	footer: Block[] | null;
+	headerSticky: boolean;
+	ancestors: PublishedPageAncestor[];
+	/**
+	 * This one address kept out of search engines, on top of the site-wide
+	 * switch below — a term whoever publishes judged too thin to be worth
+	 * finding (docs/adr/0078). Pages never set it: theirs is the site
+	 * setting.
+	 */
+	noindex?: boolean;
+	// Only the preview route passes it (see the visual editor plan, Day 2)
+	// — it never affects the real published route.
+	editable?: boolean;
+	/**
+	 * The per-INSTANCE style rules of the page being rendered, already
+	 * built. Passed in rather than computed here because the page's own
+	 * content lives on the other side of the slot — this layout only ever
+	 * sees the header and footer.
+	 */
+	instanceStyleCss?: string;
+	// Which core route is rendering. Passed to the theme's regions, and used
+	// to never render a theme region on the 500 page: that page is the last
+	// error handler and a throw there has nowhere to propagate (Astro cannot
+	// try/catch a component's render from the frontmatter). Defaults to
+	// 'page', by far the most common case.
+	route?: ThemeRegionRoute;
+}
+
+const {
+	seoMeta,
+	locale,
+	translations,
+	site,
+	header,
+	footer,
+	headerSticky,
+	ancestors,
+	editable,
+	noindex = false,
+	route = 'page',
+	instanceStyleCss = '',
+} = Astro.props;
+// docs/adr/0042 — every theme ships in the same image now; `site.themeName`
+// (Tier 2, DB-backed) picks which one this request renders, resolved
+// fresh per request instead of a single build-time `~theme` alias.
+const resolvedThemeName = resolveBundledThemeName(site.themeName);
+const themeManifest = getThemeManifest(site.themeName);
+
+// The three regions a theme may supply (resolve-theme-regions.ts). Core
+// stays in charge of everything else: a region receives the already-
+// rendered blocks as a slot and only picks the element that wraps them.
+// Never on the 500 page, see the comment on the `route` prop.
+const useThemeRegions = route !== 'error';
+const ThemeHeader = useThemeRegions
+	? resolveThemeRegion<typeof DefaultHeader>('Header', site.themeName)
+	: null;
+const ThemeFooter = useThemeRegions
+	? resolveThemeRegion<typeof DefaultFooter>('Footer', site.themeName)
+	: null;
+const ThemeContentShell = useThemeRegions
+	? resolveThemeRegion<typeof DefaultContentShell>('ContentShell', site.themeName)
+	: null;
+const HeaderRegion = ThemeHeader ?? DefaultHeader;
+const FooterRegion = ThemeFooter ?? DefaultFooter;
+const ContentShellRegion = ThemeContentShell ?? DefaultContentShell;
+
+// Memoized per REQUEST, not per process: pages get published between one
+// request and the next. Core keeps the fetch, the domain guard and the
+// error policy, so a theme cannot get them wrong.
+let pageTreePromise: Promise<Awaited<ReturnType<typeof listPublishedPageTree>>> | null =
+	null;
+const pageTree = () =>
+	(pageTreePromise ??= site.domain
+		? listPublishedPageTree(site.domain, locale).catch(() => [])
+		: Promise.resolve([]));
+
+const themeBaseTokens = parseRootCustomProperties(
+	getThemeCssRaw(site.themeName),
+);
+const i18n = new Translator(locale);
+
+// The consent banner belongs to a visitor, and the canvas has no visitor.
+// The editor's iframe is sandboxed WITHOUT allow-same-origin (see
+// canvas-frame.tsx), so its document has an opaque origin and cannot write
+// `kometio_consent` at all: the banner could not be dismissed there even
+// once, and it came back over the bottom of the frame every time the editor
+// was opened — a third of it at the mobile breakpoint. Its bootstrap goes
+// with it: all that script does is activate the gated tracker templates for
+// a consent record that, here, can never exist.
+// Only the EMBEDDED preview, never the real page and never the "Preview"
+// tab, which is a page somebody reads as a visitor would.
+const isEditorCanvas = editable === true;
+
+const themeRegionProps = {
+	locale,
+	currentPath: Astro.url.pathname.replace(/\/+$/, '') || '/',
+	i18n,
+	pageTree,
+	route,
+	editable: editable === true,
+} satisfies Omit<ThemeHeaderProps, 'sticky' | 'class'>;
+// The default locale's translation, if published, doubles as the
+// x-default alternate (docs/adr/0017) — the version search engines should
+// offer a visitor whose browser locale matches none of the site's.
+const defaultTranslation = translations.find(
+	(translation) => translation.locale === site.defaultLocale,
+);
+
+// seoMeta.canonical is the source of truth when set (docs/adr/0014's SEO
+// panel lets an editor override it).
+//
+// Otherwise the page's own address, BUILT rather than taken from
+// `Astro.url.href`: that carries whatever the visitor arrived with —
+// `?utm_source=…`, a stray `?page=2` — and a canonical that varies with
+// the query string is not a canonical at all, it just tells a search
+// engine every tagged link is its own page. Building it from the
+// translation also means it is the reachable, nested address and not the
+// bare slug.
+//
+// `Astro.url.href` stays as the last resort for the case that should not
+// happen (a rendered page with no translation in its own locale), because
+// a wrong canonical is still better than none at all.
+const currentTranslation = translations.find(
+	(translation) => translation.locale === locale,
+);
+const canonicalUrl =
+	seoMeta.canonical ||
+	(currentTranslation
+		? `${Astro.url.origin}${localePathFromAncestors(currentTranslation.locale, currentTranslation.ancestorSlugs, currentTranslation.slug)}`
+		: Astro.url.href);
+// og:url and the canonical must agree — two different "this page's
+// address" in the same document is a contradiction crawlers resolve
+// unpredictably.
+const pageUrl = canonicalUrl;
+const ogImage = seoMeta.ogTags?.['image'];
+const schemaOrgGraph = buildSchemaOrgGraph({ site, seoMeta, pageUrl });
+// JSON.stringify doesn't escape "<" — a "</script>" inside any string value
+// (e.g. a site name an admin typed) would otherwise break out of this tag.
+// The safety concern is about embedding JSON.stringify's output as raw
+// script content, not the SEO/business data itself, so it lives here at the
+// embedding point rather than in schema-org.ts's own (pure, testable) logic.
+const schemaOrgJson = JSON.stringify(schemaOrgGraph).replace(/</g, '\\u003c');
+
+// Tier 1 of docs/adr/0021's theming model — layered on top of the active
+// filesystem theme (Tier 2, resolved above from site.themeName) via a
+// plain <style> block, but only when BOTH gates allow it:
+//   1. `themeManifest.allowStyleOverrides` (theme.json) — the theme
+//      author's own ceiling, defaults to true if the field is missing. A
+//      bespoke agency theme can set this to false so *no* site can ever
+//      override it, regardless of what's stored in the DB.
+//   2. `site.themeSettings.overridesEnabled` — the day-to-day switch
+//      *below* that ceiling, in the Style dialog itself, for "I want to
+//      temporarily go back to the theme's own look without losing what
+//      I've saved". A site can turn this off; it can never turn Tier 1
+//      back on if the theme's own ceiling already said no.
+// When either is false, no Tier 1 CSS is emitted at all, full stop.
+//
+// The two are kept apart below, because they mean different things and
+// they had been fused into one `&&` used for everything. The switch is
+// the SITE saying "show me the theme's own colours again"; the ceiling is
+// the THEME saying "nobody dresses me". Only the first is Tier 1's.
+//
+// Every declaration below is !important, found necessary by testing this
+// live rather than assumed: Astro's dev server injects `import '*.css'`
+// side-effect styles (global.css) as their own <style data-vite-dev-id>
+// tag positioned *after* this component's own inline markup in the
+// rendered HTML, regardless of where that import appears in the
+// frontmatter above — so a same-specificity `:root { --font-sans-value:
+// ... }` here would silently lose to global.css's bare fallback despite
+// looking earlier in the source. !important is the explicit, order-
+// independent way to say "this wins over global.css's fallback", which is
+// the whole point of this block when active, not a specificity
+// workaround. The same reasoning is why Tier 2's own base tokens
+// (themeBaseTokenDeclarations below) get the identical !important
+// treatment now that they're emitted as an inline <style> instead of a
+// second static CSS import (docs/adr/0042 — a per-request `site.themeName`
+// can't be a static `import` target, Vite only resolves those once at
+// build time).
+// `theme` below is the *effective* Tier 1 settings for this render: every
+// field forced to its "not set" value when either gate disallows
+// overrides, rather than checking both gates at each usage site further
+// down — one check here is much harder to accidentally miss than four
+// scattered conditionals in the markup.
+/**
+ * The theme author's ceiling. Everything a site puts on top of the theme
+ * answers to it — Tier 1 tokens, per-type block styles, per-instance
+ * ones — because "no site can ever override it" is what it says it
+ * means, and a rule honoured by two tiers out of three is not a ceiling.
+ */
+const themeAllowsOverrides = themeManifest.allowStyleOverrides ?? true;
+/**
+ * The site's own switch, and it covers TIER 1 ONLY.
+ *
+ * It used to gate the per-type block styles too, from the commit that
+ * added the global styles editor: both come out of a "styles" dialog, so
+ * one gate looked right. The control says otherwise, and always has. It
+ * lives in the Style settings page, it greys out exactly the five fields
+ * beside it — primary colour, secondary colour, font, custom CSS,
+ * favicon — and its own description reads "every field BELOW is ignored".
+ * Block styles are not below it; they are not even in that page.
+ *
+ * The result was upside down: on a site with the switch off, an agency
+ * could restyle ONE block on ONE page (that tier was never gated) but not
+ * every block of a type. The smaller power allowed, the larger one
+ * refused, with nothing saying so.
+ */
+const allowThemeTokenOverrides =
+	themeAllowsOverrides && site.themeSettings.overridesEnabled;
+const theme = allowThemeTokenOverrides
+	? site.themeSettings
+	: {
+			primaryColor: null,
+			secondaryColor: null,
+			fontFamily: null,
+			customCss: null,
+			contentWidth: null,
+			faviconUrl: null,
+			overridesEnabled: false,
+		};
+// headScript/bodyScript (ADR-0031) are deliberately NOT part of the
+// `allowThemeTokenOverrides` collapse above — a tracker (GTM/GA4/Meta Pixel, ...)
+// shouldn't stop running just because someone toggled off color/font
+// overrides in the Style dialog; those are two independent switches.
+const { headScript, bodyScript } = site.themeSettings;
+// Cookie consent (docs/adr/0039): categorized tracker scripts partitioned
+// by placement, each split into "necessary" (ungated, nonce'd like
+// headScript/bodyScript above) and everything else (wrapped inert in a
+// <template>, activated client-side only once its category is granted).
+const headTrackerScripts = partitionTrackerScripts(
+	site.themeSettings.trackerScripts,
+	'head',
+);
+const bodyTrackerScripts = partitionTrackerScripts(
+	site.themeSettings.trackerScripts,
+	'body',
+);
+const themeFont = resolveThemeFont(theme.fontFamily);
+// The per-type block styles (docs/adr/0022, per variant since ADR-0047).
+// The theme's ceiling, not the site's Tier 1 switch — see the two
+// constants above for why they are no longer the same thing.
+const tokens = themeAllowsOverrides ? site.themeTokens : DEFAULT_THEME_TOKENS;
+const themeOverrideDeclarations = [
+	theme.primaryColor && `--primary: ${theme.primaryColor} !important;`,
+	theme.secondaryColor && `--secondary: ${theme.secondaryColor} !important;`,
+	themeFont && `--font-sans-value: ${themeFont.cssFontFamily} !important;`,
+	// ADR-0049. It lands in the same `:root` as the colours above and after
+	// the theme's own token block, so the site's number wins the identical
+	// `!important` the theme's declaration carries — the ordering the two
+	// <style> tags below already relied on for `--primary`.
+	//
+	// The value is a guarded CSS length at the schema (`cssLengthTokenSchema`),
+	// and this is the second barrier PR #144 established for exactly this
+	// position: a declaration written into a page-wide stylesheet is where a
+	// string stops being data. `safeCssLength` drops anything that could
+	// close the declaration rather than escaping it — a site rendering at
+	// its theme's own width is a better outcome than one rendering an
+	// attacker's rule.
+	safeCssDeclarationValue(theme.contentWidth) &&
+		`--kometio-content-width: ${theme.contentWidth} !important;`,
+]
+	.filter(Boolean)
+	.join(' ');
+// The active theme's own :root tokens (Tier 2) — see the comment above
+// `allowThemeTokenOverrides` for why this needs !important now instead of
+// relying on source order like a static CSS import could.
+const themeBaseTokenDeclarations = [...themeBaseTokens.entries()]
+	.map(([name, value]) => `${name}: ${value} !important;`)
+	.join(' ');
+// The "component-level" override (docs/adr/0022) — one rule per styled
+// (block type, variant), not a single `:root` as above: each is scoped by
+// the block's own `.kometio-*` class, so only blocks of that type — and,
+// since ADR-0047, only those wearing that variant — see the new value.
+//
+// NOT `[data-kometio-block-type]`, which an earlier version of this comment
+// claimed: that attribute is on the editor-only wrapper, present when
+// `editable` is true, so a rule scoped there would never reach a real
+// visitor.
+const blockStyleOverridesCss = buildBlockStyleOverridesCss(
+	tokens.blockStyles,
+);
+// The two tiers are declared before either is used, so their order is a
+// line someone can read rather than a property of where the rules happen
+// to appear in the document (ADR-0047).
+//
+// Neither is gated on the site's Tier 1 switch (docs/adr/0021), which is
+// about whether a SITE may repaint the THEME: its `:root` tokens, fonts,
+// custom CSS. These two are docs/adr/0022 — an editor styling one block,
+// or one block type — and the control that switch belongs to says as much.
+//
+// Both DO answer to the theme's own ceiling, which is a different claim:
+// a theme that declares `allowStyleOverrides: false` is refusing to be
+// dressed at all, and honouring that on two tiers out of three would make
+// it not a ceiling. No bundled theme sets it today, so this changes
+// nothing now; it makes the rule true for the first theme that does.
+const styleTiers = themeAllowsOverrides
+	? [blockStyleOverridesCss, instanceStyleCss].filter(Boolean)
+	: [];
+// The declaration comes first so the order is a line someone can read
+// rather than a property of where the rules happen to land in the
+// document (ADR-0047) — and only when there is something to order, so a
+// page that customises nothing carries no extra bytes.
+const blockStyleCss =
+	styleTiers.length > 0
+		? ['@layer kometio.class, kometio.instance;', ...styleTiers].join('\n')
+		: '';
+---
+
+<html lang={locale} dir={localeDirection(locale)} data-kometio-theme={resolvedThemeName}>
+	<head>
+		<meta charset="utf-8" />
+		{/* Before any other style: see cascade-layers.ts. */}
+		<style set:html={CASCADE_LAYER_ORDER_CSS} />
+		{
+			themeBaseTokenDeclarations && (
+				<style set:html={`:root { ${themeBaseTokenDeclarations} }`} />
+			)
+		}
+		{
+			theme.faviconUrl ? (
+				<link rel="icon" href={theme.faviconUrl} />
+			) : (
+				<>
+					<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+					<link rel="icon" href="/favicon.ico" />
+				</>
+			)
+		}
+		<meta name="viewport" content="width=device-width" />
+		{
+			themeFont && (
+				<>
+					<link rel="preconnect" href="https://fonts.googleapis.com" />
+					<link
+						rel="preconnect"
+						href="https://fonts.gstatic.com"
+						crossorigin
+					/>
+					<link
+						rel="stylesheet"
+						href={`https://fonts.googleapis.com/css2?family=${themeFont.googleFontsFamily}&display=swap`}
+					/>
+				</>
+			)
+		}
+		{
+			themeOverrideDeclarations && (
+				<style set:html={`:root { ${themeOverrideDeclarations} }`} />
+			)
+		}
+		{
+			blockStyleCss && <style set:html={blockStyleCss} />
+		}
+		<meta name="generator" content={Astro.generator} />
+		<title>{seoMeta.title}</title>
+		<meta name="description" content={seoMeta.description} />
+		<link rel="canonical" href={canonicalUrl} />
+		{/* How a reader's app finds the feed without being told it exists:
+		    every page of a language points at that language's feed. */}
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title={`${site.name} — ${locale}`}
+			href={`/${locale}/rss.xml`}
+		/>
+		{
+			(!site.searchEngineIndexingEnabled || noindex) && (
+				<meta name="robots" content="noindex, nofollow" />
+			)
+		}
+		{
+			translations.map((translation) => (
+				<link
+					rel="alternate"
+					hreflang={translation.locale}
+					href={`${Astro.url.origin}${localePathFromAncestors(translation.locale, translation.ancestorSlugs, translation.slug)}`}
+				/>
+			))
+		}
+		{
+			defaultTranslation && (
+				<link
+					rel="alternate"
+					hreflang="x-default"
+					href={`${Astro.url.origin}${localePathFromAncestors(defaultTranslation.locale, defaultTranslation.ancestorSlugs, defaultTranslation.slug)}`}
+				/>
+			)
+		}
+
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={seoMeta.title} />
+		<meta property="og:description" content={seoMeta.description} />
+		<meta property="og:url" content={pageUrl} />
+		{ogImage && <meta property="og:image" content={ogImage} />}
+
+		<meta
+			name="twitter:card"
+			content={ogImage ? 'summary_large_image' : 'summary'}
+		/>
+		<meta name="twitter:title" content={seoMeta.title} />
+		<meta name="twitter:description" content={seoMeta.description} />
+		{ogImage && <meta name="twitter:image" content={ogImage} />}
+
+		<script is:inline type="application/ld+json" set:html={schemaOrgJson} />
+
+		{
+			// Raw injection, admin-trusted (docs/adr/0021) — same trust level as
+			// anyone who already edits pages/blocks. theme.customCss/headScript
+			// are never escaped or sanitized; headScript additionally gets a
+			// per-request nonce injected into each of its own <script> tags
+			// (see content-security-policy.ts) since ADR-0025's CSP is strict
+			// on script-src — style-src still allows 'unsafe-inline', so
+			// customCss needs no such treatment.
+			theme.customCss && <style set:html={theme.customCss} />
+		}
+		{
+			headScript && (
+				<Fragment
+					set:html={injectScriptNonce(headScript, Astro.locals.cspNonce)}
+				/>
+			)
+		}
+		<Fragment
+			set:html={renderUngatedScripts(
+				headTrackerScripts.ungated,
+				Astro.locals.cspNonce,
+			)}
+		/>
+		<Fragment set:html={renderGatedScripts(headTrackerScripts.gated)} />
+		{
+			!isEditorCanvas && (
+				<script
+					is:inline
+					nonce={Astro.locals.cspNonce}
+					set:html={buildCookieConsentBootstrap(Astro.locals.cspNonce)}
+				/>
+			)
+		}
+	</head>
+	<body
+		class:list={[{ 'kometio-body--sticky-footer': themeManifest.stickyFooter }]}
+		data-kometio-editor-app-url={editable ? editorAppUrl() : undefined}
+	>
+		<a href="#main-content" class="kometio-skip-link">{i18n.t('skipLink')}</a>
+		{
+			header && (
+				<HeaderRegion {...themeRegionProps} sticky={headerSticky}>
+					<div
+						class="flex flex-col gap-3"
+						data-kometio-root-blocks={editable ? 'header' : undefined}
+					>
+						{header.map((block) => (
+							<BlockRenderer
+								block={block}
+								locale={locale}
+								translations={translations}
+								site={site}
+								ancestors={ancestors}
+								currentPageTitle={seoMeta.title}
+								editable={editable}
+							/>
+						))}
+					</div>
+				</HeaderRegion>
+			)
+		}
+		<ContentShellRegion {...themeRegionProps}>
+			<slot />
+		</ContentShellRegion>
+		{
+			footer && (
+				<FooterRegion {...themeRegionProps}>
+					<div
+						class="flex flex-col gap-3"
+						data-kometio-root-blocks={editable ? 'footer' : undefined}
+					>
+						{footer.map((block) => (
+							<BlockRenderer
+								block={block}
+								locale={locale}
+								translations={translations}
+								site={site}
+								ancestors={ancestors}
+								currentPageTitle={seoMeta.title}
+								editable={editable}
+							/>
+						))}
+					</div>
+				</FooterRegion>
+			)
+		}
+		{
+			bodyScript && (
+				<Fragment
+					set:html={injectScriptNonce(bodyScript, Astro.locals.cspNonce)}
+				/>
+			)
+		}
+		<Fragment
+			set:html={renderUngatedScripts(
+				bodyTrackerScripts.ungated,
+				Astro.locals.cspNonce,
+			)}
+		/>
+		<Fragment set:html={renderGatedScripts(bodyTrackerScripts.gated)} />
+		{
+			site.cookieBannerSettings.enabled && !isEditorCanvas && (
+				<CookieConsent
+					settings={site.cookieBannerSettings}
+					locale={locale}
+					privacyPolicySlug={site.privacyPolicySlug}
+					cookiePolicySlug={site.cookiePolicySlug}
+				/>
+			)
+		}
+		{
+			editable && (
+				<script>
+					import { initPreviewBridge } from '../lib/init-preview-bridge';
+					initPreviewBridge();
+				</script>
+			)
+		}
+	</body>
+</html>
+
+<style>
+	/* WCAG 2.4.1 Bypass Blocks — invisible until it takes keyboard focus
+	   (the body's first element, before the header and nav), then it moves
+	   into view. It points at #main-content, the id every content slotted
+	   into this layout has to carry on its own real <main>
+	   (PublicPageContent.astro, search.astro). */
+	.kometio-skip-link {
+		position: absolute;
+		top: -100%;
+		left: 0.5rem;
+		z-index: 100;
+		padding: 0.5rem 1rem;
+		background: var(--background);
+		color: var(--foreground);
+		border: 1px solid var(--border);
+		border-radius: 0.25rem;
+	}
+	.kometio-skip-link:focus {
+		top: 0.5rem;
+	}
+
+	/* `stickyFooter` in theme.json. It lives in core rather than in the theme
+	   because it concerns <body>, which core owns: a scoped style written
+	   here already reaches it, whereas a theme would have to fall back to
+	   `is:global` — which is how docs-showcase's rules ended up on the other
+	   themes' pages. */
+	.kometio-body--sticky-footer {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+	}
+	/* `:global` on the descendant only: <footer> is rendered by
+	   DefaultFooter.astro (or by the theme's own region) and carries no cid
+	   from this file, so a scoped `> footer` would never match — caught by
+	   reading the generated CSS, not by reasoning. The left-hand side stays
+	   scoped, so the rule still cannot escape onto other themes. */
+	.kometio-body--sticky-footer > :global(footer) {
+		margin-top: auto;
+	}
+</style>

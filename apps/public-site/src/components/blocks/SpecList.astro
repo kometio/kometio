@@ -1,0 +1,56 @@
+---
+import type { SpecListProps } from '@kometio/shared-types';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = SpecListProps & {
+  locale?: string;
+  editable?: boolean;
+  hasChildren?: boolean;
+  emptyChildLabel?: string | null;
+  instanceClass?: string | null;
+};
+
+const { columns, locale, editable, hasChildren, emptyChildLabel, instanceClass } =
+  Astro.props;
+---
+
+<dl
+  class:list={['kometio-spec-list', `kometio-spec-list--${columns}`, instanceClass]}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  <slot />
+  <EmptyContainerHint
+    show={!hasChildren && Boolean(editable)}
+    locale={locale}
+    childLabel={emptyChildLabel}
+  />
+</dl>
+
+<style>
+  .kometio-spec-list {
+    display: grid;
+    column-gap: var(--kometio-override-gap, 2rem);
+    margin: 0;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-spec-list--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @container (max-width: 36rem) {
+    .kometio-spec-list--two {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .kometio-spec-list[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

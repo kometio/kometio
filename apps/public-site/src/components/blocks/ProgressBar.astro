@@ -1,0 +1,95 @@
+---
+import type { ProgressBarProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = ProgressBarProps & {
+  locale: string;
+  instanceClass?: string | null;
+};
+
+const { label, value, showValue, locale, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+const clamped = Math.min(100, Math.max(0, value));
+// "75%" in English, "75 %" in French — the language's own spelling.
+const percent = new Intl.NumberFormat(locale || undefined, {
+  style: 'percent',
+  maximumFractionDigits: 0,
+}).format(clamped / 100);
+---
+
+<div class:list={['kometio-progress-bar', instanceClass]}>
+  {(label || showValue) && (
+    <div class="kometio-progress-bar__head">
+      {label && (
+        <span class="kometio-progress-bar__label" data-kometio-field="label">
+          {label}
+        </span>
+      )}
+      {/* Hidden from a screen reader: the bar itself says the same number. */}
+      {showValue && (
+        <span class="kometio-progress-bar__value" aria-hidden="true">
+          {percent}
+        </span>
+      )}
+    </div>
+  )}
+  <div
+    class="kometio-progress-bar__track"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow={clamped}
+    aria-valuetext={percent}
+    aria-label={label || i18n.t('progressBar.label')}
+    style={`--kometio-progress: ${clamped / 100};`}
+  >
+    <div class="kometio-progress-bar__fill"></div>
+  </div>
+</div>
+
+<style>
+  .kometio-progress-bar {
+    display: grid;
+    gap: 0.375rem;
+    color: var(--kometio-override-text, inherit);
+  }
+
+  .kometio-progress-bar__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .kometio-progress-bar__label {
+    font-weight: 500;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-progress-bar__value {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-progress-bar__track {
+    height: var(--kometio-override-min-height, 0.5rem);
+    overflow: hidden;
+    border-radius: var(--kometio-override-radius, 999px);
+    background: var(--muted);
+  }
+
+  /* `transform`, not `width`: it fills from the start edge in both
+     writing directions once the origin is the logical start, and moving
+     it never makes the page lay itself out again. */
+  .kometio-progress-bar__fill {
+    height: 100%;
+    background: var(--kometio-override-bg, var(--primary));
+    transform: scaleX(var(--kometio-progress));
+    transform-origin: left;
+  }
+
+  .kometio-progress-bar__fill:dir(rtl) {
+    transform-origin: right;
+  }
+</style>

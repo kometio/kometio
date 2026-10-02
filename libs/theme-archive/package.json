@@ -1,0 +1,30 @@
+{
+  "name": "@kometio/theme-archive",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "nx": {
+    "tags": [
+      "adapter"
+    ]
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@kometio/shared-types": "workspace:*",
+    "yauzl": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/yauzl": "^2.10.3",
+    "@types/yazl": "^3.3.0",
+    "yazl": "^3.3.1"
+  }
+}

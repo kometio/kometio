@@ -1,0 +1,217 @@
+---
+import type { CardProps } from '@kometio/shared-types';
+import OptimizedImage from '../OptimizedImage.astro';
+import { resolveImageAlt } from '../../lib/image-alt';
+import { GRID_ITEM_SIZES } from '../../lib/image-sizes';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = CardProps & {
+  /** The locale this page renders in — see EmptyContainerHint. */
+  locale?: string;
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The variant's modifier class, from BlockRenderer — see blockVariantClassName. */
+  variantClass?: string | null;
+  /** True when the block holds children — a Card is a container. */
+  hasChildren?: boolean;
+  /** True on the canvas preview routes only — never on a published page. */
+  editable?: boolean;
+};
+
+const {
+  media,
+  alt,
+  isDecorative,
+  instanceClass,
+  variantClass,
+  hasChildren,
+  editable,
+  locale,
+  emptyChildLabel,
+} = Astro.props;
+// Exactly as in Image.astro: a decorative picture gets alt="" per WCAG
+// even if a value was typed there before the flag was ticked, and while the
+// card has no text of its own the file's is what it says.
+const resolvedAlt = resolveImageAlt({ alt, isDecorative, media });
+---
+
+{/* <article>, not <div>: a card is a self-contained composition that
+    still makes sense lifted out of the page, which is precisely what the
+    element means. Not <section> — that one wants a heading, and a card
+    is free not to have one. */}
+<article
+  class:list={['kometio-card', variantClass, instanceClass]}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  {
+    media && (
+      <div class="kometio-card__media">
+        <OptimizedImage
+          media={media}
+          alt={resolvedAlt}
+          class="kometio-card__image"
+          sizes={GRID_ITEM_SIZES}
+        />
+      </div>
+    )
+  }
+  {/* On a published page the body only exists when there is something to
+      put in it, so a card that is nothing but its picture gains no strip
+      of empty padding under it. On the canvas it is always emitted, to
+      carry the hint: an empty card with no body collapses to its border
+      and there is no way to click it, which is the only way to add the
+      first block inside. */}
+  {(hasChildren || editable) && (
+    <div class="kometio-card__body">
+      <slot />
+      <EmptyContainerHint
+  show={!hasChildren && Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>
+    </div>
+  )}
+</article>
+
+<style>
+  /*
+   * The card, and the reason it is a block rather than a Container with a
+   * border set on it (ADR-0058): the media header is edge to edge. The
+   * padding that holds the words away from the border is on this element,
+   * so a picture placed as a CHILD would sit inside that padding — inset,
+   * with the card's background showing around it. Escaping the padding is
+   * something only the card itself can do, which is what makes the header
+   * a field.
+   *
+   * Everything else a card contains stays a block. A heading, a
+   * paragraph and a Button already do those three jobs, and a Card
+   * carrying its own copies of them could never grow a price, a rating or
+   * a badge without another field being added here first.
+   */
+  .kometio-card {
+    display: flex;
+    flex-direction: column;
+    /* Fixed, not the `contentAlign` override: aligning THIS element would
+       shrink the media header away from the edges, which is the one thing
+       the header exists to do. The override lands on the body, where the
+       blocks that can meaningfully be aligned actually live. */
+    align-items: stretch;
+    /* Zero here, not the gap override: the two children are the header
+       and the body, and a gap between them would show a stripe of card
+       background under a picture that is meant to butt against the text
+       block below it. The override applies inside the body. */
+    gap: 0;
+    max-width: var(--kometio-override-max-width, none);
+    min-height: var(--kometio-override-min-height, auto);
+    background: var(--kometio-override-bg, var(--background));
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    border-width: var(--kometio-override-border-width, 1px);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+    box-shadow: var(--kometio-override-shadow, none);
+    /* The corner radius has to clip the media header, and the header is
+       the child that reaches the edge. Without this the picture's square
+       corners poke out of the card's rounded ones. */
+    overflow: hidden;
+    /* The padding lives on the body and not here, so the header can be
+       flush while the words are not — see `.kometio-card__body`. */
+    padding: 0;
+  }
+
+  /*
+   * A fixed 16/9 crop, and deliberately not a control yet: the aspect
+   * ratio vocabulary (auto/1:1/4:3/16:9/…) is being added to the media
+   * blocks in its own change, and a second, private copy of it here would
+   * be the duplicate that goes out of step. What matters for a row of
+   * cards is that they all crop the SAME way, which a fixed ratio gives
+   * and a natural one does not.
+   */
+  .kometio-card__media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+  /* `:global` — the image is rendered by OptimizedImage, a child
+     component, and an Astro scoped style does not reach into one. */
+  .kometio-card__media :global(.kometio-card__image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .kometio-card__body {
+    display: flex;
+    flex-direction: column;
+    align-items: var(--kometio-override-align, stretch);
+    gap: var(--kometio-override-gap, 0.75rem);
+    padding: var(--kometio-override-padding-y, 1.25rem)
+      var(--kometio-override-padding-x, 1.25rem);
+  }
+
+  /* The shadow-instead-of-border look. The border is not removed but set
+     to transparent: removing it would change the card's outer size by two
+     pixels, so a grid of mixed variants would no longer line up. */
+  .kometio-card--elevated {
+    border-color: var(--kometio-override-border-color, transparent);
+    /* The theme's scale: core's global.css declares all of it, so every
+       theme has a `--shadow-md` (docs-showcase had none, and each block
+       fell back to a literal of its own). */
+    box-shadow: var(--kometio-override-shadow, var(--shadow-md));
+  }
+
+  /* No frame at all — the card as a grouping of blocks rather than an
+     object on the page. The padding goes with the frame: a flat card that
+     kept it would sit indented from its neighbours for no visible
+     reason. */
+  .kometio-card--flat {
+    background: var(--kometio-override-bg, transparent);
+    border-color: var(--kometio-override-border-color, transparent);
+    box-shadow: var(--kometio-override-shadow, none);
+  }
+  .kometio-card--flat .kometio-card__body {
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  /*
+   * The picture beside the words: the list-item card, same block.
+   *
+   * `flex-wrap` and NOT a container query, and this is the interesting
+   * part. A container query written here would ask the wrong element.
+   * `.kometio-card` declares `container-type` (it has to — a block nested
+   * inside it needs something to measure), and an element never queries
+   * itself: `@container` on `.kometio-card--horizontal` resolves against
+   * the card's ANCESTOR, while `@container` on `.kometio-card__media`
+   * inside the same block resolves against the CARD. Two rules meant to
+   * fire together, resolved against two different widths — a card in a
+   * three-column grid inside one wide container would keep its row
+   * direction while its picture had already switched to the stacked
+   * sizing. Wrapping asks the only question that matters, "do these two
+   * boxes fit on one line of THIS card", and answers it at the card's own
+   * width with no query at all.
+   */
+  .kometio-card--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    /* The gap between the picture and the words on one line, and between
+       them when they wrap onto two. */
+    gap: var(--kometio-override-gap, 0.75rem);
+  }
+  .kometio-card--horizontal .kometio-card__media {
+    /* Grow and shrink from a comfortable minimum: side by side it takes
+       about a quarter of the card (1 against the body's 3), and when
+       there is no room for both it wraps onto its own line and fills it.
+       The 16/9 crop holds in both, which is what keeps a column of these
+       cards looking like a column. */
+    flex: 1 1 12rem;
+    aspect-ratio: 16 / 9;
+  }
+  .kometio-card--horizontal .kometio-card__body {
+    flex: 3 1 18rem;
+    justify-content: center;
+  }
+</style>

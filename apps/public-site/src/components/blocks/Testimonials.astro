@@ -1,0 +1,84 @@
+---
+import type { TestimonialsProps } from '@kometio/shared-types';
+import CollectionLayout from '../CollectionLayout.astro';
+
+export type Props = TestimonialsProps & {
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+  locale: string;
+};
+
+const { display, editable, hasChildren, instanceClass, locale } = Astro.props;
+---
+
+{/*
+  The track, the nav buttons and the scrolling all come from
+  CollectionLayout now (ADR-0052). This block used to carry its own copy
+  of each, and `ImageSlider` carried a second one — the two differed by a
+  class name and by how far a press scrolled. What stays here is what is
+  actually about testimonials: the card's own width, and nothing else.
+
+  `display` defaults to `slider`, which is what this block always was, so
+  a page that never touched it is unchanged — and it can now be a grid or
+  a carousel without a new block type existing.
+*/}
+<CollectionLayout
+  blockClass="kometio-testimonials"
+  display={display}
+  editable={editable}
+  hasChildren={hasChildren}
+  instanceClass={instanceClass}
+  locale={locale}
+  step="item"
+>
+  <slot />
+</CollectionLayout>
+
+<script>
+  // Logic lives in a plain importable module (not inline here) so it can
+  // also be re-run after a live canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { collectionBehaviors } from '../../lib/block-behaviors/collection';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, collectionBehaviors);
+</script>
+
+<style>
+  /*
+     `:global()`, and it is not optional: the element these rules target is
+     rendered by CollectionLayout.astro, not by this file, so Astro's
+     scoped styles never reach it — the block silently lost its grid
+     entirely, measured as `display: block` on the built page. Same
+     reasoning as Image.astro's `:global(.kometio-image)`, which styles an
+     element OptimizedImage renders.
+  */
+  :global(.kometio-testimonials) {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  /* The grid arrangement this block never had before: the same shape as
+     every other collection's, at a width a testimonial card reads well
+     at. */
+  :global(.kometio-testimonials.kometio-collection--grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--kometio-override-gap, 1.5rem);
+  }
+  /* Kept from the version this replaces: the track sat in 0.5rem of
+     vertical padding so a card's shadow was not clipped by the scroll
+     box. */
+  :global(.kometio-testimonials .kometio-collection__track) {
+    padding-block: 0.5rem;
+  }
+  /* Editor only, and only once it has content — the same pattern as
+     Column.astro/Container.astro. */
+  :global(.kometio-testimonials[data-kometio-editable-outline]) {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

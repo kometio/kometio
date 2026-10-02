@@ -1,0 +1,113 @@
+---
+import type { PromoBarProps } from '@kometio/shared-types';
+import { resolveLinkHref } from '@kometio/theme-runtime';
+import { Translator } from '@kometio/theme-runtime';
+import { PROMO_BAR_DISMISS_SCRIPT } from './promo-bar-dismiss-script';
+
+type Props = PromoBarProps & {
+  instanceClass?: string | null;
+  locale: string;
+};
+
+const {
+  message,
+  linkType,
+  page,
+  url,
+  visibility,
+  locale,
+  instanceClass,
+} = Astro.props;
+// One answer for both questions: where this points, and whether there
+// is a button at all. They used to be two expressions that could
+// disagree — `hasLink` was true for a picked page with no address in
+// this locale, and `href` then fell back to the url field (ADR-0063).
+const href = resolveLinkHref({ linkType, page, url });
+const hasLink = href !== null;
+const i18n = new Translator(locale);
+---
+
+<div
+  class:list={[
+    instanceClass,
+    'kometio-promo-bar',
+    { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+    { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+  ]}
+>
+  {
+    /* is:inline, not the bundled/deferred <script> below: this one must run
+       synchronously, before the browser paints the bar, or a visitor who
+       already dismissed it sees a flash of it anyway. Reads
+       `document.currentScript.parentElement` rather than an id so it still
+       finds the right bar if this component is ever placed twice on the
+       same page (header + footer), matching HamburgerMenu/NavLink's own
+       querySelectorAll-over-id convention. Content lives in
+       promo-bar-dismiss-script.ts, not inline here — content-security-
+       policy.ts hashes that exact same string for `script-src`, so the two
+       can never drift apart. */
+  }
+  <script is:inline set:html={PROMO_BAR_DISMISS_SCRIPT} />
+  <p class="kometio-promo-bar__message">
+    {hasLink ? (
+      <a href={href} data-kometio-field="message">{message}</a>
+    ) : (
+      <span data-kometio-field="message">{message}</span>
+    )}
+  </p>
+  <button
+    type="button"
+    class="kometio-promo-bar__close"
+    aria-label={i18n.t('promoBar.close')}
+  >
+    ×
+  </button>
+</div>
+
+<script>
+  // No framework here on purpose (docs/adr/0007) — a plain click listener
+  // is all a dismiss button needs. Single fixed key, no per-message
+  // versioning (see promoBarPropsSchema's own comment for the trade-off).
+  // Logic lives in a plain importable module (not inline here) so it can
+  // also be re-run after a live canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { promoBarBehaviors } from '../../lib/block-behaviors/promo-bar';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, promoBarBehaviors);
+</script>
+
+<style>
+  .kometio-promo-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: var(--kometio-override-padding-y, 0.75rem)
+      var(--kometio-override-padding-x, 2.5rem);
+    border-radius: var(--kometio-override-radius, 0);
+    background: var(--kometio-override-bg, var(--primary));
+    color: var(--kometio-override-text, var(--primary-foreground));
+    text-align: center;
+  }
+  .kometio-promo-bar__message {
+    margin: 0;
+  }
+  .kometio-promo-bar__message a {
+    color: inherit;
+    text-decoration: underline;
+  }
+  .kometio-promo-bar__close {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.25rem;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+</style>

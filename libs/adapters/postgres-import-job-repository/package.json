@@ -1,0 +1,28 @@
+{
+  "name": "@kometio/postgres-import-job-repository",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "nx": {
+    "tags": [
+      "adapter"
+    ]
+  },
+  "dependencies": {
+    "@kometio/domain-core": "workspace:*",
+    "@kometio/ports": "workspace:*",
+    "@kometio/postgres-db": "workspace:*",
+    "@kometio/shared-types": "workspace:*",
+    "drizzle-orm": "^0.45.3"
+  }
+}

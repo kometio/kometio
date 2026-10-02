@@ -1,0 +1,125 @@
+---
+import type { HeroProps } from '@kometio/shared-types';
+
+type Props = HeroProps & {
+	instanceClass?: string | null;
+	/** True when the block holds children — a Hero is a container since ADR-0056. */
+	hasChildren?: boolean;
+};
+
+const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
+---
+
+{/* <section>, not <header>: this block can be dropped anywhere in a
+    page's body (not just a site's actual header slot) — a bare <header>
+    there creates a second, ambiguous role="banner" landmark alongside the
+    real one from PageLayout.astro. Security review 2026-08-24, accessibility. */}
+<section
+	class:list={['kometio-hero mx-auto text-center', instanceClass]}
+>
+	{/* Not rendered at all when empty, so a hero that never set one is
+	    byte-identical to before. */}
+	{eyebrow && <p class="kometio-hero__eyebrow" data-kometio-field="eyebrow">{eyebrow}</p>}
+	<h1
+		data-kometio-field="title"
+		class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl"
+	>
+		{title}
+	</h1>
+	<div
+		data-kometio-field="subtitle"
+		class="kometio-rich-text mt-4 text-lg text-pretty text-muted-foreground sm:text-xl"
+		set:html={subtitle}
+	/>
+	{/* A Hero holds blocks now (ADR-0056) — a Button under the subtitle
+	    is what every landing page opens with, and until now the only way
+	    to get one was a separate block below the hero, outside its
+	    background and its padding. Rendered only when there are children,
+	    so an empty hero gains no stray box. */}
+	{hasChildren && (
+		<div class="kometio-hero__content">
+			<slot />
+		</div>
+	)}
+</section>
+
+<style>
+	/* The vocabulary of ADR-0047 is what an ordinary hero needs — a
+	   background image, a wash over it so the words stay readable, a
+	   minimum height, and somewhere to put the content inside that height.
+
+	   Every fallback below is what this block already looked like, so a
+	   hero with nothing overridden renders exactly as before. */
+	.kometio-hero {
+		/* Flex, so `contentAlign` has something to align. `stretch`
+		   is the flex default AND what block flow did, so a hero that
+		   sets nothing lays out exactly as before: children fill the
+		   width and `text-center` still centres the text inside them. */
+		display: flex;
+		flex-direction: column;
+		align-items: var(--kometio-override-align, stretch);
+		gap: var(--kometio-override-gap, 0);
+		max-width: var(--kometio-override-max-width, 48rem);
+		/* `max-w-3xl py-20 sm:py-28` moved off the class list and into
+		   here, because a scoped rule outranks a Tailwind utility: left
+		   in place they would have been declared twice and the utility
+		   would always have lost. The numbers are that utility's own —
+		   48rem, 5rem, and 7rem above 640px — so the hero is unchanged.
+		   Losing the responsive half is the easy mistake here: a flat
+		   5rem would quietly shorten every hero on a desktop. */
+		padding: var(--kometio-override-padding-y, var(--kometio-hero-py))
+			var(--kometio-override-padding-x, 0);
+		--kometio-hero-py: 5rem;
+		background-color: var(--kometio-override-bg, transparent);
+		border-radius: var(--kometio-override-radius, 0);
+		box-shadow: var(--kometio-override-shadow, none);
+		min-height: var(--kometio-override-min-height, auto);
+		background-image:
+			linear-gradient(
+				var(--kometio-override-overlay, transparent),
+				var(--kometio-override-overlay, transparent)
+			),
+			var(--kometio-override-bg-image, none);
+		background-position: var(--kometio-override-bg-position, center);
+		background-size: var(--kometio-override-bg-size, cover);
+		background-repeat: var(--kometio-override-bg-repeat, no-repeat);
+	}
+
+	/* `@container`, not `@media`, per ADR-0047 — and since ADR-0056 the
+	   Hero measures ITSELF (it declares `container-type` in global.css,
+	   being a container now), so this asks how much room the hero has
+	   rather than how wide the window is. At the top level those are the
+	   same question, because the hero fills the content column; nested in
+	   a narrow track it is the better one, which is the whole argument of
+	   ADR-0047. Verified by measuring both at 1600px and at 500px. */
+	@container (min-width: 640px) {
+		.kometio-hero {
+			--kometio-hero-py: 7rem;
+		}
+	}
+
+	.kometio-hero h1 {
+		color: var(--kometio-override-text, var(--foreground));
+	}
+
+	/* The small line above the title. Sized and spaced like the pill it
+	   usually is, and using the theme's own accent so it reads as part of
+	   the design rather than as stray text. */
+	.kometio-hero__eyebrow {
+		margin: 0 0 0.75rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		color: var(--primary);
+	}
+
+	.kometio-hero__content {
+		/* Inherits the section's own alignment rather than imposing one:
+		   a Button inside a centred hero should be centred too. */
+		display: flex;
+		flex-direction: column;
+		align-items: inherit;
+		gap: var(--kometio-override-gap, 1rem);
+		margin-top: 1.5rem;
+	}
+</style>

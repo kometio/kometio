@@ -1,0 +1,291 @@
+# docs/adr/0042 — production stack for one site. Separate from the root
+# docker-compose.yml (that one's dev-only: Postgres + Mailpit, nothing
+# else). Run this one directly: `docker compose -f docker-compose.prod.yml
+# up -d --build` (or omit --build once images are pulled from ghcr.io —
+# see docs/self-hosting.md).
+#
+# Same conventions as the dev compose file: restart: unless-stopped on
+# every service, ${VAR:?message} for secrets with no safe default, named
+# volumes for persistent data, no explicit `networks:` block (every
+# service reaches every other one by its service name on Compose's own
+# default network).
+#
+# `env_file: ${ENV_FILE:-.env}` (not a long hand-copied `environment:` list) supplies
+# apps/api's own config — verified directly why: an explicit
+# `environment: { MEDIA_STORAGE_PROVIDER: ${MEDIA_STORAGE_PROVIDER:-} }`
+# still sets the key, to an empty string, once Compose interpolates it —
+# apps/api's own Zod schema treats `''` and "genuinely unset" differently
+# (`z.enum(...).default(...)` only fires on `undefined`), so a var that's
+# correctly *absent* from .env broke validation once it was declared here
+# with an empty-string fallback. `env_file` only passes through variables
+# that are actually assigned in the file — a commented-out optional var
+# in .env.prod.example stays genuinely absent in the container too.
+# `environment:` below layers on top of `env_file:` only for the values
+# that must be container-network-internal (POSTGRES_HOST, service-to-
+# service URLs) rather than whatever a self-hoster's own .env says.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kometio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env, see .env.prod.example}
+      POSTGRES_DB: ${POSTGRES_DB:-kometio}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD in .env, see .env.prod.example}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-kometio}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: applies pending migrations, then exits. `api` waits for it to
+  # exit 0 before starting — explicit, no self-migration-on-boot race to
+  # reason about (see docs/adr/0042). Reuses apps/api/Dockerfile's own
+  # `build` stage (full monorepo + devDependencies already installed
+  # there) rather than a separate Dockerfile just for this. Also doubles
+  # as the one-off admin command runner for the seed step
+  # (docs/self-hosting.md, `docker compose run --rm migrate <command>`).
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: build
+    command:
+      [
+        'pnpm',
+        '--filter',
+        '@kometio/postgres-db',
+        'exec',
+        'drizzle-kit',
+        'migrate',
+      ]
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: '5432'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: ${ENV_FILE:-.env}
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: '5432'
+      # Public origins — browsers hit these, so they must be the real
+      # public URLs (through Caddy), never an internal service name.
+      # Public origins — browsers hit these, so they must be the real
+      # public URLs, never an internal service name. Derived from DOMAIN for
+      # the layout this file ships (Caddy, three subdomains, HTTPS), but
+      # overridable in .env in one place: an origin is scheme+host+port, and
+      # anyone fronting this stack differently (TLS terminated upstream, one
+      # domain with path routing, a non-443 port) needs to change all of
+      # them together or the editor loads and every API call dies in CORS
+      # with nothing saying why. See .env.prod.example.
+      EDITOR_APP_URL: ${EDITOR_APP_URL:-https://admin.${DOMAIN:?Set DOMAIN in .env}}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
+      MEDIA_UPLOAD_DIR: /app/uploads
+      THEMES_DIR: /app/themes
+      # Uploaded themes (docs/adr/0091): the volume the theme builder
+      # watches. Remove this line, and the theme-builder service, to turn
+      # uploads off.
+      THEME_DATA_DIR: /data/themes
+      # Page generation: the key that seals each site's AI API key is
+      # generated here on first start. A volume of its own, outside the
+      # database and its backups — a dump alone opens nothing. Remove the
+      # line to turn page generation off.
+      KOMETIO_SECRETS_DIR: /data/secrets
+      # Caddy is the one proxy in front: each visitor keeps their own
+      # address for every rate limit (login, forms, generation). Change it
+      # only if you put another proxy in front of Caddy.
+      TRUSTED_PROXY_HOPS: '1'
+    volumes:
+      - media-uploads:/app/uploads
+      - theme-data:/data/themes
+      - secrets:/data/secrets
+    healthcheck:
+      # 127.0.0.1, not localhost — verified directly that this container's
+      # `localhost` resolves ::1 first, which server.mjs's explicit
+      # IPv4-only 0.0.0.0 bind (below) never accepts, causing "connection
+      # refused" against an actually-healthy, actually-listening server.
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3000/api/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  public-site:
+    build:
+      context: .
+      dockerfile: apps/public-site/Dockerfile
+    restart: unless-stopped
+    # No `env_file`: the whole .env holds the database passwords and every
+    # other secret, and this server runs code from uploaded themes
+    # (docs/adr/0091). It gets only what it reads — an empty value is
+    # "not set" to each of the optional ones.
+    environment:
+      # Internal service-to-service call, not through Caddy — this is a
+      # server-side fetch (SSR), never a browser request, so CORS doesn't
+      # apply and there's no reason to round-trip through the public
+      # internet for it.
+      API_URL: http://api:3000/api
+      PORT: '4321'
+      # Same value as api's: this is the origin allowed to embed the canvas
+      # iframe (frame-ancestors), so it must match the editor's real origin.
+      EDITOR_APP_URL: ${EDITOR_APP_URL:-https://admin.${DOMAIN:?Set DOMAIN in .env}}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      PUBLIC_API_SERVICE_TOKEN: ${PUBLIC_API_SERVICE_TOKEN:-}
+      KOMETIO_THEME: ${KOMETIO_THEME:-}
+      # Where this site's media is served from, as the API builds its URLs:
+      # the only images the site resizes on the server (/_image refuses
+      # any other address). Same values as the api service's.
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
+      S3_MEDIA_PUBLIC_BASE_URL: ${S3_MEDIA_PUBLIC_BASE_URL:-}
+      # Serves the site the theme builder publishes here, once there is one.
+      THEME_DATA_DIR: /data/themes
+    volumes:
+      - theme-data:/data/themes:ro
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:4321/api/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # Uploaded themes (docs/adr/0091), in two halves. A theme's code runs
+  # when the site is built with it, so the half that builds never sees the
+  # theme volume, and the half that sees it never builds.
+  #
+  # theme-builder, the trusted half: takes uploads off the theme volume,
+  # hands each build to the runner through theme-exchange, and publishes
+  # what comes back. It runs no theme code.
+  theme-builder:
+    build:
+      context: .
+      dockerfile: apps/public-site/Dockerfile
+      target: builder
+    restart: unless-stopped
+    command: ['pnpm', '--filter', '@kometio/theme-builder', 'start']
+    environment:
+      THEME_DATA_DIR: /data/themes
+      THEME_EXCHANGE_DIR: /exchange
+      THEME_BUILDER_WORKSPACE: /workspace
+      # Where the public site's own packages are in ITS container: a
+      # published build runs on them, through a link the builder writes.
+      THEME_RUNTIME_MODULES: /app/node_modules
+    volumes:
+      - theme-data:/data/themes
+      - theme-exchange:/exchange
+    network_mode: none
+    cap_drop: [ALL]
+    # Back only what root needs to work in directories another user
+    # created: the API's uploads, the runner's output.
+    cap_add: [DAC_OVERRIDE, FOWNER]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 512m
+
+  # theme-runner, the half that runs a theme's code: builds one site at a
+  # time in a throwaway copy of the workspace, and sees nothing but the
+  # exchange directory. Unprivileged, no network, nothing writable but its
+  # scratch space; it exits after every build and starts again clean.
+  theme-runner:
+    build:
+      context: .
+      dockerfile: apps/public-site/Dockerfile
+      target: builder
+    restart: always
+    command: ['pnpm', '--filter', '@kometio/theme-builder', 'run-builds']
+    user: '1000:1000'
+    environment:
+      HOME: /tmp
+      THEME_EXCHANGE_DIR: /exchange
+      THEME_SCRATCH_DIR: /scratch
+      THEME_BUILDER_WORKSPACE: /workspace
+    volumes:
+      - theme-exchange:/exchange
+    read_only: true
+    tmpfs:
+      - /scratch:size=3g,uid=1000,gid=1000
+      - /tmp:size=1g,uid=1000,gid=1000
+    network_mode: none
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 4g
+    pids_limit: 512
+
+  editor-app:
+    build:
+      context: .
+      dockerfile: apps/editor-app/Dockerfile
+      args:
+        # Only the captcha key is a build input now: it has no runtime
+        # half. The two addresses below are read when the container starts
+        # (docs/adr/0076), so changing DOMAIN is a restart, not a rebuild —
+        # and the published image works unchanged.
+        VITE_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:?Set TURNSTILE_SITE_KEY in .env to your site's own Turnstile key, see .env.prod.example}
+    environment:
+      KOMETIO_API_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
+      KOMETIO_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://${DOMAIN:?Set DOMAIN in .env}}
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env, Let's Encrypt needs a contact address}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+      - public-site
+      - editor-app
+
+  postgres-backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-kometio}
+      POSTGRES_USER: ${POSTGRES_USER:-kometio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env, see .env.prod.example}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - postgres-backups:/backups
+      - ./docker/pg-backup/backup.sh:/backup.sh:ro
+    entrypoint: ['/bin/sh', '/backup.sh']
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  postgres-backups:
+  media-uploads:
+  caddy-data:
+  caddy-config:
+  secrets:
+  theme-data:
+  theme-exchange:

@@ -1,0 +1,29 @@
+---
+import type { ProductReviewProps } from '@kometio/shared-types';
+import { resolveThemeBlockOverride } from '../../lib/resolve-theme-block-override';
+import TestimonialCore from './Testimonial.astro';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = ProductReviewProps & {
+  locale: string;
+  themeName: string;
+  instanceClass?: string | null;
+};
+
+/*
+ * A testimonial about a product, drawn by the Testimonial component —
+ * the theme's, when it has its own — so that a review and a testimonial
+ * on the same site can never drift into two looks for the same thing.
+ */
+const { themeName, instanceClass, ...review } = Astro.props;
+const Testimonial = resolveThemeBlockOverride(
+  'Testimonial',
+  TestimonialCore,
+  themeName,
+);
+---
+
+<Testimonial
+  {...review}
+  instanceClass={delegatedRootClass('kometio-product-review', instanceClass)}
+/>

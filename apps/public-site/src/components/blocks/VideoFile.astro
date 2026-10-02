@@ -1,0 +1,56 @@
+---
+import type { VideoFileProps } from '@kometio/shared-types';
+
+type Props = VideoFileProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { media, poster, autoplay, loop, muted, controls, instanceClass } =
+  Astro.props;
+
+// Autoplay implies muted, and this is where that is made true rather than
+// in the schema: every browser refuses to start an unmuted video on its
+// own, so an autoplaying video with sound simply never plays. Muting it
+// is what the person who ticked "autoplay" actually meant.
+const isMuted = muted || autoplay;
+
+// `playsinline`: on iOS a video without it takes over the whole screen
+// the moment it starts, which is not what an inline clip in a page is.
+//
+// `preload="metadata"`, not `auto`: the browser fetches enough to know
+// the duration and draw the scrubber, without pulling megabytes for a
+// video nobody may play. `none` would leave the control bar with no
+// duration at all.
+---
+
+{
+  media && (
+    <video
+      class:list={['kometio-video-file', instanceClass]}
+      src={media.url}
+      poster={poster?.url}
+      controls={controls}
+      autoplay={autoplay}
+      loop={loop}
+      muted={isMuted}
+      playsinline
+      preload="metadata"
+      width={media.width ?? undefined}
+      height={media.height ?? undefined}
+    />
+  )
+}
+
+<style>
+  .kometio-video-file {
+    display: block;
+    /* Never wider than the space it is in, and keeping its own shape —
+       the pair of declarations every responsive media element needs. */
+    max-width: var(--kometio-override-max-width, 100%);
+    height: auto;
+    border-radius: var(--kometio-override-radius, 0);
+    box-shadow: var(--kometio-override-shadow, none);
+    background: var(--kometio-override-bg, #000);
+  }
+</style>

@@ -1,0 +1,62 @@
+---
+import type { TeamMemberProps } from '@kometio/shared-types';
+import OptimizedImage from '../OptimizedImage.astro';
+import { fixedSizes } from '../../lib/image-sizes';
+
+type Props = TeamMemberProps & { instanceClass?: string | null };
+
+const { name, role, bio, photo, instanceClass } = Astro.props;
+---
+
+<div class:list={['kometio-team-member', instanceClass]}>
+  {
+    photo ? (
+      <OptimizedImage
+        media={photo}
+        alt=""
+        class="kometio-team-member__photo"
+        sizes={fixedSizes(96)}
+      />
+    ) : (
+      <div class="kometio-team-member__photo kometio-team-member__photo--placeholder" />
+    )
+  }
+  <div class="kometio-team-member__name" data-kometio-field="name">{name}</div>
+  <div class="kometio-team-member__role" data-kometio-field="role">{role}</div>
+  {bio && <div class="kometio-team-member__bio kometio-rich-text" data-kometio-field="bio" set:html={bio} />}
+</div>
+
+<style>
+  .kometio-team-member {
+    text-align: center;
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  /* :global() because OptimizedImage (a child component) renders the
+  actual <img> — see Image.astro's own style block for the full reasoning. */
+  :global(.kometio-team-member__photo) {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto;
+  }
+  .kometio-team-member__photo--placeholder {
+    background: var(--muted);
+  }
+  .kometio-team-member__name {
+    margin-top: 0.75rem;
+    font-weight: 600;
+    color: var(--kometio-override-text, inherit);
+  }
+  .kometio-team-member__role {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+  .kometio-team-member__bio {
+    margin: 0.375rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+</style>

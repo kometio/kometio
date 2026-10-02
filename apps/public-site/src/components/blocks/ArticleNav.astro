@@ -1,0 +1,27 @@
+---
+import type { ArticleNavProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import PrevNextNav from '../PrevNextNav.astro';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = ArticleNavProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The language being rendered — the two labels are the block's only words. */
+  locale?: string;
+};
+
+const { previous, next, instanceClass, locale } = Astro.props;
+const i18n = new Translator(locale ?? '');
+// Both ends are filled in by the render pass (resolveArticleBlocks): the
+// older and newer article in the same collection.
+---
+
+<PrevNextNav
+  previous={previous}
+  next={next}
+  label={i18n.t('articleNav.label')}
+  previousLabel={i18n.t('articleNav.previous')}
+  nextLabel={i18n.t('articleNav.next')}
+  instanceClass={delegatedRootClass('kometio-article-nav', instanceClass)}
+/>

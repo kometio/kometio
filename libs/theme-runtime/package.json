@@ -1,0 +1,26 @@
+{
+  "name": "@kometio/theme-runtime",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./locals": {
+      "types": "./src/locals.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "nx": {
+    "tags": [
+      "domain"
+    ]
+  },
+  "dependencies": {},
+  "description": "The runtime surface a Kometio theme codes against: locale paths, the UI translator, and the theme-region prop contract.",
+  "license": "FSL-1.1-ALv2"
+}

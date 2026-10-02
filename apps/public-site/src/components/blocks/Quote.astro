@@ -1,0 +1,31 @@
+---
+import type { QuoteProps } from '@kometio/shared-types';
+
+type Props = QuoteProps & { instanceClass?: string | null };
+
+const { quote, author, role, instanceClass } = Astro.props;
+const hasAuthor = Boolean(author);
+const hasRole = Boolean(role);
+---
+
+<div class:list={['kometio-quote', instanceClass]}>
+  <blockquote class="kometio-rich-text" data-kometio-field="quote" set:html={quote} />
+  {
+    (hasAuthor || hasRole) && (
+      <cite>
+        {hasAuthor && <span data-kometio-field="author">{author}</span>}
+        {hasAuthor && hasRole && ' — '}
+        {hasRole && <span data-kometio-field="role">{role}</span>}
+      </cite>
+    )
+  }
+</div>
+
+<style>
+  .kometio-quote {
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    color: var(--kometio-override-text, inherit);
+  }
+</style>

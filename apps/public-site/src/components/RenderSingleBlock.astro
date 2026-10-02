@@ -1,0 +1,37 @@
+---
+import type { Block } from '@kometio/shared-types';
+import type { PublishedPageAncestor, PublishedPageTranslation, PublishedSite } from '@kometio/api-contracts';
+import BlockRenderer from './BlockRenderer.astro';
+
+// The dedicated entry point for fragment patching (see the visual editor
+// plan, Day 3: POST /api/render-block-fragment) — it reuses
+// BlockRenderer.astro's dispatch logic in full rather than duplicating it: a
+// property change in the Inspector renders ONE isolated block through this
+// component (via the Astro Container API,
+// apps/public-site/src/pages/api/render-block-fragment.ts), not the whole
+// page. `editable` is always true here: the resulting fragment has to carry
+// the same data-kometio-block-id/data-kometio-block-type wrapper as the
+// original it is replacing, or the patched block would stop being
+// trackable by the bridge after the first property change.
+interface Props {
+  block: Block;
+  locale: string;
+  translations: PublishedPageTranslation[];
+  site: PublishedSite;
+  ancestors: PublishedPageAncestor[];
+  currentPageTitle: string;
+}
+
+const { block, locale, translations, site, ancestors, currentPageTitle } =
+  Astro.props;
+---
+
+<BlockRenderer
+  block={block}
+  locale={locale}
+  translations={translations}
+  site={site}
+  ancestors={ancestors}
+  currentPageTitle={currentPageTitle}
+  editable
+/>

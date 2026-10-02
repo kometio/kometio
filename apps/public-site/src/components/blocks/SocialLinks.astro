@@ -1,0 +1,63 @@
+---
+import type { SocialLinksProps } from '@kometio/shared-types';
+import CollectionLayout from '../CollectionLayout.astro';
+
+type Props = SocialLinksProps & {
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+  locale: string;
+};
+
+const { display, editable, hasChildren, instanceClass, locale } = Astro.props;
+---
+
+{/*
+  A collection, so it arranges itself like every other one (ADR-0052) and
+  each link is an ordinary block to edit, reorder and style — rather than
+  a bespoke list widget that would need its own editing UI.
+*/}
+<CollectionLayout
+  blockClass="kometio-social-links"
+  display={display}
+  editable={editable}
+  hasChildren={hasChildren}
+  instanceClass={instanceClass}
+  locale={locale}
+>
+  <slot />
+</CollectionLayout>
+
+<script>
+  import { collectionBehaviors } from '../../lib/block-behaviors/collection';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, collectionBehaviors);
+</script>
+
+<style>
+  /*
+     `:global()` for the same reason as every other collection: the element
+     is rendered by CollectionLayout.astro, so Astro's scoped styles never
+     reach it.
+  */
+  :global(.kometio-social-links.kometio-collection--grid) {
+    display: flex;
+    flex-wrap: wrap;
+    /* Not `auto-fit` columns like the other collections: social icons are
+       small and of one size, so a row that wraps reads far better than a
+       grid that stretches six icons across a full-width section. */
+    gap: var(--kometio-override-gap, 0.75rem);
+  }
+  :global(.kometio-social-links) {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  :global(.kometio-social-links[data-kometio-editable-outline]) {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

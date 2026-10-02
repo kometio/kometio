@@ -1,0 +1,42 @@
+---
+import type { AccordionItemProps } from '@kometio/shared-types';
+
+type Props = AccordionItemProps & { instanceClass?: string | null };
+
+const { question, answer, instanceClass } = Astro.props;
+---
+
+<details class:list={['kometio-accordion-item', instanceClass]}>
+  <summary class="kometio-accordion-item__question" data-kometio-field="question">{question}</summary>
+  <div class="kometio-accordion-item__answer kometio-rich-text" data-kometio-field="answer" set:html={answer} />
+</details>
+
+<style>
+  /* Native <details>/<summary> — same "no JS needed" reasoning as
+     NavDropdown.astro's own comment on this exact HTML pattern. */
+  .kometio-accordion-item {
+    border-bottom: 1px solid var(--border);
+    padding: var(--kometio-override-padding-y, 0.75rem) var(--kometio-override-padding-x, 0);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+  }
+  .kometio-accordion-item__question {
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+  }
+  .kometio-accordion-item__question::-webkit-details-marker {
+    display: none;
+  }
+  .kometio-accordion-item__question::after {
+    content: ' +';
+  }
+  details[open] > .kometio-accordion-item__question::after {
+    content: ' −';
+  }
+  .kometio-accordion-item__answer {
+    margin-top: 0.5rem;
+    color: var(--muted-foreground);
+  }
+</style>

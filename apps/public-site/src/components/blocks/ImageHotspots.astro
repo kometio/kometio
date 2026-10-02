@@ -1,0 +1,93 @@
+---
+import type { ImageHotspotsProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+import OptimizedImage from '../OptimizedImage.astro';
+
+type Props = ImageHotspotsProps & {
+  locale: string;
+  editable?: boolean;
+  hasChildren?: boolean;
+  emptyChildLabel?: string | null;
+  instanceClass?: string | null;
+};
+
+const { image, alt, locale, editable, hasChildren, emptyChildLabel, instanceClass } =
+  Astro.props;
+const i18n = new Translator(locale);
+// Nothing to point at without the picture — but in the canvas its points
+// still need somewhere to be, or they could not be selected until one
+// was chosen.
+const show = Boolean(image) || Boolean(editable);
+---
+
+{
+  show && (
+    <div
+      class:list={['kometio-image-hotspots', instanceClass]}
+      data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+    >
+      <div class="kometio-image-hotspots__frame">
+        {image ? (
+          <OptimizedImage media={image} alt={alt} class="kometio-image-hotspots__image" />
+        ) : (
+          <p class="kometio-image-hotspots__placeholder">
+            {i18n.t('imageHotspots.empty')}
+          </p>
+        )}
+        <slot />
+      </div>
+      <EmptyContainerHint
+        show={!hasChildren && Boolean(editable)}
+        locale={locale}
+        childLabel={emptyChildLabel}
+      />
+    </div>
+  )
+}
+
+<script>
+  import { hotspotBehaviors } from '../../lib/block-behaviors/hotspots';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, hotspotBehaviors);
+</script>
+
+<style>
+  .kometio-image-hotspots {
+    display: grid;
+    gap: 0.5rem;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  /* The points are placed in percent of THIS box, so it has to be exactly
+     the picture's size: no padding, and the image filling it. */
+  .kometio-image-hotspots__frame {
+    position: relative;
+  }
+
+  :global(.kometio-image-hotspots__image) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--kometio-override-radius, var(--radius));
+  }
+
+  .kometio-image-hotspots__placeholder {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    margin: 0;
+    border-radius: var(--kometio-override-radius, var(--radius));
+    background: var(--muted);
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-image-hotspots[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+  }
+</style>

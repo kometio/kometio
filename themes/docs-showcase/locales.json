@@ -1,0 +1,14 @@
+{
+  "en": {
+    "sidebarLabel": "Documentation",
+    "paginationLabel": "Documentation pages",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "it": {
+    "sidebarLabel": "Documentazione",
+    "paginationLabel": "Pagine documentazione",
+    "previous": "Precedente",
+    "next": "Successiva"
+  }
+}

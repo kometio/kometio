@@ -1,0 +1,70 @@
+---
+import type { FileListProps } from '@kometio/shared-types';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = FileListProps & {
+  locale?: string;
+  editable?: boolean;
+  hasChildren?: boolean;
+  emptyChildLabel?: string | null;
+  instanceClass?: string | null;
+};
+
+const { title, locale, editable, hasChildren, emptyChildLabel, instanceClass } =
+  Astro.props;
+---
+
+<section
+  class:list={['kometio-file-list', instanceClass]}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  {title && (
+    <h3 class="kometio-file-list__title" data-kometio-field="title">
+      {title}
+    </h3>
+  )}
+  <div class="kometio-file-list__items">
+    <slot />
+  </div>
+  <EmptyContainerHint
+    show={!hasChildren && Boolean(editable)}
+    locale={locale}
+    childLabel={emptyChildLabel}
+  />
+</section>
+
+<style>
+  .kometio-file-list {
+    display: grid;
+    gap: 0.75rem;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-file-list__title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  /* One under the other, each as wide as the list: a column of downloads
+     reads as a list, a row of boxes as a set of buttons. */
+  .kometio-file-list__items {
+    display: grid;
+    gap: var(--kometio-override-gap, 0.5rem);
+  }
+
+  .kometio-file-list__items > :global(.kometio-file-download),
+  .kometio-file-list__items > :global(* > .kometio-file-download) {
+    display: flex;
+  }
+
+  .kometio-file-list[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

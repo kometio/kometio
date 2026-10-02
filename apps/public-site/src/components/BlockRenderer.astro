@@ -1,0 +1,226 @@
+---
+import { resolveIconSvg } from '../lib/resolve-theme-icons';
+import { type Block, BLOCK_PROPS_SCHEMAS, isBlockType } from '@kometio/shared-types';
+import { type PublishedPageAncestor, type PublishedPageTranslation, type PublishedSite } from '@kometio/api-contracts';
+// The themes' block components load before the core ones, as they always
+// have: the stylesheets of the page follow that order, and a theme's rules
+// are meant to come first.
+import '../lib/resolve-theme-block-override';
+import '../lib/resolve-theme-page-blocks';
+import { blockDispatchFor } from '../lib/block-dispatch-for-theme';
+import { commonBlockProps, type BlockRenderContext } from '../lib/block-render-context';
+import type { BlockDispatchEntry } from '../lib/block-dispatch';
+import { normalizeRenderedProps } from '../lib/normalize-rendered-content';
+import { onlyAllowedChildLabel } from '../lib/only-allowed-child-label';
+import { blockInstanceClassName, blockVariantClassName } from '@kometio/shared-types';
+import UnrenderableBlockHint from './UnrenderableBlockHint.astro';
+
+interface Props {
+  block: Block;
+  locale: string;
+  translations: PublishedPageTranslation[];
+  site: PublishedSite;
+  ancestors: PublishedPageAncestor[];
+  currentPageTitle: string;
+  // Only the preview routes (apps/public-site/src/pages/preview/[pageId].astro)
+  // pass true — the real published route never does, so `Wrapper` below
+  // always stays `Fragment` and the published HTML is byte-identical to
+  // before this prop existed (see the visual editor plan, Day 2).
+  editable?: boolean;
+}
+
+const {
+  block,
+  locale,
+  translations,
+  site,
+  ancestors,
+  currentPageTitle,
+  editable,
+} = Astro.props;
+// docs/adr/0042 — derived from `site` (already threaded through every
+// recursive <Astro.self> call further down) rather than a second, parallel
+// prop — a block never needs a theme different from the site it's rendering
+// for.
+const themeName = site.themeName;
+
+// Walks `Block[]`/`children` directly — no dependency on Puck's own data
+// format here, by design (see docs/adr/0007: "any consumer of page content
+// that isn't the editor... can walk children directly without knowing
+// anything about Puck"). Each block's own Zod schema (shared with
+// @kometio/puck-config, same source of truth) validates `props` at this
+// boundary instead of an `as` cast — content comes from the API as
+// unvalidated JSON as far as this component is concerned.
+//
+// `locale`/`translations`/`site`/`ancestors`/`currentPageTitle` are
+// threaded through every recursive call rather than looked up again per
+// block, since a leaf has no way to reach back up to the page-level values
+// otherwise; every block is handed them (lib/block-render-context.ts).
+
+// The entry for a type — its component (the theme's own override when it
+// ships one), whether it takes a style, whether it holds blocks — is worked
+// out from its descriptor and the file named for it (lib/block-dispatch.ts),
+// once per theme. The theme's genuinely new block types (docs/adr/0041) are
+// in the same table.
+const dispatch = blockDispatchFor(themeName);
+
+// `Astro.slots.has('default')` is not enough for a freshly created empty
+// container: canvas-editor-shell.tsx gives it `children: []` (an empty
+// array, not `undefined`) — passing that through as children (even though
+// `.map` produces an empty array) makes the slot count as "filled" for
+// Astro, even when it renders nothing visible. The real count has to come
+// from the `Block` itself, not from the slot.
+const hasChildren = Boolean(block.children?.length);
+
+// A single wrapping point for the whole component (not one scattered
+// through the ~50 arms below) — a block is always exactly one of those
+// arms, never more than one, so wrapping the entire output is equivalent to
+// wrapping "the" block. `display:contents` avoids by construction the "a
+// real wrapper breaks the CSS grid" bug this codebase already hit once
+// (Column.astro, min-width:auto) — a real wrapper here (a <div> without
+// display:contents, say) would break the layout of Columns/FeatureGrid/etc.
+// A known consequence: getBoundingClientRect() on a display:contents node
+// is empty — preview-bridge-client.ts (read by init-preview-bridge.ts) uses Range.selectNodeContents instead.
+const Wrapper = editable ? 'div' : Fragment;
+const wrapperProps = editable
+  ? {
+      'data-kometio-block-id': block.id,
+      'data-kometio-block-type': block.type,
+      style: 'display:contents',
+    }
+  : {};
+
+// The per-INSTANCE overrides are CSS rules now, not an inline style
+// (ADR-0047 — an inline style cannot hold a media query), so the element
+// they apply to needs a class of its own.
+//
+// On the block's OWN root element, not on a wrapper around it. A
+// `display:contents` wrapper would have saved editing every styled block,
+// and it does not affect layout — but it does affect SELECTORS: it sits
+// between a block and its parent, so `:last-child`, `:nth-child` and `>`
+// stop meaning what they meant. `.kometio-timeline-step:last-child` already
+// breaks that way, and a theme may write any selector it likes against
+// core blocks. Structure is not something to change quietly to save
+// thirty mechanical edits.
+//
+// Only for a block that actually has one: a class on every block of every
+// page would be bytes nobody reads, and the rule it pairs with does not
+// exist.
+const instanceClass =
+  block.styleOverride && block.id ? blockInstanceClassName(block.id) : null;
+
+// The variant's modifier class (ADR-0047). Computed for every block
+// rather than gated by a dispatch-entry flag: the answer is `null` unless
+// the block actually names a variant, and a flag here would be a second
+// copy of what the descriptor already says — the kind of copy that goes
+// out of date silently.
+const variantClass = blockVariantClassName(block.type, block.variant);
+
+const entry = dispatch[block.type];
+const Component = entry?.component;
+const context: BlockRenderContext = {
+  block,
+  locale,
+  translations,
+  site,
+  ancestors,
+  currentPageTitle,
+  editable,
+};
+// `safeParse`, not `parse`. This used to throw, and because every block
+// on a page renders through this same component, one block whose saved
+// props no longer satisfy its schema took the entire page's content down
+// with it — the layout and the navigation still rendered, and all thirty
+// other blocks vanished. It is not hypothetical: publishing a heading
+// with a level the running code did not yet accept blanked every page of
+// the documentation site at once.
+//
+// A block that cannot be rendered is skipped, alone. The person editing
+// the page is told which one and why (UnrenderableBlockHint, canvas
+// only); a visitor sees nothing rather than a diagnostic; and the server
+// log keeps the reason, because a page quietly missing a paragraph is
+// exactly the kind of thing nobody reports.
+// A core block's schema is the shared one (BLOCK_PROPS_SCHEMAS, the same
+// list the API reads); a theme's own block brings its schema in its entry.
+const schema: BlockDispatchEntry['schema'] =
+  entry?.schema ??
+  (isBlockType(block.type) ? BLOCK_PROPS_SCHEMAS[block.type] : undefined);
+const parsed = schema ? schema.safeParse(block.props) : null;
+const isUnrenderable = parsed !== null && !parsed.success;
+if (isUnrenderable) {
+  console.error(
+    `[block] ${block.type} ${block.id ?? '(no id)'} does not match its schema, skipped:`,
+    parsed.error.issues,
+  );
+}
+const parsedProps: Record<string, unknown> = parsed?.success
+  ? parsed.data
+  : {};
+// Resolved here, once, and handed down as `iconSvg` — a block (core's or a
+// theme's override of it) never reaches into the icon registry itself.
+// That registry is apps-only (eager glob + lucide-static via
+// import.meta.resolve), so a theme override that had to call it could not
+// live outside this repo. Only blocks whose schema actually has an `icon`
+// field get the prop; for everything else this is a `typeof` check and
+// nothing more.
+const iconName =
+  typeof parsedProps['icon'] === 'string' ? parsedProps['icon'] : null;
+const dispatchProps =
+  entry && !isUnrenderable
+    ? {
+      ...normalizeRenderedProps(block.type, parsedProps, themeName),
+      ...(entry.stylable ? { instanceClass } : {}),
+      ...(variantClass ? { variantClass } : {}),
+      ...commonBlockProps(context),
+      ...(entry.containerProps
+        ? {
+            hasChildren,
+            // The only child this container accepts, when it accepts
+            // exactly one. Resolved here because this is the one place
+            // holding the registry — a block component has no way to ask,
+            // and "pick an element" otherwise sends somebody hunting
+            // through fifty-four tiles for the one that is allowed.
+            emptyChildLabel: onlyAllowedChildLabel(block.type, locale),
+          }
+        : {}),
+      // docs/adr/0042 — always included, not gated by a dispatch-entry
+      // flag like stylable above: cheap to pass to every block (a plain
+      // string already resolved once per render), and more than one block
+      // type may want it over time (NavLink/Feature do today, for icon
+      // resolution) without a new capability flag added per consumer.
+      themeName,
+      ...(iconName ? { iconSvg: resolveIconSvg(iconName, themeName) } : {}),
+      ...(entry.extra ? entry.extra(context) : {}),
+    }
+  : {};
+---
+
+<Wrapper {...wrapperProps}>
+{
+  isUnrenderable && (
+    <UnrenderableBlockHint
+      show={editable === true}
+      type={block.type}
+      locale={locale}
+    />
+  )
+}
+{
+  Component && entry && !isUnrenderable && (
+    <Component {...dispatchProps}>
+      {entry.recurseChildren &&
+        block.children?.map((child) => (
+          <Astro.self
+            block={child}
+            locale={locale}
+            translations={translations}
+            site={site}
+            ancestors={ancestors}
+            currentPageTitle={currentPageTitle}
+            editable={editable}
+          />
+        ))}
+    </Component>
+  )
+}
+</Wrapper>

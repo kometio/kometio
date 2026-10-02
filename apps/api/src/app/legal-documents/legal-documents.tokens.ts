@@ -1,0 +1,1 @@
+export const LEGAL_DOCUMENTS_DEPS = Symbol('LEGAL_DOCUMENTS_DEPS');

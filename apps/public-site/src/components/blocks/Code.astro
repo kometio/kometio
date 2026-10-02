@@ -1,0 +1,44 @@
+---
+import { Code as ShikiCode } from 'astro:components';
+import type { CodeLanguage } from 'astro';
+import type { CodeProps } from '@kometio/shared-types';
+
+type Props = CodeProps & { instanceClass?: string | null };
+
+const { code, language, instanceClass } = Astro.props;
+
+// `language` is a plain `string` in the domain schema (shared-types has no
+// reason to depend on Shiki's bundled-language union) but the curated
+// options in code.block.ts are all valid Shiki language ids — this cast
+// encodes that invariant at the one place it's actually consumed, rather
+// than leaking Shiki's type into the domain model.
+const shikiLang = language as CodeLanguage;
+---
+
+<div class:list={['kometio-code', instanceClass]}>
+  {/* github-dark-default, not Astro's default github-dark: in that one a
+      comment is #6a737d on #24292e, 3.05:1, under WCAG AA on every site
+      with a code block. In this one the faintest text colour reads 6.15:1. */}
+  <ShikiCode code={code} lang={shikiLang} theme="github-dark-default" />
+</div>
+
+<style>
+  /* The padding is the <pre>'s, which carries the code's own background:
+     on the wrapper it was 0 by default, so on every theme without a Code
+     block of its own the code touched the edges of its dark box. The
+     corners are the theme's, clipped here. */
+  .kometio-code {
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    overflow: hidden;
+  }
+  .kometio-code :global(pre) {
+    margin: 0;
+    padding: var(--kometio-override-padding-y, 1rem)
+      var(--kometio-override-padding-x, 1.25rem);
+    overflow-x: auto;
+    font-family: var(--kometio-code-font);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+</style>

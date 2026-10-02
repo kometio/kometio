@@ -1,0 +1,58 @@
+# docs/adr/0042. Automatic HTTPS via Let's Encrypt — Caddy issues and
+# renews certificates for each of these on its own, no separate certbot
+# step. Requires DOMAIN's DNS (and the admin./api. subdomains) to already
+# point at this server before it starts, or issuance fails.
+#
+# Not the only way to front this stack: anyone with their own reverse
+# proxy (Traefik, nginx, an existing shared one) can drop this whole
+# `caddy` service from docker-compose.prod.yml and point their own proxy
+# at the api/public-site/editor-app containers' internal ports instead
+# (3000/4321/80).
+{
+	email {$ACME_EMAIL}
+}
+
+# Compression is the proxy's job, not the apps': neither the Astro node
+# server nor nginx compresses on its own here, so without this every page,
+# stylesheet and script went out uncompressed — the HTML of a content-heavy
+# page is several times its gzipped size. zstd first, gzip for whatever does
+# not speak it. Caddy skips what is already compressed (images, video, fonts)
+# and anything too small to be worth it.
+(compressed) {
+	encode zstd gzip
+}
+
+# Set only where the app has not set its own (`?`): the public site sends
+# `no-referrer` from a preview, whose address carries a token, and that
+# choice must stand. No includeSubDomains in the HSTS header: this stack
+# owns four names under DOMAIN, not every name there is.
+#
+# One `header` per field, not one block: in a block, Caddy joins the `?`
+# conditions into one ("all three absent"), so a page that set its own
+# Referrer-Policy got no HSTS and no nosniff either.
+(security_headers) {
+	header ?Strict-Transport-Security "max-age=31536000"
+	header ?X-Content-Type-Options "nosniff"
+	header ?Referrer-Policy "strict-origin-when-cross-origin"
+}
+
+{$DOMAIN}, www.{$DOMAIN} {
+	import security_headers
+	import compressed
+	reverse_proxy public-site:4321
+}
+
+admin.{$DOMAIN} {
+	import security_headers
+	import compressed
+	reverse_proxy editor-app:80
+}
+
+api.{$DOMAIN} {
+	import security_headers
+	# The page generator's server-sent events pass through uncompressed and
+	# as they are written: `encode` leaves text/event-stream alone (checked
+	# on 2026-09-29 against caddy:2-alpine, audit B15).
+	import compressed
+	reverse_proxy api:3000
+}

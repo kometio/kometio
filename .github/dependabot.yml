@@ -1,0 +1,95 @@
+version: 2
+updates:
+  # Grouping is not cosmetic here: every npm bump rewrites pnpm-lock.yaml, so
+  # each separate pull request conflicts with the others the moment one of
+  # them merges. Five of them once had to be collapsed into a single branch
+  # by hand (#219), and one of those (react-dom on its own) broke every
+  # editor spec, because React refuses to run when react and react-dom are
+  # not the exact same version.
+  #
+  # A dependency lands in the FIRST group it matches, so order matters: the
+  # sets that must move together come first, the catch-all last. A major
+  # version still arrives on its own, which is where a changelog deserves
+  # reading.
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    groups:
+      nx:
+        patterns:
+          - '@nx/*'
+          - 'nx'
+      # React and its types are one release train — see above.
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+      # The editor and the public site share the same tiptap version; the
+      # extensions expect their core to match.
+      tiptap:
+        patterns:
+          - '@tiptap/*'
+      nest:
+        patterns:
+          - '@nestjs/*'
+      everything-else:
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  # The three images are built one level down, so a single '/' entry watched
+  # a directory with no Dockerfile in it and node:22-alpine / nginx:alpine
+  # went unwatched.
+  - package-ecosystem: 'docker'
+    directories:
+      - '/apps/api'
+      - '/apps/editor-app'
+      - '/apps/public-site'
+    schedule:
+      interval: 'weekly'
+    groups:
+      base-images:
+        patterns:
+          - '*'
+    ignore:
+      # A new Node major is a migration, not a bump: 25 dropped corepack,
+      # which is how these images used to install pnpm, so the proposal
+      # arrived as three red builds. It also has to move together with
+      # ci.yml's own node-version, which Dependabot cannot see. Patches and
+      # minors of the current line still come through.
+      - dependency-name: 'node'
+        update-types:
+          - 'version-update:semver-major'
+
+  # The images the compose files pin (postgres, caddy, mailpit) are not
+  # Dockerfiles, so the entry above never sees them.
+  - package-ecosystem: 'docker-compose'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    groups:
+      compose-images:
+        patterns:
+          - '*'
+    ignore:
+      # A Postgres major does not upgrade a database, it stops reading it:
+      # a data directory written by 16 is not one 18 can open, so an
+      # installation that pulled such a bump would find its database
+      # refusing to start. It needs a dump-and-restore procedure, tested
+      # and documented, and the CI service pinned in step. Patches and
+      # minors still come through.
+      - dependency-name: 'postgres'
+        update-types:
+          - 'version-update:semver-major'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    groups:
+      actions:
+        patterns:
+          - '*'

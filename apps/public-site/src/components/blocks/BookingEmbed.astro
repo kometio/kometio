@@ -1,0 +1,59 @@
+---
+import type { BookingEmbedProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import ConsentGatedEmbed from '../ConsentGatedEmbed.astro';
+import { bookingEmbedUrl } from '../../lib/booking-embed';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = BookingEmbedProps & {
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const { provider, url, height, locale, editable, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+const src = url.trim() ? bookingEmbedUrl(provider, url) : null;
+
+const PROVIDER_NAMES: Record<BookingEmbedProps['provider'], string> = {
+  calendly: 'Calendly',
+  calcom: 'Cal.com',
+  google: 'Google Calendar',
+};
+// Tall enough for a month and its time slots without a scrollbar inside
+// the frame at the medium size, which is what these services design for.
+const HEIGHTS: Record<BookingEmbedProps['height'], string> = {
+  short: '32rem',
+  medium: '44rem',
+  tall: '56rem',
+};
+---
+
+{
+  src ? (
+    <ConsentGatedEmbed
+      instanceClass={delegatedRootClass('kometio-booking-embed', instanceClass)}
+      src={src}
+      title={i18n.t('bookingEmbed.title', { provider: PROVIDER_NAMES[provider] })}
+      buttonLabel={i18n.t('bookingEmbed.buttonLabel', {
+        provider: PROVIDER_NAMES[provider],
+      })}
+      height={HEIGHTS[height]}
+    />
+  ) : (
+    editable && (
+      <p class="kometio-booking-embed--empty">
+        {url.trim()
+          ? i18n.t('bookingEmbed.wrongAddress', { provider: PROVIDER_NAMES[provider] })
+          : i18n.t('bookingEmbed.empty')}
+      </p>
+    )
+  )
+}
+
+<style>
+  .kometio-booking-embed--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

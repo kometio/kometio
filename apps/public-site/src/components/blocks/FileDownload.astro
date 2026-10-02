@@ -1,0 +1,125 @@
+---
+import type { FileDownloadProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = FileDownloadProps & {
+  locale?: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const { file, label, showDetails, locale, editable, instanceClass } = Astro.props;
+const i18n = new Translator(locale ?? '');
+
+/** "PDF", "DOCX" — the file's own extension, which is what a person recognises. */
+function formatOf(filename: string | undefined, mimeType: string | undefined): string {
+  const extension = filename ? /\.([a-z0-9]{1,10})$/i.exec(filename)?.[1] : undefined;
+  return (extension ?? mimeType?.split('/')[1] ?? '').toUpperCase();
+}
+
+/** Sizes the way this language writes numbers: "1,2 MB" in Italian. */
+function sizeOf(bytes: number | undefined): string {
+  if (bytes === undefined) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  const number = new Intl.NumberFormat(locale || undefined, {
+    maximumFractionDigits: unit === 0 ? 0 : 1,
+  }).format(value);
+  return `${number} ${units[unit]}`;
+}
+
+const text = label.trim() || file?.filename || i18n.t('fileDownload.download');
+const details = file && showDetails
+  ? [formatOf(file.filename, file.mimeType), sizeOf(file.size)].filter(Boolean).join(' · ')
+  : '';
+---
+
+{
+  file ? (
+    <a
+      class:list={['kometio-file-download', instanceClass]}
+      href={file.url}
+      download={file.filename ?? ''}
+    >
+      <svg
+        class="kometio-file-download__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+        <path d="M12 18v-6" />
+        <path d="m9 15 3 3 3-3" />
+      </svg>
+      <span class="kometio-file-download__text">
+        <span class="kometio-file-download__label" data-kometio-field="label">{text}</span>
+        {details && <span class="kometio-file-download__details">{details}</span>}
+      </span>
+    </a>
+  ) : (
+    editable && (
+      <p class="kometio-file-download kometio-file-download--empty">
+        {i18n.t('fileDownload.empty')}
+      </p>
+    )
+  )
+}
+
+<style>
+  .kometio-file-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 100%;
+    text-decoration: none;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    padding: var(--kometio-override-padding-y, 0.75rem)
+      var(--kometio-override-padding-x, 1rem);
+    border-width: var(--kometio-override-border-width, 1px);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+  }
+
+  .kometio-file-download:hover .kometio-file-download__label,
+  .kometio-file-download:focus-visible .kometio-file-download__label {
+    text-decoration: underline;
+  }
+
+  .kometio-file-download__icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .kometio-file-download__text {
+    display: grid;
+    min-width: 0;
+  }
+
+  .kometio-file-download__label {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-file-download__details {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-file-download--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

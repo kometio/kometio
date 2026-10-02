@@ -1,0 +1,156 @@
+---
+import { parseSearchExcerpt } from '@kometio/shared-types';
+import {
+  getPublishedSiteChrome,
+  searchPublishedPages,
+} from '../../lib/public-api-client';
+import { localePath } from '@kometio/theme-runtime';
+import { Translator } from '@kometio/theme-runtime';
+import { buildContentSecurityPolicy } from '../../lib/content-security-policy';
+import PageLayout from '../../layouts/PageLayout.astro';
+import ErrorPageShell from '../../components/ErrorPageShell.astro';
+import NotFound from '../../components/NotFound.astro';
+
+// SSR (see astro.config.mjs) — content is fetched per-request, matching
+// every other public-site route (docs/adr for [...slug].astro).
+export const prerender = false;
+
+const { locale } = Astro.params;
+const query = Astro.url.searchParams.get('q') ?? '';
+
+// Same site chrome (header/footer/site) as every real page, without
+// anchoring to one — this route has no backing Page row, so
+// getPublishedPageBySlug can't be used; getPublishedSiteChrome is the
+// page-less counterpart (see apps/api's PublicPagesController#chrome).
+const chrome = locale
+  ? await getPublishedSiteChrome(Astro.url.hostname, locale)
+  : null;
+
+if (!chrome) {
+  Astro.response.status = 404;
+}
+
+
+// ADR-0031: this site's own admin-managed tracker whitelist, on top of the
+// hardcoded default (see content-security-policy.ts).
+Astro.response.headers.set(
+  'Content-Security-Policy',
+  buildContentSecurityPolicy(
+    `'self'`,
+    Astro.locals.cspNonce,
+    chrome?.site.themeSettings.allowedTrackerDomains,
+  ),
+);
+
+const results =
+  chrome && locale && query.trim().length > 0
+    ? await searchPublishedPages(Astro.url.hostname, locale, query)
+    : [];
+// Constructed even when `locale` is missing (falls back to Italian) — only
+// ever read below inside the `chrome && locale` branch, which is where
+// NotFound renders instead when locale is absent.
+const i18n = new Translator(locale ?? 'it');
+---
+
+{
+  chrome && locale ? (
+    <PageLayout
+      seoMeta={{
+        title: query
+          ? i18n.t('search.pageTitle', { query })
+          : i18n.t('search.title'),
+        description: '',
+      }}
+      locale={locale}
+      translations={[]}
+      site={chrome.site}
+      header={chrome.header}
+      footer={chrome.footer}
+      headerSticky={chrome.headerSticky}
+      ancestors={[]}
+      route="search"
+    >
+      <main id="main-content" class="kometio-search-results">
+        <h1>{i18n.t('search.title')}</h1>
+        <form
+          method="get"
+          action={`/${locale}/search`}
+          class="kometio-search-results__form"
+        >
+          <input
+            type="search"
+            name="q"
+            value={query}
+            aria-label={i18n.t('search.inputLabel')}
+          />
+          <button type="submit">{i18n.t('searchBox.submit')}</button>
+        </form>
+
+        {
+          query.trim().length === 0 ? (
+            <p>{i18n.t('search.emptyQuery')}</p>
+          ) : results.length === 0 ? (
+            <p>{i18n.t('search.noResults', { query })}</p>
+          ) : (
+            <ul class="kometio-search-results__list">
+              {results.map((result) => (
+                <li>
+                  <a href={localePath(locale, result.slug)}>{result.title}</a>
+                  <p>
+                    {parseSearchExcerpt(result.excerpt).map((segment) =>
+                      segment.matched ? (
+                        <mark>{segment.text}</mark>
+                      ) : (
+                        segment.text
+                      ),
+                    )}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </main>
+    </PageLayout>
+  ) : (
+    <ErrorPageShell title="404" locale={locale ?? undefined}>
+      <NotFound locale={locale ?? undefined} />
+    </ErrorPageShell>
+  )
+}
+
+<style>
+  .kometio-search-results {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  .kometio-search-results__form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .kometio-search-results__form input {
+    flex: 1;
+    padding: 0.5rem;
+  }
+  .kometio-search-results__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .kometio-search-results__list a {
+    font-weight: 600;
+  }
+  .kometio-search-results__list p {
+    margin: 0.25rem 0 0;
+    color: #52525b;
+  }
+  .kometio-search-results__list mark {
+    background: #fde68a;
+    color: inherit;
+  }
+</style>

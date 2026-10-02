@@ -1,0 +1,27 @@
+---
+import type { HeadingProps } from '@kometio/shared-types';
+
+type Props = HeadingProps & { instanceClass?: string | null };
+
+const { text, level, anchorId, instanceClass } = Astro.props;
+const Tag = level;
+---
+
+{/* `anchorId` exists only on a page with a table of contents, filled by
+    resolveTableOfContents; everywhere else the heading has no id. */}
+<Tag
+  id={anchorId}
+  class:list={['kometio-heading', instanceClass]}
+  data-kometio-field="text"
+>
+  {text}
+</Tag>
+
+<style>
+  .kometio-heading {
+    color: var(--kometio-override-text, inherit);
+    /* A link from the table of contents lands with the heading clear of a
+       sticky header, not underneath it. */
+    scroll-margin-top: 5rem;
+  }
+</style>

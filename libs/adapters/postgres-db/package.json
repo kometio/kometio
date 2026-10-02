@@ -1,0 +1,55 @@
+{
+  "name": "@kometio/postgres-db",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "db:generate": "node --env-file-if-exists=../../../.env node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "node --env-file-if-exists=../../../.env node_modules/drizzle-kit/bin.cjs migrate",
+    "db:seed-tenant": "tsx --env-file-if-exists=../../../.env scripts/seed-default-tenant.ts",
+    "db:seed-user": "tsx --env-file-if-exists=../../../.env scripts/seed-default-user.ts",
+    "db:seed": "pnpm run db:seed-tenant && pnpm run db:seed-user",
+    "db:backfill-block-ids": "tsx --env-file-if-exists=../../../.env scripts/backfill-block-ids.ts",
+    "db:migrate-responsive-block-styles": "tsx --env-file-if-exists=../../../.env scripts/migrate-responsive-block-styles.ts",
+    "db:migrate-variant-props": "tsx --env-file-if-exists=../../../.env scripts/migrate-variant-props.ts",
+    "db:migrate-columns-layout": "tsx --env-file-if-exists=../../../.env scripts/migrate-columns-layout.ts",
+    "db:normalize-rich-text": "tsx --env-file-if-exists=../../../.env scripts/normalize-rich-text.ts",
+    "db:reindex-search": "tsx --env-file-if-exists=../../../.env scripts/reindex-search.ts"
+  },
+  "nx": {
+    "tags": [
+      "adapter"
+    ]
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./testing": {
+      "types": "./src/testing.ts",
+      "import": "./src/testing.ts",
+      "default": "./src/testing.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@kometio/block-registry": "workspace:*",
+    "@kometio/domain-core": "workspace:*",
+    "@kometio/env-config": "workspace:*",
+    "@kometio/ports": "workspace:*",
+    "@kometio/rich-text": "workspace:*",
+    "@kometio/shared-types": "workspace:*",
+    "drizzle-orm": "^0.45.3",
+    "postgres": "^3.4.9"
+  },
+  "devDependencies": {
+    "@node-rs/argon2": "^2.2.1",
+    "dotenv": "^18.0.3",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15"
+  }
+}

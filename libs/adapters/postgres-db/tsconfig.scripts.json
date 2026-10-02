@@ -1,0 +1,14 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/scripts",
+    "types": ["node"],
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["scripts/**/*.ts"],
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}

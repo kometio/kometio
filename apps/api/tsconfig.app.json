@@ -1,0 +1,147 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node", "express", "cookie-parser"],
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2021"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "src/**/*.test-fixture.ts",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../../libs/adapters/wordpress-wxr/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/verification-token-adapter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/turnstile-captcha/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/theme-archive/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/smtp-email-adapter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/api-contracts/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/shared-types/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/session-auth-adapter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/s3-media-storage/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/sharp-image-optimizer/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/s3-attachment-storage/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/rich-text/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/preview-token-adapter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-user-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-taxonomy-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-site-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-site-layout-section-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-search-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-reusable-section-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-page-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-media-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-import-job-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-form-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-db/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-dashboard-stats-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ports/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/openai-compatible-page-generator/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/opaque-token/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/mailchimp-newsletter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/local-disk-media-storage/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/local-disk-attachment-storage/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/filesystem-theme-catalog/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/env-config/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/domain-core/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/brevo-newsletter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/block-registry/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/application/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/anthropic-page-generator/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/aes-secret-cipher/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/testing/tsconfig.lib.json"
+    }
+  ]
+}

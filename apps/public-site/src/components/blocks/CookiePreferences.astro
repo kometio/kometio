@@ -1,0 +1,69 @@
+---
+import type { CookiePreferencesProps } from '@kometio/shared-types';
+import type { PublishedSite } from '@kometio/api-contracts';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = CookiePreferencesProps & {
+  site: PublishedSite;
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const { label, site, locale, editable, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+// No banner, no preferences to change: a button that opens nothing is
+// worse than no button.
+const enabled = site.cookieBannerSettings.enabled;
+---
+
+{
+  enabled ? (
+    <button
+      type="button"
+      class:list={['kometio-cookie-preferences', instanceClass]}
+      data-kometio-cookie-preferences
+    >
+      {label.trim() || i18n.t('cookiePreferences.label')}
+    </button>
+  ) : (
+    editable && (
+      <p class="kometio-cookie-preferences--disabled">
+        {i18n.t('cookiePreferences.bannerOff')}
+      </p>
+    )
+  )
+}
+
+<script>
+  import { cookiePreferencesBehaviors } from '../../lib/block-behaviors/cookie-preferences';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, cookiePreferencesBehaviors);
+</script>
+
+<style>
+  /* A link in looks — it sits in a footer among links — and a button in
+     fact, because it opens a panel and goes nowhere. */
+  .kometio-cookie-preferences {
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+    border: 0;
+    border-radius: var(--kometio-override-radius, 0);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .kometio-cookie-preferences:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .kometio-cookie-preferences--disabled {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

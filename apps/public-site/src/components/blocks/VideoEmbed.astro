@@ -1,0 +1,63 @@
+---
+import type { VideoEmbedProps } from '@kometio/shared-types';
+import ConsentGatedEmbed from '../ConsentGatedEmbed.astro';
+import { parseVideoEmbedUrl } from '../../lib/video-embed';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = VideoEmbedProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { url, poster, aspectRatio, caption, locale, instanceClass } =
+  Astro.props;
+
+// The same four shapes as Image and Gallery, resolved here because CSS
+// cannot map a name to a ratio on its own. `wide` is the default: a video
+// that is not 16/9 is the exception.
+const RATIOS: Record<string, string | null> = {
+  original: null,
+  square: '1 / 1',
+  landscape: '4 / 3',
+  portrait: '3 / 4',
+  wide: '16 / 9',
+};
+const parsed = url ? parseVideoEmbedUrl(url) : null;
+const i18n = new Translator(locale);
+---
+
+{
+  parsed && (
+    <figure class="kometio-video-embed">
+      <ConsentGatedEmbed
+        instanceClass={instanceClass}
+        src={parsed.embedUrl}
+        title={i18n.t('videoEmbed.title')}
+        posterUrl={poster?.url ?? null}
+        aspectRatio={RATIOS[aspectRatio] ?? null}
+        buttonLabel={i18n.t('videoEmbed.buttonLabel', {
+          provider: parsed.provider === 'youtube' ? 'YouTube' : 'Vimeo',
+        })}
+      />
+      {caption && (
+        <figcaption class="kometio-video-embed__caption" data-kometio-field="caption">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  )
+}
+{!url && <p>{i18n.t('videoEmbed.empty')}</p>}
+{url && !parsed && <p>{i18n.t('videoEmbed.unrecognizedUrl')}</p>}
+
+<style>
+  .kometio-video-embed {
+    margin: 0;
+  }
+  .kometio-video-embed__caption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

@@ -1,0 +1,47 @@
+---
+import type { BuyButtonProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import { resolveThemeBlockOverride } from '../../lib/resolve-theme-block-override';
+import ButtonCore from './Button.astro';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = BuyButtonProps & {
+  locale: string;
+  themeName: string;
+  instanceClass?: string | null;
+  variantClass?: string | null;
+};
+
+const { label, url, price, currency, locale, themeName, instanceClass } =
+  Astro.props;
+const i18n = new Translator(locale);
+// The theme's Button when it has one: a buy button that looks different
+// from every other button on the site would read as a different kind of
+// thing.
+const Button = resolveThemeBlockOverride('Button', ButtonCore, themeName);
+
+// The price joins the label rather than sitting in a slot of its own,
+// because a theme's Button renders `label` and nothing else — the price
+// has to survive whichever Button draws it. It is why the label is not
+// edited in place on the canvas: the words there are not the field's.
+const text = label.trim() || i18n.t('buyButton.label');
+const priceText =
+  price !== null
+    ? new Intl.NumberFormat(locale || undefined, {
+        style: 'currency',
+        currency,
+      }).format(price)
+    : '';
+---
+
+<Button
+  label={priceText ? `${text} · ${priceText}` : text}
+  linkType="url"
+  page={null}
+  url={url}
+  icon={null}
+  size="md"
+  fullWidth={false}
+  openInNewTab={false}
+  instanceClass={delegatedRootClass('kometio-buy-button', instanceClass)}
+/>

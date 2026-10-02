@@ -1,0 +1,45 @@
+---
+import { Translator } from '@kometio/theme-runtime';
+import { localePath } from '@kometio/theme-runtime';
+
+// Content-only (no <html>/<body> of its own, see ErrorPageShell.astro for
+// why): renders either inside ErrorPageShell (site chrome unavailable) or
+// inside a real PageLayout with the site's own header/footer
+// (PublicPageContent.astro, when getPublishedSiteChrome succeeds) — same
+// markup either way, so a theme's own PageLayout override already
+// determines the look of a themed 404 without this component needing to
+// know anything about themes itself.
+interface Props {
+  locale?: string;
+}
+
+const { locale } = Astro.props;
+const i18n = new Translator(locale ?? 'it');
+// No locale at all (a truly locale-less URL) has nowhere real to send
+// "back home" to — falls back to the bare domain root rather than a
+// broken link.
+const homeHref = locale ? localePath(locale, 'home') : '/';
+---
+
+<div class="kometio-error-page">
+	<h1>404</h1>
+	<p>{i18n.t('notFound.message')}</p>
+	<a href={homeHref}>{i18n.t('notFound.backHome')}</a>
+</div>
+
+<style>
+	.kometio-error-page {
+		max-width: 32rem;
+		margin: 4rem auto;
+		padding: 0 1.5rem;
+		text-align: center;
+	}
+	.kometio-error-page h1 {
+		font-size: 3rem;
+		margin: 0 0 0.5rem;
+	}
+	.kometio-error-page a {
+		display: inline-block;
+		margin-top: 1.5rem;
+	}
+</style>

@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": false,
+    "outDir": "./out-tsc/jest",
+    "types": ["jest", "node", "express", "cookie-parser"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test-fixture.ts",
+    "src/**/*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
+}

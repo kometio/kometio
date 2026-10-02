@@ -1,0 +1,26 @@
+set -e
+
+# First because it is the fastest, and because what it catches makes the
+# two below fail in a way that points nowhere near the cause.
+node tools/check-tsconfig-conventions.mjs
+
+# One project at a time, and without coverage.
+#
+# This hook used to lint 39 projects at whatever parallelism the machine
+# would offer, and then run every test suite with coverage instrumentation
+# on top — on a laptop that is also running the API, the public site, a
+# dev server and a browser. It was the heaviest moment of the day, it is
+# where the intermittent "something removed the coverage directory"
+# failure came from (several instrumented runs writing the same folders
+# at once), and twice it cost a push that had to be repeated.
+#
+# `nx affected` was the obvious fix and it is the wrong one here: almost
+# every change touches `shared-types` or `ports`, and everything depends
+# on those — measured, 37 of 39 projects for the two branches open right
+# now. The saving is in HOW the suites run, not in how many.
+#
+# Coverage is not measured here any more. It is a threshold gate
+# (docs/adr/0009), and CI already runs the full instrumented sweep on a
+# clean machine; a second copy on the laptop bought nothing but the crash.
+pnpm exec nx run-many -t lint --parallel=1
+pnpm exec nx run-many -t test --parallel=1

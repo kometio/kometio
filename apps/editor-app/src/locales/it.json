@@ -1,0 +1,3552 @@
+{
+  "common": {
+    "loading": "Caricamento...",
+    "error": "Si è verificato un errore.",
+    "retry": "Riprova",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "saving": "Salvataggio in corso...",
+    "delete": "Elimina",
+    "yes": "Sì",
+    "no": "No",
+    "close": "Chiudi",
+    "pagination": {
+      "previous": "Pagina precedente",
+      "next": "Pagina successiva",
+      "indicator": "Pagina {{page}} di {{totalPages}}"
+    },
+    "selection": {
+      "clear": "Deseleziona"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Accedi",
+      "description": "Accedi al tuo account Kometio",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submitIdle": "Accedi",
+      "submitPending": "Accesso in corso...",
+      "invalidCredentials": "Email o password non corretti.",
+      "forgotPassword": "Password dimenticata?"
+    },
+    "forgotPassword": {
+      "title": "Password dimenticata",
+      "description": "Inserisci la tua email per ricevere un link di reimpostazione",
+      "sentMessage": "Se l'indirizzo esiste, ti abbiamo inviato un'email con le istruzioni per reimpostare la password.",
+      "backToLogin": "Torna al login",
+      "submitIdle": "Invia link di reset",
+      "submitPending": "Invio in corso..."
+    },
+    "resetPassword": {
+      "title": "Reimposta la password",
+      "description": "Scegli una nuova password per il tuo account",
+      "doneMessage": "Password aggiornata. Puoi accedere di nuovo con la nuova password.",
+      "newPasswordLabel": "Nuova password",
+      "error": "Il link non è valido o è scaduto. Richiedi un nuovo link di reset.",
+      "submitIdle": "Reimposta password",
+      "submitPending": "Salvataggio..."
+    },
+    "verifyEmail": {
+      "title": "Verifica email",
+      "description": "Conferma del tuo indirizzo email",
+      "pending": "Verifica in corso...",
+      "success": "Email verificata con successo.",
+      "error": "Il link non è valido o è scaduto. Richiedi un nuovo link di verifica dal tuo account."
+    },
+    "acceptInvite": {
+      "title": "Completa la registrazione",
+      "description": "Scegli una password per accedere al tuo account Kometio",
+      "doneMessage": "Password impostata. Puoi accedere ora.",
+      "passwordLabel": "Password",
+      "error": "Il link non è valido o è scaduto. Chiedi a un amministratore di inviarti un nuovo invito.",
+      "submitIdle": "Completa la registrazione",
+      "submitPending": "Salvataggio..."
+    },
+    "logout": "Esci",
+    "confirmEmailChange": {
+      "title": "Conferma la nuova email",
+      "description": "Conferma del tuo nuovo indirizzo di accesso",
+      "pending": "Conferma in corso...",
+      "success": "L’email è stata cambiata. Usala al prossimo accesso.",
+      "error": "Il link non è valido o è scaduto, oppure l’indirizzo è stato preso da un’altra persona. Chiedi di nuovo il cambio dal tuo profilo.",
+      "toEditor": "Vai al tuo profilo"
+    }
+  },
+  "setup": {
+    "title": "Benvenuto in Kometio",
+    "description": "Questa installazione non è ancora configurata. Crea il tuo account amministratore per iniziare.",
+    "tokenLabel": "Token di installazione",
+    "tokenHint": "Viene stampato nel log dell'API all'avvio. Su un deployment Docker: `docker compose logs api`. Dimostra che sei tu a gestire questo server, così nessun altro può rivendicare l'installazione prima di te.",
+    "tokenError": "Token di installazione non valido. Viene stampato nel log dell'API e cambia a ogni riavvio: ricontrolla il log e usa il più recente.",
+    "siteNameLabel": "Nome del sito",
+    "localeLabel": "Lingua predefinita",
+    "localeHint": "La lingua in cui nascono i contenuti del sito. Puoi aggiungerne altre più avanti, dalle impostazioni del sito.",
+    "emailLabel": "La tua email",
+    "passwordLabel": "Password",
+    "passwordHint": "Almeno {{count}} caratteri. Questo è l'account che nessuno può sbloccare al posto tuo: scegli bene.",
+    "submitIdle": "Crea il mio account",
+    "submitPending": "Configurazione in corso...",
+    "genericError": "Qualcosa è andato storto. Ricarica la pagina e riprova — se questa installazione era già configurata verrai portato alla pagina di accesso."
+  },
+  "shell": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "pages": "Pagine",
+      "media": "Media",
+      "forms": "Moduli",
+      "layout": "Header e footer",
+      "sections": "Sezioni",
+      "taxonomies": "Categorie",
+      "style": "Stile",
+      "groupContent": "Contenuti",
+      "groupSite": "Aspetto",
+      "imports": "Importa",
+      "settings": "Impostazioni",
+      "short": {
+        "layout": "Header",
+        "settings": "Opzioni"
+      },
+      "collections": "Collezioni"
+    },
+    "account": {
+      "label": "Account",
+      "menuLabel": "Account: {{name}}",
+      "profile": "Il mio profilo",
+      "language": "Lingua dell'interfaccia",
+      "theme": "Tema",
+      "themeLight": "Chiaro",
+      "themeDark": "Scuro",
+      "themeSystem": "Come il sistema",
+      "languageHint": "È anche la lingua delle mail che ti inviamo.",
+      "languageNotSaved": "Lingua cambiata qui, ma non salvata: le mail ti arriveranno ancora nella lingua di prima."
+    },
+    "menu": {
+      "open": "Apri il menu",
+      "title": "Menu"
+    },
+    "site": {
+      "open": "Apri il sito: {{name}}",
+      "domainMissing": "Dominio da impostare",
+      "short": "Sito"
+    },
+    "search": {
+      "open": "Cerca…",
+      "short": "Cerca",
+      "title": "Cerca nell’editor",
+      "placeholder": "Una pagina, un file, un’impostazione, un’azione…",
+      "groups": {
+        "go": "Vai a",
+        "actions": "Azioni",
+        "preferences": "Preferenze",
+        "pages": "Pagine",
+        "media": "Media",
+        "forms": "Moduli"
+      },
+      "actions": {
+        "upload": "Carica un file"
+      },
+      "preferences": {
+        "themeLight": "Tema chiaro",
+        "themeDark": "Tema scuro",
+        "themeSystem": "Tema come il sistema",
+        "language": "Lingua dell’interfaccia: {{name}}"
+      }
+    },
+    "sidebar": {
+      "collapse": "Comprimi",
+      "expand": "Espandi",
+      "label": "Navigazione principale"
+    }
+  },
+  "account": {
+    "title": "Il mio profilo",
+    "intro": "Il tuo nome e la tua foto nell’editor, e quello che la tua pagina autore sul sito dice di te.",
+    "picture": "Foto",
+    "uploadPicture": "Carica una foto",
+    "changePicture": "Cambia foto",
+    "removePicture": "Rimuovi",
+    "pictureHint": "Una tua foto, meglio se quadrata. Senza, compare la tua iniziale.",
+    "pictureNotImage": "Questo file non è un’immagine. Scegli un JPG, PNG, WebP, GIF o AVIF.",
+    "pictureTooLarge": "Questa foto supera i 10 MB. Scegline una più leggera.",
+    "pictureFailed": "Non è stato possibile salvare la foto. Riprova.",
+    "displayName": "Nome",
+    "displayNameHint": "Compare sotto gli articoli che scrivi e nella tua pagina autore.",
+    "slug": "Indirizzo della pagina autore",
+    "slugHint": "Viene creato dal tuo nome al primo salvataggio. Se lo cambi, il vecchio indirizzo porta al nuovo.",
+    "slugInvalid": "Usa solo lettere minuscole, numeri e trattini.",
+    "slugTaken": "Questo indirizzo è già usato da un’altra persona. Scegline un altro.",
+    "bio": "Bio",
+    "bioHint": "Qualche riga su di te, in ogni lingua del sito. Lascia vuota una lingua per non mostrare la bio in quella lingua.",
+    "bioCount": "{{count}} / {{max}}",
+    "email": "Email",
+    "role": "Ruolo",
+    "authorPageNote": "La tua pagina autore va online quando hai un nome e almeno un articolo pubblicato in una collezione.",
+    "invalid": "Una parte di quello che hai inserito non può essere salvata. Controlla i campi e riprova.",
+    "saveFailed": "Non è stato possibile salvare il profilo. Riprova.",
+    "pictureSavesNow": "La foto si salva subito, senza aspettare Salva.",
+    "opensInNewTab": " (si apre in una nuova scheda)",
+    "signIn": {
+      "title": "Accesso",
+      "changeEmail": "Cambia email",
+      "password": "Password",
+      "passwordHint": "Scegline una nuova quando vuoi. Ogni altro accesso viene chiuso.",
+      "changePassword": "Cambia password"
+    },
+    "currentPassword": "Password attuale",
+    "currentPasswordRequired": "Scrivi la password attuale.",
+    "wrongCurrentPassword": "Questa non è la tua password attuale.",
+    "tooManyTries": "Troppi tentativi sbagliati. Aspetta qualche minuto e riprova.",
+    "passwordDialog": {
+      "title": "Cambia la tua password",
+      "newPassword": "Nuova password",
+      "newPasswordHint": "Almeno {{min}} caratteri.",
+      "repeatPassword": "Ripeti la nuova password",
+      "tooShort": "La nuova password deve avere almeno {{min}} caratteri.",
+      "mismatch": "Le due password non coincidono.",
+      "submit": "Cambia password",
+      "busy": "Cambio in corso...",
+      "done": "Password cambiata. Ogni altro accesso è stato chiuso.",
+      "failed": "La password non è stata cambiata. Riprova."
+    },
+    "emailDialog": {
+      "title": "Cambia la tua email",
+      "newEmail": "Nuova email",
+      "newEmailHint": "Mandiamo un link a questo indirizzo. L’email cambia quando lo apri.",
+      "currentPasswordHint": "La chiediamo di nuovo per essere sicuri che sia tu.",
+      "invalid": "Inserisci un indirizzo email valido.",
+      "unchanged": "Questa è già la tua email.",
+      "taken": "Questo indirizzo è già usato da un’altra persona.",
+      "submit": "Invia il link",
+      "busy": "Invio in corso...",
+      "sentTitle": "Controlla la posta",
+      "sent": "Abbiamo mandato un link a {{email}}. Finché non lo apri continui ad accedere con {{current}}.",
+      "sentNote": "Il link vale 24 ore.",
+      "failed": "La richiesta di cambio email non è stata inviata. Riprova."
+    },
+    "pictureSaved": "Foto aggiornata",
+    "pictureRemoved": "Foto rimossa"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "stats": {
+      "pages": {
+        "title": "Pagine",
+        "description": "In tutte le lingue",
+        "breakdown": "{{published}} pubblicate, {{draft}} in bozza"
+      },
+      "media": {
+        "title": "Media"
+      },
+      "submissions": {
+        "title": "Risposte",
+        "recentLabel": "{{count}} negli ultimi 7 giorni",
+        "noForms": "Nessun modulo ancora: creane uno per ricevere le risposte dei visitatori.",
+        "createForm": "Crea un modulo"
+      }
+    },
+    "recentActivity": {
+      "title": "Attività recente",
+      "description": "Le pagine modificate più di recente",
+      "empty": "Ancora nessuna modifica.",
+      "status": {
+        "draft": "Bozza",
+        "published": "Pubblicata"
+      },
+      "newSubmissions_one": "{{count}} nuova risposta",
+      "newSubmissions_other": "{{count}} nuove risposte"
+    },
+    "emptyState": "Questo sito non ha ancora pagine o media — inizia dalla sezione Pagine.",
+    "actions": {
+      "newPage": "Nuova pagina",
+      "openSite": "Apri il sito"
+    },
+    "description": {
+      "online": "{{name}} · online su {{domain}}",
+      "offline": "{{name}} · non ancora online"
+    },
+    "checklist": {
+      "title": "Prima di andare online",
+      "progress": "{{done}} di {{total}}",
+      "done": "Fatto",
+      "todo": "Da fare",
+      "items": {
+        "name": {
+          "label": "Dai un nome al sito",
+          "action": "Imposta"
+        },
+        "domain": {
+          "label": "Imposta il dominio",
+          "action": "Imposta"
+        },
+        "page": {
+          "label": "Pubblica almeno una pagina",
+          "action": "Vai alle pagine"
+        },
+        "cookies": {
+          "label": "Attiva il banner cookie",
+          "action": "Configura",
+          "waiting_one": "{{count}} script aspetta il consenso, ma il banner cookie è spento",
+          "waiting_other": "{{count}} script aspettano il consenso, ma il banner cookie è spento",
+          "waitingAction": "Attiva il banner"
+        },
+        "indexing": {
+          "label": "Apri il sito ai motori di ricerca",
+          "action": "Vai a SEO"
+        }
+      }
+    }
+  },
+  "pages": {
+    "list": {
+      "title": "Pagine",
+      "newPage": "Nuova pagina",
+      "empty": "Nessuna pagina ancora.",
+      "noMatches": "Nessuna pagina corrisponde a questi filtri.",
+      "statusPublished": "Pubblicata",
+      "statusDraft": "Bozza",
+      "pendingChanges": "Modifiche non pubblicate",
+      "createdBy": "Creata da {{name}}",
+      "dragHandle": "Trascina per riordinare",
+      "filters": {
+        "search": "Cerca per titolo",
+        "createdAfter": "Da",
+        "createdBefore": "A",
+        "createdBy": "Creata da",
+        "anyCreator": "Chiunque",
+        "locale": "Lingua",
+        "anyLocale": "Qualunque lingua",
+        "clear": "Rimuovi filtri",
+        "toggle": "Filtri",
+        "status": "Stato",
+        "anyStatus": "Qualsiasi stato",
+        "statusOptions": {
+          "draft": "Bozza",
+          "published": "Pubblicata",
+          "pending": "Con modifiche non pubblicate"
+        }
+      },
+      "colTitle": "Pagina",
+      "colLanguages": "Lingue",
+      "colAuthor": "Creata da",
+      "colUpdated": "Modificata",
+      "statusMissing": "Non tradotta",
+      "colEditor": "Modificata da",
+      "statusPending": "Pubblicata, con modifiche non pubblicate",
+      "colStatus": "Stato",
+      "statusPendingShort": "Modifiche non pubblicate",
+      "reorderFailed": "Non è stato possibile salvare il nuovo ordine. Ricarica la pagina e riprova.",
+      "duplicateFailed": "Non è stato possibile duplicare la pagina. Riprova.",
+      "deleteFailed": "Non è stato possibile cancellare la pagina. Riprova.",
+      "selectRow": "Seleziona {{title}}",
+      "selectAll": "Seleziona tutte le pagine",
+      "selection": {
+        "label": "Azioni sulle pagine selezionate",
+        "count_one": "{{count}} selezionata",
+        "count_other": "{{count}} selezionate",
+        "open": "Apri",
+        "duplicate": "Duplica",
+        "moveToCollection": "Sposta in una collezione…",
+        "moveUnder": "Sposta sotto…",
+        "delete": "Elimina"
+      },
+      "duplicated_one": "Pagina duplicata",
+      "duplicated_other": "{{count}} pagine duplicate",
+      "openCopy": "Apri la copia",
+      "moved_one": "Pagina spostata",
+      "moved_other": "{{count}} pagine spostate",
+      "deleted_one": "Pagina eliminata",
+      "deleted_other": "{{count}} pagine eliminate",
+      "reorderOffFiltered": "Per riordinare le pagine togli i filtri.",
+      "reorderOffPaged": "Per riordinare le pagine devono stare tutte in una pagina dell’elenco."
+    },
+    "newPageDialog": {
+      "title": "Nuova pagina",
+      "nameLabel": "Nome pagina",
+      "parentLabel": "Pagina genitore (opzionale)",
+      "slugPreview": "URL: {{slug}}",
+      "cancel": "Annulla",
+      "create": "Crea",
+      "creating": "Creazione in corso...",
+      "slugTaken": "Esiste già una pagina con questo nome in questo sito.",
+      "templateLabel": "Parti da",
+      "templateHint": "I blocchi del template vengono copiati nella pagina nuova: dopo, la pagina è libera di cambiare.",
+      "templateUnavailable": "Quel template non è più disponibile. Scegline un altro.",
+      "parentUnavailable": "La pagina madre non esiste più. Scegline un'altra.",
+      "failed": "Non è stato possibile creare la pagina.",
+      "nameTooLong": "Il nome è troppo lungo per diventare un indirizzo: al massimo {{max}} caratteri."
+    },
+    "duplicateDialog": {
+      "title": "Duplica pagina",
+      "titleLabel": "Titolo",
+      "slugLabel": "URL",
+      "descriptionLabel": "Descrizione SEO",
+      "cancel": "Annulla",
+      "confirm": "Crea copia",
+      "duplicating": "Duplicazione in corso...",
+      "slugTaken": "Esiste già una pagina con questo URL in questo sito."
+    },
+    "deleteDialog": {
+      "description": "\"{{name}}\" e tutte le sue versioni verranno eliminate definitivamente. L'azione non può essere annullata.",
+      "descriptionWithTranslations": "\"{{name}}\" e tutte le sue versioni verranno eliminate definitivamente. Questa pagina è nella lingua predefinita del sito e ha traduzioni in altre lingue ({{locales}}): dopo l'eliminazione, i visitatori che richiedono una lingua senza traduzione non verranno più reindirizzati qui automaticamente. L'azione non può essere annullata.",
+      "hasChildren": "Questa pagina ha delle sottopagine: cancellandola resterebbero a indirizzi che non esistono più. Spostale sotto un'altra pagina, o cancellale, prima.",
+      "title_one": "Eliminare questa pagina?",
+      "title_other": "Eliminare {{count}} pagine?",
+      "descriptionMany": "{{names}} e tutte le loro versioni verranno eliminate definitivamente. L’azione non può essere annullata.",
+      "subpagesMoveUpNamed_one": "La sottopagina {{children}} passa al primo livello e il suo indirizzo cambia: quello attuale non porterà più da nessuna parte.",
+      "subpagesMoveUpNamed_other": "Le {{count}} sottopagine ({{children}}) passano al primo livello e i loro indirizzi cambiano: quelli attuali non porteranno più da nessuna parte.",
+      "subpagesMoveUp_one": "Una sottopagina passa al primo livello e il suo indirizzo cambia: quello attuale non porterà più da nessuna parte.",
+      "subpagesMoveUp_other": "{{count}} sottopagine passano al primo livello e i loro indirizzi cambiano: quelli attuali non porteranno più da nessuna parte."
+    },
+    "editor": {
+      "backToList": "Pagine",
+      "published": "Pubblicato",
+      "viewPage": "Visualizza pagina",
+      "unpublishedChangesAt": "Modifiche non pubblicate — salvate alle {{time}}",
+      "noLanguage": {
+        "title": "Questa pagina non ha nessuna lingua",
+        "body": "È rimasta a metà di una creazione non riuscita, quindi non c’è niente da modificare. Puoi eliminarla dall’elenco delle pagine.",
+        "back": "Torna alle pagine"
+      }
+    },
+    "versionHistory": {
+      "open": "Cronologia versioni",
+      "sourcesLabel": "Cronologia di",
+      "title": "Cronologia versioni",
+      "description": "Ripristina il contenuto di una versione precedente come bozza. Non pubblica automaticamente.",
+      "empty": "Nessuna versione salvata.",
+      "current": "Versione attuale",
+      "restore": "Ripristina",
+      "sources": {
+        "structure": "Struttura (tutte le lingue)",
+        "language": "Solo {{locale}}"
+      },
+      "unlinkedNote": "Scollegata: ripristinarla scollega di nuovo la lingua"
+    },
+    "seo": {
+      "open": "SEO",
+      "title": "Impostazioni SEO",
+      "titleLabel": "Titolo SEO",
+      "descriptionLabel": "Descrizione",
+      "ogImageLabel": "Immagine social (OG)",
+      "chooseOgImage": "Scegli immagine",
+      "changeOgImage": "Cambia immagine",
+      "canonicalLabel": "URL canonico",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "saving": "Salvataggio in corso...",
+      "saved": "Impostazioni SEO salvate",
+      "saveFailed": "Le impostazioni SEO non sono state salvate. Riprova."
+    },
+    "translations": {
+      "open": "Traduzioni",
+      "title": "Traduzioni",
+      "current": "Questa pagina",
+      "edit": "Modifica",
+      "newLocaleLabel": "Crea traduzione",
+      "slugLabel": "URL",
+      "slugPreview": "URL: {{slug}}",
+      "create": "Crea traduzione",
+      "creating": "Creazione in corso...",
+      "conflict": "Esiste già una traduzione in questa lingua per questa pagina.",
+      "drift": "Struttura non allineata",
+      "driftWarning": "L'originale (lingua predefinita) ha blocchi diversi da quando questa traduzione è stata creata o aggiornata l'ultima volta.",
+      "markSynced": "Segna come allineata",
+      "slugForLocale": "URL in {{locale}}",
+      "createFailed": "La versione non è stata aggiunta. Riprova.",
+      "renameFailed": "L’indirizzo non è stato cambiato. Riprova.",
+      "created": "Versione {{locale}} aggiunta",
+      "renamed": "Indirizzo della versione {{locale}} cambiato in {{slug}}"
+    },
+    "picker": {
+      "title": "Scegli una pagina",
+      "empty": "Nessuna pagina in questa lingua.",
+      "search": "Cerca una pagina per titolo",
+      "searchPlaceholder": "Cerca per titolo…"
+    },
+    "parent": {
+      "label": "Pagina genitore",
+      "none": "— Nessuno (livello radice) —",
+      "hint": "La pagina vive sotto quella che scegli, e il suo indirizzo comincia con l’indirizzo di quella."
+    },
+    "moveToCollection": {
+      "title": "Sposta in una collezione",
+      "description": "Dove “{{name}}” viene elencata. Mantiene il suo indirizzo, il suo posto nell’albero e tutto quello che ha dentro.",
+      "none": "Pagine (nessuna collezione)",
+      "confirm": "Sposta",
+      "failed": "Non è stato possibile spostare la pagina."
+    },
+    "moveToParent": {
+      "title": "Sposta nell’albero",
+      "description": "Dove vive “{{name}}”. Cambia il suo indirizzo e quello di tutto ciò che ha sotto: il vecchio indirizzo continua a rispondere, reindirizzando a quello nuovo.",
+      "confirm": "Sposta",
+      "cancel": "Annulla",
+      "failed": "Non è stato possibile spostare la pagina."
+    },
+    "saveAsTemplate": {
+      "open": "Salva come template",
+      "nameLabel": "Nome del template",
+      "submit": "Salva template",
+      "saved": "Template “{{name}}” salvato: lo trovi quando crei una nuova pagina.",
+      "failed": "Non è stato possibile salvare il template.",
+      "unsaved": "L’ultima modifica non è arrivata al server, quindi il template non la conterrebbe. Fai una piccola modifica alla pagina per salvarla di nuovo, poi riprova."
+    }
+  },
+  "taxonomies": {
+    "title": "Categorie",
+    "subtitle": "Le categorie con cui questo sito classifica — una pagina può portare termini di più categorie insieme, e ogni termine ha un URL suo.",
+    "nameLabel": "Nome",
+    "prefixLabel": "Prefisso URL",
+    "prefixPlaceholder": "ricavato dal nome",
+    "prefixHint": "I termini rispondono a /{locale}/{prefisso}/{slug}. Senza prefisso vivono alla radice del sito: più bello, e più facile che vada a sbattere contro l'indirizzo di una pagina.",
+    "rootMounted": "Nessun prefisso (radice del sito)",
+    "prefixTaken": "Un’altra categoria o una pagina risponde già a quell’indirizzo.",
+    "atRoot": "alla radice del sito",
+    "delete": "Elimina",
+    "noTerms": "Nessun termine, per ora.",
+    "unnamed": "(senza nome)",
+    "newTerm": "Nuovo termine",
+    "addTerm": "Aggiungi termine",
+    "parent": "Dentro",
+    "newTermParent": "Dentro (per il nuovo termine)",
+    "noParent": "Primo livello",
+    "termName": "Nome",
+    "termSlug": "Slug",
+    "termSlugEmpty": "non pubblicato in questa lingua",
+    "deleteTerm": "Elimina termine",
+    "addressTaken": "Quell'indirizzo è già occupato da un altro termine o da una pagina.",
+    "pageTitle": "Categorie",
+    "pageHint": "La stessa per tutte le lingue di questa pagina.",
+    "pageEmpty": "Nessuna categoria definita, per ora.",
+    "pageSaved": "Categorie della pagina salvate",
+    "termDescription": "Descrizione",
+    "termDescriptionHint": "Compare sopra l'elenco delle pagine classificate con questo termine",
+    "termSeo": "SEO",
+    "termSeoTitle": "SEO di «{{term}}» ({{locale}})",
+    "landingPage": "Pagina di destinazione",
+    "landingPageDefault": "Disposizione predefinita",
+    "landingPageChosen": "Una pagina è impostata",
+    "landingPageChoose": "Scegli una pagina",
+    "landingPageChange": "Cambia",
+    "landingPageClear": "Torna alla disposizione predefinita",
+    "emptyExplainer": "Una categoria è un modo di classificare le pagine — Argomento, Autore, Linea di prodotto. Ogni suo termine ha un URL suo, che elenca le pagine classificate così.",
+    "termNoindex": "Tieni questo termine fuori dai motori di ricerca",
+    "termNoindexHint": "La pagina continua a funzionare per chi ci arriva, ma chiede ai motori di non indicizzarla e sparisce dalla sitemap. Utile per un termine con pochissimi contenuti.",
+    "deleteTermDialog": {
+      "title": "Eliminare questo termine?",
+      "description": "I termini che stanno dentro salgono al primo livello invece di essere eliminati con lui."
+    },
+    "deleteDialog": {
+      "description": "Le pagine restano, smettono solo di essere classificate così.",
+      "title": "Eliminare la categoria “{{name}}”?",
+      "noTerms": "Non contiene termini.",
+      "terms_one": "Il suo termine verrà eliminato con lei.",
+      "terms_other": "I suoi {{count}} termini verranno eliminati con lei."
+    },
+    "new": "Nuova categoria",
+    "createSubmit": "Crea",
+    "creating": "Creazione in corso...",
+    "hierarchical": "Termini annidati (gerarchia)",
+    "hierarchicalHint": "Un termine può stare dentro un altro. Senza, tutti i termini stanno allo stesso livello.",
+    "rename": "Rinomina",
+    "renameDialog": {
+      "title": "Rinomina la categoria"
+    },
+    "created": "Categoria “{{name}}” creata",
+    "renamed": "Categoria rinominata in “{{name}}”",
+    "deleted": "Categoria “{{name}}” eliminata",
+    "prefixFixed": "Non si cambia dopo la creazione: gli indirizzi dei termini esistenti si romperebbero.",
+    "childCount_one": "{{count}} termine dentro",
+    "childCount_other": "{{count}} termini dentro",
+    "termDeleted": "Termine “{{name}}” eliminato",
+    "term": {
+      "breadcrumb": "Dove ti trovi",
+      "kindOf": "Categoria {{name}}",
+      "address": "Indirizzo: {{address}}",
+      "seoOwnSave": "Si salva a parte, dalla sua finestra.",
+      "deleteTitle": "Elimina questo termine",
+      "notFound": "Questo termine non esiste più: è stato eliminato, oppure l’indirizzo non è giusto.",
+      "backToList": "Torna alle categorie"
+    },
+    "reorder": {
+      "start": "Riordina",
+      "done": "Fatto",
+      "up": "Sposta {{name}} più in alto",
+      "down": "Sposta {{name}} più in basso",
+      "upShort": "Su",
+      "downShort": "Giù",
+      "failed": "Non è stato possibile cambiare l’ordine. Riprova."
+    },
+    "deleteTermFailed": "La voce non è stata eliminata. Riprova.",
+    "addTermFailed": "La voce non è stata aggiunta. Riprova.",
+    "createFailed": "La categoria non è stata creata. Riprova.",
+    "deleteFailed": "La categoria non è stata eliminata. Riprova.",
+    "pageSaveFailed": "Le categorie della pagina non sono state salvate. Riprova."
+  },
+  "sections": {
+    "title": "Sezioni",
+    "subtitle": "Costruisci una fascia di blocchi una volta e usala su tante pagine.",
+    "nameLabel": "Nome",
+    "status": {
+      "draft": "Bozza",
+      "published": "Pubblicata"
+    },
+    "delete": "Elimina",
+    "exposeField": "Una pagina può cambiarlo",
+    "backToList": "← Torna alle sezioni",
+    "published": "Pubblicata — tutte le pagine che la usano sono aggiornate",
+    "nameTaken": "Esiste già una sezione con questo nome.",
+    "templates": "Template",
+    "makeReusable": "Trasforma in sezione riusabile",
+    "makeReusableSubmit": "Crea sezione",
+    "makeReusableBusy": "Creazione in corso...",
+    "usedOnPages_one": "su {{count}} pagina",
+    "usedOnPages_other": "su {{count}} pagine",
+    "usedNowhere": "non ancora inserita da nessuna parte",
+    "usedInTemplates_one": "in {{count}} template",
+    "usedInTemplates_other": "in {{count}} template",
+    "deleteConfirmInTemplates_one": "Sta anche dentro un template: le pagine create da lì in poi avranno una striscia vuota al suo posto.",
+    "deleteConfirmInTemplates_other": "Sta anche dentro {{count}} template: le pagine create da lì in poi avranno una striscia vuota al suo posto.",
+    "deleteDialog": {
+      "title": "Eliminare “{{name}}”?",
+      "unused": "Nessuna pagina la mostra.",
+      "usedOnPages_one": "È su una pagina, che non mostrerà più niente al suo posto.",
+      "usedOnPages_other": "È su {{count}} pagine, e ognuna non mostrerà più niente al suo posto."
+    },
+    "new": {
+      "shared": "Nuova sezione condivisa",
+      "template": "Nuovo template"
+    },
+    "tabs": {
+      "label": "Tipi di sezione",
+      "shared": "Sezioni condivise",
+      "template": "Template"
+    },
+    "tabDescription": {
+      "shared": "Le modifichi una volta, e cambiano su ogni pagina che le usa.",
+      "template": "Punti di partenza: una pagina li copia e poi va per conto suo."
+    },
+    "emptyExplainer": {
+      "shared": "Una sezione condivisa è una striscia di blocchi che costruisci una volta e metti su tante pagine: la modifichi qui e cambia su tutte.",
+      "template": "Un template è un punto di partenza: chi crea una pagina da lì ne riceve una copia e poi la cambia come vuole."
+    },
+    "createSubmit": "Crea",
+    "creating": "Creazione in corso...",
+    "deleteNamed": "Elimina “{{name}}”",
+    "deleted": "“{{name}}” è stato eliminato",
+    "templateDraftHint": "Pubblicalo per poterlo usare nelle pagine.",
+    "rename": "Rinomina",
+    "renameDialog": {
+      "title": "Rinomina",
+      "submit": "Rinomina",
+      "busy": "Salvataggio in corso..."
+    },
+    "renamed": "Nome cambiato in “{{name}}”",
+    "unpublishedTemplates_one": "{{count}} template è in bozza: pubblicalo da Sezioni › Template per usarlo qui.",
+    "unpublishedTemplates_other": "{{count}} template sono in bozza: pubblicali da Sezioni › Template per usarli qui.",
+    "renameFailed": "La sezione non è stata rinominata. Riprova.",
+    "deleteFailed": "La sezione non è stata eliminata. Riprova.",
+    "createFailed": "La sezione non è stata creata. Riprova.",
+    "makeReusableFailed": "Il blocco non è stato trasformato in sezione. Riprova."
+  },
+  "layout": {
+    "title": "Header e footer",
+    "localeLabel": "Lingua",
+    "editHeader": "Modifica Header",
+    "editHeaderDescription": "Logo, menu di navigazione e selettore lingua.",
+    "editFooter": "Modifica Footer",
+    "editFooterDescription": "Contenuto e link in fondo a ogni pagina.",
+    "editor": {
+      "backToList": "Header e footer",
+      "published": "Pubblicato",
+      "noPageToPreview": "Crea prima una pagina in questa lingua — il canvas ha bisogno di una pagina vera su cui visualizzare l'anteprima di {{section}}.",
+      "headerSettings": "Impostazioni dell’header",
+      "sticky": "Fisso durante lo scorrimento",
+      "stickyHint": "L’header resta in cima alla pagina mentre chi visita scorre. Vale subito, senza pubblicare.",
+      "stickyOn": "L’header resta in alto mentre si scorre",
+      "stickyOff": "L’header scorre con la pagina"
+    },
+    "headerTitle": "Header",
+    "footerTitle": "Footer",
+    "editAction": "Modifica",
+    "localeNote": "Ogni lingua ha il suo header e il suo footer."
+  },
+  "media": {
+    "list": {
+      "title": "Media"
+    },
+    "grid": {
+      "upload": "Carica file",
+      "uploading": "Caricamento in corso...",
+      "empty": "La libreria è ancora vuota. Carica un file qualsiasi — un'immagine, un video, un PDF — e diventa disponibile per ogni blocco che ne chiede uno.",
+      "noMatches": "Nessun file corrisponde a quello che cerchi.",
+      "uploadWarning": "Puoi caricare qualsiasi file, e Kometio non controlla cosa contiene: carica solo file che arrivano da fonti di cui ti fidi. Tutto ciò che non è un'immagine, un video o un audio si scarica quando lo apri, non viene mai mostrato.",
+      "emptyKind": {
+        "image": "Ancora nessuna immagine.",
+        "video": "Ancora nessun video.",
+        "audio": "Ancora nessun audio.",
+        "document": "Ancora nessun documento.",
+        "other": "Ancora nessun altro file."
+      }
+    },
+    "deleteDialog": {
+      "title": "Eliminare questo file?",
+      "description": "\"{{name}}\" verrà eliminato definitivamente. L'azione non può essere annullata.",
+      "usedOn_one": "È usato in {{count}} punto del sito: eliminandolo, quel punto resterà vuoto.",
+      "usedOn_other": "È usato in {{count}} punti del sito: eliminandolo, quei punti resteranno vuoti."
+    },
+    "picker": {
+      "title": "Scegli un file",
+      "titleImage": "Scegli un'immagine",
+      "titleVideo": "Scegli un video",
+      "titleAudio": "Scegli un audio",
+      "titleDocument": "Scegli un documento"
+    },
+    "filters": {
+      "searchLabel": "Cerca per nome",
+      "searchPlaceholder": "Cerca per nome",
+      "kindLabel": "Tipo di file",
+      "kindAll": "Tutti",
+      "kindImage": "Immagini",
+      "kindVideo": "Video",
+      "kindAudio": "Audio",
+      "kindDocument": "Documenti",
+      "kindOther": "Altro"
+    },
+    "folders": {
+      "label": "Cartelle",
+      "count_one": "{{count}} file",
+      "count_other": "{{count}} file",
+      "searchResults": "Risultati della ricerca",
+      "breadcrumb": "Dove ti trovi"
+    },
+    "detail": {
+      "description": "Dettagli di questo file",
+      "missingTitle": "File non trovato",
+      "missing": "Questo file non c’è: potrebbe essere stato eliminato, o l’indirizzo non è quello giusto. Chiudi il pannello e cercalo nella sua cartella.",
+      "type": "Tipo",
+      "size": "Dimensione",
+      "dimensions": "Dimensioni",
+      "pixels": "{{width}} × {{height}} px",
+      "uploaded": "Caricato il",
+      "url": "URL pubblico",
+      "copy": "Copia URL",
+      "copied": "URL copiato",
+      "copyFailed": "Non è stato possibile copiare: l’URL è selezionato, premi Ctrl/⌘ + C.",
+      "download": "Scarica",
+      "delete": "Elimina",
+      "deleted": "“{{name}}” eliminato",
+      "nameLabel": "Nome",
+      "altLabel": "Testo alternativo",
+      "altHint": "Descrive l’immagine a chi non la vede. Lascia vuoto se è solo decorativa.",
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "cancel": "Annulla",
+      "saved": "File aggiornato",
+      "nameRequired": "Scrivi il nome del file.",
+      "saveFailed": "Non è stato possibile salvare il file.",
+      "deleteFailed": "Il file non è stato eliminato. Riprova."
+    },
+    "upload": {
+      "dropHere": "Rilascia per caricare",
+      "progressLabel": "Avanzamento del caricamento",
+      "dismiss": "Nascondi",
+      "status": {
+        "waiting": "In attesa",
+        "uploading": "Caricamento…",
+        "done": "Caricato",
+        "failed": "Non caricato: {{reason}}"
+      },
+      "done_one": "{{count}} file caricato",
+      "done_other": "{{count}} file caricati",
+      "doneIn_one": "{{count}} file caricato in {{folder}}",
+      "doneIn_other": "{{count}} file caricati in {{folder}}",
+      "see": "Vedi",
+      "partial": "Caricati {{count}} su {{total}} file",
+      "noneUploaded": "Nessun file è stato caricato"
+    },
+    "usages": {
+      "title": "Dove è usato",
+      "none": "Non è usato da nessuna parte.",
+      "failed": "Non è stato possibile controllare dove è usato.",
+      "page": "Pagina · {{languages}}",
+      "section": {
+        "shared": "Sezione condivisa",
+        "template": "Template"
+      },
+      "header": "Header",
+      "footer": "Footer"
+    }
+  },
+  "icons": {
+    "picker": {
+      "setsLabel": "Set di icone",
+      "title": "Scegli un'icona",
+      "search": "Cerca icona…",
+      "empty": "Nessuna icona trovata.",
+      "sets": {
+        "interface": "Icone",
+        "brand": "Marchi",
+        "image": "Immagine"
+      },
+      "image": {
+        "hint": "Per un logo che i set non hanno — LinkedIn, per esempio — usa un’immagine della libreria. Si vede com’è: non prende il colore del testo come le altre icone.",
+        "choose": "Scegli dalla libreria…"
+      }
+    },
+    "field": {
+      "remove": "Rimuovi icona"
+    }
+  },
+  "generalSettings": {
+    "nameLabel": "Nome sito",
+    "domainLabel": "Dominio",
+    "domainPlaceholder": "www.iltuosito.it",
+    "domainDescription": "Il dominio su cui è servito il sito (es. www.iltuosito.it). Deve corrispondere esattamente a quello reale, altrimenti le pagine non verranno trovate.",
+    "domainInvalid": "Questo non sembra un dominio. Usa lettere, numeri, trattini e punti, per esempio www.iltuosito.it.",
+    "domainRemoved": "Ho tolto {{removed}}: qui serve solo il dominio.",
+    "domainChange": {
+      "title": "Cambiare il dominio del sito?",
+      "description": "Le pagine saranno raggiungibili solo su {{domain}}. Il vecchio indirizzo, {{old}}, smetterà di funzionare.",
+      "addedDescription": "Le pagine saranno raggiungibili su {{domain}}.",
+      "action": "Cambia dominio",
+      "removeTitle": "Togliere il dominio?",
+      "removeDescription": "Senza un dominio le pagine non saranno più raggiungibili su {{old}}.",
+      "removeAction": "Togli il dominio"
+    }
+  },
+  "seoSettings": {
+    "indexingLabel": "Consenti l'indicizzazione",
+    "indexingDescription": "Se disattivato, il sito chiede ai motori di ricerca di non indicizzarlo (utile durante lo sviluppo, prima del lancio).",
+    "indexingDisclaimer": "Nota: è una richiesta, non una garanzia — dipende dal rispetto di questa indicazione da parte dei motori di ricerca.",
+    "turnOffConfirm": {
+      "title": "Spegnere l’indicizzazione?",
+      "description": "Google e gli altri motori di ricerca smetteranno di mostrare il sito nei risultati. Puoi riaccenderla quando vuoi, ma il ritorno nei risultati non è immediato.",
+      "action": "Spegni"
+    }
+  },
+  "formSubmissionRetention": {
+    "description": "Per quanto tempo il sito tiene le risposte ai moduli.",
+    "hint": "Vale per tutti i moduli di questo sito. Le risposte eliminate non si possono recuperare.",
+    "invalidValue": "Scrivi un numero intero di giorni, maggiore di zero.",
+    "legend": "Le risposte ai moduli",
+    "foreverLabel": "Conserva le risposte per sempre",
+    "foreverDescription": "Nessuna risposta viene eliminata da sola.",
+    "daysLabel": "Elimina le risposte dopo un numero di giorni",
+    "daysDescription": "Ogni notte le risposte più vecchie vengono eliminate per sempre.",
+    "daysInputLabel": "Numero di giorni",
+    "unit_one": "giorno",
+    "unit_other": "giorni",
+    "confirm": {
+      "title": "Eliminare le risposte più vecchie?",
+      "description_one": "Le risposte più vecchie di {{count}} giorno verranno eliminate per sempre alla prossima pulizia notturna (alle 4). Non si possono recuperare.",
+      "description_other": "Le risposte più vecchie di {{count}} giorni verranno eliminate per sempre alla prossima pulizia notturna (alle 4). Non si possono recuperare.",
+      "action": "Elimina le risposte vecchie",
+      "descriptionCount_one": "{{count}} risposta più vecchia di {{days}} giorni verrà eliminata per sempre alla prossima pulizia notturna (alle 4). Non si può recuperare.",
+      "descriptionCount_other": "{{count}} risposte più vecchie di {{days}} giorni verranno eliminate per sempre alla prossima pulizia notturna (alle 4). Non si possono recuperare."
+    }
+  },
+  "cookieConsent": {
+    "category": {
+      "necessary": "Necessari",
+      "functionality": "Funzionalità",
+      "measurement": "Misurazione",
+      "experience": "Esperienza"
+    }
+  },
+  "cookieBanner": {
+    "intro": "Configura il banner di consenso ai cookie, richiesto dalle regole europee sulla privacy (GDPR), che compare su ogni pagina del sito pubblico.",
+    "enabledLabel": "Mostra il cookie banner",
+    "positionLabel": "Posizione",
+    "position": {
+      "bottomBar": "Barra in basso (larghezza piena)",
+      "bottomLeft": "In basso a sinistra",
+      "bottomRight": "In basso a destra",
+      "centerModal": "Centrato"
+    },
+    "acceptButtonSideLabel": "Lato del bottone di accettazione",
+    "side": {
+      "left": "Sinistra",
+      "right": "Destra"
+    },
+    "showReopenTabLabel": "Mostra una linguetta per riaprire dopo la scelta",
+    "reopenPositionLabel": "Posizione della linguetta di riapertura",
+    "privacyPolicyLabel": "Pagina Privacy Policy",
+    "cookiePolicyLabel": "Pagina Cookie Policy",
+    "selectPage": "Seleziona una pagina",
+    "pageSelected": "Pagina selezionata",
+    "clearSelection": "Rimuovi",
+    "copyOverridesLabel": "Testi personalizzati per lingua",
+    "copyOverridesHint": "Lascia vuoto per usare il testo predefinito per quella lingua.",
+    "legalDocumentsLink": "Genera bozze di Privacy Policy, Cookie Policy e Termini",
+    "titleLabel": "Titolo",
+    "bodyLabel": "Testo",
+    "acceptAllLabel": "Bottone accetta tutti",
+    "rejectAllLabel": "Bottone rifiuta tutti",
+    "customizeLabel": "Bottone personalizza",
+    "preview": {
+      "label": "Anteprima del banner cookie",
+      "stages": "Momento da mostrare",
+      "before": "Prima della scelta",
+      "after": "Dopo la scelta",
+      "language": "Lingua dell’anteprima",
+      "reopenTab": "Cookie",
+      "noTab": "Nessuna linguetta: dopo la scelta il banner non si può riaprire.",
+      "note": "Anteprima approssimata, con i valori del modulo anche se non salvati. Sul sito il banner ha lo stile del tema.",
+      "title": "Rispettiamo la tua privacy",
+      "body": "Usiamo i cookie per far funzionare il sito e, con il tuo consenso, per capire come viene usato.",
+      "acceptAll": "Accetta tutti",
+      "rejectAll": "Rifiuta tutti",
+      "customize": "Personalizza"
+    }
+  },
+  "legalDocuments": {
+    "title": "Generatore documenti legali",
+    "intro": "Genera bozze di Privacy Policy, Cookie Policy e Termini e Condizioni a partire dai dati già presenti sul sito. Vengono sempre create come bozze — fai revisionare da un legale prima di pubblicare.",
+    "step": {
+      "identity": "Chi sei",
+      "usage": "Cosa raccogli",
+      "documents": "Documenti",
+      "review": "Riepilogo"
+    },
+    "legalEntityNameLabel": "Ragione sociale",
+    "contactEmailLabel": "Email di contatto privacy",
+    "vatIdLabel": "Partita IVA (opzionale)",
+    "domainLabel": "Dominio del sito",
+    "addressLabel": "Indirizzo (opzionale)",
+    "phoneLabel": "Telefono (opzionale)",
+    "dataCollectedLabel": "Dati raccolti",
+    "dataCollectedHint": "Spunta solo quello che il sito raccoglie davvero — questo testo finisce nella policy generata.",
+    "dataCollected": {
+      "contactForm": "Invii del modulo di contatto",
+      "newsletter": "Iscrizioni alla newsletter",
+      "accounts": "Account utente"
+    },
+    "thirdPartyServicesLabel": "Servizi di terze parti",
+    "thirdPartyServicesHint": "Precompilato dagli script tracker e dai domini consentiti — aggiungi o rimuovi liberamente.",
+    "thirdPartyServicePlaceholder": "es. Google Analytics",
+    "addThirdParty": "Aggiungi",
+    "removeThirdParty": "Rimuovi {{service}}",
+    "retentionDaysLabel": "Conservazione moduli inviati (giorni)",
+    "retentionDaysPlaceholder": "Lascia vuoto per conservarli per sempre",
+    "retentionDaysHint": "Precompilato dall'impostazione di conservazione dei moduli inviati.",
+    "documentsLabel": "Quali documenti generare",
+    "kind": {
+      "privacy-policy": "Privacy Policy",
+      "cookie-policy": "Cookie Policy",
+      "terms-conditions": "Termini e Condizioni"
+    },
+    "localesLabel": "Quali lingue",
+    "jurisdictionLabel": "Giurisdizione competente",
+    "jurisdictionHint": "Il paese la cui legge regola i Termini e Condizioni. Serve solo per quel documento.",
+    "documentsRequired": "Scegli almeno un documento.",
+    "localesRequired": "Scegli almeno una lingua.",
+    "jurisdictionRequired": "Scegli il paese la cui legge regola i Termini e Condizioni.",
+    "disclaimer": "Questi documenti sono un punto di partenza generato automaticamente, non una consulenza legale. Fai revisionare da un legale prima di pubblicare.",
+    "loadingPreview": "Generazione anteprima in corso...",
+    "previewFailed": "Non è stato possibile generare l'anteprima. Riprova.",
+    "generateFailed": "Non è stato possibile generare i documenti. Riprova.",
+    "confirmLabel": "Ho capito che sono bozze e verranno revisionate prima della pubblicazione",
+    "back": "Indietro",
+    "next": "Avanti",
+    "generate": "Genera bozze",
+    "generating": "Generazione in corso...",
+    "successTitle": "Bozze create",
+    "successHint": "Ogni documento è stato creato come pagina bozza, mai pubblicata automaticamente.",
+    "openDraft": "Apri bozza",
+    "jurisdictionPlaceholder": "Scegli un paese",
+    "legalEntityNameRequired": "Scrivi la ragione sociale.",
+    "contactEmailRequired": "Scrivi l’email a cui scrivere per la privacy.",
+    "contactEmailInvalid": "Questa non sembra un’email: controlla che ci sia la @ e il dominio.",
+    "domainRequired": "Scrivi il dominio del sito, per esempio esempio.it.",
+    "retentionDaysInvalid": "Scrivi un numero intero di giorni, oppure lascia vuoto.",
+    "removeThirdPartyShort": "Rimuovi",
+    "thirdPartyServiceNameLabel": "Nome del servizio",
+    "backToCookies": "Cookie e privacy",
+    "tooManyServices": "Puoi elencare al massimo {{max}} servizi: toglierne qualcuno per continuare."
+  },
+  "themeSettings": {
+    "themeLocked": "Il tema attivo non permette a un sito di stilarlo, quindi niente di quello che c'è in questa pagina — né sui blocchi — arriverà al sito pubblicato. È una scelta del tema stesso, nel suo theme.json.",
+    "title": "Stile del sito",
+    "intro": "Queste impostazioni si applicano sopra il tema attivo del sito — lascia un campo disattivato per mantenere il valore predefinito del tema.",
+    "overridesEnabledLabel": "Applica queste impostazioni",
+    "overridesEnabledDescription": "Spento: il sito usa solo i valori del tema.",
+    "primaryColorLabel": "Colore primario",
+    "secondaryColorLabel": "Colore secondario",
+    "currentThemeValue": "Valore di base del tema attivo — personalizzalo qui o modificando il tema stesso",
+    "override": "Personalizza",
+    "contrastWarning": "Contrasto basso: con questo colore, il testo del tema raggiunge solo un rapporto di {{ratio}}:1 (consigliato 4.5:1) — potrebbe risultare difficile da leggere.",
+    "fontLabel": "Font",
+    "fontInherit": "Predefinito del tema",
+    "fontCustom": "Personalizzato (nome Google Fonts)...",
+    "fontCustomPlaceholder": "es. Space Grotesk",
+    "faviconLabel": "Icona del sito (favicon)",
+    "customCssLabel": "CSS personalizzato",
+    "contentWidthLabel": "Larghezza del contenuto",
+    "contentWidthHelp": "Quanto è larga la colonna leggibile su ogni pagina — una misura CSS come 64rem o 1100px. Lascia vuoto per usare la larghezza del tema. Un singolo blocco può comunque essere impostato su Larga o Tutta la larghezza.",
+    "overridesHowSummary": "Come funziona",
+    "overridesHow": "Se disattivato, ogni campo di questa pagina (colori, font, larghezza, icona, CSS) viene ignorato e si usano i valori predefiniti del tema, anche se ne hai salvati in passato. Non tocca gli stili impostati sui blocchi. Il tema attivo può anche bloccare tutto: in quel caso vale anche per gli stili dei blocchi.",
+    "colorsTitle": "Colori",
+    "typographyTitle": "Tipografia",
+    "fontCustomLabel": "Nome del font (Google Fonts)",
+    "contentWidthInvalid": "Serve una misura CSS valida, come 64rem o 1100px.",
+    "faviconHelp": "Quella che compare nella scheda del browser. Si sceglie dalla libreria.",
+    "faviconPreview": "Anteprima dell’icona",
+    "faviconNone": "Nessuna icona: il sito usa quella del tema.",
+    "faviconChoose": "Scegli dalla libreria",
+    "faviconChange": "Cambia",
+    "faviconRemove": "Rimuovi",
+    "advancedTitle": "Avanzate",
+    "customCssWarning": "Si applica a tutte le pagine: un errore può rompere l’aspetto del sito.",
+    "previewTitle": "Un titolo di esempio",
+    "previewText": "Un paragrafo, per vedere come stanno il testo e il font.",
+    "previewButton": "Un pulsante",
+    "previewNote": "Anteprima approssimata, con i valori del modulo anche se non salvati. Un font che l’editor non ha è disegnato con uno simile."
+  },
+  "integrations": {
+    "title": "Integrazioni",
+    "intro": "Script di terze parti (analytics, chat, pixel di tracciamento...) e i domini a cui devono poter parlare.",
+    "headScriptLabel": "Codice in cima a ogni pagina",
+    "bodyScriptLabel": "Codice in fondo a ogni pagina",
+    "scriptDisclaimer": "Iniettato così com'è in ogni pagina del sito. Incolla solo codice da fonti di cui ti fidi.",
+    "trackerDomainsDisclaimer": "Un dominio qui autorizzato può eseguire codice ed effettuare chiamate dal tuo sito esattamente come se lo avessi scritto tu stesso — aggiungi solo domini di provider di cui ti fidi (es. quello indicato nella documentazione dello script sopra).",
+    "domainLabelPlaceholder": "Nome, es. Hotjar",
+    "domainPlaceholder": "es. static.hotjar.com",
+    "domainName": "Nome del servizio",
+    "domainHost": "Dominio",
+    "addDomain": "Aggiungi dominio",
+    "removeDomain": "Rimuovi",
+    "invalidDomain": "Dominio non valido — solo nome host, es. static.hotjar.com o *.hotjar.io (niente https://, niente percorso)",
+    "trackerScriptsDisclaimer": "Un fornitore riconosciuto (Google Tag Manager, Google Analytics, Meta Pixel) incollato sopra viene rilevato automaticamente e spostato qui al salvataggio, controllato in base alla categoria di consenso. Tutto il resto resta nei campi sopra, eseguito per ogni visitatore indipendentemente dal consenso.",
+    "trackerScriptLabelPlaceholder": "Nome, es. Google Analytics",
+    "trackerScriptHtmlPlaceholder": "<script>...</script>",
+    "trackerScriptName": "Nome dello script",
+    "trackerScriptHtml": "Codice dello script",
+    "addTrackerScript": "Aggiungi script",
+    "removeTrackerScript": "Elimina",
+    "placement": {
+      "head": "<head>",
+      "body": "Fine <body>"
+    },
+    "trackerScriptCategoryFor": "Categoria di consenso per {{name}}",
+    "trackerScriptCategory": "Categoria di consenso",
+    "trackerScriptPlacement": "Dove va lo script",
+    "groups": {
+      "scripts": "Codice nelle pagine",
+      "domains": "Servizi a cui i tuoi script si collegano",
+      "consent": "Script che chiedono il consenso"
+    },
+    "headScriptHint": "Per esempio la verifica di Google Search Console. Va nel <head>.",
+    "bodyScriptHint": "Per esempio un widget di chat. Va prima della chiusura del <body>.",
+    "domainsHint": "Se uno script carica file da un altro sito (es. static.hotjar.com), aggiungilo qui, altrimenti il browser lo blocca.",
+    "consentHint": "Partono solo dopo che il visitatore ha accettato la categoria scelta nel banner cookie.",
+    "removeDomainNamed": "Rimuovi il dominio “{{name}}”",
+    "removeTrackerScriptNamed": "Elimina lo script “{{name}}”",
+    "editScript": "Modifica codice",
+    "editScriptNamed": "Modifica il codice di “{{name}}”",
+    "scriptCodeFor": "Codice di {{name}}",
+    "consentWarning_one": "{{count}} script aspetta il consenso, ma il banner cookie è spento: non partirà mai.",
+    "consentWarning_other": "{{count}} script aspettano il consenso, ma il banner cookie è spento: non partiranno mai.",
+    "consentWarningAction": "Attiva il banner",
+    "consentWarningHere": "Attivalo qui sotto."
+  },
+  "globalStyles": {
+    "variantGroup": "Aspetto che stai modificando",
+    "breakpointGroup": "Dimensione che stai modificando",
+    "back": "Indietro",
+    "themeTitle": "Tema",
+    "themeHint": "Quale dei temi di questo sito è in uso. Si applica subito, senza salvare.",
+    "themeUpload": {
+      "hint": "Oppure carica un tema come zip: theme.json, con un \"name\", e theme.css in cima. Il repository di un tema scaricato come zip va bene così com'è.",
+      "choose": "Carica un tema",
+      "sending": "Caricamento…",
+      "queued": "«{{name}}» è in attesa di essere costruito.",
+      "building": "Costruzione del sito con «{{name}}». Ci vuole un minuto o due; nel frattempo il sito resta com'è.",
+      "published": "«{{name}}» è pronto.",
+      "use": "Usa «{{name}}» per questo sito",
+      "log": "Output della build",
+      "failures": {
+        "not-a-zip": "Questo file non è un archivio zip.",
+        "too-large": "Questo tema è troppo grande: al massimo 20 MB, 80 MB una volta estratto.",
+        "too-many-entries": "Questo tema ha troppi file: al massimo 1.000.",
+        "unsafe-path": "Questo zip ha un file che verrebbe scritto fuori dal tema, quindi è stato rifiutato.",
+        "link": "Questo zip contiene un collegamento; un tema può contenere solo file.",
+        "encrypted": "Questo zip è cifrato. Caricalo senza password.",
+        "no-manifest": "Manca theme.json in cima al tema.",
+        "bad-manifest": "theme.json non è un JSON valido.",
+        "bad-name": "theme.json ha bisogno di un \"name\": lettere minuscole, cifre e trattini, fino a 40 caratteri.",
+        "no-stylesheet": "Manca theme.css in cima al tema.",
+        "core-name": "Quel nome è di uno dei temi di Kometio. Dai al tuo un nome suo.",
+        "build-failed": "Il sito non si è costruito con questo tema. L'output qui sotto dice perché; il sito resta com'era.",
+        "interrupted": "La costruzione si è fermata prima di finire. Carica di nuovo il tema.",
+        "unknown": "Non è stato possibile caricare il tema. Riprova."
+      }
+    },
+    "themeSaving": "Cambio tema in corso...",
+    "blockStylesTitle": "Stile per blocco",
+    "blockStylesHint": "Scegli un tipo di blocco per cambiarne lo stile su tutto il sito — sfondo, colore del testo, angoli, spaziatura. Si applica subito, senza salvare.",
+    "themeChanged": "Tema cambiato in «{{name}}»",
+    "blockStylesSaving": "Salvataggio in corso...",
+    "blockStylesSaved": "Modifiche salvate.",
+    "themeChangeFailed": "Il tema non è stato cambiato. Riprova."
+  },
+  "localeSettings": {
+    "localesLabel": "Lingue attive",
+    "defaultBadge": "Predefinita",
+    "setDefault": "Imposta come predefinita",
+    "newLocalePlaceholder": "Cerca una lingua...",
+    "noMatches": "Nessuna lingua trovata",
+    "addLocale": "Aggiungi lingua",
+    "fallbackLabel": "Quando una pagina non è ancora tradotta",
+    "fallbackRedirectDescription": "Chi apre la pagina viene portato alla stessa pagina in un’altra lingua: prima quella predefinita, poi le altre, in ordine.",
+    "fallbackNotAvailableDescription": "Chi apre la pagina vede un avviso: in questa lingua non esiste.",
+    "fallbackRedirectLabel": "Porta a un’altra lingua",
+    "fallbackNotAvailableLabel": "Mostra “non disponibile”",
+    "remove": "Rimuovi",
+    "removeNamed": "Rimuovi {{language}}",
+    "setDefaultNamed": "Imposta {{language}} come predefinita",
+    "defaultCannotBeRemoved": "La lingua predefinita non si rimuove: scegline prima un’altra come predefinita.",
+    "lastCannotBeRemoved": "Il sito ha bisogno di almeno una lingua.",
+    "removeConfirm": {
+      "title_one": "Togliere questa lingua?",
+      "title_other": "Togliere queste lingue?",
+      "description_one": "Le pagine in {{languages}} non compariranno più nel selettore di lingua né nella sitemap. Nessun testo viene cancellato: se riaggiungi la lingua, tornano.",
+      "description_other": "Le pagine in {{languages}} non compariranno più nel selettore di lingua né nella sitemap. Nessun testo viene cancellato: se riaggiungi le lingue, tornano.",
+      "action_one": "Togli la lingua",
+      "action_other": "Togli le lingue"
+    }
+  },
+  "businessInfo": {
+    "description": "Serve a Google per mostrare indirizzo, orari e contatti nei risultati di ricerca.",
+    "addressLabel": "Indirizzo",
+    "phoneLabel": "Telefono",
+    "emailLabel": "Email",
+    "emailInvalid": "Questo non sembra un indirizzo email.",
+    "typeLabel": "Tipo di attività",
+    "hoursLabel": "Orari di apertura",
+    "streetLabel": "Via e numero",
+    "postalCodeLabel": "CAP",
+    "cityLabel": "Città",
+    "countryLabel": "Paese",
+    "countryNone": "— Nessuno —",
+    "typeNone": "Non indicato",
+    "typeCustom": "{{value}} (personalizzato)",
+    "types": {
+      "Restaurant": "Ristorante",
+      "BarOrPub": "Bar",
+      "Hotel": "Hotel",
+      "Store": "Negozio",
+      "ProfessionalService": "Studio professionale",
+      "MedicalClinic": "Studio medico",
+      "SportsActivityLocation": "Palestra",
+      "BeautySalon": "Parrucchiere e centro estetico",
+      "RealEstateAgent": "Agenzia immobiliare",
+      "LegalService": "Studio legale",
+      "AccountingService": "Commercialista",
+      "AutoRepair": "Officina",
+      "LocalBusiness": "Altro"
+    }
+  },
+  "forms": {
+    "list": {
+      "title": "Moduli",
+      "newForm": "Nuovo modulo",
+      "fieldCount_one": "{{count}} campo",
+      "fieldCount_other": "{{count}} campi",
+      "submissionCount_one": "{{count}} risposta",
+      "submissionCount_other": "{{count}} risposte",
+      "noSubmissions": "nessuna risposta",
+      "emptyExplainer": "Un modulo raccoglie quello che i visitatori ti mandano: contatti, prenotazioni, iscrizioni. Gli invii arrivano qui e anche via email.",
+      "emptyAction": "Crea il primo modulo",
+      "selectRow": "Seleziona {{name}}",
+      "selection": {
+        "label": "Azioni sui moduli selezionati",
+        "count_one": "{{count}} selezionato",
+        "count_other": "{{count}} selezionati",
+        "open": "Apri",
+        "delete": "Elimina",
+        "duplicate": "Duplica"
+      },
+      "deleteFailed_one": "Il modulo non è stato eliminato. Riprova.",
+      "deleteFailed_other": "Non tutti i moduli sono stati eliminati. Riprova."
+    },
+    "newFormDialog": {
+      "title": "Nuovo modulo",
+      "nameLabel": "Nome modulo",
+      "create": "Crea",
+      "creating": "Creazione in corso..."
+    },
+    "deleteDialog": {
+      "title_one": "Eliminare questo modulo?",
+      "title_other": "Eliminare {{count}} moduli?",
+      "description_one": "{{names}} verrà eliminato definitivamente. Le pagine che lo usano smetteranno di mostrarlo.",
+      "description_other": "{{names}} verranno eliminati definitivamente. Le pagine che li usano smetteranno di mostrarli.",
+      "submissions_one": "Verrà eliminata anche la risposta ricevuta.",
+      "submissions_other": "Verranno eliminate anche le {{count}} risposte ricevute.",
+      "irreversible": "L’azione non può essere annullata."
+    },
+    "picker": {
+      "title": "Scegli un modulo",
+      "empty": "Nessun modulo ancora. Creane uno dalla sezione Moduli.",
+      "fieldCount_one": "{{count}} campo",
+      "fieldCount_other": "{{count}} campi"
+    },
+    "editor": {
+      "backToList": "Moduli",
+      "save": "Salva",
+      "savedByPublisher": "Un modulo va online appena salvato: lo salva un Publisher",
+      "saving": "Salvataggio in corso...",
+      "saved": "Modulo salvato",
+      "nameLabel": "Nome modulo",
+      "notificationEmailPlaceholder": "Nessuna notifica se lasciato vuoto",
+      "stepsLabel": "Step (facoltativi)",
+      "stepsHint": "Suddividi il modulo in più pagine. Senza step, il modulo resta a pagina singola.",
+      "addStep": "Aggiungi step",
+      "noSteps": "Nessuno step: il modulo è a pagina singola.",
+      "stepTitlePlaceholder": "Titolo dello step",
+      "removeStep": "Rimuovi step",
+      "untitledStep": "Step senza titolo",
+      "fieldsLabel": "Campi",
+      "addField": "Aggiungi campo",
+      "noFields": "Nessun campo ancora.",
+      "fieldLabelLabel": "Etichetta",
+      "fieldTypeLabel": "Tipo",
+      "fieldStepLabel": "Step",
+      "fieldStepNone": "Nessuno step",
+      "fieldRequiredLabel": "Obbligatorio",
+      "fieldOptionsLabel": "Opzioni (una per riga)",
+      "fieldOptionsPlaceholder": "Opzione 1\nOpzione 2",
+      "moveFieldUp": "Sposta su",
+      "moveFieldDown": "Sposta giù",
+      "removeField": "Rimuovi campo",
+      "fieldTypes": {
+        "text": "Testo",
+        "email": "Email",
+        "textarea": "Testo lungo",
+        "tel": "Telefono",
+        "checkbox": "Checkbox",
+        "select": "Selezione",
+        "newsletter-consent": "Iscrizione newsletter",
+        "date": "Data",
+        "time": "Ora",
+        "file": "Caricamento file"
+      },
+      "unsaved": "Modifiche non salvate",
+      "leaveTitle": "Uscire senza salvare?",
+      "leaveBody": "Questo modulo si salva solo quando premi Salva. Quello che hai cambiato da allora andrà perso.",
+      "leaveAction": "Esci",
+      "notificationEmailsLabel": "Email di notifica",
+      "notificationEmailsHint": "Ogni indirizzo riceve una sua email per ogni risposta. Lascia vuoto per non avvisare nessuno.",
+      "notificationEmailAddress": "Email di notifica {{number}}",
+      "addNotificationEmail": "Aggiungi indirizzo",
+      "removeNotificationEmail": "Rimuovi indirizzo",
+      "conditionLabel": "Mostra",
+      "conditionAlways": "Sempre",
+      "conditionWhen": "Solo se \"{{field}}\"",
+      "conditionAnswerLabel": "Risposta che mostra questo campo",
+      "conditionAnyAnswer": "ha una risposta qualsiasi",
+      "conditionIs": "è \"{{option}}\"",
+      "conditionIsTicked": "è spuntata",
+      "conditionIsFilled": "è compilato",
+      "untitledField": "Campo senza nome",
+      "conditionBlocksSave": "Correggi le condizioni segnate qui sotto per salvare.",
+      "conditionProblems": {
+        "self": "Un campo non può dipendere da sé stesso.",
+        "unknown-field": "Il campo da cui dipendeva non esiste più.",
+        "not-earlier": "Il campo da cui dipende deve venire prima. Spostalo in alto o scegline un altro.",
+        "equals-needs-select": "Solo un campo a scelta può essere confrontato con una risposta.",
+        "unknown-option": "Quella risposta non è più fra le opzioni del campo."
+      },
+      "saveFailed": "Il modulo non è stato salvato. Riprova."
+    },
+    "submissions": {
+      "title": "Risposte ricevute",
+      "empty": "Ancora nulla. Le risposte a questo modulo compariranno qui.",
+      "count_one": "{{count}} risposta",
+      "count_other": "{{count}} risposte",
+      "exportCsv": "Esporta CSV",
+      "submittedFrom": "Inviato dalla pagina",
+      "removedField": "non è più nel modulo",
+      "noAnswer": "—",
+      "loadError": "Non è stato possibile caricare le risposte.",
+      "expand": "Mostra tutte le risposte",
+      "collapse": "Nascondi le risposte",
+      "downloadFile": "Scarica",
+      "retention": {
+        "forever": "Le risposte vengono conservate per sempre.",
+        "days_one": "Le risposte vengono eliminate dopo {{count}} giorno.",
+        "days_other": "Le risposte vengono eliminate dopo {{count}} giorni.",
+        "change": "Cambia"
+      },
+      "delete": "Elimina questa risposta",
+      "deleted": "Risposta eliminata",
+      "deleteDialog": {
+        "title": "Eliminare questa risposta?",
+        "description": "La risposta del {{date}} verrà eliminata per sempre e non potrà essere recuperata. Anche gli eventuali file allegati vengono eliminati."
+      },
+      "deleteFailed": "La risposta non è stata eliminata. Riprova."
+    },
+    "tabs": {
+      "label": "Sezioni del modulo",
+      "submissions": "Risposte",
+      "fields": "Struttura"
+    },
+    "created": "Modulo “{{name}}” creato",
+    "deleted": "Modulo “{{name}}” eliminato",
+    "deletedMany_one": "{{count}} modulo eliminato",
+    "deletedMany_other": "{{count}} moduli eliminati",
+    "duplicateDialog": {
+      "title": "Duplica il modulo",
+      "nameLabel": "Nome della copia",
+      "copyName": "Copia di {{name}}",
+      "submit": "Crea la copia",
+      "busy": "Duplicazione in corso..."
+    },
+    "duplicated": "Modulo “{{name}}” creato come copia. Le risposte non vengono copiate.",
+    "openCopy": "Apri la copia"
+  },
+  "openingHours": {
+    "days": {
+      "monday": "Lunedì",
+      "tuesday": "Martedì",
+      "wednesday": "Mercoledì",
+      "thursday": "Giovedì",
+      "friday": "Venerdì",
+      "saturday": "Sabato",
+      "sunday": "Domenica"
+    },
+    "addRange": "Aggiungi fascia",
+    "removeRange": "Rimuovi",
+    "closed": "Chiuso",
+    "opens": "Apertura, {{day}}",
+    "closes": "Chiusura, {{day}}",
+    "copyMonday": "Copia lunedì su martedì–venerdì",
+    "removeRangeNamed": "Rimuovi fascia, {{day}}",
+    "sameTime": "L’apertura e la chiusura non possono essere alla stessa ora.",
+    "pastMidnight": "Chiude dopo la mezzanotte: alle {{time}} del giorno dopo."
+  },
+  "users": {
+    "list": {
+      "title": "Utenti",
+      "invite": "Invita utente",
+      "empty": "Nessun utente ancora.",
+      "roleLabel": "Ruolo di {{name}}",
+      "statusActive": "Attivo",
+      "statusInactive": "Disattivato",
+      "deactivate": "Disattiva",
+      "reactivate": "Riattiva",
+      "actionFailed": "Non è stato possibile applicare la modifica.",
+      "deactivateConfirm": {
+        "title": "Disattivare questo utente?",
+        "description": "{{name}} verrà disconnesso subito e non potrà più accedere finché qualcuno non lo riattiva."
+      },
+      "roleChanged": "Ruolo di {{name}} cambiato in {{role}}",
+      "deactivated": "{{name}} è stato disattivato",
+      "reactivated": "{{name}} è stato riattivato",
+      "description": "Chi può entrare nell’editor e cosa può fare.",
+      "you": "Tu",
+      "yourRowNote": "Non puoi cambiare il tuo ruolo né disattivarti: deve farlo un altro amministratore.",
+      "statusPending": "In attesa",
+      "resendInvite": "Reinvia invito",
+      "cancelInvite": "Annulla invito",
+      "inviteResent": "Invito reinviato a {{email}}",
+      "inviteCancelled": "Invito a {{email}} annullato",
+      "cancelInviteConfirm": {
+        "title": "Annullare l’invito?",
+        "description": "Il link che {{email}} ha ricevuto smetterà di funzionare e la persona sparirà dall’elenco. Puoi invitarla di nuovo quando vuoi."
+      },
+      "language": "Lingua: {{name}}",
+      "languageOfTheSite": "Lingua: quella del sito"
+    },
+    "inviteDialog": {
+      "title": "Invita utente",
+      "emailLabel": "Email",
+      "displayNameLabel": "Nome",
+      "roleLabel": "Ruolo",
+      "cancel": "Annulla",
+      "invite": "Invita",
+      "inviting": "Invio in corso...",
+      "emailTaken": "Esiste già un utente con questa email.",
+      "sent": "Invito inviato a {{email}}: riceverà un’email per scegliere la password.",
+      "languageLabel": "Lingua",
+      "languageHint": "L’invito e ogni mail che riceverà dopo saranno scritti in questa lingua, finché non ne sceglie un’altra.",
+      "failed": "L’invito non è stato inviato. Riprova."
+    },
+    "role": {
+      "admin": "Admin",
+      "publisher": "Publisher",
+      "editor": "Editor"
+    },
+    "roles": {
+      "title": "Cosa può fare ogni ruolo",
+      "description": {
+        "admin": "Tutto: pagine, impostazioni del sito, tema, utenti e ruoli.",
+        "publisher": "Pubblica e cambia ciò che è online, moduli e categorie compresi, ed elimina contenuti. Non tocca impostazioni e utenti.",
+        "editor": "Scrive e modifica le bozze: pagine, sezioni e media. Non pubblica e non elimina: un Publisher mette online il suo lavoro."
+      }
+    }
+  },
+  "canvas": {
+    "selectionPath": "Dove si trova questo blocco",
+    "landmarks": {
+      "bar": "Editor della pagina",
+      "canvas": "Pagina in modifica"
+    },
+    "requiredField": "Campo obbligatorio",
+    "previewFrameTitle": "Anteprima pagina",
+    "loadingPage": "Caricamento della pagina…",
+    "previewError": "Non è stato possibile caricare la pagina nel canvas.",
+    "layersTitle": "Livelli",
+    "insertBlock": "Inserisci blocco",
+    "collapseChildren": "Comprimi",
+    "tableData": {
+      "headerCell": "Intestazione, colonna {{column}}",
+      "cell": "Riga {{row}}, colonna {{column}}",
+      "columnPlaceholder": "Colonna {{column}}",
+      "removeRow": "Rimuovi riga",
+      "removeHeaderRowLabel": "Rimuovi riga (intestazione)",
+      "removeRowLabel": "Rimuovi riga {{row}}",
+      "addRow": "Aggiungi riga",
+      "addColumn": "Aggiungi colonna",
+      "removeLastColumn": "Rimuovi ultima colonna"
+    },
+    "featureList": {
+      "placeholder": "Una caratteristica per riga…"
+    },
+    "expandChildren": "Espandi",
+    "layerMissingIcon": "Assente nel tema, quindi non si vede sul sito: {{names}}",
+    "layerHidesMissingIcon": "Contiene blocchi con un'icona che il tema non ha",
+    "removeBlock": "Rimuovi blocco",
+    "addChild": "Aggiungi elemento",
+    "publish": "Pubblica",
+    "publishedByPublisher": "La mette online un Publisher",
+    "preview": "Anteprima",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giù",
+    "undo": "Annulla",
+    "redo": "Ripeti",
+    "duplicateBlock": "Duplica blocco",
+    "fieldGroup": {
+      "content": "Contenuto",
+      "style": "Stile",
+      "advanced": "Avanzate"
+    },
+    "variant": {
+      "fieldLabel": "Aspetto",
+      "default": "Predefinito"
+    },
+    "align": {
+      "fieldLabel": "Larghezza",
+      "content": "Contenuto",
+      "wide": "Larga",
+      "full": "Tutta la larghezza",
+      "hint": "Quanta parte della pagina occupa questo blocco."
+    },
+    "breakpointGroup": "Dimensione in anteprima e in modifica",
+    "breakpointDesktop": "Desktop (oltre {{tablet}}px)",
+    "breakpointTablet": "Tablet (fino a {{tablet}}px)",
+    "breakpointMobile": "Mobile (fino a {{mobile}}px)",
+    "switchPage": "Cambia pagina",
+    "language": {
+      "switch": "Cambia lingua",
+      "diverged": "Scollegata dalla struttura condivisa",
+      "divergeAction": "Scollega questa lingua",
+      "divergeConfirmTitle": "Scollegare {{locale}} dalla struttura condivisa?",
+      "divergeConfirmBody": "Questa lingua non riceverà più le modifiche strutturali (blocchi aggiunti, rimossi o riordinati) fatte nelle altre lingue. Potrai ricollegarla in seguito dal menu della pagina.",
+      "divergeConfirmAction": "Scollega",
+      "relinkAction": "Ricollega questa lingua",
+      "relinkConfirmTitle": "Ricollegare {{locale}} alla struttura condivisa?",
+      "relinkConfirmBody": "Questa lingua tornerà a seguire la struttura condivisa: i blocchi che esistono anche lì mantengono il testo che hanno qui, mentre immagini, impostazioni e disposizione tornano quelle condivise.",
+      "relinkConfirmLost_one": "{{count}} blocco esiste solo in questa lingua e verrà tolto.",
+      "relinkConfirmLost_other": "{{count}} blocchi esistono solo in questa lingua e verranno tolti.",
+      "relinkConfirmHistory": "La versione scollegata resta nella cronologia di questa lingua e si può ripristinare.",
+      "relinkConfirmAction": "Ricollega",
+      "relinked": "{{locale}} segue di nuovo la struttura condivisa.",
+      "relinkUnsaved": "Un salvataggio non è andato a buon fine: la lingua non è stata ricollegata. Riprova quando le modifiche risultano salvate.",
+      "relinkFailed": "Non è stato possibile ricollegare la lingua."
+    },
+    "style": {
+      "editType": "Stile di tutti i blocchi {{type}}",
+      "editTypeHint": "Questi valori si applicano a OGNI blocco {{type}} del sito.",
+      "saveError": "Salvataggio dello stile non riuscito. Riprova."
+    },
+    "blockStyle": {
+      "colors": {
+        "backgroundColor": "Colore di sfondo",
+        "textColor": "Colore testo",
+        "borderColor": "Colore del bordo",
+        "overlayColor": "Velatura"
+      },
+      "lengths": {
+        "borderRadius": {
+          "fieldLabel": "Raggio angoli",
+          "placeholder": "es. 6px, 9999px per un pill"
+        },
+        "paddingX": {
+          "fieldLabel": "Padding orizzontale",
+          "placeholder": "es. 1.25rem — vuoto per il default"
+        },
+        "paddingY": {
+          "fieldLabel": "Padding verticale",
+          "placeholder": "es. 1.25rem — vuoto per il default"
+        },
+        "marginTop": {
+          "fieldLabel": "Spazio sopra",
+          "placeholder": "es. 2rem — vuoto per il default"
+        },
+        "marginBottom": {
+          "fieldLabel": "Spazio sotto",
+          "placeholder": "es. 4rem — vuoto per il default"
+        },
+        "borderWidth": {
+          "fieldLabel": "Spessore del bordo",
+          "placeholder": "es. 1px — vuoto per nessuno"
+        },
+        "minHeight": {
+          "fieldLabel": "Altezza minima",
+          "placeholder": "es. 60vh — vuoto per il valore del tema"
+        },
+        "maxWidth": {
+          "fieldLabel": "Larghezza massima",
+          "placeholder": "es. 48rem — vuoto per il valore del tema"
+        },
+        "gap": {
+          "fieldLabel": "Spazio tra gli elementi",
+          "placeholder": "es. 1.5rem — vuoto per il valore del tema"
+        },
+        "boxShadow": {
+          "fieldLabel": "Ombra",
+          "placeholder": "es. var(--shadow-md)"
+        },
+        "backgroundImage": {
+          "fieldLabel": "Immagine di sfondo",
+          "placeholder": "es. url(/media/foto.jpg)"
+        },
+        "animationDuration": {
+          "fieldLabel": "Durata animazione",
+          "placeholder": "es. 600ms — vuoto per il valore predefinito"
+        },
+        "animationDelay": {
+          "fieldLabel": "Ritardo animazione",
+          "placeholder": "es. 200ms — vuoto per nessuno"
+        }
+      },
+      "selects": {
+        "inherit": "Valore del tema",
+        "borderStyle": {
+          "fieldLabel": "Stile del bordo",
+          "options": {
+            "none": "Nessuno",
+            "solid": "Continuo",
+            "dashed": "Tratteggiato",
+            "dotted": "Puntinato"
+          }
+        },
+        "backgroundPosition": {
+          "fieldLabel": "Posizione dell'immagine",
+          "options": {
+            "center": "Centro",
+            "top": "Alto",
+            "bottom": "Basso",
+            "left": "Sinistra",
+            "right": "Destra"
+          }
+        },
+        "backgroundSize": {
+          "fieldLabel": "Dimensione dell'immagine",
+          "options": {
+            "cover": "Riempi il blocco",
+            "contain": "Contieni nell'area",
+            "auto": "Dimensione originale"
+          }
+        },
+        "backgroundRepeat": {
+          "fieldLabel": "Ripetizione dell'immagine",
+          "options": {
+            "no-repeat": "Non ripetere",
+            "repeat": "Affianca",
+            "repeat-x": "Affianca in orizzontale",
+            "repeat-y": "Affianca in verticale"
+          }
+        },
+        "contentAlign": {
+          "fieldLabel": "Allineamento orizzontale",
+          "options": {
+            "start": "Sinistra",
+            "center": "Centro",
+            "end": "Destra"
+          }
+        },
+        "contentJustify": {
+          "fieldLabel": "Allineamento verticale",
+          "options": {
+            "start": "Alto",
+            "center": "Centro",
+            "end": "Basso"
+          }
+        },
+        "flexDirection": {
+          "fieldLabel": "Direzione",
+          "options": {
+            "column": "Impilati",
+            "row": "Affiancati"
+          }
+        },
+        "animation": {
+          "fieldLabel": "Animazione d'ingresso",
+          "options": {
+            "none": "Nessuna",
+            "fade": "Dissolvenza",
+            "slide-up": "Scorre dal basso",
+            "slide-down": "Scorre dall'alto",
+            "slide-left": "Scorre da destra",
+            "slide-right": "Scorre da sinistra",
+            "zoom": "Ingrandimento"
+          }
+        },
+        "animationEasing": {
+          "fieldLabel": "Andamento",
+          "options": {
+            "ease-out": "In uscita",
+            "ease": "Morbido",
+            "ease-in": "In entrata",
+            "ease-in-out": "In entrata e uscita",
+            "linear": "Lineare"
+          }
+        },
+        "hoverEffect": {
+          "fieldLabel": "Al passaggio del mouse",
+          "options": {
+            "none": "Niente",
+            "lift": "Si solleva",
+            "grow": "Si ingrandisce",
+            "dim": "Si attenua"
+          }
+        },
+        "none": "Nessuno"
+      }
+    },
+    "richText": {
+      "applyLink": "Applica",
+      "bold": "Grassetto",
+      "bulletList": "Elenco puntato",
+      "italic": "Corsivo",
+      "linkToPage": "Collega a una pagina",
+      "linkToUrl": "Collega a un indirizzo web",
+      "orderedList": "Elenco numerato",
+      "strike": "Barrato",
+      "underline": "Sottolineato",
+      "unlink": "Rimuovi il collegamento",
+      "urlPrompt": "Indirizzo web"
+    },
+    "colorPicker": {
+      "themeColours": "Colori del tema",
+      "inherit": "Eredita dal tema",
+      "clear": "Torna al colore del tema",
+      "useToken": "Usa il colore {{token}} del tema",
+      "asCode": "{{label}} come codice (esadecimale o colore del tema)",
+      "tokens": {
+        "primary": "Primario",
+        "secondary": "Secondario",
+        "background": "Sfondo",
+        "foreground": "Testo",
+        "muted": "Attenuato",
+        "mutedForeground": "Testo attenuato",
+        "border": "Bordo",
+        "link": "Link"
+      },
+      "themeNamed": "Tema: {{name}}",
+      "selectedToken": "Colore del tema: {{name}}"
+    },
+    "blockSearch": {
+      "label": "Cerca blocchi",
+      "placeholder": "Cerca blocchi…",
+      "noResults": "Nessun blocco corrisponde a “{{query}}”."
+    },
+    "pickers": {
+      "media": {
+        "change": "Cambia immagine",
+        "choose": "Scegli immagine"
+      },
+      "form": {
+        "change": "Cambia modulo",
+        "choose": "Scegli modulo"
+      },
+      "page": {
+        "change": "Cambia pagina",
+        "choose": "Scegli pagina"
+      },
+      "icon": {
+        "change": "Cambia icona",
+        "choose": "Scegli icona",
+        "remove": "Rimuovi icona",
+        "missingFromTheme": "Il tema non ha l'icona «{{name}}»: sul sito non si vede. Scegline un'altra."
+      },
+      "file": {
+        "choose": "Scegli un file",
+        "change": "Cambia file"
+      }
+    },
+    "placement": {
+      "refused": "{{block}} sta solo dentro {{parents}}, quindi qui non c'è posto per inserirlo."
+    },
+    "status": {
+      "saving": "Salvataggio…",
+      "draftSavedAt": "Bozza salvata alle {{time}}",
+      "publishUnsaved": "Non è stato possibile salvare la bozza, quindi non è stata pubblicata. Riprova.",
+      "saveFailed": "Salvataggio non riuscito. Controlla la connessione e riprova."
+    },
+    "properties": {
+      "noSelection": "Seleziona un blocco sul canvas o nei Livelli per cambiare cosa dice e come appare."
+    },
+    "pageMenu": {
+      "label": "Pagina"
+    },
+    "shortcuts": {
+      "open": "Scorciatoie da tastiera",
+      "title": "Scorciatoie da tastiera",
+      "description": "Funzionano sul canvas, quando non stai scrivendo in un campo — tranne Ctrl/⌘ K, che vale ovunque.",
+      "undo": "Annulla",
+      "redo": "Ripeti",
+      "duplicate": "Duplica la selezione",
+      "copy": "Copia la selezione",
+      "paste": "Incolla",
+      "delete": "Elimina la selezione",
+      "moveUp": "Sposta il blocco su",
+      "moveDown": "Sposta il blocco giù",
+      "commandMenu": "Cerca blocchi e comandi",
+      "addBlock": "Aggiungi un blocco"
+    },
+    "dragLayer": "Trascina \"{{name}}\"",
+    "layerPlaceholder": "Ha un segnaposto da sostituire prima di pubblicare.",
+    "layerHidesPlaceholder": "Un blocco qui dentro ha un segnaposto da sostituire prima di pubblicare.",
+    "rail": {
+      "label": "Strumenti dell'editor",
+      "insert": "Aggiungi",
+      "layers": "Livelli",
+      "styles": "Stili",
+      "shortcuts": "Scorciatoie",
+      "close": "Chiudi il pannello",
+      "resize": "Ridimensiona il pannello",
+      "stylesFullName": "Stili — si apre in una nuova scheda"
+    },
+    "mobileBar": {
+      "label": "Pannelli dell'editor",
+      "properties": "Proprietà",
+      "close": "Chiudi"
+    },
+    "propertiesPanel": {
+      "label": "Proprietà",
+      "expand": "Apri il pannello Proprietà",
+      "collapse": "Chiudi il pannello Proprietà",
+      "resize": "Ridimensiona il pannello Proprietà",
+      "noSelectionTitle": "Nessun blocco selezionato",
+      "addBlock": "Aggiungi un blocco",
+      "pageActions": "Questa pagina"
+    },
+    "toolbar": {
+      "label": "Azioni sul blocco",
+      "properties": "Proprietà",
+      "duplicate": "Duplica",
+      "delete": "Elimina",
+      "more": "Altro",
+      "insertAbove": "Aggiungi sopra",
+      "insertBelow": "Aggiungi un blocco qui"
+    },
+    "command": {
+      "open": "Cerca blocchi e comandi",
+      "short": "Cerca",
+      "title": "Cerca blocchi e comandi",
+      "placeholder": "Un blocco da aggiungere, un livello, un comando…",
+      "insert": "Aggiungi un blocco",
+      "layers": "Vai a un livello",
+      "page": "Questa pagina",
+      "editor": "Editor"
+    },
+    "publication": {
+      "draft": "Bozza",
+      "published": "Online"
+    },
+    "sectionFocus": {
+      "header": "Pagina d’esempio — qui si modifica solo l’header",
+      "footer": "Pagina d’esempio — qui si modifica solo il footer",
+      "emptyHeader": "Header vuoto",
+      "emptyFooter": "Footer vuoto"
+    }
+  },
+  "toast": {
+    "dismiss": "Chiudi notifica"
+  },
+  "blocks": {
+    "card": {
+      "label": "Scheda",
+      "fields": {
+        "media": {
+          "fieldLabel": "Immagine di testata"
+        },
+        "alt": {
+          "fieldLabel": "Testo alternativo"
+        },
+        "isDecorative": {
+          "fieldLabel": "Immagine decorativa"
+        }
+      },
+      "variants": {
+        "elevated": "Rialzata",
+        "flat": "Piatta",
+        "horizontal": "Orizzontale"
+      }
+    },
+    "categories": {
+      "layout": "Layout",
+      "content": "Contenuto",
+      "conversion": "Moduli e conversione",
+      "media": "Media",
+      "socialProof": "Prova sociale",
+      "interactive": "Interattivo",
+      "shop": "Negozio",
+      "localBusiness": "Attività locale",
+      "headerFooter": "Blocchi"
+    },
+    "section": {
+      "label": "Sezione riusabile",
+      "fields": {
+        "section": {
+          "fieldLabel": "Sezione"
+        }
+      },
+      "picker": {
+        "none": "Nessuna sezione",
+        "unpublished": "non pubblicata"
+      },
+      "instance": {
+        "title": "Cosa può cambiare questa pagina",
+        "edit": "Modifica sezione",
+        "noExposedFields": "Questa sezione non espone nessun campo modificabile. Aprila per scegliere cosa una pagina può cambiare."
+      }
+    },
+    "shared": {
+      "linkType": {
+        "fieldLabel": "Tipo di link",
+        "options": {
+          "page": "Pagina del sito",
+          "url": "URL esterno"
+        },
+        "pageFieldLabel": "Pagina",
+        "urlFieldLabel": "URL"
+      },
+      "position": {
+        "fieldLabel": "Posizione",
+        "options": {
+          "left": "Sinistra",
+          "right": "Destra"
+        }
+      },
+      "visibility": {
+        "fieldLabel": "Visibilità",
+        "options": {
+          "always": "Sempre",
+          "desktopOnly": "Solo desktop",
+          "mobileOnly": "Solo mobile"
+        }
+      },
+      "display": {
+        "fieldLabel": "Disposizione",
+        "options": {
+          "grid": "Griglia",
+          "slider": "Slider (uno alla volta)",
+          "carousel": "Carosello (più elementi)"
+        }
+      },
+      "alignment": {
+        "fieldLabel": "Allineamento",
+        "options": {
+          "start": "A sinistra",
+          "center": "Al centro",
+          "end": "A destra"
+        }
+      },
+      "aspectRatio": {
+        "fieldLabel": "Forma",
+        "options": {
+          "original": "Come caricata",
+          "square": "Quadrata",
+          "landscape": "Orizzontale (4:3)",
+          "portrait": "Verticale (3:4)",
+          "wide": "Panoramica (16:9)"
+        }
+      },
+      "caption": {
+        "fieldLabel": "Didascalia"
+      },
+      "price": {
+        "priceFieldLabel": "Prezzo",
+        "compareAtPriceFieldLabel": "Prezzo prima dello sconto (appare barrato)",
+        "currencyFieldLabel": "Valuta",
+        "currencies": {
+          "EUR": "Euro (€)",
+          "USD": "Dollaro USA ($)",
+          "GBP": "Sterlina (£)",
+          "CHF": "Franco svizzero (CHF)"
+        }
+      }
+    },
+    "accordionItem": {
+      "label": "Domanda",
+      "fields": {
+        "question": {
+          "fieldLabel": "Domanda"
+        },
+        "answer": {
+          "fieldLabel": "Risposta"
+        }
+      }
+    },
+    "accordion": {
+      "label": "Accordion/FAQ"
+    },
+    "backToTop": {
+      "label": "Bottone \"torna su\""
+    },
+    "banner": {
+      "label": "Banner/CTA",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "text": {
+          "fieldLabel": "Testo"
+        },
+        "buttonLabel": {
+          "fieldLabel": "Testo bottone"
+        }
+      },
+      "variants": {
+        "split": "Barra di invito all’azione",
+        "outline": "Con bordo"
+      }
+    },
+    "beforeAfter": {
+      "label": "Prima/dopo",
+      "fields": {
+        "beforeImage": {
+          "fieldLabel": "Immagine \"prima\""
+        },
+        "afterImage": {
+          "fieldLabel": "Immagine \"dopo\""
+        },
+        "beforeLabel": {
+          "fieldLabel": "Etichetta \"prima\""
+        },
+        "afterLabel": {
+          "fieldLabel": "Etichetta \"dopo\""
+        }
+      }
+    },
+    "breadcrumb": {
+      "label": "Breadcrumb",
+      "fields": {
+        "homeLabel": {
+          "fieldLabel": "Etichetta home"
+        }
+      }
+    },
+    "button": {
+      "label": "Bottone (CTA)",
+      "fields": {
+        "label": {
+          "fieldLabel": "Testo"
+        },
+        "icon": {
+          "fieldLabel": "Icona"
+        },
+        "size": {
+          "fieldLabel": "Dimensione",
+          "options": {
+            "sm": "Piccolo",
+            "md": "Medio",
+            "lg": "Grande"
+          }
+        },
+        "fullWidth": {
+          "fieldLabel": "Larghezza piena"
+        },
+        "openInNewTab": {
+          "fieldLabel": "Apri in una nuova scheda"
+        }
+      },
+      "variants": {
+        "secondary": "Secondario",
+        "outline": "Contorno",
+        "ghost": "Trasparente",
+        "link": "Link"
+      }
+    },
+    "callout": {
+      "label": "Riquadro avviso",
+      "fields": {
+        "message": {
+          "fieldLabel": "Messaggio"
+        },
+        "tone": {
+          "fieldLabel": "Tono",
+          "options": {
+            "info": "Info",
+            "warning": "Avviso",
+            "success": "Successo"
+          }
+        }
+      }
+    },
+    "code": {
+      "label": "Codice",
+      "fields": {
+        "code": {
+          "fieldLabel": "Snippet di codice"
+        },
+        "language": {
+          "fieldLabel": "Linguaggio",
+          "options": {
+            "typescript": "TypeScript",
+            "tsx": "TSX",
+            "javascript": "JavaScript",
+            "bash": "Bash",
+            "json": "JSON",
+            "html": "HTML",
+            "css": "CSS",
+            "plaintext": "Testo semplice"
+          }
+        }
+      }
+    },
+    "column": {
+      "label": "Colonna",
+      "fields": {
+        "span": {
+          "fieldLabel": "Larghezza in dodicesimi (vuoto = parti uguali)"
+        }
+      }
+    },
+    "columns": {
+      "label": "Colonne",
+      "fields": {
+        "stackBelow": {
+          "fieldLabel": "Impila in una colonna",
+          "options": {
+            "mobile": "Sui telefoni",
+            "tablet": "Su tablet e telefoni",
+            "never": "Mai"
+          }
+        },
+        "verticalAlign": {
+          "fieldLabel": "Allinea le colonne",
+          "options": {
+            "stretch": "Stessa altezza",
+            "start": "In alto",
+            "center": "Al centro",
+            "end": "In basso"
+          }
+        }
+      }
+    },
+    "container": {
+      "label": "Contenitore",
+      "fields": {
+        "background": {
+          "fieldLabel": "Sfondo",
+          "options": {
+            "none": "Nessuno",
+            "muted": "Tenue",
+            "primary": "Primario",
+            "secondary": "Secondario"
+          }
+        },
+        "padding": {
+          "fieldLabel": "Padding",
+          "options": {
+            "none": "Nessuno",
+            "sm": "Piccolo",
+            "md": "Medio",
+            "lg": "Grande"
+          }
+        }
+      }
+    },
+    "countdown": {
+      "label": "Countdown",
+      "fields": {
+        "targetDate": {
+          "fieldLabel": "Data/ora obiettivo"
+        },
+        "label": {
+          "fieldLabel": "Etichetta"
+        }
+      }
+    },
+    "embedHtml": {
+      "label": "Embed HTML",
+      "fields": {
+        "html": {
+          "fieldLabel": "Codice HTML"
+        }
+      }
+    },
+    "featureGrid": {
+      "label": "Feature grid"
+    },
+    "feature": {
+      "label": "Feature",
+      "fields": {
+        "icon": {
+          "fieldLabel": "Icona"
+        },
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "text": {
+          "fieldLabel": "Testo"
+        }
+      },
+      "variants": {
+        "inline": "Icona accanto al testo",
+        "start": "Allineata a sinistra"
+      }
+    },
+    "form": {
+      "label": "Modulo",
+      "fields": {
+        "form": {
+          "fieldLabel": "Modulo"
+        }
+      }
+    },
+    "gallery": {
+      "label": "Galleria",
+      "fields": {
+        "images": {
+          "fieldLabel": "Immagini"
+        },
+        "columns": {
+          "fieldLabel": "Colonne",
+          "options": {
+            "auto": "Adatta automaticamente",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6"
+          }
+        }
+      }
+    },
+    "heading": {
+      "label": "Titolo",
+      "fields": {
+        "text": {
+          "fieldLabel": "Testo"
+        },
+        "level": {
+          "fieldLabel": "Livello",
+          "options": {
+            "h1": "Titolo 1",
+            "h2": "Titolo 2",
+            "h3": "Titolo 3"
+          }
+        }
+      }
+    },
+    "hamburgerMenu": {
+      "label": "Menu mobile (hamburger)"
+    },
+    "hero": {
+      "label": "Hero",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "subtitle": {
+          "fieldLabel": "Sottotitolo"
+        },
+        "eyebrow": {
+          "fieldLabel": "Occhiello (riga sopra il titolo)"
+        }
+      }
+    },
+    "imageSlider": {
+      "label": "Slider immagini",
+      "fields": {
+        "images": {
+          "fieldLabel": "Immagini"
+        }
+      }
+    },
+    "image": {
+      "label": "Immagine",
+      "fields": {
+        "media": {
+          "fieldLabel": "Immagine"
+        },
+        "alt": {
+          "fieldLabel": "Testo alternativo"
+        },
+        "isDecorative": {
+          "fieldLabel": "Immagine decorativa (nessun testo alternativo necessario)"
+        },
+        "caption": {
+          "fieldLabel": "Didascalia"
+        },
+        "linkType": {
+          "fieldLabel": "Collega a",
+          "options": {
+            "none": "Niente",
+            "page": "Una pagina del sito",
+            "url": "Un indirizzo"
+          }
+        },
+        "lightbox": {
+          "fieldLabel": "Apri a schermo intero al clic"
+        }
+      }
+    },
+    "languageSwitcher": {
+      "label": "Selettore lingua"
+    },
+    "link": {
+      "label": "Link",
+      "fields": {
+        "label": {
+          "fieldLabel": "Testo"
+        }
+      }
+    },
+    "logoStrip": {
+      "label": "Loghi partner/clienti",
+      "fields": {
+        "logos": {
+          "fieldLabel": "Loghi"
+        }
+      }
+    },
+    "mapEmbed": {
+      "label": "Mappa",
+      "fields": {
+        "address": {
+          "fieldLabel": "Indirizzo"
+        }
+      }
+    },
+    "navDropdown": {
+      "label": "Sottomenu",
+      "fields": {
+        "label": {
+          "fieldLabel": "Etichetta"
+        }
+      }
+    },
+    "navLink": {
+      "label": "Link di navigazione",
+      "fields": {
+        "label": {
+          "fieldLabel": "Testo"
+        },
+        "icon": {
+          "fieldLabel": "Icona"
+        }
+      }
+    },
+    "nav": {
+      "label": "Menu di navigazione"
+    },
+    "newsletterSignup": {
+      "label": "Iscrizione newsletter",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "buttonLabel": {
+          "fieldLabel": "Testo bottone"
+        }
+      }
+    },
+    "pricingPlan": {
+      "label": "Piano prezzo",
+      "fields": {
+        "name": {
+          "fieldLabel": "Nome piano"
+        },
+        "price": {
+          "fieldLabel": "Prezzo"
+        },
+        "period": {
+          "fieldLabel": "Periodo"
+        },
+        "features": {
+          "fieldLabel": "Caratteristiche"
+        },
+        "highlighted": {
+          "fieldLabel": "In evidenza"
+        },
+        "buttonLabel": {
+          "fieldLabel": "Testo bottone"
+        }
+      }
+    },
+    "pricingTable": {
+      "label": "Tabella prezzi"
+    },
+    "promoBar": {
+      "label": "Barra annuncio/promo",
+      "fields": {
+        "message": {
+          "fieldLabel": "Messaggio"
+        }
+      }
+    },
+    "quote": {
+      "label": "Citazione",
+      "fields": {
+        "quote": {
+          "fieldLabel": "Citazione"
+        },
+        "author": {
+          "fieldLabel": "Autore"
+        },
+        "role": {
+          "fieldLabel": "Ruolo"
+        }
+      }
+    },
+    "rating": {
+      "label": "Valutazione a stelle",
+      "fields": {
+        "rating": {
+          "fieldLabel": "Stelle"
+        },
+        "label": {
+          "fieldLabel": "Etichetta"
+        }
+      }
+    },
+    "pageGrid": {
+      "label": "Elenco di pagine",
+      "picker": {
+        "none": "Nessun termine scelto",
+        "unnamed": "(senza nome)"
+      },
+      "fields": {
+        "termId": {
+          "fieldLabel": "Termine"
+        },
+        "layout": {
+          "fieldLabel": "Disposizione",
+          "options": {
+            "list": "Elenco",
+            "grid": "Griglia",
+            "cards": "Schede"
+          }
+        },
+        "limit": {
+          "fieldLabel": "Quante al massimo (0 = tutte)"
+        },
+        "emptyText": {
+          "fieldLabel": "Testo quando non c'è niente da elencare"
+        },
+        "order": {
+          "fieldLabel": "Ordine",
+          "options": {
+            "title": "Per titolo",
+            "newest": "Prima le più recenti"
+          }
+        },
+        "perPage": {
+          "fieldLabel": "Quante per pagina (0 = tutte su una pagina)"
+        }
+      }
+    },
+    "searchBox": {
+      "label": "Ricerca sul sito",
+      "fields": {
+        "placeholder": {
+          "fieldLabel": "Placeholder"
+        }
+      }
+    },
+    "stat": {
+      "label": "Statistica",
+      "fields": {
+        "value": {
+          "fieldLabel": "Valore"
+        },
+        "prefix": {
+          "fieldLabel": "Prefisso"
+        },
+        "suffix": {
+          "fieldLabel": "Suffisso"
+        },
+        "label": {
+          "fieldLabel": "Etichetta"
+        }
+      }
+    },
+    "statsCounter": {
+      "label": "Contatori/statistiche"
+    },
+    "tab": {
+      "label": "Tab",
+      "fields": {
+        "label": {
+          "fieldLabel": "Etichetta tab"
+        }
+      }
+    },
+    "table": {
+      "label": "Tabella dati",
+      "fields": {
+        "rows": {
+          "fieldLabel": "Righe"
+        }
+      }
+    },
+    "tabs": {
+      "label": "Tabs"
+    },
+    "teamMember": {
+      "label": "Membro del team",
+      "fields": {
+        "photo": {
+          "fieldLabel": "Foto"
+        },
+        "name": {
+          "fieldLabel": "Nome"
+        },
+        "role": {
+          "fieldLabel": "Ruolo"
+        },
+        "bio": {
+          "fieldLabel": "Bio"
+        }
+      }
+    },
+    "team": {
+      "label": "Team/staff"
+    },
+    "testimonial": {
+      "label": "Testimonianza",
+      "fields": {
+        "quote": {
+          "fieldLabel": "Recensione"
+        },
+        "author": {
+          "fieldLabel": "Autore"
+        },
+        "role": {
+          "fieldLabel": "Ruolo"
+        },
+        "avatar": {
+          "fieldLabel": "Avatar"
+        },
+        "rating": {
+          "fieldLabel": "Stelle"
+        }
+      }
+    },
+    "testimonials": {
+      "label": "Testimonianze/recensioni"
+    },
+    "text": {
+      "label": "Testo",
+      "fields": {
+        "body": {
+          "fieldLabel": "Testo"
+        }
+      }
+    },
+    "timelineStep": {
+      "label": "Fase",
+      "fields": {
+        "label": {
+          "fieldLabel": "Etichetta"
+        },
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "description": {
+          "fieldLabel": "Descrizione"
+        }
+      }
+    },
+    "timeline": {
+      "label": "Timeline/processo"
+    },
+    "videoEmbed": {
+      "label": "Video",
+      "fields": {
+        "url": {
+          "fieldLabel": "URL video"
+        },
+        "poster": {
+          "fieldLabel": "Immagine di copertina (prima del caricamento)"
+        }
+      }
+    },
+    "whatsAppButton": {
+      "label": "Bottone WhatsApp",
+      "fields": {
+        "phoneNumber": {
+          "fieldLabel": "Numero di telefono"
+        },
+        "message": {
+          "fieldLabel": "Messaggio precompilato"
+        }
+      }
+    },
+    "divider": {
+      "label": "Separatore"
+    },
+    "spacer": {
+      "label": "Spaziatore"
+    },
+    "icon": {
+      "label": "Icona",
+      "fields": {
+        "icon": {
+          "fieldLabel": "Icona"
+        },
+        "size": {
+          "fieldLabel": "Dimensione",
+          "options": {
+            "sm": "Piccola",
+            "md": "Media",
+            "lg": "Grande",
+            "xl": "Molto grande"
+          }
+        },
+        "label": {
+          "fieldLabel": "Descrizione (lascia vuoto se decorativa)"
+        }
+      }
+    },
+    "socialLinks": {
+      "label": "Link social"
+    },
+    "socialLink": {
+      "label": "Singolo link social",
+      "fields": {
+        "icon": {
+          "fieldLabel": "Icona"
+        },
+        "label": {
+          "fieldLabel": "Nome (letto dagli screen reader)"
+        },
+        "url": {
+          "fieldLabel": "Indirizzo"
+        }
+      }
+    },
+    "videoFile": {
+      "label": "Video (caricato)",
+      "fields": {
+        "media": {
+          "fieldLabel": "File video"
+        },
+        "poster": {
+          "fieldLabel": "Immagine di copertina (prima della riproduzione)"
+        },
+        "controls": {
+          "fieldLabel": "Mostra i comandi"
+        },
+        "autoplay": {
+          "fieldLabel": "Riproduci automaticamente (parte senza audio)"
+        },
+        "loop": {
+          "fieldLabel": "Ripeti"
+        },
+        "muted": {
+          "fieldLabel": "Senza audio"
+        }
+      }
+    },
+    "audio": {
+      "label": "Audio",
+      "fields": {
+        "media": {
+          "fieldLabel": "File audio"
+        },
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "loop": {
+          "fieldLabel": "Ripeti"
+        }
+      }
+    },
+    "carousel": {
+      "label": "Carosello"
+    },
+    "articleMeta": {
+      "label": "Dati dell’articolo",
+      "fields": {
+        "showDate": {
+          "fieldLabel": "Mostra la data di pubblicazione"
+        },
+        "showAuthor": {
+          "fieldLabel": "Mostra l’autore"
+        }
+      }
+    },
+    "authorBox": {
+      "label": "Riquadro dell’autore",
+      "fields": {
+        "showBio": {
+          "fieldLabel": "Mostra la bio"
+        },
+        "showArticlesLink": {
+          "fieldLabel": "Link a tutti i suoi articoli"
+        }
+      }
+    },
+    "articleNav": {
+      "label": "Precedente / successivo"
+    },
+    "relatedPages": {
+      "label": "Pagine correlate",
+      "fields": {
+        "layout": {
+          "fieldLabel": "Disposizione",
+          "options": {
+            "list": "Elenco",
+            "cards": "Schede"
+          }
+        },
+        "limit": {
+          "fieldLabel": "Quante al massimo"
+        }
+      }
+    },
+    "termList": {
+      "label": "Categorie e tag",
+      "fields": {
+        "taxonomyId": {
+          "fieldLabel": "Quale categoria"
+        },
+        "behaviour": {
+          "fieldLabel": "Un clic",
+          "options": {
+            "filter": "Restringe questa pagina",
+            "browse": "Apre la pagina del termine"
+          }
+        },
+        "style": {
+          "fieldLabel": "Si presenta come",
+          "options": {
+            "chips": "Pillole",
+            "buttons": "Bottoni",
+            "links": "Collegamenti",
+            "dropdown": "Menu a tendina"
+          }
+        },
+        "showAll": {
+          "fieldLabel": "Offri il modo di tornare a tutto"
+        }
+      },
+      "picker": {
+        "none": "Nessuna categoria scelta",
+        "unnamed": "Senza nome"
+      }
+    },
+    "anchor": {
+      "label": "Ancora",
+      "fields": {
+        "name": {
+          "fieldLabel": "Nome (la parte dopo # in un link)"
+        }
+      }
+    },
+    "readingProgress": {
+      "label": "Avanzamento lettura",
+      "fields": {
+        "position": {
+          "fieldLabel": "Posizione",
+          "options": {
+            "top": "In cima alla finestra",
+            "bottom": "In fondo alla finestra"
+          }
+        }
+      }
+    },
+    "tableOfContents": {
+      "label": "Indice",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "depth": {
+          "fieldLabel": "Titoli da elencare",
+          "options": {
+            "h2": "Solo le sezioni (H2)",
+            "h3": "Sezioni e sottosezioni (H2 e H3)"
+          }
+        },
+        "numbered": {
+          "fieldLabel": "Numera le voci"
+        }
+      }
+    },
+    "subPages": {
+      "label": "Sottopagine",
+      "fields": {
+        "parent": {
+          "fieldLabel": "Pagine sotto a (vuoto = questa pagina)"
+        },
+        "layout": {
+          "fieldLabel": "Disposizione"
+        },
+        "limit": {
+          "fieldLabel": "Quante al massimo (0 = tutte)"
+        }
+      }
+    },
+    "siblingPages": {
+      "label": "Pagina precedente / successiva"
+    },
+    "siteMap": {
+      "label": "Mappa del sito",
+      "fields": {
+        "depth": {
+          "fieldLabel": "Livelli da mostrare"
+        }
+      }
+    },
+    "list": {
+      "label": "Elenco",
+      "fields": {
+        "marker": {
+          "fieldLabel": "Segno",
+          "options": {
+            "bullet": "Pallini",
+            "number": "Numeri",
+            "check": "Spunte",
+            "icon": "Icona"
+          }
+        },
+        "icon": {
+          "fieldLabel": "Icona"
+        }
+      }
+    },
+    "listItem": {
+      "label": "Voce di elenco",
+      "fields": {
+        "text": {
+          "fieldLabel": "Testo"
+        }
+      }
+    },
+    "mediaText": {
+      "label": "Immagine e testo",
+      "fields": {
+        "media": {
+          "fieldLabel": "Immagine"
+        },
+        "alt": {
+          "fieldLabel": "Testo alternativo"
+        },
+        "heading": {
+          "fieldLabel": "Titolo"
+        },
+        "body": {
+          "fieldLabel": "Testo"
+        },
+        "mediaSide": {
+          "fieldLabel": "Lato dell'immagine",
+          "options": {
+            "start": "Inizio della riga",
+            "end": "Fine della riga"
+          }
+        },
+        "mediaWidth": {
+          "fieldLabel": "Larghezza dell'immagine",
+          "options": {
+            "third": "Un terzo",
+            "half": "Metà",
+            "twoThirds": "Due terzi"
+          }
+        },
+        "verticalAlign": {
+          "fieldLabel": "Allineamento verticale",
+          "options": {
+            "start": "In alto",
+            "center": "Al centro",
+            "end": "In basso"
+          }
+        }
+      }
+    },
+    "faq": {
+      "label": "Domande frequenti",
+      "fields": {
+        "structuredData": {
+          "fieldLabel": "Segnala ai motori di ricerca che sono domande e risposte (schema.org)"
+        }
+      }
+    },
+    "marquee": {
+      "label": "Scorrimento continuo",
+      "fields": {
+        "speed": {
+          "fieldLabel": "Velocità",
+          "options": {
+            "slow": "Lenta",
+            "normal": "Normale",
+            "fast": "Veloce"
+          }
+        },
+        "direction": {
+          "fieldLabel": "Direzione",
+          "options": {
+            "forward": "Avanti",
+            "backward": "Indietro"
+          }
+        },
+        "pauseOnHover": {
+          "fieldLabel": "Si ferma quando ci passi sopra"
+        }
+      }
+    },
+    "contactDetails": {
+      "label": "Contatti",
+      "fields": {
+        "showAddress": {
+          "fieldLabel": "Mostra l'indirizzo"
+        },
+        "showPhone": {
+          "fieldLabel": "Mostra il telefono"
+        },
+        "showEmail": {
+          "fieldLabel": "Mostra l'email"
+        },
+        "showMapLink": {
+          "fieldLabel": "Collega l'indirizzo a una mappa"
+        }
+      }
+    },
+    "openingHours": {
+      "label": "Orari di apertura",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        }
+      }
+    },
+    "fileDownload": {
+      "label": "Scarica file",
+      "fields": {
+        "file": {
+          "fieldLabel": "File"
+        },
+        "label": {
+          "fieldLabel": "Testo del link (vuoto = nome del file)"
+        },
+        "showDetails": {
+          "fieldLabel": "Mostra tipo e dimensione"
+        }
+      }
+    },
+    "productGrid": {
+      "label": "Griglia prodotti"
+    },
+    "productCard": {
+      "label": "Prodotto",
+      "fields": {
+        "image": {
+          "fieldLabel": "Immagine"
+        },
+        "alt": {
+          "fieldLabel": "Descrizione dell'immagine (testo alternativo)"
+        },
+        "name": {
+          "fieldLabel": "Nome del prodotto"
+        },
+        "description": {
+          "fieldLabel": "Descrizione breve"
+        },
+        "badge": {
+          "fieldLabel": "Etichetta (es. \"Novità\", \"-20%\")"
+        },
+        "structuredData": {
+          "fieldLabel": "Comunica il prezzo ai motori di ricerca (schema.org Product)"
+        }
+      }
+    },
+    "productGallery": {
+      "label": "Galleria prodotto",
+      "fields": {
+        "images": {
+          "fieldLabel": "Immagini (la prima è quella grande)"
+        }
+      }
+    },
+    "discountPrice": {
+      "label": "Prezzo scontato",
+      "fields": {
+        "note": {
+          "fieldLabel": "Nota (es. \"IVA inclusa\")"
+        }
+      }
+    },
+    "buyButton": {
+      "label": "Pulsante acquista",
+      "fields": {
+        "label": {
+          "fieldLabel": "Testo del pulsante (vuoto = \"Acquista\")"
+        },
+        "url": {
+          "fieldLabel": "Link di pagamento (Stripe, PayPal…)"
+        }
+      }
+    },
+    "productVariants": {
+      "label": "Varianti prodotto",
+      "fields": {
+        "label": {
+          "fieldLabel": "Titolo (es. \"Taglie\")"
+        },
+        "options": {
+          "fieldLabel": "Opzioni, una per riga"
+        }
+      }
+    },
+    "productReviews": {
+      "label": "Recensioni prodotto",
+      "fields": {
+        "structuredData": {
+          "fieldLabel": "Comunica ai motori di ricerca che sono recensioni di un prodotto (schema.org)"
+        },
+        "productName": {
+          "fieldLabel": "Nome del prodotto recensito"
+        }
+      }
+    },
+    "productReview": {
+      "label": "Recensione prodotto"
+    },
+    "comparisonTable": {
+      "label": "Tabella di confronto",
+      "fields": {
+        "columns": {
+          "fieldLabel": "Cosa si confronta, uno per riga (es. Base, Pro)"
+        },
+        "highlightColumn": {
+          "fieldLabel": "Colonna evidenziata (0 = nessuna)"
+        }
+      }
+    },
+    "comparisonRow": {
+      "label": "Riga di confronto",
+      "fields": {
+        "feature": {
+          "fieldLabel": "Caratteristica"
+        },
+        "values": {
+          "fieldLabel": "Un valore per colonna, uno per riga (\"sì\"/\"no\" diventano ✓/✗)"
+        }
+      }
+    },
+    "promoCode": {
+      "label": "Codice sconto",
+      "fields": {
+        "code": {
+          "fieldLabel": "Codice"
+        },
+        "description": {
+          "fieldLabel": "Cosa dà (es. \"10% sul primo ordine\")"
+        },
+        "expiresOn": {
+          "fieldLabel": "Valido fino al (vuoto = senza scadenza)"
+        }
+      }
+    },
+    "shippingReturns": {
+      "label": "Spedizioni e resi",
+      "fields": {
+        "shippingTitle": {
+          "fieldLabel": "Spedizioni — titolo"
+        },
+        "shippingText": {
+          "fieldLabel": "Spedizioni — testo"
+        },
+        "returnsTitle": {
+          "fieldLabel": "Resi — titolo"
+        },
+        "returnsText": {
+          "fieldLabel": "Resi — testo"
+        },
+        "supportTitle": {
+          "fieldLabel": "Assistenza — titolo"
+        },
+        "supportText": {
+          "fieldLabel": "Assistenza — testo"
+        }
+      }
+    },
+    "trustBadges": {
+      "label": "Metodi di pagamento",
+      "fields": {
+        "visa": {
+          "fieldLabel": "Visa"
+        },
+        "mastercard": {
+          "fieldLabel": "Mastercard"
+        },
+        "americanexpress": {
+          "fieldLabel": "American Express"
+        },
+        "paypal": {
+          "fieldLabel": "PayPal"
+        },
+        "applepay": {
+          "fieldLabel": "Apple Pay"
+        },
+        "googlepay": {
+          "fieldLabel": "Google Pay"
+        },
+        "klarna": {
+          "fieldLabel": "Klarna"
+        },
+        "stripe": {
+          "fieldLabel": "Stripe"
+        },
+        "text": {
+          "fieldLabel": "Testo accanto ai loghi (es. \"Pagamenti sicuri\")"
+        }
+      }
+    },
+    "restaurantMenu": {
+      "label": "Menù",
+      "fields": {
+        "columns": {
+          "fieldLabel": "Colonne",
+          "options": {
+            "one": "Una",
+            "two": "Due"
+          }
+        }
+      }
+    },
+    "menuItem": {
+      "label": "Piatto",
+      "fields": {
+        "name": {
+          "fieldLabel": "Nome"
+        },
+        "description": {
+          "fieldLabel": "Descrizione"
+        },
+        "price": {
+          "fieldLabel": "Prezzo (come vuoi che sia scritto, es. \"12\" o \"8 / 12\")"
+        },
+        "dietary": {
+          "fieldLabel": "Indicazioni, separate da virgola (es. vegano, senza glutine)"
+        },
+        "allergens": {
+          "fieldLabel": "Allergeni, separati da virgola"
+        }
+      }
+    },
+    "eventList": {
+      "label": "Eventi"
+    },
+    "eventItem": {
+      "label": "Evento",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "startDate": {
+          "fieldLabel": "Data"
+        },
+        "startTime": {
+          "fieldLabel": "Ora (vuota = tutto il giorno)"
+        },
+        "endDate": {
+          "fieldLabel": "Data di fine (per eventi di più giorni)"
+        },
+        "location": {
+          "fieldLabel": "Dove"
+        },
+        "description": {
+          "fieldLabel": "Descrizione"
+        },
+        "image": {
+          "fieldLabel": "Immagine"
+        },
+        "hideWhenPast": {
+          "fieldLabel": "Nascondilo dal sito quando è passato"
+        },
+        "structuredData": {
+          "fieldLabel": "Comunica ai motori di ricerca che è un evento (schema.org Event)"
+        }
+      }
+    },
+    "stickyContactBar": {
+      "label": "Barra contatti (mobile)",
+      "fields": {
+        "showCall": {
+          "fieldLabel": "Pulsante chiama (telefono da Dati attività)"
+        },
+        "whatsappNumber": {
+          "fieldLabel": "Numero WhatsApp, con prefisso internazionale (vuoto = nessun pulsante)"
+        },
+        "showDirections": {
+          "fieldLabel": "Pulsante mappa (indirizzo da Dati attività)"
+        },
+        "showEmail": {
+          "fieldLabel": "Pulsante email (email da Dati attività)"
+        }
+      }
+    },
+    "shareButtons": {
+      "label": "Pulsanti di condivisione",
+      "fields": {
+        "label": {
+          "fieldLabel": "Titolo (es. \"Condividi\")"
+        },
+        "whatsapp": {
+          "fieldLabel": "WhatsApp"
+        },
+        "facebook": {
+          "fieldLabel": "Facebook"
+        },
+        "linkedin": {
+          "fieldLabel": "LinkedIn"
+        },
+        "x": {
+          "fieldLabel": "X"
+        },
+        "email": {
+          "fieldLabel": "Email"
+        },
+        "copyLink": {
+          "fieldLabel": "Copia link"
+        }
+      }
+    },
+    "cookiePreferences": {
+      "label": "Preferenze cookie",
+      "fields": {
+        "label": {
+          "fieldLabel": "Testo del link (vuoto = \"Preferenze cookie\")"
+        }
+      }
+    },
+    "steps": {
+      "label": "Passaggi",
+      "fields": {
+        "orientation": {
+          "fieldLabel": "Direzione",
+          "options": {
+            "horizontal": "Affiancati",
+            "vertical": "Uno sotto l'altro"
+          }
+        }
+      }
+    },
+    "step": {
+      "label": "Passaggio",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "description": {
+          "fieldLabel": "Descrizione"
+        }
+      }
+    },
+    "specList": {
+      "label": "Specifiche",
+      "fields": {
+        "columns": {
+          "fieldLabel": "Colonne",
+          "options": {
+            "one": "Una",
+            "two": "Due"
+          }
+        }
+      }
+    },
+    "specItem": {
+      "label": "Specifica",
+      "fields": {
+        "label": {
+          "fieldLabel": "Nome (es. \"Peso\")"
+        },
+        "value": {
+          "fieldLabel": "Valore (es. \"1,2 kg\")"
+        }
+      }
+    },
+    "progressBar": {
+      "label": "Barra di avanzamento",
+      "fields": {
+        "label": {
+          "fieldLabel": "Etichetta"
+        },
+        "value": {
+          "fieldLabel": "Avanzamento (0–100)"
+        },
+        "showValue": {
+          "fieldLabel": "Mostra la percentuale"
+        }
+      }
+    },
+    "profileCard": {
+      "label": "Scheda profilo",
+      "fields": {
+        "email": {
+          "fieldLabel": "Email"
+        },
+        "phone": {
+          "fieldLabel": "Telefono"
+        }
+      }
+    },
+    "bookingEmbed": {
+      "label": "Calendario prenotazioni",
+      "fields": {
+        "provider": {
+          "fieldLabel": "Servizio",
+          "options": {
+            "calendly": "Calendly",
+            "calcom": "Cal.com",
+            "google": "Google Calendar"
+          }
+        },
+        "url": {
+          "fieldLabel": "Indirizzo della tua pagina di prenotazione"
+        },
+        "height": {
+          "fieldLabel": "Altezza",
+          "options": {
+            "short": "Bassa",
+            "medium": "Media",
+            "tall": "Alta"
+          }
+        }
+      }
+    },
+    "fileList": {
+      "label": "Elenco file",
+      "fields": {
+        "title": {
+          "fieldLabel": "Titolo"
+        }
+      }
+    },
+    "glossary": {
+      "label": "Glossario",
+      "fields": {
+        "showIndex": {
+          "fieldLabel": "Mostra l'indice A–Z"
+        }
+      }
+    },
+    "glossaryTerm": {
+      "label": "Voce di glossario",
+      "fields": {
+        "term": {
+          "fieldLabel": "Termine"
+        },
+        "definition": {
+          "fieldLabel": "Definizione"
+        }
+      }
+    },
+    "pullQuote": {
+      "label": "Citazione in evidenza"
+    },
+    "imageHotspots": {
+      "label": "Immagine con punti",
+      "fields": {
+        "image": {
+          "fieldLabel": "Immagine"
+        },
+        "alt": {
+          "fieldLabel": "Descrizione dell'immagine (testo alternativo)"
+        }
+      }
+    },
+    "hotspot": {
+      "label": "Punto",
+      "fields": {
+        "x": {
+          "fieldLabel": "Posizione da sinistra (%)"
+        },
+        "y": {
+          "fieldLabel": "Posizione dall'alto (%)"
+        },
+        "title": {
+          "fieldLabel": "Titolo"
+        },
+        "text": {
+          "fieldLabel": "Testo"
+        }
+      }
+    },
+    "masonryGallery": {
+      "label": "Galleria a mosaico"
+    },
+    "videoPlaylist": {
+      "label": "Playlist video"
+    }
+  },
+  "gallery": {
+    "field": {
+      "pick": "Scegli immagine",
+      "change": "Cambia immagine",
+      "alt": "Testo alternativo",
+      "decorative": "Immagine decorativa (nessun testo alternativo necessario)",
+      "altRequired": "Testo alternativo richiesto (o segna come decorativa)",
+      "caption": "Didascalia (facoltativa)",
+      "moveUp": "Sposta su",
+      "moveDown": "Sposta giù",
+      "remove": "Rimuovi",
+      "add": "Aggiungi immagine",
+      "unreadable": "Questa galleria contiene immagini in un formato che l'editor non sa leggere, quindi qui non è modificabile: salvarci sopra le perderebbe."
+    }
+  },
+  "collections": {
+    "actionFailed": "Non è stato possibile applicare la modifica.",
+    "dialog": {
+      "description": "Una collezione raccoglie pagine di un tipo — News, Eventi, Casi studio — e ha una voce di menu sua. Sotto la scocca restano pagine normali.",
+      "newLabel": "Nuova collezione",
+      "newPlaceholder": "News",
+      "create": "Aggiungi",
+      "delete": "Elimina {{name}}",
+      "confirmDelete": {
+        "title": "Eliminare questa collezione?",
+        "description": "{{name}} sparisce dal menu. Le pagine che conteneva restano e tornano fra le Pagine."
+      },
+      "defaultTemplate": "Nuove pagine da",
+      "iconLabel": "Icona",
+      "icons": {
+        "newspaper": "Notizie",
+        "calendar-days": "Eventi",
+        "briefcase": "Portfolio",
+        "book-open": "Guide",
+        "star": "In evidenza",
+        "megaphone": "Annunci",
+        "camera": "Gallerie",
+        "package": "Prodotti",
+        "graduation-cap": "Corsi",
+        "heart": "Preferiti"
+      },
+      "name": "Nome"
+    },
+    "created": "Collezione “{{name}}” creata",
+    "templateChanged": "Punto di partenza di “{{name}}” cambiato",
+    "deleted": "Collezione “{{name}}” eliminata",
+    "saved": "Collezione “{{name}}” aggiornata",
+    "save": "Salva",
+    "saving": "Salvataggio…",
+    "cancel": "Annulla",
+    "deleteShort": "Elimina",
+    "nameRequired": "Scrivi il nome della collezione.",
+    "emptyExplainer": "Nessuna collezione. Una collezione tiene insieme pagine dello stesso tipo, come Notizie o Eventi, e ha una voce sua nel menu."
+  },
+  "pageTemplates": {
+    "blank": "Pagina vuota"
+  },
+  "imports": {
+    "title": "Importa da WordPress",
+    "description": "Carica un export di WordPress e scopri che cosa arriverebbe davvero, prima di importare qualsiasi cosa. Per ora questa schermata legge e basta: non scrive niente nel sito.",
+    "uploadHint": "Il file .xml che WordPress produce da Strumenti → Esporta.",
+    "choose": "Scegli un file",
+    "uploading": "Caricamento…",
+    "analyzing": "Sto leggendo il file…",
+    "failed": "Non sono riuscito a leggere questo file.",
+    "history": "Tentativi precedenti",
+    "report": {
+      "found": "Che cosa contiene",
+      "pages": "pagine",
+      "posts": "articoli",
+      "attachments": "media",
+      "menuItems": "voci di menu",
+      "otherTypes": "Tipi di contenuto su misura:",
+      "whatArrives": "Che cosa arriverebbe",
+      "whole": "pagine intere",
+      "partial": "pagine a metà",
+      "empty": "pagine vuote",
+      "blocks": "{{native}} blocchi su {{total}} convertibili ({{percent}}%)",
+      "quarantined": "{{count}} in quarantena",
+      "dropped": "{{count}} scartati perché vuoti",
+      "warnings": "Da sapere prima di decidere",
+      "fromFields": "{{count}} letti dai campi del sito",
+      "fromValues": "dai soli valori"
+    },
+    "warnings": {
+      "page-builder": "Un page builder tiene il layout in un formato che non so leggere: su {{count}} pagine arriverebbe il testo, non la disposizione.",
+      "multilingual": "Sito multilingua. Le traduzioni arriverebbero come pagine separate, da riunire a mano.",
+      "content-outside-the-post": "{{count}} pagine hanno il corpo vuoto nell’export: il loro contenuto vive altrove (tipicamente in campi ACF) e arriverebbero con il solo titolo.",
+      "unsupported-post-types": "{{count}} voci sono in tipi di contenuto che non importo: resterebbero fuori.",
+      "menus": "{{count}} voci di menu. I menu si ricostruiscono a mano nell’editor.",
+      "fields-not-described": "{{count}} blocchi tengono i propri campi nel codice del tema, non nella base dati: arriva il loro contenuto, ma senza sapere che cosa sia ciascun pezzo."
+    }
+  },
+  "datePicker": {
+    "calendar": "Calendario",
+    "empty": "Nessuna data",
+    "clear": "Cancella data"
+  },
+  "dragAnnouncements": {
+    "instructions": "Per prendere un elemento premi Spazio o Invio. Spostalo con le frecce, poi premi Spazio o Invio per lasciarlo, oppure Esc per annullare.",
+    "pickedUp": "Hai preso {{name}}, posizione {{position}} di {{total}}.",
+    "pickedUpPlain": "Hai preso {{name}}.",
+    "moved": "{{name}} ora è in posizione {{position}} di {{total}}.",
+    "movedPlain": "Hai spostato {{name}}.",
+    "outside": "{{name}} è fuori dall'elenco.",
+    "dropped": "Hai lasciato {{name}} in posizione {{position}} di {{total}}.",
+    "droppedPlain": "Hai lasciato {{name}}.",
+    "droppedOutside": "Hai lasciato {{name}} fuori dall'elenco: resta dov'era.",
+    "cancelled": "Spostamento di {{name}} annullato: resta dov'era."
+  },
+  "aiSettings": {
+    "title": "Generare le pagine con l'AI",
+    "intro": "Il provider che scrive una pagina quando qualcuno la chiede, con la chiave di questo sito. La chiave è salvata cifrata e non viene più mostrata.",
+    "loadError": "Non è stato possibile caricare le impostazioni AI. Ricarica la pagina per riprovare.",
+    "serverDisabled": "Questo server non ha un posto sicuro dove tenere una chiave, quindi non può generare pagine. Chi ha installato Kometio può attivarlo: vedi \"Generating pages with AI\" nella guida al self-hosting.",
+    "provider": "Provider",
+    "providerAnthropic": "Claude (Anthropic)",
+    "providerOpenAiCompatible": "Compatibile OpenAI",
+    "baseUrl": "Indirizzo del server",
+    "baseUrlHint": "OpenAI stessa, o qualsiasi server che parli la sua API. L'indirizzo a cui risponde, che finisce con /v1: https://api.openai.com/v1, oppure http://localhost:11434/v1 per un server locale. Un server su questa macchina o in una rete privata deve anche essere permesso da chi gestisce Kometio (KOMETIO_AI_ALLOW_PRIVATE_HOSTS).",
+    "model": "Modello",
+    "modelHintAnthropic": "claude-opus-5 scrive le pagine migliori; claude-sonnet-5 è più veloce e costa meno.",
+    "modelHintOpenAiCompatible": "Il nome del modello come lo conosce quel server, per esempio gpt-5 o qwen3:14b. Deve supportare l'output strutturato (JSON schema).",
+    "apiKey": "Chiave API",
+    "apiKeyStored": "È salvata una chiave che finisce con {{hint}}. Lascia vuoto per tenerla.",
+    "apiKeyStoredShort": "È salvata una chiave. Lascia vuoto per tenerla.",
+    "apiKeyForNewServer": "Un provider o un server diverso vuole qui la sua chiave: una chiave salvata viene inviata solo al server per cui è stata inserita.",
+    "apiKeyRequired": "Obbligatoria per Claude. Si crea nella Console di Anthropic.",
+    "apiKeyOptional": "Lascia vuoto se il server non la chiede.",
+    "saved": "Impostazioni AI salvate",
+    "saveError": "Non è stato possibile salvare le impostazioni AI.",
+    "remove": "Rimuovi",
+    "removeConfirmTitle": "Rimuovere le impostazioni AI?",
+    "removeConfirmBody": "Il provider e la sua chiave vengono dimenticati, e nessuno su questo sito potrà generare pagine finché non vengono reimpostati. Le pagine già generate restano come sono.",
+    "removed": "Impostazioni AI rimosse",
+    "removeError": "Le impostazioni AI non sono state rimosse. Riprova."
+  },
+  "pageGeneration": {
+    "open": "Genera con AI",
+    "title": "Genera con AI",
+    "description": "Descrivi la pagina: viene scritta in {{language}} con i blocchi di questo sito. Non si pubblica nulla: prima la rivedi nell'editor.",
+    "promptLabel": "Cosa deve dire la pagina?",
+    "promptHint": "A chi si rivolge, cosa offre, cosa deve fare chi la visita. Più dici, meno c'è da cambiare dopo.",
+    "modeLabel": "La pagina ha già dei blocchi",
+    "modeAppend": "Aggiungi le nuove sezioni in fondo",
+    "modeReplace": "Sostituisci tutta la pagina",
+    "starting": "Richiesta al provider...",
+    "writing_one": "Scrittura della pagina... {{count}} carattere finora",
+    "writing_other": "Scrittura della pagina... {{count}} caratteri finora",
+    "generate": "Genera",
+    "generating": "Generazione...",
+    "stop": "Interrompi",
+    "replaceConfirmTitle": "Sostituire tutta la pagina?",
+    "replaceConfirmBody_one": "Il suo {{count}} blocco viene sostituito dalla pagina generata. Annulla, o la cronologia delle versioni, lo riporta indietro.",
+    "replaceConfirmBody_other": "I suoi {{count}} blocchi vengono sostituiti dalla pagina generata. Annulla, o la cronologia delle versioni, li riporta indietro.",
+    "replaceConfirmAction": "Genera e sostituisci",
+    "unavailableLinked": "Questa lingua condivide i blocchi con la pagina originale, quindi una pagina generata qui sostituirebbe anche l'originale. Generala nella lingua originale, oppure scollega prima questa lingua (menu della pagina, \"Scollega questa lingua\").",
+    "unavailableNotConfigured": "Non si possono ancora generare pagine: un amministratore deve scegliere il provider AI in Integrazioni.",
+    "unavailableNotConfiguredAdmin": "Non si possono ancora generare pagine: scegli il provider AI e la sua chiave in Integrazioni.",
+    "openSettings": "Apri Integrazioni",
+    "done_one": "{{count}} blocco aggiunto alla pagina.",
+    "done_other": "{{count}} blocchi aggiunti alla pagina.",
+    "doneDropped_one": "{{count}} blocco non era utilizzabile ed è stato lasciato fuori.",
+    "doneDropped_other": "{{count}} blocchi non erano utilizzabili e sono stati lasciati fuori.",
+    "donePlaceholders_one": "{{count}} ha ancora un segnaposto da sostituire: lo segnala Livelli.",
+    "donePlaceholders_other": "{{count}} hanno ancora un segnaposto da sostituire: li segnala Livelli.",
+    "emptyTitle": "Questa pagina è vuota",
+    "emptyBody": "Aggiungi blocchi dal pannello a sinistra, oppure descrivi la pagina e lascia che la scriva l'AI.",
+    "startFrom": "Descrivila all'AI",
+    "startFromHint": "La pagina si apre nell'editor e viene scritta lì; non si pubblica nulla.",
+    "failures": {
+      "not-configured": "Per questo sito non è impostato nessun provider AI. Un amministratore può sceglierlo in Integrazioni.",
+      "key-unreadable": "La chiave salvata non si può più leggere: la chiave dei segreti del server è cambiata. Inserisci di nuovo la chiave in Integrazioni.",
+      "rejected-credentials": "Il provider ha rifiutato la chiave. Controllala in Integrazioni.",
+      "rate-limited": "Il provider sta ricevendo troppe richieste, oppure il credito dell'account è finito. Riprova fra qualche minuto.",
+      "unreachable": "Non è stato possibile raggiungere il provider. Controlla l'indirizzo del server in Integrazioni, o riprova.",
+      "refused": "Il provider non ha voluto scrivere questa pagina. Descrivila in un altro modo e riprova.",
+      "truncated": "La pagina è venuta troppo lunga ed è stata tagliata. Chiedi meno sezioni.",
+      "not-json": "Il provider ha risposto con qualcosa che non è una pagina. Riprova, oppure scegli un modello che supporti l'output strutturato.",
+      "empty": "Niente di quello che ha scritto il provider era utilizzabile. Descrivi la pagina in un altro modo e riprova.",
+      "too-many-requests": "Troppe pagine generate nell'ultimo minuto. Aspetta un momento e riprova.",
+      "timed-out": "Il provider ci ha messo troppo a rispondere. Riprova, oppure chiedi una pagina più corta.",
+      "unexpected": "Qualcosa è andato storto durante la generazione. Riprova.",
+      "busy": "Per questo sito si sta già scrivendo un'altra pagina. Aspetta che finisca, poi riprova.",
+      "private-address": "L'indirizzo del server è dentro la rete in cui gira Kometio, per esempio questa stessa macchina, e questa installazione non lo permette. Chi gestisce Kometio può permetterlo con KOMETIO_AI_ALLOW_PRIVATE_HOSTS=true (vedi la guida al self-hosting)."
+    },
+    "publishPlaceholdersTitle": "Pubblicare con i segnaposto?",
+    "publishPlaceholdersBody_one": "{{count}} blocco ha ancora un segnaposto al posto di un nome, un ruolo, un prezzo o un numero veri; lo segnala Livelli. Chi visita il sito lo vedrebbe così com'è.",
+    "publishPlaceholdersBody_other": "{{count}} blocchi hanno ancora un segnaposto al posto di un nome, un ruolo, un prezzo o un numero veri; li segnala Livelli. Chi visita il sito li vedrebbe così come sono.",
+    "publishPlaceholdersAction": "Pubblica comunque"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "description": "Come il sito è configurato: vale per tutte le pagine e per chi lo visita.",
+    "nav": {
+      "label": "Sezioni delle impostazioni",
+      "select": "Sezione delle impostazioni",
+      "groups": {
+        "site": "Sito",
+        "connections": "Collegamenti",
+        "privacy": "Privacy e accessi"
+      },
+      "items": {
+        "general": "Generali",
+        "languages": "Lingue",
+        "seo": "SEO",
+        "business": "Dati attività",
+        "collections": "Collezioni",
+        "integrations": "Integrazioni",
+        "ai": "Generazione AI",
+        "cookies": "Cookie e privacy",
+        "retention": "Conservazione dati",
+        "users": "Utenti"
+      }
+    },
+    "sections": {
+      "general": {
+        "description": "Il nome del sito e l'indirizzo a cui è online."
+      },
+      "languages": {
+        "description": "Le lingue in cui esiste il sito, e cosa vede chi apre una pagina non tradotta."
+      },
+      "seo": {
+        "description": "Cosa dici ai motori di ricerca sul sito nel suo insieme."
+      }
+    }
+  },
+  "saveBar": {
+    "unsaved": "Modifiche non salvate",
+    "saved": "Salvato",
+    "leaveTitle": "Uscire senza salvare?",
+    "leaveBody": "Ci sono modifiche non salvate. Se esci adesso andranno perse.",
+    "leaveAction": "Esci",
+    "failed": {
+      "general": "Le impostazioni generali non sono state salvate. Riprova.",
+      "seo": "Le impostazioni SEO non sono state salvate. Riprova.",
+      "languages": "Le lingue non sono state salvate. Riprova.",
+      "businessInfo": "I dati dell’attività non sono stati salvati. Riprova.",
+      "integrations": "Le integrazioni non sono state salvate. Riprova.",
+      "cookieBanner": "Il banner dei cookie non è stato salvato. Riprova.",
+      "retention": "La conservazione delle risposte non è stata salvata. Riprova.",
+      "style": "Lo stile non è stato salvato. Riprova.",
+      "term": "La categoria non è stata salvata. Riprova."
+    }
+  },
+  "commandMenu": {
+    "empty": "Nessun risultato per “{{query}}”.",
+    "hint": "↑↓ per scegliere · Invio per eseguire · Esc per chiudere",
+    "searching": "Ricerca…"
+  }
+}

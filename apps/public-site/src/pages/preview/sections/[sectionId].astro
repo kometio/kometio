@@ -1,0 +1,40 @@
+---
+import { getPreviewSectionById } from '../../../lib/public-api-client';
+import PublicPageContent from '../../../components/PublicPageContent.astro';
+import { buildContentSecurityPolicy } from '../../../lib/content-security-policy';
+import { editorAppUrl } from '../../../lib/editor-app-url';
+
+// SSR, never prerendered — a draft behind a token is not known at build
+// time, the same reason as the page preview route beside this one.
+export const prerender = false;
+
+const { sectionId } = Astro.params;
+const token = Astro.url.searchParams.get('token');
+// A section has no locale of its own; the editor says which one its links
+// should resolve in, defaulting to nothing rather than guessing.
+const locale = Astro.url.searchParams.get('locale');
+const isEmbedded = Astro.url.searchParams.get('embedded') === '1';
+
+const page =
+  sectionId && token && locale
+    ? await getPreviewSectionById(sectionId, token, locale)
+    : null;
+
+if (!page) {
+  Astro.response.status = 404;
+}
+
+// Never indexable, embeddable only by editor-app — this route exists for
+// the section editor's canvas iframe and is never a public link.
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+Astro.response.headers.set(
+  'Content-Security-Policy',
+  buildContentSecurityPolicy(
+    editorAppUrl(),
+    Astro.locals.cspNonce,
+    page?.site.themeSettings.allowedTrackerDomains,
+  ),
+);
+---
+
+<PublicPageContent page={page} editable={isEmbedded} />

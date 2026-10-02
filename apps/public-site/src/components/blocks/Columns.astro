@@ -1,0 +1,125 @@
+---
+import { columnsGridTemplate, type ColumnsProps } from '@kometio/shared-types';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = ColumnsProps & {
+  /** The locale this page renders in — see EmptyContainerHint. */
+  locale?: string;
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+  editable?: boolean;
+  hasChildren?: boolean;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /**
+   * One track per child column, already resolved (ADR-0050). Computed by
+   * BlockRenderer from `block.children`, because a column's width is a
+   * property of the column and this element only has a `<slot/>`: it
+   * cannot see its own children to add their widths up.
+   */
+  columnSpans?: number[];
+};
+
+const {
+  stackBelow,
+  verticalAlign,
+  editable,
+  hasChildren,
+  instanceClass,
+  columnSpans = [],
+  locale,
+  emptyChildLabel,
+} = Astro.props;
+
+// A row with no columns yet has no tracks to declare — `grid-template-
+// columns: ` would be invalid CSS, and the empty-state hint below is what
+// the editor shows instead.
+const gridTemplate =
+  columnSpans.length > 0 ? columnsGridTemplate(columnSpans) : null;
+---
+
+<div
+  class:list={[
+    'kometio-columns',
+    `kometio-columns--stack-${stackBelow}`,
+    `kometio-columns--align-${verticalAlign}`,
+    instanceClass,
+  ]}
+  style={gridTemplate ? `--kometio-columns-template: ${gridTemplate};` : undefined}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  <slot />
+</div>
+<EmptyContainerHint
+  show={!hasChildren && Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>
+
+<style>
+  .kometio-columns {
+    display: grid;
+    /* The fallback is what a row renders as before its tracks are known —
+       one column, which is also what an empty row should look like. */
+    grid-template-columns: var(--kometio-columns-template, 1fr);
+    gap: var(--kometio-override-gap, 1.5rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+
+  /* Vertical alignment of columns against each other — `align-items` on a
+     grid is the block axis, so this is what makes three cards of unequal
+     text length line up at the top, or centre on each other, instead of
+     always stretching to the tallest. `stretch` is the grid default and
+     what every existing row already does. */
+  .kometio-columns--align-start { align-items: start; }
+  .kometio-columns--align-center { align-items: center; }
+  .kometio-columns--align-end { align-items: end; }
+  .kometio-columns--align-stretch { align-items: stretch; }
+
+  /*
+   * Container queries, not the `@media (max-width: 640px)` this replaces
+   * (ADR-0047).
+   *
+   * The old rule asked how wide the WINDOW was. A row of columns nested
+   * inside another column, on a wide desktop, therefore kept its columns
+   * side by side inside a 300px track — the exact defect ADR-0047 exists
+   * to remove, still present here because this rule predates it. Asking
+   * the row how much room IT has is the same question at the top level of
+   * a page and the right one everywhere else.
+   *
+   * `.kometio-columns` already declares `container-type: inline-size` in
+   * global.css, so the row measures itself: the query below is scoped to
+   * the row's own width by the ancestor it names.
+   */
+  /*
+   * The widths are written out rather than read from a token, because a
+   * container query's CONDITION cannot contain `var()` — CSS resolves
+   * custom properties too late for it, and the rule silently never
+   * matches. `columns-breakpoints.spec.ts` reads this file and fails,
+   * naming the number, if either stops matching BREAKPOINT_MAX_WIDTHS.
+   */
+  @container (max-width: 1024px) {
+    .kometio-columns--stack-tablet {
+      grid-template-columns: 1fr;
+    }
+  }
+  @container (max-width: 768px) {
+    .kometio-columns--stack-mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Editor only, and only once it has content — the same reason and
+     pattern as Column.astro/Container.astro: without a persistent border a
+     multi-column layout becomes hard to "read" while you work, especially
+     once the columns already hold real content (user feedback from live
+     use). */
+  .kometio-columns[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

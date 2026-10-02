@@ -1,0 +1,3552 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong.",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "delete": "Delete",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "pagination": {
+      "previous": "Previous page",
+      "next": "Next page",
+      "indicator": "Page {{page}} of {{totalPages}}"
+    },
+    "selection": {
+      "clear": "Deselect"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Log in",
+      "description": "Log in to your Kometio account",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submitIdle": "Log in",
+      "submitPending": "Logging in...",
+      "invalidCredentials": "Incorrect email or password.",
+      "forgotPassword": "Forgot your password?"
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "description": "Enter your email to receive a reset link",
+      "sentMessage": "If that address exists, we've sent you an email with instructions to reset your password.",
+      "backToLogin": "Back to login",
+      "submitIdle": "Send reset link",
+      "submitPending": "Sending..."
+    },
+    "resetPassword": {
+      "title": "Reset your password",
+      "description": "Choose a new password for your account",
+      "doneMessage": "Password updated. You can log in again with the new password.",
+      "newPasswordLabel": "New password",
+      "error": "This link is invalid or has expired. Request a new reset link.",
+      "submitIdle": "Reset password",
+      "submitPending": "Saving..."
+    },
+    "verifyEmail": {
+      "title": "Verify email",
+      "description": "Confirming your email address",
+      "pending": "Verifying...",
+      "success": "Email verified successfully.",
+      "error": "This link is invalid or has expired. Request a new verification link from your account."
+    },
+    "acceptInvite": {
+      "title": "Complete your registration",
+      "description": "Choose a password to access your Kometio account",
+      "doneMessage": "Password set. You can log in now.",
+      "passwordLabel": "Password",
+      "error": "This link is invalid or has expired. Ask an admin to send you a new invite.",
+      "submitIdle": "Complete registration",
+      "submitPending": "Saving..."
+    },
+    "logout": "Log out",
+    "confirmEmailChange": {
+      "title": "Confirm your new email",
+      "description": "Confirming your new sign-in address",
+      "pending": "Confirming...",
+      "success": "Your email was changed. Use it the next time you sign in.",
+      "error": "This link is invalid or has expired, or somebody has taken the address since. Ask for the change again from your profile.",
+      "toEditor": "Go to your profile"
+    }
+  },
+  "setup": {
+    "title": "Welcome to Kometio",
+    "description": "This installation has not been set up yet. Create your administrator account to get started.",
+    "tokenLabel": "Setup token",
+    "tokenHint": "Printed in the API's log when it starts. On a Docker deployment: `docker compose logs api`. It proves you are the person running this server, so nobody else can claim the installation before you.",
+    "tokenError": "That setup token is not valid. It is printed in the API's log and changes every time the API restarts — check the log again and use the most recent one.",
+    "siteNameLabel": "Site name",
+    "localeLabel": "Default language",
+    "localeHint": "The language your site's content starts in. You can add more later, in Site settings.",
+    "emailLabel": "Your email",
+    "passwordLabel": "Password",
+    "passwordHint": "At least {{count}} characters. This is the account nobody can unlock for you, so make it a good one.",
+    "submitIdle": "Create my account",
+    "submitPending": "Setting things up...",
+    "genericError": "Something went wrong. Reload the page and try again — if this installation was already set up, you'll be sent to the login page."
+  },
+  "shell": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "pages": "Pages",
+      "media": "Media",
+      "forms": "Forms",
+      "layout": "Header & footer",
+      "sections": "Sections",
+      "taxonomies": "Categories",
+      "style": "Style",
+      "groupContent": "Content",
+      "groupSite": "Appearance",
+      "imports": "Import",
+      "settings": "Settings",
+      "short": {
+        "layout": "Header",
+        "settings": "Settings"
+      },
+      "collections": "Collections"
+    },
+    "account": {
+      "label": "Account",
+      "menuLabel": "Account: {{name}}",
+      "profile": "My profile",
+      "language": "Interface language",
+      "theme": "Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "Follow the system",
+      "languageHint": "It is also the language of the emails we send you.",
+      "languageNotSaved": "Language changed here, but not saved: your emails will keep arriving in the previous language."
+    },
+    "menu": {
+      "open": "Open the menu",
+      "title": "Menu"
+    },
+    "site": {
+      "open": "Open the site: {{name}}",
+      "domainMissing": "Domain not set yet",
+      "short": "Site"
+    },
+    "search": {
+      "open": "Search…",
+      "short": "Search",
+      "title": "Search the editor",
+      "placeholder": "A page, a file, a setting, an action…",
+      "groups": {
+        "go": "Go to",
+        "actions": "Actions",
+        "preferences": "Preferences",
+        "pages": "Pages",
+        "media": "Media",
+        "forms": "Forms"
+      },
+      "actions": {
+        "upload": "Upload a file"
+      },
+      "preferences": {
+        "themeLight": "Light theme",
+        "themeDark": "Dark theme",
+        "themeSystem": "Theme: follow the system",
+        "language": "Interface language: {{name}}"
+      }
+    },
+    "sidebar": {
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "label": "Main navigation"
+    }
+  },
+  "account": {
+    "title": "My profile",
+    "intro": "Your name and picture in the editor, and what your author page on the site says about you.",
+    "picture": "Picture",
+    "uploadPicture": "Upload a picture",
+    "changePicture": "Change picture",
+    "removePicture": "Remove",
+    "pictureHint": "A photo of you, square works best. Without one, your initial is shown.",
+    "pictureNotImage": "That file is not a picture. Choose a JPG, PNG, WebP, GIF or AVIF.",
+    "pictureTooLarge": "That picture is larger than 10 MB. Choose a smaller one.",
+    "pictureFailed": "The picture could not be saved. Try again.",
+    "displayName": "Name",
+    "displayNameHint": "Shown under the articles you write and on your author page.",
+    "slug": "Author page address",
+    "slugHint": "Made from your name the first time you save it. Change it and the old address sends visitors to the new one.",
+    "slugInvalid": "Use only lowercase letters, numbers and hyphens.",
+    "slugTaken": "Someone else already uses this address. Choose another one.",
+    "bio": "Bio",
+    "bioHint": "A few lines about you, in each language of the site. Leave a language empty to show no bio in it.",
+    "bioCount": "{{count}} / {{max}}",
+    "email": "Email",
+    "role": "Role",
+    "authorPageNote": "Your author page goes online once you have a name and at least one published article in a collection.",
+    "invalid": "Some of what you entered could not be saved. Check the fields and try again.",
+    "saveFailed": "Your profile could not be saved. Try again.",
+    "pictureSavesNow": "The picture is saved at once, without waiting for Save.",
+    "opensInNewTab": " (opens in a new tab)",
+    "signIn": {
+      "title": "Sign-in",
+      "changeEmail": "Change email",
+      "password": "Password",
+      "passwordHint": "Choose a new one whenever you like. Every other sign-in is ended.",
+      "changePassword": "Change password"
+    },
+    "currentPassword": "Current password",
+    "currentPasswordRequired": "Enter your current password.",
+    "wrongCurrentPassword": "That is not your current password.",
+    "tooManyTries": "Too many wrong tries. Wait a few minutes and try again.",
+    "passwordDialog": {
+      "title": "Change your password",
+      "newPassword": "New password",
+      "newPasswordHint": "At least {{min}} characters.",
+      "repeatPassword": "Repeat the new password",
+      "tooShort": "The new password needs at least {{min}} characters.",
+      "mismatch": "The two passwords are not the same.",
+      "submit": "Change password",
+      "busy": "Changing...",
+      "done": "Password changed. Every other sign-in was ended.",
+      "failed": "The password was not changed. Try again."
+    },
+    "emailDialog": {
+      "title": "Change your email",
+      "newEmail": "New email",
+      "newEmailHint": "We send a link to this address. Your email changes when you open it.",
+      "currentPasswordHint": "Asked again to make sure it is you.",
+      "invalid": "Enter a valid email address.",
+      "unchanged": "That is already your email.",
+      "taken": "Someone else already uses this address.",
+      "submit": "Send the link",
+      "busy": "Sending...",
+      "sentTitle": "Check your inbox",
+      "sent": "We sent a link to {{email}}. Until you open it you keep signing in with {{current}}.",
+      "sentNote": "The link works for 24 hours.",
+      "failed": "The request to change the email was not sent. Try again."
+    },
+    "pictureSaved": "Picture updated",
+    "pictureRemoved": "Picture removed"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "stats": {
+      "pages": {
+        "title": "Pages",
+        "description": "Across every language",
+        "breakdown": "{{published}} published, {{draft}} in draft"
+      },
+      "media": {
+        "title": "Media"
+      },
+      "submissions": {
+        "title": "Submissions",
+        "recentLabel": "{{count}} in the last 7 days",
+        "noForms": "No forms yet: make one to receive what visitors send.",
+        "createForm": "Create a form"
+      }
+    },
+    "recentActivity": {
+      "title": "Recent activity",
+      "description": "The most recently updated pages",
+      "empty": "Nothing edited yet.",
+      "status": {
+        "draft": "Draft",
+        "published": "Published"
+      },
+      "newSubmissions_one": "{{count}} new submission",
+      "newSubmissions_other": "{{count}} new submissions"
+    },
+    "emptyState": "This site doesn't have any pages or media yet — start from the Pages section.",
+    "actions": {
+      "newPage": "New page",
+      "openSite": "Open the site"
+    },
+    "description": {
+      "online": "{{name}} · online at {{domain}}",
+      "offline": "{{name}} · not online yet"
+    },
+    "checklist": {
+      "title": "Before you go live",
+      "progress": "{{done}} of {{total}}",
+      "done": "Done",
+      "todo": "To do",
+      "items": {
+        "name": {
+          "label": "Name your site",
+          "action": "Set it"
+        },
+        "domain": {
+          "label": "Set the domain",
+          "action": "Set it"
+        },
+        "page": {
+          "label": "Publish at least one page",
+          "action": "Go to pages"
+        },
+        "cookies": {
+          "label": "Turn on the cookie banner",
+          "action": "Set it up",
+          "waiting_one": "{{count}} script is waiting for consent, but the cookie banner is off",
+          "waiting_other": "{{count}} scripts are waiting for consent, but the cookie banner is off",
+          "waitingAction": "Turn on the banner"
+        },
+        "indexing": {
+          "label": "Open the site to search engines",
+          "action": "Go to SEO"
+        }
+      }
+    }
+  },
+  "pages": {
+    "list": {
+      "title": "Pages",
+      "newPage": "New page",
+      "empty": "No pages yet.",
+      "noMatches": "No pages match these filters.",
+      "statusPublished": "Published",
+      "statusDraft": "Draft",
+      "pendingChanges": "Unpublished changes",
+      "createdBy": "Created by {{name}}",
+      "dragHandle": "Drag to reorder",
+      "filters": {
+        "search": "Search by title",
+        "createdAfter": "From",
+        "createdBefore": "To",
+        "createdBy": "Created by",
+        "anyCreator": "Anyone",
+        "locale": "Language",
+        "anyLocale": "Any language",
+        "clear": "Clear filters",
+        "toggle": "Filters",
+        "status": "Status",
+        "anyStatus": "Any status",
+        "statusOptions": {
+          "draft": "Draft",
+          "published": "Published",
+          "pending": "With unpublished changes"
+        }
+      },
+      "colTitle": "Page",
+      "colLanguages": "Languages",
+      "colAuthor": "Created by",
+      "colUpdated": "Updated",
+      "statusMissing": "Not translated",
+      "colEditor": "Last edited by",
+      "statusPending": "Published, with unpublished changes",
+      "colStatus": "Status",
+      "statusPendingShort": "Unpublished changes",
+      "reorderFailed": "The new order could not be saved. Reload the page and try again.",
+      "duplicateFailed": "The page could not be duplicated. Try again.",
+      "deleteFailed": "The page could not be deleted. Try again.",
+      "selectRow": "Select {{title}}",
+      "selectAll": "Select all pages",
+      "selection": {
+        "label": "Actions on the selected pages",
+        "count_one": "{{count}} selected",
+        "count_other": "{{count}} selected",
+        "open": "Open",
+        "duplicate": "Duplicate",
+        "moveToCollection": "Move to a collection…",
+        "moveUnder": "Move under…",
+        "delete": "Delete"
+      },
+      "duplicated_one": "Page duplicated",
+      "duplicated_other": "{{count}} pages duplicated",
+      "openCopy": "Open the copy",
+      "moved_one": "Page moved",
+      "moved_other": "{{count}} pages moved",
+      "deleted_one": "Page deleted",
+      "deleted_other": "{{count}} pages deleted",
+      "reorderOffFiltered": "To reorder pages, remove the filters.",
+      "reorderOffPaged": "To reorder pages, they all have to fit on one page of the list."
+    },
+    "newPageDialog": {
+      "title": "New page",
+      "nameLabel": "Page name",
+      "parentLabel": "Parent page (optional)",
+      "slugPreview": "URL: {{slug}}",
+      "cancel": "Cancel",
+      "create": "Create",
+      "creating": "Creating...",
+      "slugTaken": "A page with this name already exists on this site.",
+      "templateLabel": "Start from",
+      "templateHint": "The template's blocks are copied into the new page; after that, the page is free to change.",
+      "templateUnavailable": "That template is no longer available. Pick another one.",
+      "parentUnavailable": "The parent page no longer exists. Pick another one.",
+      "failed": "The page could not be created.",
+      "nameTooLong": "The name is too long to become an address: {{max}} characters at most."
+    },
+    "duplicateDialog": {
+      "title": "Duplicate page",
+      "titleLabel": "Title",
+      "slugLabel": "URL",
+      "descriptionLabel": "SEO description",
+      "cancel": "Cancel",
+      "confirm": "Create copy",
+      "duplicating": "Duplicating...",
+      "slugTaken": "A page with this URL already exists on this site."
+    },
+    "deleteDialog": {
+      "description": "\"{{name}}\" and all of its versions will be permanently deleted. This action cannot be undone.",
+      "descriptionWithTranslations": "\"{{name}}\" and all of its versions will be permanently deleted. This page is the site's default locale and has translations in other languages ({{locales}}): after deletion, visitors requesting a language with no translation will no longer be redirected here automatically. This action cannot be undone.",
+      "hasChildren": "This page has subpages, and deleting it would leave them at addresses that no longer exist. Move them under another page, or delete them, first.",
+      "title_one": "Delete this page?",
+      "title_other": "Delete {{count}} pages?",
+      "descriptionMany": "{{names}} and all their versions will be deleted permanently. This cannot be undone.",
+      "subpagesMoveUpNamed_one": "The subpage {{children}} moves to the top level and its address changes: the current one will no longer lead anywhere.",
+      "subpagesMoveUpNamed_other": "The {{count}} subpages ({{children}}) move to the top level and their addresses change: the current ones will no longer lead anywhere.",
+      "subpagesMoveUp_one": "One subpage moves to the top level and its address changes: the current one will no longer lead anywhere.",
+      "subpagesMoveUp_other": "{{count}} subpages move to the top level and their addresses change: the current ones will no longer lead anywhere."
+    },
+    "editor": {
+      "backToList": "Pages",
+      "published": "Published",
+      "viewPage": "View page",
+      "unpublishedChangesAt": "Unpublished changes — saved at {{time}}",
+      "noLanguage": {
+        "title": "This page has no language",
+        "body": "It was left half-made by a creation that did not go through, so there is nothing to edit. You can delete it from the pages list.",
+        "back": "Back to pages"
+      }
+    },
+    "versionHistory": {
+      "open": "Version history",
+      "sourcesLabel": "History of",
+      "title": "Version history",
+      "description": "Restore a previous version's content as the draft. This does not publish automatically.",
+      "empty": "No saved versions.",
+      "current": "Current version",
+      "restore": "Restore",
+      "sources": {
+        "structure": "Structure (all languages)",
+        "language": "{{locale}} only"
+      },
+      "unlinkedNote": "Unlinked: restoring it unlinks the language again"
+    },
+    "seo": {
+      "open": "SEO",
+      "title": "SEO settings",
+      "titleLabel": "SEO title",
+      "descriptionLabel": "Description",
+      "ogImageLabel": "Social image (OG)",
+      "chooseOgImage": "Choose image",
+      "changeOgImage": "Change image",
+      "canonicalLabel": "Canonical URL",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "SEO settings saved",
+      "saveFailed": "The SEO settings were not saved. Try again."
+    },
+    "translations": {
+      "open": "Translations",
+      "title": "Translations",
+      "current": "This page",
+      "edit": "Edit",
+      "newLocaleLabel": "Create translation",
+      "slugLabel": "URL",
+      "slugPreview": "URL: {{slug}}",
+      "create": "Create translation",
+      "creating": "Creating...",
+      "conflict": "A translation in this language already exists for this page.",
+      "drift": "Structure out of sync",
+      "driftWarning": "The original (default locale) has different blocks than when this translation was last created or updated.",
+      "markSynced": "Mark as synced",
+      "slugForLocale": "URL in {{locale}}",
+      "createFailed": "The version was not added. Try again.",
+      "renameFailed": "The address was not changed. Try again.",
+      "created": "{{locale}} version added",
+      "renamed": "Address of the {{locale}} version changed to {{slug}}"
+    },
+    "picker": {
+      "title": "Choose a page",
+      "empty": "No pages in this language.",
+      "search": "Search pages by title",
+      "searchPlaceholder": "Search by title…"
+    },
+    "parent": {
+      "label": "Parent page",
+      "none": "— None (root level) —",
+      "hint": "The page lives under the one you choose, and its address starts with that page’s address."
+    },
+    "moveToCollection": {
+      "title": "Move to a collection",
+      "description": "Where “{{name}}” is listed. It keeps its address, its place in the tree and everything on it.",
+      "none": "Pages (no collection)",
+      "confirm": "Move",
+      "failed": "That page could not be moved."
+    },
+    "moveToParent": {
+      "title": "Move in the tree",
+      "description": "Where “{{name}}” lives. This changes its address and the address of everything under it: the old address keeps answering, redirecting to the new one.",
+      "confirm": "Move",
+      "cancel": "Cancel",
+      "failed": "The page could not be moved."
+    },
+    "saveAsTemplate": {
+      "open": "Save as template",
+      "nameLabel": "Template name",
+      "submit": "Save template",
+      "saved": "Template “{{name}}” saved — pick it when you create a new page.",
+      "failed": "The template could not be saved.",
+      "unsaved": "Your last edit did not reach the server, so the template would leave it out. Make any small change to the page to save it again, then try once more."
+    }
+  },
+  "taxonomies": {
+    "title": "Categories",
+    "subtitle": "The categories this site classifies along — a page can carry terms from several of them at once, and every term gets a URL of its own.",
+    "nameLabel": "Name",
+    "prefixLabel": "URL prefix",
+    "prefixPlaceholder": "derived from the name",
+    "prefixHint": "Terms answer at /{locale}/{prefix}/{slug}. With no prefix they live at the site root — prettier, and more likely to collide with a page's address.",
+    "rootMounted": "No prefix (site root)",
+    "prefixTaken": "Another category or a page already answers at that address.",
+    "atRoot": "at the site root",
+    "delete": "Delete",
+    "noTerms": "No term yet.",
+    "unnamed": "(unnamed)",
+    "newTerm": "New term",
+    "addTerm": "Add term",
+    "parent": "Inside",
+    "newTermParent": "Inside (for the new term)",
+    "noParent": "Top level",
+    "termName": "Name",
+    "termSlug": "Slug",
+    "termSlugEmpty": "not published in this language",
+    "deleteTerm": "Delete term",
+    "addressTaken": "That address is already taken by another term or by a page.",
+    "pageTitle": "Categories",
+    "pageHint": "The same for every language of this page.",
+    "pageEmpty": "No category defined yet.",
+    "pageSaved": "The page’s categories were saved",
+    "termDescription": "Description",
+    "termDescriptionHint": "Shown above the list of pages filed under this term",
+    "termSeo": "SEO",
+    "termSeoTitle": "SEO for “{{term}}” ({{locale}})",
+    "landingPage": "Landing page",
+    "landingPageDefault": "Default layout",
+    "landingPageChosen": "A page is set",
+    "landingPageChoose": "Choose a page",
+    "landingPageChange": "Change",
+    "landingPageClear": "Back to the default layout",
+    "emptyExplainer": "A category is a way of filing pages — Topic, Author, Product range. Each of its terms gets a URL of its own, listing every page filed under it.",
+    "termNoindex": "Keep this term out of search engines",
+    "termNoindexHint": "The page still works for anyone who reaches it, but asks search engines not to index it and leaves the sitemap. Useful for a term with very little under it.",
+    "deleteTermDialog": {
+      "title": "Delete this term?",
+      "description": "Any term inside it moves up to the top level rather than being deleted with it."
+    },
+    "deleteDialog": {
+      "description": "The pages themselves stay, they simply stop being classified along it.",
+      "title": "Delete the category “{{name}}”?",
+      "noTerms": "It has no terms.",
+      "terms_one": "Its one term will be deleted with it.",
+      "terms_other": "Its {{count}} terms will be deleted with it."
+    },
+    "new": "New category",
+    "createSubmit": "Create",
+    "creating": "Creating...",
+    "hierarchical": "Nested terms (hierarchy)",
+    "hierarchicalHint": "A term can sit inside another. Without it, every term is on the same level.",
+    "rename": "Rename",
+    "renameDialog": {
+      "title": "Rename the category"
+    },
+    "created": "Category “{{name}}” created",
+    "renamed": "Category renamed to “{{name}}”",
+    "deleted": "Category “{{name}}” deleted",
+    "prefixFixed": "It cannot be changed after creation: the addresses of the terms that exist would break.",
+    "childCount_one": "{{count}} term inside",
+    "childCount_other": "{{count}} terms inside",
+    "termDeleted": "Term “{{name}}” deleted",
+    "term": {
+      "breadcrumb": "Where you are",
+      "kindOf": "Category {{name}}",
+      "address": "Address: {{address}}",
+      "seoOwnSave": "Saved on its own, from its own window.",
+      "deleteTitle": "Delete this term",
+      "notFound": "This term no longer exists: it was deleted, or the address is wrong.",
+      "backToList": "Back to categories"
+    },
+    "reorder": {
+      "start": "Reorder",
+      "done": "Done",
+      "up": "Move {{name}} up",
+      "down": "Move {{name}} down",
+      "upShort": "Up",
+      "downShort": "Down",
+      "failed": "The order could not be changed. Try again."
+    },
+    "deleteTermFailed": "The term was not deleted. Try again.",
+    "addTermFailed": "The term was not added. Try again.",
+    "createFailed": "The category was not created. Try again.",
+    "deleteFailed": "The category was not deleted. Try again.",
+    "pageSaveFailed": "The page’s categories were not saved. Try again."
+  },
+  "sections": {
+    "title": "Sections",
+    "subtitle": "Build a strip of blocks once, use it on many pages.",
+    "nameLabel": "Name",
+    "status": {
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "delete": "Delete",
+    "exposeField": "A page may change this",
+    "backToList": "← Back to sections",
+    "published": "Published — every page using it is updated",
+    "nameTaken": "A section with that name already exists.",
+    "templates": "Templates",
+    "makeReusable": "Turn into a reusable section",
+    "makeReusableSubmit": "Create section",
+    "makeReusableBusy": "Creating...",
+    "usedOnPages_one": "on {{count}} page",
+    "usedOnPages_other": "on {{count}} pages",
+    "usedNowhere": "not placed anywhere yet",
+    "usedInTemplates_one": "in {{count}} template",
+    "usedInTemplates_other": "in {{count}} templates",
+    "deleteConfirmInTemplates_one": "It is also inside a template: pages made from it from now on will show nothing where it was.",
+    "deleteConfirmInTemplates_other": "It is also inside {{count}} templates: pages made from them from now on will show nothing where it was.",
+    "deleteDialog": {
+      "title": "Delete “{{name}}”?",
+      "unused": "No page shows it.",
+      "usedOnPages_one": "It is on 1 page, which will show nothing where it was.",
+      "usedOnPages_other": "It is on {{count}} pages, and each will show nothing where it was."
+    },
+    "new": {
+      "shared": "New shared section",
+      "template": "New template"
+    },
+    "tabs": {
+      "label": "Kinds of section",
+      "shared": "Shared sections",
+      "template": "Templates"
+    },
+    "tabDescription": {
+      "shared": "You edit them once, and they change on every page that uses them.",
+      "template": "Starting points: a page copies one and then goes its own way."
+    },
+    "emptyExplainer": {
+      "shared": "A shared section is a strip of blocks you build once and place on many pages — edit it here and every page showing it changes with it.",
+      "template": "A template is a starting point: a page made from it gets a copy, and then changes it as it likes."
+    },
+    "createSubmit": "Create",
+    "creating": "Creating...",
+    "deleteNamed": "Delete “{{name}}”",
+    "deleted": "“{{name}}” deleted",
+    "templateDraftHint": "Publish it to use it on pages.",
+    "rename": "Rename",
+    "renameDialog": {
+      "title": "Rename",
+      "submit": "Rename",
+      "busy": "Saving..."
+    },
+    "renamed": "Renamed to “{{name}}”",
+    "unpublishedTemplates_one": "{{count}} template is a draft: publish it from Sections › Templates to use it here.",
+    "unpublishedTemplates_other": "{{count}} templates are drafts: publish them from Sections › Templates to use them here.",
+    "renameFailed": "The section was not renamed. Try again.",
+    "deleteFailed": "The section was not deleted. Try again.",
+    "createFailed": "The section was not created. Try again.",
+    "makeReusableFailed": "The block was not turned into a section. Try again."
+  },
+  "layout": {
+    "title": "Header & footer",
+    "localeLabel": "Language",
+    "editHeader": "Edit Header",
+    "editHeaderDescription": "Logo, navigation menu, and language switcher.",
+    "editFooter": "Edit Footer",
+    "editFooterDescription": "Content and links at the bottom of every page.",
+    "editor": {
+      "backToList": "Header & footer",
+      "published": "Published",
+      "noPageToPreview": "Create a page in this language first — the canvas needs a real page to preview {{section}} against.",
+      "headerSettings": "Header settings",
+      "sticky": "Stick while scrolling",
+      "stickyHint": "The header stays at the top while visitors scroll. It takes effect at once, without publishing.",
+      "stickyOn": "The header now stays at the top while scrolling",
+      "stickyOff": "The header now scrolls with the page"
+    },
+    "headerTitle": "Header",
+    "footerTitle": "Footer",
+    "editAction": "Edit",
+    "localeNote": "Each language has its own header and footer."
+  },
+  "media": {
+    "list": {
+      "title": "Media"
+    },
+    "grid": {
+      "upload": "Upload files",
+      "uploading": "Uploading...",
+      "empty": "Nothing in the library yet. Upload any file — an image, a video, a PDF — and it becomes available to every block that asks for one.",
+      "noMatches": "No file matches what you are looking for.",
+      "uploadWarning": "Any file can be uploaded, and Kometio does not check what is inside it: only upload files from sources you trust. Anything that is not an image, a video or an audio file is downloaded when opened, never displayed.",
+      "emptyKind": {
+        "image": "No images yet.",
+        "video": "No videos yet.",
+        "audio": "No audio files yet.",
+        "document": "No documents yet.",
+        "other": "No other files yet."
+      }
+    },
+    "deleteDialog": {
+      "title": "Delete this file?",
+      "description": "\"{{name}}\" will be permanently deleted. This action cannot be undone.",
+      "usedOn_one": "It is used in {{count}} place on the site: if you delete it, that place will be left empty.",
+      "usedOn_other": "It is used in {{count}} places on the site: if you delete it, those places will be left empty."
+    },
+    "picker": {
+      "title": "Choose a file",
+      "titleImage": "Choose an image",
+      "titleVideo": "Choose a video",
+      "titleAudio": "Choose an audio file",
+      "titleDocument": "Choose a document"
+    },
+    "filters": {
+      "searchLabel": "Search by name",
+      "searchPlaceholder": "Search by name",
+      "kindLabel": "Kind of file",
+      "kindAll": "All",
+      "kindImage": "Images",
+      "kindVideo": "Video",
+      "kindAudio": "Audio",
+      "kindDocument": "Documents",
+      "kindOther": "Other"
+    },
+    "folders": {
+      "label": "Folders",
+      "count_one": "{{count}} file",
+      "count_other": "{{count}} files",
+      "searchResults": "Search results",
+      "breadcrumb": "Where you are"
+    },
+    "detail": {
+      "description": "Details of this file",
+      "missingTitle": "File not found",
+      "missing": "This file is not there: it may have been deleted, or the address may be wrong. Close this panel and look for it in its folder.",
+      "type": "Type",
+      "size": "Size",
+      "dimensions": "Dimensions",
+      "pixels": "{{width}} × {{height}} px",
+      "uploaded": "Uploaded",
+      "url": "Public URL",
+      "copy": "Copy URL",
+      "copied": "URL copied",
+      "copyFailed": "Could not copy: the URL is selected, press Ctrl/⌘ + C.",
+      "download": "Download",
+      "delete": "Delete",
+      "deleted": "“{{name}}” deleted",
+      "nameLabel": "Name",
+      "altLabel": "Alternative text",
+      "altHint": "Describes the picture to somebody who can’t see it. Leave it empty if it is only decoration.",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "saved": "File updated",
+      "nameRequired": "Enter a name for the file.",
+      "saveFailed": "The file could not be saved.",
+      "deleteFailed": "The file was not deleted. Try again."
+    },
+    "upload": {
+      "dropHere": "Drop to upload",
+      "progressLabel": "Upload progress",
+      "dismiss": "Hide",
+      "status": {
+        "waiting": "Waiting",
+        "uploading": "Uploading…",
+        "done": "Uploaded",
+        "failed": "Not uploaded: {{reason}}"
+      },
+      "done_one": "{{count}} file uploaded",
+      "done_other": "{{count}} files uploaded",
+      "doneIn_one": "{{count}} file uploaded to {{folder}}",
+      "doneIn_other": "{{count}} files uploaded to {{folder}}",
+      "see": "See",
+      "partial": "{{count}} of {{total}} files uploaded",
+      "noneUploaded": "No file was uploaded"
+    },
+    "usages": {
+      "title": "Where it is used",
+      "none": "It is not used anywhere.",
+      "failed": "Where it is used could not be checked.",
+      "page": "Page · {{languages}}",
+      "section": {
+        "shared": "Shared section",
+        "template": "Template"
+      },
+      "header": "Header",
+      "footer": "Footer"
+    }
+  },
+  "icons": {
+    "picker": {
+      "setsLabel": "Icon set",
+      "title": "Choose an icon",
+      "search": "Search icon…",
+      "empty": "No icon found.",
+      "sets": {
+        "interface": "Icons",
+        "brand": "Brands",
+        "image": "Image"
+      },
+      "image": {
+        "hint": "For a logo the sets do not have — LinkedIn, for instance — use an image from the library. It shows as it is: it does not take the text colour the way the other icons do.",
+        "choose": "Choose from the library…"
+      }
+    },
+    "field": {
+      "remove": "Remove icon"
+    }
+  },
+  "generalSettings": {
+    "nameLabel": "Site name",
+    "domainLabel": "Domain",
+    "domainPlaceholder": "www.yoursite.com",
+    "domainDescription": "The domain the site is served on (e.g. www.yoursite.com). Must exactly match the real one, otherwise pages won't be found.",
+    "domainInvalid": "This does not look like a domain. Use letters, numbers, hyphens and dots, for example www.yoursite.com.",
+    "domainRemoved": "Removed {{removed}}: only the domain goes here.",
+    "domainChange": {
+      "title": "Change the site’s domain?",
+      "description": "Pages will only be reachable on {{domain}}. The old address, {{old}}, will stop working.",
+      "addedDescription": "Pages will be reachable on {{domain}}.",
+      "action": "Change domain",
+      "removeTitle": "Remove the domain?",
+      "removeDescription": "Without a domain, pages will no longer be reachable on {{old}}.",
+      "removeAction": "Remove domain"
+    }
+  },
+  "seoSettings": {
+    "indexingLabel": "Allow search engine indexing",
+    "indexingDescription": "When off, the site asks search engines not to index it (useful during development, before launch).",
+    "indexingDisclaimer": "Note: this is a request, not a guarantee — it depends on search engines respecting it.",
+    "turnOffConfirm": {
+      "title": "Turn indexing off?",
+      "description": "Google and the other search engines will stop showing the site in their results. You can turn it back on any time, but getting back into the results is not immediate.",
+      "action": "Turn off"
+    }
+  },
+  "formSubmissionRetention": {
+    "description": "How long the site keeps the answers to its forms.",
+    "hint": "It applies to every form on this site. Deleted answers cannot be recovered.",
+    "invalidValue": "Enter a whole number of days, more than zero.",
+    "legend": "Form answers",
+    "foreverLabel": "Keep the answers for ever",
+    "foreverDescription": "No answer is deleted on its own.",
+    "daysLabel": "Delete the answers after a number of days",
+    "daysDescription": "Every night, the older answers are deleted for good.",
+    "daysInputLabel": "Number of days",
+    "unit_one": "day",
+    "unit_other": "days",
+    "confirm": {
+      "title": "Delete the older answers?",
+      "description_one": "Answers older than {{count}} day will be deleted for good at the next nightly clean-up (at 4 am). They cannot be recovered.",
+      "description_other": "Answers older than {{count}} days will be deleted for good at the next nightly clean-up (at 4 am). They cannot be recovered.",
+      "action": "Delete the older answers",
+      "descriptionCount_one": "{{count}} answer older than {{days}} days will be deleted for good at the next nightly clean-up (at 4 am). It cannot be recovered.",
+      "descriptionCount_other": "{{count}} answers older than {{days}} days will be deleted for good at the next nightly clean-up (at 4 am). They cannot be recovered."
+    }
+  },
+  "cookieConsent": {
+    "category": {
+      "necessary": "Necessary",
+      "functionality": "Functionality",
+      "measurement": "Measurement",
+      "experience": "Experience"
+    }
+  },
+  "cookieBanner": {
+    "intro": "Set up the cookie consent banner that the European privacy rules (GDPR) require, shown on every page of the public site.",
+    "enabledLabel": "Show the cookie banner",
+    "positionLabel": "Position",
+    "position": {
+      "bottomBar": "Bottom bar (full width)",
+      "bottomLeft": "Bottom left",
+      "bottomRight": "Bottom right",
+      "centerModal": "Centered"
+    },
+    "acceptButtonSideLabel": "Accept button side",
+    "side": {
+      "left": "Left",
+      "right": "Right"
+    },
+    "showReopenTabLabel": "Show a reopen tab after a choice is made",
+    "reopenPositionLabel": "Reopen tab position",
+    "privacyPolicyLabel": "Privacy Policy page",
+    "cookiePolicyLabel": "Cookie Policy page",
+    "selectPage": "Select a page",
+    "pageSelected": "Page selected",
+    "clearSelection": "Remove",
+    "copyOverridesLabel": "Text overrides per language",
+    "copyOverridesHint": "Leave blank to use the built-in text for that language.",
+    "legalDocumentsLink": "Generate Privacy Policy, Cookie Policy & Terms drafts",
+    "titleLabel": "Title",
+    "bodyLabel": "Body text",
+    "acceptAllLabel": "Accept all button",
+    "rejectAllLabel": "Reject all button",
+    "customizeLabel": "Customize button",
+    "preview": {
+      "label": "Cookie banner preview",
+      "stages": "Moment to show",
+      "before": "Before the choice",
+      "after": "After the choice",
+      "language": "Preview language",
+      "reopenTab": "Cookies",
+      "noTab": "No tab: once chosen, the banner cannot be brought back.",
+      "note": "A rough preview using the form’s values, saved or not. On the site the banner takes the theme’s styling.",
+      "title": "We respect your privacy",
+      "body": "We use cookies to make the site work and, with your consent, to understand how it is used.",
+      "acceptAll": "Accept all",
+      "rejectAll": "Reject all",
+      "customize": "Customize"
+    }
+  },
+  "legalDocuments": {
+    "title": "Legal document generator",
+    "intro": "Generate draft Privacy Policy, Cookie Policy and Terms & Conditions pages from your site's own data. Always created as drafts — review with a lawyer before publishing.",
+    "step": {
+      "identity": "Who you are",
+      "usage": "What you collect",
+      "documents": "Documents",
+      "review": "Review"
+    },
+    "legalEntityNameLabel": "Legal entity name",
+    "contactEmailLabel": "Privacy contact email",
+    "vatIdLabel": "VAT number (optional)",
+    "domainLabel": "Site domain",
+    "addressLabel": "Address (optional)",
+    "phoneLabel": "Phone (optional)",
+    "dataCollectedLabel": "Data collected",
+    "dataCollectedHint": "Tick only what this site actually collects — this text ends up in the generated policy.",
+    "dataCollected": {
+      "contactForm": "Contact form submissions",
+      "newsletter": "Newsletter sign-ups",
+      "accounts": "User accounts"
+    },
+    "thirdPartyServicesLabel": "Third-party services",
+    "thirdPartyServicesHint": "Pre-filled from your tracker scripts and allowed domains — add or remove as needed.",
+    "thirdPartyServicePlaceholder": "e.g. Google Analytics",
+    "addThirdParty": "Add",
+    "removeThirdParty": "Remove {{service}}",
+    "retentionDaysLabel": "Form submission retention (days)",
+    "retentionDaysPlaceholder": "Leave empty to keep forever",
+    "retentionDaysHint": "Pre-filled from your form submission retention setting.",
+    "documentsLabel": "Which documents to generate",
+    "kind": {
+      "privacy-policy": "Privacy Policy",
+      "cookie-policy": "Cookie Policy",
+      "terms-conditions": "Terms & Conditions"
+    },
+    "localesLabel": "Which languages",
+    "jurisdictionLabel": "Governing jurisdiction",
+    "jurisdictionHint": "The country whose law governs the Terms & Conditions. Only that document uses it.",
+    "documentsRequired": "Choose at least one document.",
+    "localesRequired": "Choose at least one language.",
+    "jurisdictionRequired": "Choose the country whose law governs the Terms & Conditions.",
+    "disclaimer": "These documents are a generated starting point, not legal advice. Have a lawyer review them before publishing.",
+    "loadingPreview": "Generating a preview...",
+    "previewFailed": "The preview could not be generated. Try again.",
+    "generateFailed": "The documents could not be generated. Try again.",
+    "confirmLabel": "I understand these are drafts and will be reviewed before publishing",
+    "back": "Back",
+    "next": "Next",
+    "generate": "Generate drafts",
+    "generating": "Generating...",
+    "successTitle": "Drafts created",
+    "successHint": "Each document was created as a draft page, never published automatically.",
+    "openDraft": "Open draft",
+    "jurisdictionPlaceholder": "Choose a country",
+    "legalEntityNameRequired": "Enter the legal name.",
+    "contactEmailRequired": "Enter the email people write to about privacy.",
+    "contactEmailInvalid": "This does not look like an email: check the @ and the domain.",
+    "domainRequired": "Enter the site’s domain, for example example.com.",
+    "retentionDaysInvalid": "Enter a whole number of days, or leave it empty.",
+    "removeThirdPartyShort": "Remove",
+    "thirdPartyServiceNameLabel": "Service name",
+    "backToCookies": "Cookies & privacy",
+    "tooManyServices": "You can list at most {{max}} services: remove some to continue."
+  },
+  "themeSettings": {
+    "themeLocked": "The active theme does not allow a site to style on top of it, so nothing on this page — or on any block — will reach the published site. This is the theme's own choice, in its theme.json.",
+    "title": "Site style",
+    "intro": "These settings apply on top of the site's active theme — leave a field off to keep the theme's own default.",
+    "overridesEnabledLabel": "Apply these settings",
+    "overridesEnabledDescription": "Off: the site uses only the theme’s own values.",
+    "primaryColorLabel": "Primary color",
+    "secondaryColorLabel": "Secondary color",
+    "currentThemeValue": "The active theme's own base value — customize it here, or by editing the theme itself",
+    "override": "Override",
+    "contrastWarning": "Low contrast: with this color, the theme's own text color reaches only a {{ratio}}:1 ratio against it (4.5:1 recommended) — text may be hard to read.",
+    "fontLabel": "Font",
+    "fontInherit": "Theme default",
+    "fontCustom": "Custom (Google Fonts name)...",
+    "fontCustomPlaceholder": "e.g. Space Grotesk",
+    "faviconLabel": "Site icon (favicon)",
+    "customCssLabel": "Custom CSS",
+    "contentWidthLabel": "Content width",
+    "contentWidthHelp": "How wide the readable column is on every page — a CSS length such as 64rem or 1100px. Leave empty to use the theme's own width. A block can still be set to Wide or Full width on its own.",
+    "overridesHowSummary": "How it works",
+    "overridesHow": "When off, every field on this page (colours, font, width, icon, CSS) is ignored and the theme’s own values are used, even ones you saved before. It does not touch the styles set on blocks. The active theme can also lock it all: then that holds for the block styles too.",
+    "colorsTitle": "Colors",
+    "typographyTitle": "Typography",
+    "fontCustomLabel": "Font name (Google Fonts)",
+    "contentWidthInvalid": "Enter a valid CSS length, such as 64rem or 1100px.",
+    "faviconHelp": "The one in the browser tab. Chosen from the library.",
+    "faviconPreview": "Icon preview",
+    "faviconNone": "No icon: the site uses the theme’s.",
+    "faviconChoose": "Choose from the library",
+    "faviconChange": "Change",
+    "faviconRemove": "Remove",
+    "advancedTitle": "Advanced",
+    "customCssWarning": "It applies to every page: a mistake can break the look of the site.",
+    "previewTitle": "A sample heading",
+    "previewText": "A paragraph, to see how the text and the font sit.",
+    "previewButton": "A button",
+    "previewNote": "A rough preview using the form’s values, saved or not. A font the editor does not have is drawn with a similar one."
+  },
+  "integrations": {
+    "title": "Integrations",
+    "intro": "Third-party scripts (analytics, chat, tracking pixels...) and the domains they need to talk to.",
+    "headScriptLabel": "Code at the top of every page",
+    "bodyScriptLabel": "Code at the bottom of every page",
+    "scriptDisclaimer": "Injected verbatim into every page of the site. Only paste code from sources you trust.",
+    "trackerDomainsDisclaimer": "A domain allowed here can run code and make calls from your site exactly as if you'd written it yourself — only add domains from providers you trust (e.g. the one named in the script's own docs above).",
+    "domainLabelPlaceholder": "Name, e.g. Hotjar",
+    "domainPlaceholder": "e.g. static.hotjar.com",
+    "domainName": "Service name",
+    "domainHost": "Domain",
+    "addDomain": "Add domain",
+    "removeDomain": "Remove",
+    "invalidDomain": "Invalid domain — bare hostname only, e.g. static.hotjar.com or *.hotjar.io (no https://, no path)",
+    "trackerScriptsDisclaimer": "A known vendor (Google Tag Manager, Google Analytics, Meta Pixel) pasted above is detected automatically and moved here on save, gated by consent category. Anything else stays in the fields above, running for every visitor regardless of consent.",
+    "trackerScriptLabelPlaceholder": "Name, e.g. Google Analytics",
+    "trackerScriptHtmlPlaceholder": "<script>...</script>",
+    "trackerScriptName": "Script name",
+    "trackerScriptHtml": "Script code",
+    "addTrackerScript": "Add script",
+    "removeTrackerScript": "Delete",
+    "placement": {
+      "head": "<head>",
+      "body": "End of <body>"
+    },
+    "trackerScriptCategoryFor": "Consent category for {{name}}",
+    "trackerScriptCategory": "Consent category",
+    "trackerScriptPlacement": "Where the script goes",
+    "groups": {
+      "scripts": "Code in the pages",
+      "domains": "Services your scripts connect to",
+      "consent": "Scripts that ask for consent"
+    },
+    "headScriptHint": "For example the Google Search Console verification. It goes in the <head>.",
+    "bodyScriptHint": "For example a chat widget. It goes just before the closing <body>.",
+    "domainsHint": "If a script loads files from another site (e.g. static.hotjar.com), add it here, or the browser blocks it.",
+    "consentHint": "They run only after the visitor has accepted the category chosen in the cookie banner.",
+    "removeDomainNamed": "Remove the domain “{{name}}”",
+    "removeTrackerScriptNamed": "Delete the script “{{name}}”",
+    "editScript": "Edit code",
+    "editScriptNamed": "Edit the code of “{{name}}”",
+    "scriptCodeFor": "Code of {{name}}",
+    "consentWarning_one": "{{count}} script is waiting for consent, but the cookie banner is off: it will never run.",
+    "consentWarning_other": "{{count}} scripts are waiting for consent, but the cookie banner is off: they will never run.",
+    "consentWarningAction": "Turn on the banner",
+    "consentWarningHere": "Turn it on below."
+  },
+  "globalStyles": {
+    "variantGroup": "Look being styled",
+    "breakpointGroup": "Size being styled",
+    "back": "Back",
+    "themeTitle": "Theme",
+    "themeHint": "Which of this deployment’s themes the site uses. Applied at once, without saving.",
+    "themeUpload": {
+      "hint": "Or upload a theme as a zip: theme.json, with a \"name\", and theme.css at the top. A theme's repository downloaded as a zip works as it is.",
+      "choose": "Upload a theme",
+      "sending": "Uploading…",
+      "queued": "“{{name}}” is waiting to be built.",
+      "building": "Building the site with “{{name}}”. This takes a minute or two; the site stays as it is meanwhile.",
+      "published": "“{{name}}” is ready.",
+      "use": "Use “{{name}}” for this site",
+      "log": "Build output",
+      "failures": {
+        "not-a-zip": "This file is not a zip archive.",
+        "too-large": "This theme is too large: up to 20 MB, 80 MB once unpacked.",
+        "too-many-entries": "This theme has too many files: up to 1,000.",
+        "unsafe-path": "This zip has a file that would be written outside the theme, so it was refused.",
+        "link": "This zip has a link in it; a theme may hold files only.",
+        "encrypted": "This zip is encrypted. Upload it without a password.",
+        "no-manifest": "theme.json is missing from the top of the theme.",
+        "bad-manifest": "theme.json is not valid JSON.",
+        "bad-name": "theme.json needs a \"name\": lowercase letters, digits and dashes, up to 40 characters.",
+        "no-stylesheet": "theme.css is missing from the top of the theme.",
+        "core-name": "That name belongs to one of Kometio's own themes. Give yours a name of its own.",
+        "build-failed": "The site did not build with this theme. The output below says why; the site stays as it was.",
+        "interrupted": "The build stopped before it finished. Upload the theme again.",
+        "unknown": "The theme could not be uploaded. Try again."
+      }
+    },
+    "themeSaving": "Switching theme...",
+    "blockStylesTitle": "Style by block",
+    "blockStylesHint": "Choose a block type to change its style across the whole site — background, text colour, corners, spacing. Applied at once, without saving.",
+    "themeChanged": "Theme changed to “{{name}}”",
+    "blockStylesSaving": "Saving...",
+    "blockStylesSaved": "Changes saved.",
+    "themeChangeFailed": "The theme was not changed. Try again."
+  },
+  "localeSettings": {
+    "localesLabel": "Active languages",
+    "defaultBadge": "Default",
+    "setDefault": "Set as default",
+    "newLocalePlaceholder": "Search a language...",
+    "noMatches": "No languages found",
+    "addLocale": "Add language",
+    "fallbackLabel": "When a page is not translated yet",
+    "fallbackRedirectDescription": "Whoever opens it is sent to the same page in another language: the default one first, then the others in order.",
+    "fallbackNotAvailableDescription": "Whoever opens it sees a notice: it does not exist in this language.",
+    "fallbackRedirectLabel": "Send to another language",
+    "fallbackNotAvailableLabel": "Show “not available”",
+    "remove": "Remove",
+    "removeNamed": "Remove {{language}}",
+    "setDefaultNamed": "Make {{language}} the default",
+    "defaultCannotBeRemoved": "The default language can’t be removed: make another one the default first.",
+    "lastCannotBeRemoved": "The site needs at least one language.",
+    "removeConfirm": {
+      "title_one": "Remove this language?",
+      "title_other": "Remove these languages?",
+      "description_one": "Pages in {{languages}} will no longer appear in the language switcher or the sitemap. Nothing is deleted: add the language back and they return.",
+      "description_other": "Pages in {{languages}} will no longer appear in the language switcher or the sitemap. Nothing is deleted: add the languages back and they return.",
+      "action_one": "Remove language",
+      "action_other": "Remove languages"
+    }
+  },
+  "businessInfo": {
+    "description": "Helps Google show your address, hours and contact details in search results.",
+    "addressLabel": "Address",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email",
+    "emailInvalid": "This does not look like an email address.",
+    "typeLabel": "Business type",
+    "hoursLabel": "Opening hours",
+    "streetLabel": "Street and number",
+    "postalCodeLabel": "Postcode",
+    "cityLabel": "Town",
+    "countryLabel": "Country",
+    "countryNone": "— None —",
+    "typeNone": "Not specified",
+    "typeCustom": "{{value}} (custom)",
+    "types": {
+      "Restaurant": "Restaurant",
+      "BarOrPub": "Bar or pub",
+      "Hotel": "Hotel",
+      "Store": "Shop",
+      "ProfessionalService": "Professional services",
+      "MedicalClinic": "Medical practice",
+      "SportsActivityLocation": "Gym or sports facility",
+      "BeautySalon": "Hair or beauty salon",
+      "RealEstateAgent": "Real estate agency",
+      "LegalService": "Law firm",
+      "AccountingService": "Accountant",
+      "AutoRepair": "Auto repair shop",
+      "LocalBusiness": "Other"
+    }
+  },
+  "forms": {
+    "list": {
+      "title": "Forms",
+      "newForm": "New form",
+      "fieldCount_one": "{{count}} field",
+      "fieldCount_other": "{{count}} fields",
+      "submissionCount_one": "{{count}} submission",
+      "submissionCount_other": "{{count}} submissions",
+      "noSubmissions": "no submissions",
+      "emptyExplainer": "A form collects what visitors send you: enquiries, bookings, sign-ups. Submissions arrive here and by email.",
+      "emptyAction": "Create your first form",
+      "selectRow": "Select {{name}}",
+      "selection": {
+        "label": "Actions on the selected forms",
+        "count_one": "{{count}} selected",
+        "count_other": "{{count}} selected",
+        "open": "Open",
+        "delete": "Delete",
+        "duplicate": "Duplicate"
+      },
+      "deleteFailed_one": "The form was not deleted. Try again.",
+      "deleteFailed_other": "Not every form was deleted. Try again."
+    },
+    "newFormDialog": {
+      "title": "New form",
+      "nameLabel": "Form name",
+      "create": "Create",
+      "creating": "Creating..."
+    },
+    "deleteDialog": {
+      "title_one": "Delete this form?",
+      "title_other": "Delete {{count}} forms?",
+      "description_one": "{{names}} will be permanently deleted. Pages using it will stop showing it.",
+      "description_other": "{{names}} will be permanently deleted. Pages using them will stop showing them.",
+      "submissions_one": "The submission received will be deleted too.",
+      "submissions_other": "The {{count}} submissions received will be deleted too.",
+      "irreversible": "This action cannot be undone."
+    },
+    "picker": {
+      "title": "Choose a form",
+      "empty": "No forms yet. Create one from the Forms section.",
+      "fieldCount_one": "{{count}} field",
+      "fieldCount_other": "{{count}} fields"
+    },
+    "editor": {
+      "backToList": "Forms",
+      "save": "Save",
+      "savedByPublisher": "A form is live once saved: a Publisher saves it",
+      "saving": "Saving...",
+      "saved": "Form saved",
+      "nameLabel": "Form name",
+      "notificationEmailPlaceholder": "No notification if left empty",
+      "stepsLabel": "Steps (optional)",
+      "stepsHint": "Split the form across multiple pages. With no steps, the form stays single-page.",
+      "addStep": "Add step",
+      "noSteps": "No steps: the form is single-page.",
+      "stepTitlePlaceholder": "Step title",
+      "removeStep": "Remove step",
+      "untitledStep": "Untitled step",
+      "fieldsLabel": "Fields",
+      "addField": "Add field",
+      "noFields": "No fields yet.",
+      "fieldLabelLabel": "Label",
+      "fieldTypeLabel": "Type",
+      "fieldStepLabel": "Step",
+      "fieldStepNone": "No step",
+      "fieldRequiredLabel": "Required",
+      "fieldOptionsLabel": "Options (one per line)",
+      "fieldOptionsPlaceholder": "Option 1\nOption 2",
+      "moveFieldUp": "Move up",
+      "moveFieldDown": "Move down",
+      "removeField": "Remove field",
+      "fieldTypes": {
+        "text": "Text",
+        "email": "Email",
+        "textarea": "Long text",
+        "tel": "Phone",
+        "checkbox": "Checkbox",
+        "select": "Select",
+        "newsletter-consent": "Newsletter signup",
+        "date": "Date",
+        "time": "Time",
+        "file": "File upload"
+      },
+      "unsaved": "Unsaved changes",
+      "leaveTitle": "Leave without saving?",
+      "leaveBody": "This form saves only when you press Save. What you have changed since then will be lost.",
+      "leaveAction": "Leave",
+      "notificationEmailsLabel": "Notification emails",
+      "notificationEmailsHint": "Every address gets its own email for each answer. Leave empty to email nobody.",
+      "notificationEmailAddress": "Notification email {{number}}",
+      "addNotificationEmail": "Add address",
+      "removeNotificationEmail": "Remove address",
+      "conditionLabel": "Show",
+      "conditionAlways": "Always",
+      "conditionWhen": "Only when \"{{field}}\"",
+      "conditionAnswerLabel": "Answer that shows this field",
+      "conditionAnyAnswer": "has any answer",
+      "conditionIs": "is \"{{option}}\"",
+      "conditionIsTicked": "is ticked",
+      "conditionIsFilled": "is filled in",
+      "untitledField": "Untitled field",
+      "conditionBlocksSave": "Fix the conditions marked below to save.",
+      "conditionProblems": {
+        "self": "A field cannot depend on itself.",
+        "unknown-field": "The field this depended on no longer exists.",
+        "not-earlier": "The field this depends on has to come before it. Move it up, or choose another.",
+        "equals-needs-select": "Only a choice field can be matched against an answer.",
+        "unknown-option": "That answer is no longer one of the field's options."
+      },
+      "saveFailed": "The form was not saved. Try again."
+    },
+    "submissions": {
+      "title": "Submissions",
+      "empty": "Nothing yet. Answers to this form will show up here.",
+      "count_one": "{{count}} submission",
+      "count_other": "{{count}} submissions",
+      "exportCsv": "Export CSV",
+      "submittedFrom": "Submitted from",
+      "removedField": "no longer in this form",
+      "noAnswer": "—",
+      "loadError": "Could not load the submissions.",
+      "expand": "Show all answers",
+      "collapse": "Hide answers",
+      "downloadFile": "Download",
+      "retention": {
+        "forever": "Submissions are kept forever.",
+        "days_one": "Submissions are deleted after {{count}} day.",
+        "days_other": "Submissions are deleted after {{count}} days.",
+        "change": "Change"
+      },
+      "delete": "Delete this answer",
+      "deleted": "Answer deleted",
+      "deleteDialog": {
+        "title": "Delete this answer?",
+        "description": "The answer of {{date}} will be deleted for good and cannot be recovered. Any files attached to it are deleted too."
+      },
+      "deleteFailed": "The answer was not deleted. Try again."
+    },
+    "tabs": {
+      "label": "Form sections",
+      "submissions": "Submissions",
+      "fields": "Structure"
+    },
+    "created": "Form “{{name}}” created",
+    "deleted": "Form “{{name}}” deleted",
+    "deletedMany_one": "{{count}} form deleted",
+    "deletedMany_other": "{{count}} forms deleted",
+    "duplicateDialog": {
+      "title": "Duplicate form",
+      "nameLabel": "Name of the copy",
+      "copyName": "Copy of {{name}}",
+      "submit": "Create copy",
+      "busy": "Duplicating..."
+    },
+    "duplicated": "Form “{{name}}” created as a copy. Its answers are not copied.",
+    "openCopy": "Open the copy"
+  },
+  "openingHours": {
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "addRange": "Add range",
+    "removeRange": "Remove",
+    "closed": "Closed",
+    "opens": "Opens, {{day}}",
+    "closes": "Closes, {{day}}",
+    "copyMonday": "Copy Monday to Tuesday–Friday",
+    "removeRangeNamed": "Remove range, {{day}}",
+    "sameTime": "Opening and closing can’t be at the same time.",
+    "pastMidnight": "Closes after midnight: at {{time}} the next day."
+  },
+  "users": {
+    "list": {
+      "title": "Users",
+      "invite": "Invite user",
+      "empty": "No users yet.",
+      "roleLabel": "{{name}}'s role",
+      "statusActive": "Active",
+      "statusInactive": "Deactivated",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "actionFailed": "That change could not be made.",
+      "deactivateConfirm": {
+        "title": "Deactivate this user?",
+        "description": "{{name}} will be signed out immediately and will not be able to sign in again until somebody reactivates them."
+      },
+      "roleChanged": "{{name}}’s role changed to {{role}}",
+      "deactivated": "{{name}} was deactivated",
+      "reactivated": "{{name}} was reactivated",
+      "description": "Who can sign in to the editor, and what they can do.",
+      "you": "You",
+      "yourRowNote": "You can’t change your own role or deactivate yourself: another admin has to.",
+      "statusPending": "Pending",
+      "resendInvite": "Resend invite",
+      "cancelInvite": "Cancel invite",
+      "inviteResent": "Invite sent again to {{email}}",
+      "inviteCancelled": "Invite to {{email}} cancelled",
+      "cancelInviteConfirm": {
+        "title": "Cancel this invite?",
+        "description": "The link {{email}} received will stop working and they will leave the list. You can invite them again any time."
+      },
+      "language": "Language: {{name}}",
+      "languageOfTheSite": "Language: the site's"
+    },
+    "inviteDialog": {
+      "title": "Invite user",
+      "emailLabel": "Email",
+      "displayNameLabel": "Name",
+      "roleLabel": "Role",
+      "cancel": "Cancel",
+      "invite": "Invite",
+      "inviting": "Inviting...",
+      "emailTaken": "A user with this email already exists.",
+      "sent": "Invitation sent to {{email}}: they will get an email to choose a password.",
+      "languageLabel": "Language",
+      "languageHint": "The invitation and every email they get afterwards will be written in this language, until they choose another.",
+      "failed": "The invitation was not sent. Try again."
+    },
+    "role": {
+      "admin": "Admin",
+      "publisher": "Publisher",
+      "editor": "Editor"
+    },
+    "roles": {
+      "title": "What each role can do",
+      "description": {
+        "admin": "Everything: pages, site settings, theme, users and roles.",
+        "publisher": "Publishes and changes what is online, forms and categories included, and deletes content. Does not touch settings or users.",
+        "editor": "Writes and edits drafts: pages, sections and media. Does not publish or delete: a Publisher puts their work online."
+      }
+    }
+  },
+  "canvas": {
+    "selectionPath": "Where this block sits",
+    "landmarks": {
+      "bar": "Page editor",
+      "canvas": "Page being edited"
+    },
+    "requiredField": "Required field",
+    "previewFrameTitle": "Page preview",
+    "loadingPage": "Loading the page…",
+    "previewError": "The page could not be loaded in the canvas.",
+    "layersTitle": "Layers",
+    "insertBlock": "Insert block",
+    "collapseChildren": "Collapse children",
+    "tableData": {
+      "headerCell": "Header, column {{column}}",
+      "cell": "Row {{row}}, column {{column}}",
+      "columnPlaceholder": "Column {{column}}",
+      "removeRow": "Remove row",
+      "removeHeaderRowLabel": "Remove row (header)",
+      "removeRowLabel": "Remove row {{row}}",
+      "addRow": "Add row",
+      "addColumn": "Add column",
+      "removeLastColumn": "Remove last column"
+    },
+    "featureList": {
+      "placeholder": "One feature per line…"
+    },
+    "expandChildren": "Expand children",
+    "layerMissingIcon": "Not in this theme, so not shown on the site: {{names}}",
+    "layerHidesMissingIcon": "Holds blocks with an icon this theme does not have",
+    "removeBlock": "Remove block",
+    "addChild": "Add item",
+    "publish": "Publish",
+    "publishedByPublisher": "A Publisher puts it online",
+    "preview": "Preview",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "undo": "Undo",
+    "redo": "Redo",
+    "duplicateBlock": "Duplicate block",
+    "fieldGroup": {
+      "content": "Content",
+      "style": "Style",
+      "advanced": "Advanced"
+    },
+    "variant": {
+      "fieldLabel": "Look",
+      "default": "Default"
+    },
+    "align": {
+      "fieldLabel": "Width",
+      "content": "Content",
+      "wide": "Wide",
+      "full": "Full width",
+      "hint": "How much of the page this block takes up."
+    },
+    "breakpointGroup": "Preview and styling size",
+    "breakpointDesktop": "Desktop (wider than {{tablet}}px)",
+    "breakpointTablet": "Tablet ({{tablet}}px and under)",
+    "breakpointMobile": "Mobile ({{mobile}}px and under)",
+    "switchPage": "Switch page",
+    "language": {
+      "switch": "Switch language",
+      "diverged": "Diverged from the shared structure",
+      "divergeAction": "Unlink this language",
+      "divergeConfirmTitle": "Unlink {{locale}} from the shared structure?",
+      "divergeConfirmBody": "This language will stop receiving structural changes (blocks added, removed, or reordered) made in other languages. You can relink it later from the page menu.",
+      "divergeConfirmAction": "Unlink",
+      "relinkAction": "Relink this language",
+      "relinkConfirmTitle": "Relink {{locale}} to the shared structure?",
+      "relinkConfirmBody": "This language will follow the shared structure again: blocks that also exist there keep the text they have here, while images, settings and layout go back to the shared ones.",
+      "relinkConfirmLost_one": "{{count}} block exists only in this language and will be removed.",
+      "relinkConfirmLost_other": "{{count}} blocks exist only in this language and will be removed.",
+      "relinkConfirmHistory": "The unlinked version stays in this language's history and can be restored.",
+      "relinkConfirmAction": "Relink",
+      "relinked": "{{locale}} follows the shared structure again.",
+      "relinkUnsaved": "A save didn't go through, so the language was not relinked. Try again once your changes show as saved.",
+      "relinkFailed": "The language couldn't be relinked."
+    },
+    "style": {
+      "editType": "Style all {{type}} blocks",
+      "editTypeHint": "These values apply to EVERY {{type}} block on the site.",
+      "saveError": "Couldn't save the style. Try again."
+    },
+    "blockStyle": {
+      "colors": {
+        "backgroundColor": "Background color",
+        "textColor": "Text color",
+        "borderColor": "Border color",
+        "overlayColor": "Overlay"
+      },
+      "lengths": {
+        "borderRadius": {
+          "fieldLabel": "Corner radius",
+          "placeholder": "e.g. 6px, 9999px for a pill"
+        },
+        "paddingX": {
+          "fieldLabel": "Horizontal padding",
+          "placeholder": "e.g. 1.25rem — empty for default"
+        },
+        "paddingY": {
+          "fieldLabel": "Vertical padding",
+          "placeholder": "e.g. 1.25rem — empty for default"
+        },
+        "marginTop": {
+          "fieldLabel": "Space above",
+          "placeholder": "e.g. 2rem — empty for default"
+        },
+        "marginBottom": {
+          "fieldLabel": "Space below",
+          "placeholder": "e.g. 4rem — empty for default"
+        },
+        "borderWidth": {
+          "fieldLabel": "Border width",
+          "placeholder": "e.g. 1px — empty for none"
+        },
+        "minHeight": {
+          "fieldLabel": "Minimum height",
+          "placeholder": "e.g. 60vh — empty for default"
+        },
+        "maxWidth": {
+          "fieldLabel": "Maximum width",
+          "placeholder": "e.g. 48rem — empty for default"
+        },
+        "gap": {
+          "fieldLabel": "Space between items",
+          "placeholder": "e.g. 1.5rem — empty for default"
+        },
+        "boxShadow": {
+          "fieldLabel": "Shadow",
+          "placeholder": "e.g. var(--shadow-md)"
+        },
+        "backgroundImage": {
+          "fieldLabel": "Background image",
+          "placeholder": "e.g. url(/media/photo.jpg)"
+        },
+        "animationDuration": {
+          "fieldLabel": "Animation duration",
+          "placeholder": "e.g. 600ms — empty for default"
+        },
+        "animationDelay": {
+          "fieldLabel": "Animation delay",
+          "placeholder": "e.g. 200ms — empty for none"
+        }
+      },
+      "selects": {
+        "inherit": "Theme default",
+        "borderStyle": {
+          "fieldLabel": "Border style",
+          "options": {
+            "none": "None",
+            "solid": "Solid",
+            "dashed": "Dashed",
+            "dotted": "Dotted"
+          }
+        },
+        "backgroundPosition": {
+          "fieldLabel": "Image position",
+          "options": {
+            "center": "Center",
+            "top": "Top",
+            "bottom": "Bottom",
+            "left": "Left",
+            "right": "Right"
+          }
+        },
+        "backgroundSize": {
+          "fieldLabel": "Image size",
+          "options": {
+            "cover": "Fill the block",
+            "contain": "Fit inside",
+            "auto": "Original size"
+          }
+        },
+        "backgroundRepeat": {
+          "fieldLabel": "Image repeat",
+          "options": {
+            "no-repeat": "Do not repeat",
+            "repeat": "Tile",
+            "repeat-x": "Tile across",
+            "repeat-y": "Tile down"
+          }
+        },
+        "contentAlign": {
+          "fieldLabel": "Horizontal alignment",
+          "options": {
+            "start": "Left",
+            "center": "Center",
+            "end": "Right"
+          }
+        },
+        "contentJustify": {
+          "fieldLabel": "Vertical alignment",
+          "options": {
+            "start": "Top",
+            "center": "Middle",
+            "end": "Bottom"
+          }
+        },
+        "flexDirection": {
+          "fieldLabel": "Direction",
+          "options": {
+            "column": "Stacked",
+            "row": "Side by side"
+          }
+        },
+        "animation": {
+          "fieldLabel": "Entrance animation",
+          "options": {
+            "none": "None",
+            "fade": "Fade in",
+            "slide-up": "Slide up",
+            "slide-down": "Slide down",
+            "slide-left": "Slide from the right",
+            "slide-right": "Slide from the left",
+            "zoom": "Zoom in"
+          }
+        },
+        "animationEasing": {
+          "fieldLabel": "Easing",
+          "options": {
+            "ease-out": "Ease out",
+            "ease": "Ease",
+            "ease-in": "Ease in",
+            "ease-in-out": "Ease in and out",
+            "linear": "Linear"
+          }
+        },
+        "hoverEffect": {
+          "fieldLabel": "On hover",
+          "options": {
+            "none": "Nothing",
+            "lift": "Lift",
+            "grow": "Grow",
+            "dim": "Dim"
+          }
+        },
+        "none": "None"
+      }
+    },
+    "richText": {
+      "applyLink": "Apply",
+      "bold": "Bold",
+      "bulletList": "Bulleted list",
+      "italic": "Italic",
+      "linkToPage": "Link to a page",
+      "linkToUrl": "Link to a web address",
+      "orderedList": "Numbered list",
+      "strike": "Strikethrough",
+      "underline": "Underline",
+      "unlink": "Remove link",
+      "urlPrompt": "Web address"
+    },
+    "colorPicker": {
+      "themeColours": "Theme colours",
+      "inherit": "Inherits from theme",
+      "clear": "Back to the theme colour",
+      "useToken": "Use the theme's {{token}} colour",
+      "asCode": "{{label}} as a code (hex or theme colour)",
+      "tokens": {
+        "primary": "Primary",
+        "secondary": "Secondary",
+        "background": "Background",
+        "foreground": "Text",
+        "muted": "Muted",
+        "mutedForeground": "Muted text",
+        "border": "Border",
+        "link": "Link"
+      },
+      "themeNamed": "Theme: {{name}}",
+      "selectedToken": "Theme colour: {{name}}"
+    },
+    "blockSearch": {
+      "label": "Search blocks",
+      "placeholder": "Search blocks…",
+      "noResults": "No block matches “{{query}}”."
+    },
+    "pickers": {
+      "media": {
+        "change": "Change image",
+        "choose": "Choose image"
+      },
+      "form": {
+        "change": "Change form",
+        "choose": "Choose form"
+      },
+      "page": {
+        "change": "Change page",
+        "choose": "Choose page"
+      },
+      "icon": {
+        "change": "Change icon",
+        "choose": "Choose icon",
+        "remove": "Remove icon",
+        "missingFromTheme": "This theme has no “{{name}}” icon, so it does not show on the site. Choose another one."
+      },
+      "file": {
+        "choose": "Choose a file",
+        "change": "Change file"
+      }
+    },
+    "placement": {
+      "refused": "{{block}} only belongs inside {{parents}}, so there is nowhere to put it here."
+    },
+    "status": {
+      "saving": "Saving…",
+      "draftSavedAt": "Draft saved at {{time}}",
+      "publishUnsaved": "The draft could not be saved, so it was not published. Try again.",
+      "saveFailed": "Could not save. Check the connection and try again."
+    },
+    "properties": {
+      "noSelection": "Select a block on the canvas or in Layers to change what it says and how it looks."
+    },
+    "pageMenu": {
+      "label": "Page"
+    },
+    "shortcuts": {
+      "open": "Keyboard shortcuts",
+      "title": "Keyboard shortcuts",
+      "description": "They work on the canvas, whenever you are not typing in a field — except Ctrl/⌘ K, which works anywhere.",
+      "undo": "Undo",
+      "redo": "Redo",
+      "duplicate": "Duplicate the selection",
+      "copy": "Copy the selection",
+      "paste": "Paste",
+      "delete": "Delete the selection",
+      "moveUp": "Move the block up",
+      "moveDown": "Move the block down",
+      "commandMenu": "Search blocks and commands",
+      "addBlock": "Add a block"
+    },
+    "dragLayer": "Drag \"{{name}}\"",
+    "layerPlaceholder": "Has a placeholder to replace before publishing.",
+    "layerHidesPlaceholder": "A block inside has a placeholder to replace before publishing.",
+    "rail": {
+      "label": "Editor tools",
+      "insert": "Add",
+      "layers": "Layers",
+      "styles": "Styles",
+      "shortcuts": "Shortcuts",
+      "close": "Close the panel",
+      "resize": "Resize the panel",
+      "stylesFullName": "Styles — opens in a new tab"
+    },
+    "mobileBar": {
+      "label": "Editor panels",
+      "properties": "Properties",
+      "close": "Close"
+    },
+    "propertiesPanel": {
+      "label": "Properties",
+      "expand": "Expand the Properties panel",
+      "collapse": "Collapse the Properties panel",
+      "resize": "Resize the Properties panel",
+      "noSelectionTitle": "Nothing selected",
+      "addBlock": "Add a block",
+      "pageActions": "This page"
+    },
+    "toolbar": {
+      "label": "Block actions",
+      "properties": "Properties",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "more": "More",
+      "insertAbove": "Add above",
+      "insertBelow": "Add a block here"
+    },
+    "command": {
+      "open": "Search blocks and commands",
+      "short": "Search",
+      "title": "Search blocks and commands",
+      "placeholder": "A block to add, a layer, a command…",
+      "insert": "Add a block",
+      "layers": "Go to a layer",
+      "page": "This page",
+      "editor": "Editor"
+    },
+    "publication": {
+      "draft": "Draft",
+      "published": "Live"
+    },
+    "sectionFocus": {
+      "header": "Sample page — only the header is edited here",
+      "footer": "Sample page — only the footer is edited here",
+      "emptyHeader": "Empty header",
+      "emptyFooter": "Empty footer"
+    }
+  },
+  "toast": {
+    "dismiss": "Dismiss notification"
+  },
+  "blocks": {
+    "card": {
+      "label": "Card",
+      "fields": {
+        "media": {
+          "fieldLabel": "Header image"
+        },
+        "alt": {
+          "fieldLabel": "Alt text"
+        },
+        "isDecorative": {
+          "fieldLabel": "Decorative image"
+        }
+      },
+      "variants": {
+        "elevated": "Elevated",
+        "flat": "Flat",
+        "horizontal": "Horizontal"
+      }
+    },
+    "categories": {
+      "layout": "Layout",
+      "content": "Content",
+      "conversion": "Forms & conversion",
+      "media": "Media",
+      "socialProof": "Social proof",
+      "interactive": "Interactive",
+      "shop": "Shop",
+      "localBusiness": "Local business",
+      "headerFooter": "Blocks"
+    },
+    "section": {
+      "label": "Reusable section",
+      "fields": {
+        "section": {
+          "fieldLabel": "Section"
+        }
+      },
+      "picker": {
+        "none": "No section",
+        "unpublished": "not published"
+      },
+      "instance": {
+        "title": "What this page may change",
+        "edit": "Edit section",
+        "noExposedFields": "This section exposes no editable field. Open it to choose which fields a page may change."
+      }
+    },
+    "shared": {
+      "linkType": {
+        "fieldLabel": "Link type",
+        "options": {
+          "page": "Site page",
+          "url": "External URL"
+        },
+        "pageFieldLabel": "Page",
+        "urlFieldLabel": "URL"
+      },
+      "position": {
+        "fieldLabel": "Position",
+        "options": {
+          "left": "Left",
+          "right": "Right"
+        }
+      },
+      "visibility": {
+        "fieldLabel": "Visibility",
+        "options": {
+          "always": "Always",
+          "desktopOnly": "Desktop only",
+          "mobileOnly": "Mobile only"
+        }
+      },
+      "display": {
+        "fieldLabel": "Arrangement",
+        "options": {
+          "grid": "Grid",
+          "slider": "Slider (one at a time)",
+          "carousel": "Carousel (several)"
+        }
+      },
+      "alignment": {
+        "fieldLabel": "Alignment",
+        "options": {
+          "start": "Left",
+          "center": "Centre",
+          "end": "Right"
+        }
+      },
+      "aspectRatio": {
+        "fieldLabel": "Shape",
+        "options": {
+          "original": "As uploaded",
+          "square": "Square",
+          "landscape": "Landscape (4:3)",
+          "portrait": "Portrait (3:4)",
+          "wide": "Wide (16:9)"
+        }
+      },
+      "caption": {
+        "fieldLabel": "Caption"
+      },
+      "price": {
+        "priceFieldLabel": "Price",
+        "compareAtPriceFieldLabel": "Price before the discount (shown struck through)",
+        "currencyFieldLabel": "Currency",
+        "currencies": {
+          "EUR": "Euro (€)",
+          "USD": "US dollar ($)",
+          "GBP": "Pound sterling (£)",
+          "CHF": "Swiss franc (CHF)"
+        }
+      }
+    },
+    "accordionItem": {
+      "label": "Question",
+      "fields": {
+        "question": {
+          "fieldLabel": "Question"
+        },
+        "answer": {
+          "fieldLabel": "Answer"
+        }
+      }
+    },
+    "accordion": {
+      "label": "Accordion/FAQ"
+    },
+    "backToTop": {
+      "label": "\"Back to top\" button"
+    },
+    "banner": {
+      "label": "Banner/CTA",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "text": {
+          "fieldLabel": "Text"
+        },
+        "buttonLabel": {
+          "fieldLabel": "Button text"
+        }
+      },
+      "variants": {
+        "split": "Call-to-action bar",
+        "outline": "Outlined"
+      }
+    },
+    "beforeAfter": {
+      "label": "Before/after",
+      "fields": {
+        "beforeImage": {
+          "fieldLabel": "\"Before\" image"
+        },
+        "afterImage": {
+          "fieldLabel": "\"After\" image"
+        },
+        "beforeLabel": {
+          "fieldLabel": "\"Before\" label"
+        },
+        "afterLabel": {
+          "fieldLabel": "\"After\" label"
+        }
+      }
+    },
+    "breadcrumb": {
+      "label": "Breadcrumb",
+      "fields": {
+        "homeLabel": {
+          "fieldLabel": "Home label"
+        }
+      }
+    },
+    "button": {
+      "label": "Button (CTA)",
+      "fields": {
+        "label": {
+          "fieldLabel": "Text"
+        },
+        "icon": {
+          "fieldLabel": "Icon"
+        },
+        "size": {
+          "fieldLabel": "Size",
+          "options": {
+            "sm": "Small",
+            "md": "Medium",
+            "lg": "Large"
+          }
+        },
+        "fullWidth": {
+          "fieldLabel": "Full width"
+        },
+        "openInNewTab": {
+          "fieldLabel": "Open in a new tab"
+        }
+      },
+      "variants": {
+        "secondary": "Secondary",
+        "outline": "Outline",
+        "ghost": "Ghost",
+        "link": "Link"
+      }
+    },
+    "callout": {
+      "label": "Callout",
+      "fields": {
+        "message": {
+          "fieldLabel": "Message"
+        },
+        "tone": {
+          "fieldLabel": "Tone",
+          "options": {
+            "info": "Info",
+            "warning": "Warning",
+            "success": "Success"
+          }
+        }
+      }
+    },
+    "code": {
+      "label": "Code",
+      "fields": {
+        "code": {
+          "fieldLabel": "Code snippet"
+        },
+        "language": {
+          "fieldLabel": "Language",
+          "options": {
+            "typescript": "TypeScript",
+            "tsx": "TSX",
+            "javascript": "JavaScript",
+            "bash": "Bash",
+            "json": "JSON",
+            "html": "HTML",
+            "css": "CSS",
+            "plaintext": "Plain text"
+          }
+        }
+      }
+    },
+    "column": {
+      "label": "Column",
+      "fields": {
+        "span": {
+          "fieldLabel": "Width in twelfths (empty = equal share)"
+        }
+      }
+    },
+    "columns": {
+      "label": "Columns",
+      "fields": {
+        "stackBelow": {
+          "fieldLabel": "Stack into one column",
+          "options": {
+            "mobile": "On phones",
+            "tablet": "On tablets and phones",
+            "never": "Never"
+          }
+        },
+        "verticalAlign": {
+          "fieldLabel": "Align columns",
+          "options": {
+            "stretch": "Same height",
+            "start": "Top",
+            "center": "Middle",
+            "end": "Bottom"
+          }
+        }
+      }
+    },
+    "container": {
+      "label": "Container",
+      "fields": {
+        "background": {
+          "fieldLabel": "Background",
+          "options": {
+            "none": "None",
+            "muted": "Muted",
+            "primary": "Primary",
+            "secondary": "Secondary"
+          }
+        },
+        "padding": {
+          "fieldLabel": "Padding",
+          "options": {
+            "none": "None",
+            "sm": "Small",
+            "md": "Medium",
+            "lg": "Large"
+          }
+        }
+      }
+    },
+    "countdown": {
+      "label": "Countdown",
+      "fields": {
+        "targetDate": {
+          "fieldLabel": "Target date/time"
+        },
+        "label": {
+          "fieldLabel": "Label"
+        }
+      }
+    },
+    "embedHtml": {
+      "label": "Embed HTML",
+      "fields": {
+        "html": {
+          "fieldLabel": "HTML code"
+        }
+      }
+    },
+    "featureGrid": {
+      "label": "Feature grid"
+    },
+    "feature": {
+      "label": "Feature",
+      "fields": {
+        "icon": {
+          "fieldLabel": "Icon"
+        },
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "text": {
+          "fieldLabel": "Text"
+        }
+      },
+      "variants": {
+        "inline": "Icon beside the text",
+        "start": "Left aligned"
+      }
+    },
+    "form": {
+      "label": "Form",
+      "fields": {
+        "form": {
+          "fieldLabel": "Form"
+        }
+      }
+    },
+    "gallery": {
+      "label": "Gallery",
+      "fields": {
+        "images": {
+          "fieldLabel": "Images"
+        },
+        "columns": {
+          "fieldLabel": "Columns",
+          "options": {
+            "auto": "Fit automatically",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6"
+          }
+        }
+      }
+    },
+    "heading": {
+      "label": "Heading",
+      "fields": {
+        "text": {
+          "fieldLabel": "Text"
+        },
+        "level": {
+          "fieldLabel": "Level",
+          "options": {
+            "h1": "Heading 1",
+            "h2": "Heading 2",
+            "h3": "Heading 3"
+          }
+        }
+      }
+    },
+    "hamburgerMenu": {
+      "label": "Mobile menu (hamburger)"
+    },
+    "hero": {
+      "label": "Hero",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "subtitle": {
+          "fieldLabel": "Subtitle"
+        },
+        "eyebrow": {
+          "fieldLabel": "Eyebrow (small line above the title)"
+        }
+      }
+    },
+    "imageSlider": {
+      "label": "Image slider",
+      "fields": {
+        "images": {
+          "fieldLabel": "Images"
+        }
+      }
+    },
+    "image": {
+      "label": "Image",
+      "fields": {
+        "media": {
+          "fieldLabel": "Image"
+        },
+        "alt": {
+          "fieldLabel": "Alt text"
+        },
+        "isDecorative": {
+          "fieldLabel": "Decorative image (no alt text needed)"
+        },
+        "caption": {
+          "fieldLabel": "Caption"
+        },
+        "linkType": {
+          "fieldLabel": "Links to",
+          "options": {
+            "none": "Nothing",
+            "page": "A page of this site",
+            "url": "An address"
+          }
+        },
+        "lightbox": {
+          "fieldLabel": "Open full size when clicked"
+        }
+      }
+    },
+    "languageSwitcher": {
+      "label": "Language switcher"
+    },
+    "link": {
+      "label": "Link",
+      "fields": {
+        "label": {
+          "fieldLabel": "Text"
+        }
+      }
+    },
+    "logoStrip": {
+      "label": "Partner/client logos",
+      "fields": {
+        "logos": {
+          "fieldLabel": "Logos"
+        }
+      }
+    },
+    "mapEmbed": {
+      "label": "Map",
+      "fields": {
+        "address": {
+          "fieldLabel": "Address"
+        }
+      }
+    },
+    "navDropdown": {
+      "label": "Submenu",
+      "fields": {
+        "label": {
+          "fieldLabel": "Label"
+        }
+      }
+    },
+    "navLink": {
+      "label": "Navigation link",
+      "fields": {
+        "label": {
+          "fieldLabel": "Text"
+        },
+        "icon": {
+          "fieldLabel": "Icon"
+        }
+      }
+    },
+    "nav": {
+      "label": "Navigation menu"
+    },
+    "newsletterSignup": {
+      "label": "Newsletter signup",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "buttonLabel": {
+          "fieldLabel": "Button text"
+        }
+      }
+    },
+    "pricingPlan": {
+      "label": "Pricing plan",
+      "fields": {
+        "name": {
+          "fieldLabel": "Plan name"
+        },
+        "price": {
+          "fieldLabel": "Price"
+        },
+        "period": {
+          "fieldLabel": "Period"
+        },
+        "features": {
+          "fieldLabel": "Features"
+        },
+        "highlighted": {
+          "fieldLabel": "Highlighted"
+        },
+        "buttonLabel": {
+          "fieldLabel": "Button text"
+        }
+      }
+    },
+    "pricingTable": {
+      "label": "Pricing table"
+    },
+    "promoBar": {
+      "label": "Announcement/promo bar",
+      "fields": {
+        "message": {
+          "fieldLabel": "Message"
+        }
+      }
+    },
+    "quote": {
+      "label": "Quote",
+      "fields": {
+        "quote": {
+          "fieldLabel": "Quote"
+        },
+        "author": {
+          "fieldLabel": "Author"
+        },
+        "role": {
+          "fieldLabel": "Role"
+        }
+      }
+    },
+    "rating": {
+      "label": "Star rating",
+      "fields": {
+        "rating": {
+          "fieldLabel": "Stars"
+        },
+        "label": {
+          "fieldLabel": "Label"
+        }
+      }
+    },
+    "pageGrid": {
+      "label": "Page list",
+      "picker": {
+        "none": "No term chosen",
+        "unnamed": "(unnamed)"
+      },
+      "fields": {
+        "termId": {
+          "fieldLabel": "Term"
+        },
+        "layout": {
+          "fieldLabel": "Layout",
+          "options": {
+            "list": "List",
+            "grid": "Grid",
+            "cards": "Cards"
+          }
+        },
+        "limit": {
+          "fieldLabel": "How many at most (0 = all)"
+        },
+        "emptyText": {
+          "fieldLabel": "Text when there is nothing to list"
+        },
+        "order": {
+          "fieldLabel": "Order",
+          "options": {
+            "title": "By title",
+            "newest": "Newest first"
+          }
+        },
+        "perPage": {
+          "fieldLabel": "How many per page (0 = all on one page)"
+        }
+      }
+    },
+    "searchBox": {
+      "label": "Site search",
+      "fields": {
+        "placeholder": {
+          "fieldLabel": "Placeholder"
+        }
+      }
+    },
+    "stat": {
+      "label": "Statistic",
+      "fields": {
+        "value": {
+          "fieldLabel": "Value"
+        },
+        "prefix": {
+          "fieldLabel": "Prefix"
+        },
+        "suffix": {
+          "fieldLabel": "Suffix"
+        },
+        "label": {
+          "fieldLabel": "Label"
+        }
+      }
+    },
+    "statsCounter": {
+      "label": "Counters/statistics"
+    },
+    "tab": {
+      "label": "Tab",
+      "fields": {
+        "label": {
+          "fieldLabel": "Tab label"
+        }
+      }
+    },
+    "table": {
+      "label": "Data table",
+      "fields": {
+        "rows": {
+          "fieldLabel": "Rows"
+        }
+      }
+    },
+    "tabs": {
+      "label": "Tabs"
+    },
+    "teamMember": {
+      "label": "Team member",
+      "fields": {
+        "photo": {
+          "fieldLabel": "Photo"
+        },
+        "name": {
+          "fieldLabel": "Name"
+        },
+        "role": {
+          "fieldLabel": "Role"
+        },
+        "bio": {
+          "fieldLabel": "Bio"
+        }
+      }
+    },
+    "team": {
+      "label": "Team/staff"
+    },
+    "testimonial": {
+      "label": "Testimonial",
+      "fields": {
+        "quote": {
+          "fieldLabel": "Review"
+        },
+        "author": {
+          "fieldLabel": "Author"
+        },
+        "role": {
+          "fieldLabel": "Role"
+        },
+        "avatar": {
+          "fieldLabel": "Avatar"
+        },
+        "rating": {
+          "fieldLabel": "Stars"
+        }
+      }
+    },
+    "testimonials": {
+      "label": "Testimonials/reviews"
+    },
+    "text": {
+      "label": "Text",
+      "fields": {
+        "body": {
+          "fieldLabel": "Text"
+        }
+      }
+    },
+    "timelineStep": {
+      "label": "Step",
+      "fields": {
+        "label": {
+          "fieldLabel": "Label"
+        },
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "description": {
+          "fieldLabel": "Description"
+        }
+      }
+    },
+    "timeline": {
+      "label": "Timeline/process"
+    },
+    "videoEmbed": {
+      "label": "Video",
+      "fields": {
+        "url": {
+          "fieldLabel": "Video URL"
+        },
+        "poster": {
+          "fieldLabel": "Cover image (shown before loading)"
+        }
+      }
+    },
+    "whatsAppButton": {
+      "label": "WhatsApp button",
+      "fields": {
+        "phoneNumber": {
+          "fieldLabel": "Phone number"
+        },
+        "message": {
+          "fieldLabel": "Pre-filled message"
+        }
+      }
+    },
+    "divider": {
+      "label": "Divider"
+    },
+    "spacer": {
+      "label": "Spacer"
+    },
+    "icon": {
+      "label": "Icon",
+      "fields": {
+        "icon": {
+          "fieldLabel": "Icon"
+        },
+        "size": {
+          "fieldLabel": "Size",
+          "options": {
+            "sm": "Small",
+            "md": "Medium",
+            "lg": "Large",
+            "xl": "Extra large"
+          }
+        },
+        "label": {
+          "fieldLabel": "Description (leave empty if decorative)"
+        }
+      }
+    },
+    "socialLinks": {
+      "label": "Social links"
+    },
+    "socialLink": {
+      "label": "Social link",
+      "fields": {
+        "icon": {
+          "fieldLabel": "Icon"
+        },
+        "label": {
+          "fieldLabel": "Name (read aloud by screen readers)"
+        },
+        "url": {
+          "fieldLabel": "Address"
+        }
+      }
+    },
+    "videoFile": {
+      "label": "Video (hosted)",
+      "fields": {
+        "media": {
+          "fieldLabel": "Video file"
+        },
+        "poster": {
+          "fieldLabel": "Cover image (shown before it plays)"
+        },
+        "controls": {
+          "fieldLabel": "Show player controls"
+        },
+        "autoplay": {
+          "fieldLabel": "Play automatically (starts muted)"
+        },
+        "loop": {
+          "fieldLabel": "Loop"
+        },
+        "muted": {
+          "fieldLabel": "Muted"
+        }
+      }
+    },
+    "audio": {
+      "label": "Audio",
+      "fields": {
+        "media": {
+          "fieldLabel": "Audio file"
+        },
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "loop": {
+          "fieldLabel": "Loop"
+        }
+      }
+    },
+    "carousel": {
+      "label": "Carousel"
+    },
+    "articleMeta": {
+      "label": "Article meta",
+      "fields": {
+        "showDate": {
+          "fieldLabel": "Show the publication date"
+        },
+        "showAuthor": {
+          "fieldLabel": "Show the author"
+        }
+      }
+    },
+    "authorBox": {
+      "label": "Author box",
+      "fields": {
+        "showBio": {
+          "fieldLabel": "Show the bio"
+        },
+        "showArticlesLink": {
+          "fieldLabel": "Link to all their articles"
+        }
+      }
+    },
+    "articleNav": {
+      "label": "Previous / next article"
+    },
+    "relatedPages": {
+      "label": "Related pages",
+      "fields": {
+        "layout": {
+          "fieldLabel": "Layout",
+          "options": {
+            "list": "List",
+            "cards": "Cards"
+          }
+        },
+        "limit": {
+          "fieldLabel": "How many at most"
+        }
+      }
+    },
+    "termList": {
+      "label": "Categories & tags",
+      "fields": {
+        "taxonomyId": {
+          "fieldLabel": "Which category"
+        },
+        "behaviour": {
+          "fieldLabel": "A click",
+          "options": {
+            "filter": "Narrows this page",
+            "browse": "Opens the term's own page"
+          }
+        },
+        "style": {
+          "fieldLabel": "Shown as",
+          "options": {
+            "chips": "Chips",
+            "buttons": "Buttons",
+            "links": "Links",
+            "dropdown": "Dropdown"
+          }
+        },
+        "showAll": {
+          "fieldLabel": "Offer a way back to everything"
+        }
+      },
+      "picker": {
+        "none": "No category chosen",
+        "unnamed": "Unnamed"
+      }
+    },
+    "anchor": {
+      "label": "Anchor",
+      "fields": {
+        "name": {
+          "fieldLabel": "Name (the part after # in a link)"
+        }
+      }
+    },
+    "readingProgress": {
+      "label": "Reading progress",
+      "fields": {
+        "position": {
+          "fieldLabel": "Position",
+          "options": {
+            "top": "Top of the window",
+            "bottom": "Bottom of the window"
+          }
+        }
+      }
+    },
+    "tableOfContents": {
+      "label": "Table of contents",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "depth": {
+          "fieldLabel": "Headings to list",
+          "options": {
+            "h2": "Sections only (H2)",
+            "h3": "Sections and subsections (H2 and H3)"
+          }
+        },
+        "numbered": {
+          "fieldLabel": "Number the entries"
+        }
+      }
+    },
+    "subPages": {
+      "label": "Subpages",
+      "fields": {
+        "parent": {
+          "fieldLabel": "Pages under (empty = this page)"
+        },
+        "layout": {
+          "fieldLabel": "Layout"
+        },
+        "limit": {
+          "fieldLabel": "How many at most (0 = all)"
+        }
+      }
+    },
+    "siblingPages": {
+      "label": "Previous / next page"
+    },
+    "siteMap": {
+      "label": "Site map",
+      "fields": {
+        "depth": {
+          "fieldLabel": "Levels to show"
+        }
+      }
+    },
+    "list": {
+      "label": "List",
+      "fields": {
+        "marker": {
+          "fieldLabel": "Marker",
+          "options": {
+            "bullet": "Bullets",
+            "number": "Numbers",
+            "check": "Check marks",
+            "icon": "Icon"
+          }
+        },
+        "icon": {
+          "fieldLabel": "Icon"
+        }
+      }
+    },
+    "listItem": {
+      "label": "List item",
+      "fields": {
+        "text": {
+          "fieldLabel": "Text"
+        }
+      }
+    },
+    "mediaText": {
+      "label": "Image and text",
+      "fields": {
+        "media": {
+          "fieldLabel": "Image"
+        },
+        "alt": {
+          "fieldLabel": "Alternative text"
+        },
+        "heading": {
+          "fieldLabel": "Heading"
+        },
+        "body": {
+          "fieldLabel": "Text"
+        },
+        "mediaSide": {
+          "fieldLabel": "Image side",
+          "options": {
+            "start": "Start of the line",
+            "end": "End of the line"
+          }
+        },
+        "mediaWidth": {
+          "fieldLabel": "Image width",
+          "options": {
+            "third": "A third",
+            "half": "Half",
+            "twoThirds": "Two thirds"
+          }
+        },
+        "verticalAlign": {
+          "fieldLabel": "Vertical alignment",
+          "options": {
+            "start": "Top",
+            "center": "Middle",
+            "end": "Bottom"
+          }
+        }
+      }
+    },
+    "faq": {
+      "label": "FAQ",
+      "fields": {
+        "structuredData": {
+          "fieldLabel": "Tell search engines these are questions and answers (schema.org)"
+        }
+      }
+    },
+    "marquee": {
+      "label": "Marquee",
+      "fields": {
+        "speed": {
+          "fieldLabel": "Speed",
+          "options": {
+            "slow": "Slow",
+            "normal": "Normal",
+            "fast": "Fast"
+          }
+        },
+        "direction": {
+          "fieldLabel": "Direction",
+          "options": {
+            "forward": "Forward",
+            "backward": "Backward"
+          }
+        },
+        "pauseOnHover": {
+          "fieldLabel": "Pause when pointed at"
+        }
+      }
+    },
+    "contactDetails": {
+      "label": "Contact details",
+      "fields": {
+        "showAddress": {
+          "fieldLabel": "Show the address"
+        },
+        "showPhone": {
+          "fieldLabel": "Show the phone number"
+        },
+        "showEmail": {
+          "fieldLabel": "Show the email"
+        },
+        "showMapLink": {
+          "fieldLabel": "Link the address to a map"
+        }
+      }
+    },
+    "openingHours": {
+      "label": "Opening hours",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        }
+      }
+    },
+    "fileDownload": {
+      "label": "File download",
+      "fields": {
+        "file": {
+          "fieldLabel": "File"
+        },
+        "label": {
+          "fieldLabel": "Link text (empty = the file name)"
+        },
+        "showDetails": {
+          "fieldLabel": "Show type and size"
+        }
+      }
+    },
+    "productGrid": {
+      "label": "Product grid"
+    },
+    "productCard": {
+      "label": "Product",
+      "fields": {
+        "image": {
+          "fieldLabel": "Picture"
+        },
+        "alt": {
+          "fieldLabel": "Picture description (alt text)"
+        },
+        "name": {
+          "fieldLabel": "Product name"
+        },
+        "description": {
+          "fieldLabel": "Short description"
+        },
+        "badge": {
+          "fieldLabel": "Badge (e.g. \"New\", \"-20%\")"
+        },
+        "structuredData": {
+          "fieldLabel": "Tell search engines the price (schema.org Product)"
+        }
+      }
+    },
+    "productGallery": {
+      "label": "Product gallery",
+      "fields": {
+        "images": {
+          "fieldLabel": "Pictures (the first is shown large)"
+        }
+      }
+    },
+    "discountPrice": {
+      "label": "Discounted price",
+      "fields": {
+        "note": {
+          "fieldLabel": "Note (e.g. \"VAT included\")"
+        }
+      }
+    },
+    "buyButton": {
+      "label": "Buy button",
+      "fields": {
+        "label": {
+          "fieldLabel": "Button text (empty = \"Buy\")"
+        },
+        "url": {
+          "fieldLabel": "Payment link (Stripe, PayPal…)"
+        }
+      }
+    },
+    "productVariants": {
+      "label": "Product options",
+      "fields": {
+        "label": {
+          "fieldLabel": "Title (e.g. \"Sizes\")"
+        },
+        "options": {
+          "fieldLabel": "Options, one per line"
+        }
+      }
+    },
+    "productReviews": {
+      "label": "Product reviews",
+      "fields": {
+        "structuredData": {
+          "fieldLabel": "Tell search engines these are reviews of a product (schema.org)"
+        },
+        "productName": {
+          "fieldLabel": "Name of the product being reviewed"
+        }
+      }
+    },
+    "productReview": {
+      "label": "Product review"
+    },
+    "comparisonTable": {
+      "label": "Comparison table",
+      "fields": {
+        "columns": {
+          "fieldLabel": "What is compared, one per line (e.g. Base, Pro)"
+        },
+        "highlightColumn": {
+          "fieldLabel": "Highlighted column (0 = none)"
+        }
+      }
+    },
+    "comparisonRow": {
+      "label": "Comparison row",
+      "fields": {
+        "feature": {
+          "fieldLabel": "Feature"
+        },
+        "values": {
+          "fieldLabel": "One value per column, one per line (\"yes\"/\"no\" become ✓/✗)"
+        }
+      }
+    },
+    "promoCode": {
+      "label": "Discount code",
+      "fields": {
+        "code": {
+          "fieldLabel": "Code"
+        },
+        "description": {
+          "fieldLabel": "What it gives (e.g. \"10% off your first order\")"
+        },
+        "expiresOn": {
+          "fieldLabel": "Valid until (empty = no end)"
+        }
+      }
+    },
+    "shippingReturns": {
+      "label": "Shipping and returns",
+      "fields": {
+        "shippingTitle": {
+          "fieldLabel": "Shipping — title"
+        },
+        "shippingText": {
+          "fieldLabel": "Shipping — text"
+        },
+        "returnsTitle": {
+          "fieldLabel": "Returns — title"
+        },
+        "returnsText": {
+          "fieldLabel": "Returns — text"
+        },
+        "supportTitle": {
+          "fieldLabel": "Help — title"
+        },
+        "supportText": {
+          "fieldLabel": "Help — text"
+        }
+      }
+    },
+    "trustBadges": {
+      "label": "Payment methods",
+      "fields": {
+        "visa": {
+          "fieldLabel": "Visa"
+        },
+        "mastercard": {
+          "fieldLabel": "Mastercard"
+        },
+        "americanexpress": {
+          "fieldLabel": "American Express"
+        },
+        "paypal": {
+          "fieldLabel": "PayPal"
+        },
+        "applepay": {
+          "fieldLabel": "Apple Pay"
+        },
+        "googlepay": {
+          "fieldLabel": "Google Pay"
+        },
+        "klarna": {
+          "fieldLabel": "Klarna"
+        },
+        "stripe": {
+          "fieldLabel": "Stripe"
+        },
+        "text": {
+          "fieldLabel": "Text beside the logos (e.g. \"Secure payments\")"
+        }
+      }
+    },
+    "restaurantMenu": {
+      "label": "Menu",
+      "fields": {
+        "columns": {
+          "fieldLabel": "Columns",
+          "options": {
+            "one": "One",
+            "two": "Two"
+          }
+        }
+      }
+    },
+    "menuItem": {
+      "label": "Dish",
+      "fields": {
+        "name": {
+          "fieldLabel": "Name"
+        },
+        "description": {
+          "fieldLabel": "Description"
+        },
+        "price": {
+          "fieldLabel": "Price (as you want it written, e.g. \"12\" or \"8 / 12\")"
+        },
+        "dietary": {
+          "fieldLabel": "Dietary notes, comma-separated (e.g. vegan, gluten-free)"
+        },
+        "allergens": {
+          "fieldLabel": "Allergens, comma-separated"
+        }
+      }
+    },
+    "eventList": {
+      "label": "Events"
+    },
+    "eventItem": {
+      "label": "Event",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "startDate": {
+          "fieldLabel": "Date"
+        },
+        "startTime": {
+          "fieldLabel": "Time (empty = all day)"
+        },
+        "endDate": {
+          "fieldLabel": "End date (for events lasting several days)"
+        },
+        "location": {
+          "fieldLabel": "Where"
+        },
+        "description": {
+          "fieldLabel": "Description"
+        },
+        "image": {
+          "fieldLabel": "Picture"
+        },
+        "hideWhenPast": {
+          "fieldLabel": "Hide it on the site once it is over"
+        },
+        "structuredData": {
+          "fieldLabel": "Tell search engines this is an event (schema.org Event)"
+        }
+      }
+    },
+    "stickyContactBar": {
+      "label": "Contact bar (mobile)",
+      "fields": {
+        "showCall": {
+          "fieldLabel": "Call button (phone from Business info)"
+        },
+        "whatsappNumber": {
+          "fieldLabel": "WhatsApp number, with country code (empty = no button)"
+        },
+        "showDirections": {
+          "fieldLabel": "Map button (address from Business info)"
+        },
+        "showEmail": {
+          "fieldLabel": "Email button (email from Business info)"
+        }
+      }
+    },
+    "shareButtons": {
+      "label": "Share buttons",
+      "fields": {
+        "label": {
+          "fieldLabel": "Title (e.g. \"Share\")"
+        },
+        "whatsapp": {
+          "fieldLabel": "WhatsApp"
+        },
+        "facebook": {
+          "fieldLabel": "Facebook"
+        },
+        "linkedin": {
+          "fieldLabel": "LinkedIn"
+        },
+        "x": {
+          "fieldLabel": "X"
+        },
+        "email": {
+          "fieldLabel": "Email"
+        },
+        "copyLink": {
+          "fieldLabel": "Copy link"
+        }
+      }
+    },
+    "cookiePreferences": {
+      "label": "Cookie preferences",
+      "fields": {
+        "label": {
+          "fieldLabel": "Link text (empty = \"Cookie preferences\")"
+        }
+      }
+    },
+    "steps": {
+      "label": "Steps",
+      "fields": {
+        "orientation": {
+          "fieldLabel": "Direction",
+          "options": {
+            "horizontal": "Side by side",
+            "vertical": "One under the other"
+          }
+        }
+      }
+    },
+    "step": {
+      "label": "Step",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "description": {
+          "fieldLabel": "Description"
+        }
+      }
+    },
+    "specList": {
+      "label": "Specifications",
+      "fields": {
+        "columns": {
+          "fieldLabel": "Columns",
+          "options": {
+            "one": "One",
+            "two": "Two"
+          }
+        }
+      }
+    },
+    "specItem": {
+      "label": "Specification",
+      "fields": {
+        "label": {
+          "fieldLabel": "Name (e.g. \"Weight\")"
+        },
+        "value": {
+          "fieldLabel": "Value (e.g. \"1.2 kg\")"
+        }
+      }
+    },
+    "progressBar": {
+      "label": "Progress bar",
+      "fields": {
+        "label": {
+          "fieldLabel": "Label"
+        },
+        "value": {
+          "fieldLabel": "Progress (0–100)"
+        },
+        "showValue": {
+          "fieldLabel": "Show the percentage"
+        }
+      }
+    },
+    "profileCard": {
+      "label": "Profile card",
+      "fields": {
+        "email": {
+          "fieldLabel": "Email"
+        },
+        "phone": {
+          "fieldLabel": "Phone"
+        }
+      }
+    },
+    "bookingEmbed": {
+      "label": "Booking calendar",
+      "fields": {
+        "provider": {
+          "fieldLabel": "Service",
+          "options": {
+            "calendly": "Calendly",
+            "calcom": "Cal.com",
+            "google": "Google Calendar"
+          }
+        },
+        "url": {
+          "fieldLabel": "Address of your booking page"
+        },
+        "height": {
+          "fieldLabel": "Height",
+          "options": {
+            "short": "Short",
+            "medium": "Medium",
+            "tall": "Tall"
+          }
+        }
+      }
+    },
+    "fileList": {
+      "label": "File list",
+      "fields": {
+        "title": {
+          "fieldLabel": "Title"
+        }
+      }
+    },
+    "glossary": {
+      "label": "Glossary",
+      "fields": {
+        "showIndex": {
+          "fieldLabel": "Show the A–Z index"
+        }
+      }
+    },
+    "glossaryTerm": {
+      "label": "Glossary term",
+      "fields": {
+        "term": {
+          "fieldLabel": "Term"
+        },
+        "definition": {
+          "fieldLabel": "Definition"
+        }
+      }
+    },
+    "pullQuote": {
+      "label": "Pull quote"
+    },
+    "imageHotspots": {
+      "label": "Image with hotspots",
+      "fields": {
+        "image": {
+          "fieldLabel": "Picture"
+        },
+        "alt": {
+          "fieldLabel": "Picture description (alt text)"
+        }
+      }
+    },
+    "hotspot": {
+      "label": "Hotspot",
+      "fields": {
+        "x": {
+          "fieldLabel": "Position from the left (%)"
+        },
+        "y": {
+          "fieldLabel": "Position from the top (%)"
+        },
+        "title": {
+          "fieldLabel": "Title"
+        },
+        "text": {
+          "fieldLabel": "Text"
+        }
+      }
+    },
+    "masonryGallery": {
+      "label": "Masonry gallery"
+    },
+    "videoPlaylist": {
+      "label": "Video playlist"
+    }
+  },
+  "gallery": {
+    "field": {
+      "pick": "Choose image",
+      "change": "Change image",
+      "alt": "Alternative text",
+      "decorative": "Decorative image (no alternative text needed)",
+      "altRequired": "Alternative text required (or mark as decorative)",
+      "caption": "Caption (optional)",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "add": "Add image",
+      "unreadable": "This gallery holds images in a form the editor cannot read, so it is not offered for editing here: saving over it would lose them."
+    }
+  },
+  "collections": {
+    "actionFailed": "That change could not be made.",
+    "dialog": {
+      "description": "A collection holds pages of one kind — News, Events, Case studies — and gets a menu entry of its own. Underneath they are ordinary pages.",
+      "newLabel": "New collection",
+      "newPlaceholder": "News",
+      "create": "Add",
+      "delete": "Delete {{name}}",
+      "confirmDelete": {
+        "title": "Delete this collection?",
+        "description": "{{name}} disappears from the menu. The pages it held stay, and go back to Pages."
+      },
+      "defaultTemplate": "New pages start from",
+      "iconLabel": "Icon",
+      "icons": {
+        "newspaper": "News",
+        "calendar-days": "Events",
+        "briefcase": "Portfolio",
+        "book-open": "Guides",
+        "star": "Featured",
+        "megaphone": "Announcements",
+        "camera": "Galleries",
+        "package": "Products",
+        "graduation-cap": "Courses",
+        "heart": "Favourites"
+      },
+      "name": "Name"
+    },
+    "created": "Collection “{{name}}” created",
+    "templateChanged": "Starting point of “{{name}}” changed",
+    "deleted": "Collection “{{name}}” deleted",
+    "saved": "Collection “{{name}}” updated",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "deleteShort": "Delete",
+    "nameRequired": "Enter a name for the collection.",
+    "emptyExplainer": "No collections yet. A collection keeps pages of one kind together, like News or Events, and has an entry of its own in the menu."
+  },
+  "pageTemplates": {
+    "blank": "Blank page"
+  },
+  "imports": {
+    "title": "Import from WordPress",
+    "description": "Upload a WordPress export and see what would really come across, before importing anything. For now this screen only reads: it writes nothing to your site.",
+    "uploadHint": "The .xml file WordPress produces under Tools → Export.",
+    "choose": "Choose a file",
+    "uploading": "Uploading…",
+    "analyzing": "Reading the file…",
+    "failed": "This file could not be read.",
+    "history": "Earlier attempts",
+    "report": {
+      "found": "What's in it",
+      "pages": "pages",
+      "posts": "posts",
+      "attachments": "media",
+      "menuItems": "menu items",
+      "otherTypes": "Custom post types:",
+      "whatArrives": "What would come across",
+      "whole": "pages whole",
+      "partial": "pages in part",
+      "empty": "pages empty",
+      "blocks": "{{native}} of {{total}} blocks convertible ({{percent}}%)",
+      "quarantined": "{{count}} quarantined",
+      "dropped": "{{count}} dropped as empty",
+      "warnings": "Worth knowing before you decide",
+      "fromFields": "{{count}} read from the site’s own fields",
+      "fromValues": "from its values alone"
+    },
+    "warnings": {
+      "page-builder": "A page builder holds the layout in a format this cannot read: on {{count}} pages the words would come across, the arrangement would not.",
+      "multilingual": "Multilingual site. Translations would arrive as separate pages, to be reunited by hand.",
+      "content-outside-the-post": "{{count}} pages have an empty body in the export: their content lives elsewhere (typically in ACF fields) and they would arrive with their title alone.",
+      "unsupported-post-types": "{{count}} entries are in post types this does not import: they would be left out.",
+      "menus": "{{count}} menu items. Menus are rebuilt by hand in the editor.",
+      "fields-not-described": "{{count}} blocks keep their fields in the theme’s code rather than in the database: their content comes across, without knowing what each piece of it is."
+    }
+  },
+  "datePicker": {
+    "calendar": "Calendar",
+    "empty": "No date",
+    "clear": "Clear date"
+  },
+  "dragAnnouncements": {
+    "instructions": "To pick up an item, press Space or Enter. Move it with the arrow keys, then press Space or Enter to drop it, or Escape to cancel.",
+    "pickedUp": "Picked up {{name}}, position {{position}} of {{total}}.",
+    "pickedUpPlain": "Picked up {{name}}.",
+    "moved": "{{name}} moved to position {{position}} of {{total}}.",
+    "movedPlain": "{{name}} moved.",
+    "outside": "{{name}} is outside the list.",
+    "dropped": "{{name}} dropped at position {{position}} of {{total}}.",
+    "droppedPlain": "{{name}} dropped.",
+    "droppedOutside": "{{name}} dropped outside the list; it stays where it was.",
+    "cancelled": "Moving {{name}} was cancelled; it stays where it was."
+  },
+  "aiSettings": {
+    "title": "Generating pages with AI",
+    "intro": "The provider that writes a page when someone asks for one, with this site's own key. The key is stored encrypted and never shown again.",
+    "loadError": "The AI settings could not be loaded. Reload the page to try again.",
+    "serverDisabled": "This server has nowhere safe to keep a key, so pages cannot be generated. Whoever installed Kometio can turn it on: see \"Generating pages with AI\" in the self-hosting guide.",
+    "provider": "Provider",
+    "providerAnthropic": "Claude (Anthropic)",
+    "providerOpenAiCompatible": "OpenAI-compatible",
+    "baseUrl": "Server address",
+    "baseUrlHint": "OpenAI itself, or any server that speaks its API. The address it answers on, ending in /v1: https://api.openai.com/v1, or http://localhost:11434/v1 for a local server. A server on this machine or a private network also has to be allowed by whoever runs Kometio (KOMETIO_AI_ALLOW_PRIVATE_HOSTS).",
+    "model": "Model",
+    "modelHintAnthropic": "claude-opus-5 writes the best pages; claude-sonnet-5 is faster and costs less.",
+    "modelHintOpenAiCompatible": "The model's name as that server knows it, such as gpt-5 or qwen3:14b. It has to support structured output (JSON schema).",
+    "apiKey": "API key",
+    "apiKeyStored": "A key ending in {{hint}} is saved. Leave this empty to keep it.",
+    "apiKeyStoredShort": "A key is saved. Leave this empty to keep it.",
+    "apiKeyForNewServer": "A different provider or server needs its key here: a saved key is only ever sent to the server it was entered for.",
+    "apiKeyRequired": "Required for Claude. Create one in the Anthropic Console.",
+    "apiKeyOptional": "Leave empty if the server does not ask for one.",
+    "saved": "AI settings saved",
+    "saveError": "The AI settings could not be saved.",
+    "remove": "Remove",
+    "removeConfirmTitle": "Remove the AI settings?",
+    "removeConfirmBody": "The provider and its key are forgotten, and nobody on this site can generate pages until they are set again. Pages already generated stay as they are.",
+    "removed": "AI settings removed",
+    "removeError": "The AI settings were not removed. Try again."
+  },
+  "pageGeneration": {
+    "open": "Generate with AI",
+    "title": "Generate with AI",
+    "description": "Describe the page, and it is written in {{language}} with this site's blocks. Nothing is published: you review it in the editor first.",
+    "promptLabel": "What should the page say?",
+    "promptHint": "Who it is for, what it offers, what the visitor should do next. The more you say, the less there is to change.",
+    "modeLabel": "The page already has blocks",
+    "modeAppend": "Add the new sections at the end",
+    "modeReplace": "Replace the whole page",
+    "starting": "Asking the provider...",
+    "writing_one": "Writing the page... {{count}} character so far",
+    "writing_other": "Writing the page... {{count}} characters so far",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "stop": "Stop",
+    "replaceConfirmTitle": "Replace the whole page?",
+    "replaceConfirmBody_one": "Its {{count}} block is replaced by the generated page. Undo, or the version history, brings it back.",
+    "replaceConfirmBody_other": "Its {{count}} blocks are replaced by the generated page. Undo, or the version history, brings them back.",
+    "replaceConfirmAction": "Generate and replace",
+    "unavailableLinked": "This language shares its blocks with the original page, so a page generated here would replace the original too. Generate it in the original language, or unlink this language first (page menu, \"Unlink this language\").",
+    "unavailableNotConfigured": "Pages cannot be generated yet: an administrator has to choose the AI provider in Integrations.",
+    "unavailableNotConfiguredAdmin": "Pages cannot be generated yet: choose the AI provider and its key in Integrations.",
+    "openSettings": "Open Integrations",
+    "done_one": "{{count}} block added to the page.",
+    "done_other": "{{count}} blocks added to the page.",
+    "doneDropped_one": "{{count}} block could not be used and was left out.",
+    "doneDropped_other": "{{count}} blocks could not be used and were left out.",
+    "donePlaceholders_one": "{{count}} still has a placeholder to replace; Layers marks it.",
+    "donePlaceholders_other": "{{count}} still have a placeholder to replace; Layers marks them.",
+    "emptyTitle": "This page is empty",
+    "emptyBody": "Add blocks from the panel on the left, or describe the page and let AI write it.",
+    "startFrom": "Describe it to AI",
+    "startFromHint": "The page opens in the editor and is written there; nothing is published.",
+    "failures": {
+      "not-configured": "No AI provider is set for this site. An administrator can choose one in Integrations.",
+      "key-unreadable": "The saved key can no longer be read: the server's secrets key has changed. Enter the key again in Integrations.",
+      "rejected-credentials": "The provider refused the key. Check it in Integrations.",
+      "rate-limited": "The provider is receiving too many requests, or the account has run out of credit. Try again in a few minutes.",
+      "unreachable": "The provider could not be reached. Check the server address in Integrations, or try again.",
+      "refused": "The provider declined to write this page. Describe it differently and try again.",
+      "truncated": "The page came out too long and was cut off. Ask for fewer sections.",
+      "not-json": "The provider answered with something that is not a page. Try again, or choose a model that supports structured output.",
+      "empty": "None of what the provider wrote could be used. Describe the page differently and try again.",
+      "too-many-requests": "Too many pages generated in the last minute. Wait a moment and try again.",
+      "timed-out": "The provider took too long to answer. Try again, or ask for a shorter page.",
+      "unexpected": "Something went wrong while generating the page. Try again.",
+      "busy": "Another page is being written for this site right now. Wait for it to finish, then try again.",
+      "private-address": "The server's address is inside the network Kometio runs in, such as this machine, which this installation does not allow. Whoever runs Kometio can allow it with KOMETIO_AI_ALLOW_PRIVATE_HOSTS=true (see the self-hosting guide)."
+    },
+    "publishPlaceholdersTitle": "Publish with placeholders?",
+    "publishPlaceholdersBody_one": "{{count}} block still has a placeholder where a real name, role, price or figure should go; Layers marks it. Visitors would see it as it is.",
+    "publishPlaceholdersBody_other": "{{count}} blocks still have a placeholder where a real name, role, price or figure should go; Layers marks them. Visitors would see them as they are.",
+    "publishPlaceholdersAction": "Publish anyway"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "How the site is set up: it applies to every page and to everyone who visits it.",
+    "nav": {
+      "label": "Settings sections",
+      "select": "Settings section",
+      "groups": {
+        "site": "Site",
+        "connections": "Connections",
+        "privacy": "Privacy and access"
+      },
+      "items": {
+        "general": "General",
+        "languages": "Languages",
+        "seo": "SEO",
+        "business": "Business info",
+        "collections": "Collections",
+        "integrations": "Integrations",
+        "ai": "AI generation",
+        "cookies": "Cookies & privacy",
+        "retention": "Data retention",
+        "users": "Users"
+      }
+    },
+    "sections": {
+      "general": {
+        "description": "The site's name and the address it is online at."
+      },
+      "languages": {
+        "description": "The languages the site exists in, and what a visitor sees for a page that is not translated."
+      },
+      "seo": {
+        "description": "What you tell search engines about the site as a whole."
+      }
+    }
+  },
+  "saveBar": {
+    "unsaved": "Unsaved changes",
+    "saved": "Saved",
+    "leaveTitle": "Leave without saving?",
+    "leaveBody": "There are changes that are not saved. If you leave now they will be lost.",
+    "leaveAction": "Leave",
+    "failed": {
+      "general": "The general settings were not saved. Try again.",
+      "seo": "The SEO settings were not saved. Try again.",
+      "languages": "The languages were not saved. Try again.",
+      "businessInfo": "The business details were not saved. Try again.",
+      "integrations": "The integrations were not saved. Try again.",
+      "cookieBanner": "The cookie banner was not saved. Try again.",
+      "retention": "The retention of answers was not saved. Try again.",
+      "style": "The style was not saved. Try again.",
+      "term": "The category was not saved. Try again."
+    }
+  },
+  "commandMenu": {
+    "empty": "No results for “{{query}}”.",
+    "hint": "↑↓ to choose · Enter to run · Esc to close",
+    "searching": "Searching…"
+  }
+}

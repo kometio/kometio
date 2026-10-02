@@ -1,0 +1,72 @@
+---
+import type { BackToTopProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = BackToTopProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { visibility, locale, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+---
+
+<button
+  type="button"
+  class:list={[
+    'kometio-back-to-top',
+    { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+    { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+    instanceClass,
+  ]}
+  aria-label={i18n.t('backToTop.label')}
+>
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <path
+      d="M12 5l-7 7h4v7h6v-7h4z"
+      fill="currentColor"
+    />
+  </svg>
+</button>
+
+<script>
+  // No framework here on purpose (docs/adr/0007) — a plain scroll listener
+  // toggling one class is all a show/hide button needs. Logic lives in a
+  // plain importable module (not inline here) so it can also be re-run
+  // after a live canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { backToTopBehaviors } from '../../lib/block-behaviors/back-to-top';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, backToTopBehaviors);
+</script>
+
+<style>
+  /* Hidden by default (display: none) regardless of scroll position — the
+     script above adds --visible once window.scrollY crosses the
+     threshold. bottom-LEFT, not bottom-right: when a WhatsAppButton is
+     also placed (the common case), it sits bottom-right, so the two
+     independent, mutually-unaware blocks never overlap — see
+     WhatsAppButton.astro's own comment. */
+  .kometio-back-to-top {
+    position: fixed;
+    left: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 30;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: none;
+    border-radius: var(--kometio-override-radius, 50%);
+    background: var(--kometio-override-bg, var(--primary));
+    color: var(--kometio-override-text, var(--primary-foreground));
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--kometio-override-shadow, 0 4px 12px rgb(0 0 0 / 20%));
+  }
+  .kometio-back-to-top--visible {
+    display: flex;
+  }
+</style>

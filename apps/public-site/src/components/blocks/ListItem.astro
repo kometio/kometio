@@ -1,0 +1,31 @@
+---
+import type { ListItemProps } from '@kometio/shared-types';
+
+type Props = ListItemProps & { instanceClass?: string | null };
+
+const { text, instanceClass } = Astro.props;
+---
+
+<li
+  class:list={['kometio-list-item', instanceClass]}
+  data-kometio-field="text"
+>
+  <span class="kometio-list-item__text kometio-rich-text" set:html={text} />
+</li>
+
+<style>
+  .kometio-list-item {
+    min-width: 0;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  /* Rich text wraps its words in a paragraph; inside a list item that
+     paragraph's own margins would push every item apart twice. */
+  .kometio-list-item__text :global(p) {
+    margin: 0;
+  }
+</style>

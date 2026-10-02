@@ -1,0 +1,137 @@
+---
+import type { DayOfWeek, OpeningHoursProps } from '@kometio/shared-types';
+import type { PublishedSite } from '@kometio/api-contracts';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = OpeningHoursProps & {
+  site: PublishedSite;
+  locale?: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const { title, site, locale, editable, instanceClass } = Astro.props;
+const i18n = new Translator(locale ?? '');
+
+const WEEK: DayOfWeek[] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+];
+
+/**
+ * The day's name the way this language writes it — "lunedì", "Monday" —
+ * from the platform rather than from a dictionary of our own. 5 January
+ * 2026 was a Monday; the rest of the week follows it.
+ */
+function dayName(index: number): string {
+  return new Intl.DateTimeFormat(locale || undefined, {
+    weekday: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(2026, 0, 5 + index)));
+}
+
+const hours = site.openingHours ?? [];
+const byDay = new Map(hours.map((day) => [day.dayOfWeek, day.ranges]));
+const rows = WEEK.map((day, index) => ({
+  name: dayName(index),
+  ranges: byDay.get(day) ?? [],
+}));
+// A site that never filled in its hours says nothing, rather than
+// "closed" seven times — which would be a false statement about a shop.
+const hasHours = hours.some((day) => day.ranges.length > 0);
+---
+
+{
+  hasHours ? (
+    <div class:list={['kometio-opening-hours', instanceClass]}>
+      {title && <p class="kometio-opening-hours__title">{title}</p>}
+      <table class="kometio-opening-hours__table">
+        <caption class="kometio-opening-hours__caption">
+          {title || i18n.t('openingHours.label')}
+        </caption>
+        <tbody>
+          {rows.map((row) => (
+            <tr>
+              <th scope="row" class="kometio-opening-hours__day">
+                {row.name}
+              </th>
+              <td class="kometio-opening-hours__time">
+                {row.ranges.length === 0
+                  ? i18n.t('openingHours.closed')
+                  : row.ranges
+                      .map((range) => `${range.opens}–${range.closes}`)
+                      .join(', ')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    editable && (
+      <p class="kometio-opening-hours kometio-opening-hours--empty">
+        {i18n.t('openingHours.empty')}
+      </p>
+    )
+  )
+}
+
+<style>
+  .kometio-opening-hours {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-opening-hours__title {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+
+  .kometio-opening-hours__table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  /* The title above already says what the table is; the caption is for
+     the screen reader that meets the table on its own. */
+  .kometio-opening-hours__caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kometio-opening-hours__day,
+  .kometio-opening-hours__time {
+    padding: 0.375rem 0;
+    border-bottom: 1px solid var(--border);
+    text-align: start;
+    vertical-align: top;
+  }
+
+  .kometio-opening-hours__day {
+    font-weight: 500;
+    padding-inline-end: 1rem;
+    text-transform: capitalize;
+  }
+
+  .kometio-opening-hours__time {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kometio-opening-hours--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

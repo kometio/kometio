@@ -1,0 +1,57 @@
+# docs/adr/0042 and docs/adr/0076 — serves the editor-app static SPA build
+# and sends its Content-Security-Policy as a real header.
+#
+# A template, not a finished conf: nginx:alpine's own entrypoint runs
+# envsubst over everything in /etc/nginx/templates at start, so the policy
+# below is built from this container's environment. That is what lets one
+# published image serve any domain. `NGINX_ENVSUBST_FILTER` (set in the
+# Dockerfile) limits the substitution to KOMETIO_* names, so nginx's own
+# `$uri` and friends survive untouched.
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    # The policy the editor used to carry in a <meta> tag. As a header it
+    # can also say `frame-ancestors`, which a meta tag cannot: the editor
+    # is never meant to be embedded anywhere, unlike the pages it draws
+    # inside its own canvas.
+    #
+    # The API origin (not the "/api" path) because CSP path matching in
+    # source expressions is inconsistent across browsers, and the public
+    # site in `connect-src` as well as `frame-src`: theme-api-client.ts
+    # fetches it straight from this document, since only the public site
+    # knows the active theme (docs/adr/0021).
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: ${KOMETIO_API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${KOMETIO_API_ORIGIN} ${KOMETIO_PUBLIC_SITE_URL} https://challenges.cloudflare.com; frame-src ${KOMETIO_PUBLIC_SITE_URL} https://challenges.cloudflare.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self';" always;
+
+    # Whatever proxy sits in front adds HSTS (it holds the certificate);
+    # these two are the document's own business. Inherited only by the
+    # locations below that set no header of their own, which are exactly
+    # the ones serving a document.
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # SPA fallback: any path that isn't a real static file resolves to
+    # index.html, so client-side routing (TanStack Router) handles it.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Written at every start from this container's environment, so it must
+    # never be cached: a restart with a new address has to reach the
+    # browser on the next load.
+    location = /config.js {
+        add_header Cache-Control "no-store" always;
+    }
+
+    # Hashed asset filenames (Vite's own convention) are safe to cache
+    # forever — a content change always ships under a new filename.
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}

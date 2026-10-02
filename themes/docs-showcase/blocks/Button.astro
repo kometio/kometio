@@ -1,0 +1,175 @@
+---
+// Override of apps/public-site/src/components/blocks/Button.astro,
+// resolved via resolveThemeBlockOverride (docs/adr/0021's per-block
+// escalation) — same props and markup as core (keep it that way when core's
+// Button changes: this copy once fell behind by four props), the ONE
+// difference is layout:
+// every standalone Button under this theme centers itself in its
+// container, regardless of how/where the editor placed it. Deliberate
+// demonstration that a theme's own CSS can override a layout decision
+// the editor/content author never made explicit (user's own framing,
+// 2026-08-30) — content stays theme-agnostic, the theme still gets the
+// final say on presentation.
+import type { ButtonProps } from '@kometio/shared-types';
+import { resolveLinkHref } from '@kometio/theme-runtime';
+
+// `instanceClass` and not `styleOverride` since ADR-0047: the per-instance
+// override is a generated CSS rule now, not an inline attribute, because an
+// inline `style` cannot hold the container query a per-breakpoint value
+// needs. A theme block receives the class that rule targets and puts it on
+// its root element; the override itself never reaches the component.
+type Props = ButtonProps & {
+  /** Resolved by BlockRenderer from the `icon` prop (docs/adr/0023). */
+  iconSvg?: string | null;
+  instanceClass?: string | null;
+  variantClass?: string | null;
+};
+
+// Every prop core's Button reads. This copy used to stop at the link:
+// the icon, the size, the full width and the new tab that core grew in
+// ADR-0056 were accepted by the editor and silently dropped here, so a
+// button with an icon on this theme simply had none.
+const {
+  label,
+  linkType,
+  page,
+  url,
+  size,
+  fullWidth,
+  openInNewTab,
+  iconSvg,
+  instanceClass,
+  variantClass,
+} = Astro.props;
+// The same function core's Button uses (ADR-0063), and the reason a
+// theme gets one at all: this copy resolved a page with `localePath`,
+// which knows nothing about ancestors — so a Button pointing at a
+// nested page linked to `/en/prezzi` instead of `/en/docs/prezzi` and
+// 404'd, the bug PR #137 fixed everywhere except in here. It also fell
+// back to the url field whenever the page did not resolve.
+const href = resolveLinkHref({ linkType, page, url });
+---
+
+<a
+  class:list={[
+    'kometio-button',
+    `kometio-button--${size}`,
+    { 'kometio-button--full': fullWidth },
+    variantClass,
+    instanceClass,
+  ]}
+  href={href ?? undefined}
+  target={openInNewTab ? '_blank' : undefined}
+  rel={openInNewTab ? 'noopener' : undefined}
+>
+  {iconSvg && (
+    <span class="kometio-button__icon" aria-hidden="true" set:html={iconSvg} />
+  )}
+  <span data-kometio-field="label">{label}</span>
+</a>
+
+<style>
+  /* Centred in its container — the one thing this override is for.
+     `flex` rather than core's `inline-flex` because a centred box needs
+     to be a block, and flex still lines an icon up with its label. */
+  .kometio-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--kometio-override-gap, 0.5em);
+    width: fit-content;
+    margin-inline: auto;
+    padding: var(--kometio-override-padding-y, var(--kometio-button-py))
+      var(--kometio-override-padding-x, var(--kometio-button-px));
+    font-size: var(--kometio-button-size, 1rem);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    background: var(--kometio-override-bg, var(--primary));
+    color: var(--kometio-override-text, var(--primary-foreground));
+    text-decoration: none;
+    border: 1px solid var(--kometio-override-bg, var(--primary));
+    --kometio-button-py: 0.5rem;
+    --kometio-button-px: 1.25rem;
+  }
+  /* The same three sizes as core, so a size chosen in the editor means the
+     same thing on this theme. */
+  .kometio-button--sm {
+    --kometio-button-py: 0.3rem;
+    --kometio-button-px: 0.85rem;
+    --kometio-button-size: 0.875rem;
+  }
+  .kometio-button--lg {
+    --kometio-button-py: 0.75rem;
+    --kometio-button-px: 1.75rem;
+    --kometio-button-size: 1.125rem;
+  }
+  .kometio-button--full {
+    width: 100%;
+  }
+  .kometio-button__icon {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+  }
+  .kometio-button__icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  .kometio-button--secondary {
+    background: transparent;
+    color: var(--kometio-override-bg, var(--primary));
+  }
+  /* Outline and Link are core's looks, drawn here because this file draws
+     the whole button: without them the editor offered both on the docs
+     site and the page showed a filled button for each. Outline is the
+     brand colour's line; Link is text, in the theme's link colour. */
+  .kometio-button--outline {
+    background: transparent;
+    color: var(--kometio-override-bg, var(--primary));
+    border-color: var(--kometio-override-bg, var(--primary));
+  }
+  .kometio-button--link {
+    background: transparent;
+    color: var(--kometio-override-bg, var(--link));
+    border-color: transparent;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .kometio-button--link:hover {
+    color: var(--link-hover);
+  }
+
+  /* `ghost` is core's own look since ADR-0056; this is the theme
+     restyling it, which is what a theme is for. Declaring it moved to
+     core, the appearance stayed here. */
+  .kometio-button--ghost {
+    background: transparent;
+    color: var(--kometio-override-text, var(--foreground));
+    border: 1px solid var(--border);
+  }
+
+  .kometio-button--ghost:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* Declared by this theme in Button.variants.ts, not by core (ADR-0047):
+     a look the theme ADDS to the core Button rather than a block type of
+     its own. The class name is what BlockRenderer emits from
+     `Block.variant`; nothing else was needed to make it render.
+     From the brand blue to a deeper one: it ran to `--secondary`, a near
+     white, and the white label faded out along it. `border-box`, or the
+     gradient repeats under the transparent border and draws a dark line
+     down the right edge. */
+  .kometio-button--gradient {
+    background: linear-gradient(
+      135deg,
+      var(--primary),
+      color-mix(in oklab, var(--primary) 65%, var(--foreground))
+    );
+    background-origin: border-box;
+    color: var(--primary-foreground);
+    border-color: transparent;
+  }
+</style>

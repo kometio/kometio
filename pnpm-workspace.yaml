@@ -1,0 +1,61 @@
+packages:
+  - 'apps/*'
+  - 'libs/*'
+  - 'libs/adapters/*'
+  - 'themes/*'
+
+# A bump of astro or @nx/vite pulls in its own vite resolution, separate
+# from the one apps/editor-app imports directly — two coexisting vite
+# instances in the same pnpm store. TypeScript then sees
+# @tanstack/router-plugin's Plugin (built against the new instance) as
+# nominally different from editor-app's own Plugin import (old instance),
+# and the resulting structural comparison overflows ("Excessive stack
+# depth comparing types 'Plugin<any>[]' and 'Plugin<any>[]'" in
+# vite.config.mts). Forcing one single vite version workspace-wide is the
+# real fix (a vite.config.mts type workaround was tried and didn't help —
+# the mismatch is between two different vite installs, not an inference
+# depth limit on one).
+overrides:
+  vite: 8.3.0
+  # Security advisories in packages we do not depend on directly, where even
+  # the parent's latest release still asks for a vulnerable range. Checked
+  # 2026-09-25 by removing every entry and auditing: multer, qs, js-yaml,
+  # hono and devalue came back clean once their parents moved (NestJS 11.2.6
+  # ships multer 2.4.0, express 4.22.3 ships qs 6.16), so they are gone.
+  # Drop an entry once the parent ships a fixed range of its own.
+  # nx 23.2.1, the latest, pins smol-toml 1.6.1.
+  smol-toml: ^1.8.0
+  # sockjs 0.3.24, the latest, asks for uuid ^8.3.2; it is reached only
+  # through @nx/webpack's own webpack-dev-server. No target in this
+  # workspace runs that dev server (the API serves with @nx/js:node and
+  # builds with webpack-cli, the editor uses vite), so this only quiets the
+  # advisory on a package nothing here executes.
+  uuid: ^11.1.1
+  # drizzle-kit 0.31.11, the latest, still loads the deprecated
+  # @esbuild-kit/* pair, which pins esbuild ~0.18. Verified after the
+  # override: drizzle-kit still reads the schema and generates migrations.
+  esbuild: ^0.25.12
+  # Three advisories against brace-expansion (GHSA-6j4f-fj2g-mc7p,
+  # GHSA-qhr7-859c-m2p7, GHSA-q2hr-2g5m-vwhr, published 2026-09-29): a
+  # stack-exhaustion DoS on a crafted pattern. Reached only through
+  # minimatch, inside Nx, Jest and webpack's tooling — build-time globbing
+  # of our own patterns, never a visitor's input — but the audit is
+  # blocking, and each major that the tree resolves has a patched release.
+  # Drop them once minimatch's parents ask for a fixed range themselves.
+  'brace-expansion@<1.1.21': ^1.1.21
+  'brace-expansion@>=2.0.0 <2.1.7': ^2.1.7
+  'brace-expansion@>=4.0.0 <5.0.12': ^5.0.12
+  # Twelve advisories against axios (seven high: ReDoS in the data-URL parser
+  # and in proxy matching, prototype-pollution gadgets, redirect and proxy
+  # bypasses), all fixed in 1.20.0. Reached only through nx (`.>nx>axios`),
+  # the build tool's own HTTP client, never a visitor's input; nx 23.2.1, the
+  # latest, still pins 1.18.1. The audit is blocking, so it is lifted here.
+  # Drop it once nx asks for a fixed range itself.
+  axios: ^1.20.0
+
+# sharp is astro:assets' default image service (apps/public-site) — its
+# install script wires up the prebuilt native binary for the current
+# platform, no compilation involved. Without this, pnpm silently skips
+# that script and astro:assets fails at request time with MissingSharp.
+onlyBuiltDependencies:
+  - sharp

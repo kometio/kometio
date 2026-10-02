@@ -1,0 +1,50 @@
+---
+import type { StatProps } from '@kometio/shared-types';
+
+type Props = StatProps & { instanceClass?: string | null };
+
+const { value, prefix, suffix, label, instanceClass } = Astro.props;
+---
+
+<div class:list={['kometio-stat', instanceClass]} data-value={value}>
+  <div class="kometio-stat__value">
+    <span class="kometio-stat__prefix" data-kometio-field="prefix">{prefix}</span><span
+      class="kometio-stat__number"
+      data-current="0">0</span
+    ><span class="kometio-stat__suffix" data-kometio-field="suffix">{suffix}</span>
+  </div>
+  {label && <div class="kometio-stat__label" data-kometio-field="label">{label}</div>}
+</div>
+
+<script>
+  // No framework here on purpose (docs/adr/0007), same reasoning as
+  // Countdown.astro/HamburgerMenu.astro. Logic lives in a plain
+  // importable module (not inline here) so it can also be re-run after a
+  // live canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { statBehaviors } from '../../lib/block-behaviors/stat';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, statBehaviors);
+</script>
+
+<style>
+  .kometio-stat {
+    text-align: center;
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  /* A figure set large is display text: the theme's heading face. */
+  .kometio-stat__value {
+    font-family: var(--kometio-heading-font);
+    letter-spacing: var(--kometio-heading-tracking);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--kometio-override-text, inherit);
+  }
+  .kometio-stat__label {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+</style>

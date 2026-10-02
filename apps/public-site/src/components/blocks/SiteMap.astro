@@ -1,0 +1,33 @@
+---
+import type { SiteMapProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import SiteMapTree from '../parts/SiteMapTree.astro';
+
+type Props = SiteMapProps & {
+  instanceClass?: string | null;
+  locale?: string;
+};
+
+const { tree, instanceClass, locale } = Astro.props;
+const i18n = new Translator(locale ?? '');
+// `tree` comes from resolveSiteNavigationBlocks, already cut to the depth
+// asked for and without the pages filed in a collection.
+---
+
+{
+  tree.length > 0 && (
+    <nav class:list={['kometio-site-map', instanceClass]} aria-label={i18n.t('siteMap.label')}>
+      <SiteMapTree nodes={tree} />
+    </nav>
+  )
+}
+
+<style>
+  .kometio-site-map {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+</style>

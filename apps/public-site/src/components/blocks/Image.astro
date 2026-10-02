@@ -1,0 +1,180 @@
+---
+import type { ImageProps } from '@kometio/shared-types';
+import { Translator, resolveLinkHref } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+import { resolveImageAlt } from '../../lib/image-alt';
+
+type Props = ImageProps & {
+  locale: string;
+  instanceClass?: string | null;
+};
+
+const {
+  media,
+  alt,
+  isDecorative,
+  caption,
+  linkType,
+  page,
+  url,
+  lightbox,
+  alignment,
+  aspectRatio,
+  locale,
+  instanceClass,
+} = Astro.props;
+const i18n = new Translator(locale);
+// Authoritative regardless of what's saved in `alt` — a decorative image
+// gets alt="" per WCAG even if a value was typed there before this flag
+// existed (see imagePropsSchema's own comment). Otherwise the block's own
+// text, and while it has none the file's — what the library holds for it,
+// written once in Media (`fallbackFrom: 'media.alt'` on the descriptor).
+const resolvedAlt = resolveImageAlt({ alt, isDecorative, media });
+
+const href = resolveLinkHref({ linkType, page, url });
+
+// A link wins over a lightbox when both are set (ADR-0057): a link is a
+// navigation the visitor asked for, a lightbox is a convenience, and
+// wrapping one in the other would make a single click ambiguous.
+const showLightbox = lightbox && !href;
+---
+
+{
+  media ? (
+    <figure
+      class:list={[
+        'kometio-image-figure',
+        `kometio-image-figure--${alignment}`,
+        `kometio-image-figure--ratio-${aspectRatio}`,
+        instanceClass,
+      ]}
+      data-kometio-lightbox={showLightbox ? '' : undefined}
+      data-kometio-lightbox-close={
+        showLightbox ? i18n.t('image.lightboxClose') : undefined
+      }
+    >
+      {/* `loading="eager"`: an Image is the one block type a page can use
+          as a full-width hero at the very top — lazily loading a real LCP
+          element actively delays it, the opposite of the Core Web Vitals
+          fix this is for. */}
+      {href ? (
+        <a href={href}>
+          <OptimizedImage
+            media={media}
+            alt={resolvedAlt}
+            class="kometio-image"
+            loading="eager"
+          />
+        </a>
+      ) : showLightbox ? (
+        /* A real <button>, so it is reachable by keyboard and announced
+           as something that does something — a click handler on an <img>
+           is neither. */
+        <button
+          type="button"
+          class="kometio-image__zoom"
+          data-kometio-lightbox-src={media.url}
+          data-kometio-lightbox-alt={resolvedAlt}
+          aria-label={i18n.t('image.lightboxOpen')}
+        >
+          <OptimizedImage
+            media={media}
+            alt={resolvedAlt}
+            class="kometio-image"
+            loading="eager"
+          />
+        </button>
+      ) : (
+        <OptimizedImage
+          media={media}
+          alt={resolvedAlt}
+          class="kometio-image"
+          loading="eager"
+        />
+      )}
+      {caption && <figcaption data-kometio-field="caption">{caption}</figcaption>}
+    </figure>
+  ) : (
+    <p>{i18n.t('image.empty')}</p>
+  )
+}
+
+<script>
+  import { lightboxBehaviors } from '../../lib/block-behaviors/lightbox';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, lightboxBehaviors);
+</script>
+
+<style>
+  /* :global() because the actual <img> (or astro:assets' transformed
+  <img>) is rendered by OptimizedImage, a child component — Astro's scoped
+  styles don't cross that boundary, so a plain `.kometio-image` selector here
+  would silently never match. Same reasoning applies in every other block
+  below that styles an OptimizedImage by class. */
+  :global(.kometio-image) {
+    max-width: 100%;
+    height: auto;
+  }
+  /* The overrides land on the <figure>, and the radius is passed down to
+     the image because rounding the frame while the picture keeps square
+     corners is not what anyone means by it. Fallbacks are what the block
+     already rendered. */
+  .kometio-image-figure {
+    border-radius: var(--kometio-override-radius, 0);
+    border: var(--kometio-override-border-width, 0)
+      var(--kometio-override-border-style, solid)
+      var(--kometio-override-border-color, var(--border));
+    box-shadow: var(--kometio-override-shadow, none);
+    max-width: var(--kometio-override-max-width, none);
+    overflow: hidden;
+    /* `margin: 0` is the browser default a <figure> does NOT have — it
+       ships with 1em of inline margin, which is why an image never sat
+       flush against its column. Alignment below needs a known starting
+       point, and this is it. */
+    margin-block: 0;
+  }
+
+  /* Placing the figure's own box, which is a different question from
+     aligning what is inside it: an image narrower than its column had no
+     way to sit anywhere but where the flow put it. `auto` margins rather
+     than flex, so the figure keeps its own intrinsic width. */
+  .kometio-image-figure--start {
+    margin-inline: 0 auto;
+  }
+  .kometio-image-figure--center {
+    margin-inline: auto;
+  }
+  .kometio-image-figure--end {
+    margin-inline: auto 0;
+  }
+
+  /* `original` declares nothing at all, which is what every image saved
+     before this existed already does — the shape comes from the file. */
+  .kometio-image-figure--ratio-square :global(.kometio-image) {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+  .kometio-image-figure--ratio-landscape :global(.kometio-image) {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .kometio-image-figure--ratio-portrait :global(.kometio-image) {
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+  .kometio-image-figure--ratio-wide :global(.kometio-image) {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  /* The zoom trigger must not look like a button: it wraps the picture
+     and nothing else, so every button default has to go. */
+  .kometio-image__zoom {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+    width: 100%;
+  }
+</style>

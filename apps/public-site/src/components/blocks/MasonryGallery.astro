@@ -1,0 +1,29 @@
+---
+import type { MasonryGalleryProps } from '@kometio/shared-types';
+import Gallery from './Gallery.astro';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = MasonryGalleryProps & {
+  locale: string;
+  instanceClass?: string | null;
+};
+
+const { images, columns, lightbox, locale, instanceClass } = Astro.props;
+---
+
+{/*
+  The Gallery component, laid out in columns: the figures, the captions,
+  the lightbox and its empty state are the Gallery's own, so a fix to any
+  of them is a fix here too. Core's Gallery and not a theme's: masonry is
+  a layout core adds to its own component, and a theme's Gallery has no
+  contract to know about it.
+*/}
+<Gallery
+  images={images}
+  columns={columns}
+  aspectRatio="original"
+  lightbox={lightbox}
+  locale={locale}
+  instanceClass={delegatedRootClass('kometio-masonry-gallery', instanceClass)}
+  layout="masonry"
+/>

@@ -1,0 +1,42 @@
+---
+import type { AnchorProps } from '@kometio/shared-types';
+import { slugify } from '@kometio/shared-types';
+
+type Props = AnchorProps & {
+  /** In the editor's canvas, where an invisible point would be impossible to find and select. */
+  editable?: boolean;
+};
+
+const { name, editable } = Astro.props;
+// A slug whatever was typed: "Our prices" answers at `#our-prices`, and an
+// id with a space in it is one no link can reach.
+const id = slugify(name);
+---
+
+{
+  id ? (
+    <span id={id} class="kometio-anchor">
+      {editable && <span class="kometio-anchor__marker">#{id}</span>}
+    </span>
+  ) : (
+    editable && <span class="kometio-anchor kometio-anchor__marker">#</span>
+  )
+}
+
+<style>
+  .kometio-anchor {
+    display: block;
+    /* Land a little above the spot, so a sticky header does not cover what
+       the link was pointing at. */
+    scroll-margin-top: 5rem;
+  }
+
+  .kometio-anchor__marker {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border: 1px dashed currentColor;
+    border-radius: 0.25rem;
+    opacity: 0.6;
+  }
+</style>

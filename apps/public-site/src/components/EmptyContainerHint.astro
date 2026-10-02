@@ -1,0 +1,53 @@
+---
+/**
+ * A placeholder for a container block (Columns/Accordion/Tabs/...) with no
+ * children — without it, an empty container collapses to virtually no
+ * height (an empty grid or flex) and becomes impossible to select on the
+ * canvas, which is the only way to add the first element inside it (select
+ * the container, then pick a block from the sidebar — resolveInsertTarget
+ * in canvas-editor-shell.tsx inserts it as a child). `show` is computed by
+ * the caller (`!Astro.slots.has('default') && editable`) — never rendered
+ * on the real published page, only on the preview routes.
+ *
+ * The sentence used to be written here in Italian, so an editor set to
+ * English printed one Italian line in the middle of the canvas.
+ *
+ * `childLabel` names what the container is waiting for, when it accepts
+ * exactly one type: Tabs takes a Tab and nothing else, Accordion an
+ * AccordionItem, Timeline a TimelineStep. "Pick an element" sends
+ * somebody hunting through fifty-four tiles for the one that is allowed;
+ * naming it is the difference between a prompt and a puzzle. Absent for a
+ * container that genuinely takes anything (Container, Column), where
+ * there is no single answer to give.
+ */
+import { Translator } from '@kometio/theme-runtime';
+
+export interface Props {
+  show: boolean;
+  /** The locale the editor is showing this page in. */
+  locale?: string | undefined;
+  /** The translated name of the only child type allowed, when there is one. */
+  childLabel?: string | null | undefined;
+}
+
+const { show, locale, childLabel } = Astro.props;
+const i18n = new Translator(locale ?? 'en');
+const message = childLabel
+  ? i18n.t('emptyContainer.hintNamed', { child: childLabel })
+  : i18n.t('emptyContainer.hint');
+---
+
+{show && <p class="kometio-empty-container-hint">{message}</p>}
+
+<style>
+  .kometio-empty-container-hint {
+    margin: 0;
+    padding: 1.5rem;
+    min-height: 3rem;
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+</style>

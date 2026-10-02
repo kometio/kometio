@@ -1,0 +1,104 @@
+---
+import type { ComparisonRowProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import { comparisonValueKind } from '../../lib/comparison-value';
+
+type Props = ComparisonRowProps & {
+  locale: string;
+  instanceClass?: string | null;
+};
+
+const { feature, values, locale, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+// Blank lines in the middle are kept — an empty cell is a column this
+// feature says nothing about — and only the trailing ones are dropped.
+const cells =
+  values.trim() === ''
+    ? []
+    : values
+        .replace(/\s+$/, '')
+        .split('\n')
+        .map((value) => value.trim());
+---
+
+<div class:list={['kometio-comparison-row', instanceClass]} role="row">
+  <span class="kometio-comparison-row__feature" role="rowheader" data-kometio-field="feature">
+    {feature}
+  </span>
+  {cells.map((value) => {
+    const kind = comparisonValueKind(value);
+    return (
+      <span class="kometio-comparison-row__cell" role="cell">
+        {kind === 'yes' && (
+          <>
+            <svg class="kometio-comparison-row__mark kometio-comparison-row__mark--yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+            <span class="kometio-visually-hidden">{i18n.t('comparisonTable.included')}</span>
+          </>
+        )}
+        {kind === 'no' && (
+          <>
+            <svg class="kometio-comparison-row__mark kometio-comparison-row__mark--no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+            <span class="kometio-visually-hidden">{i18n.t('comparisonTable.notIncluded')}</span>
+          </>
+        )}
+        {kind === 'text' && value}
+      </span>
+    );
+  })}
+</div>
+
+<style>
+  /* One row of the table's grid, sharing its columns so every row lines
+     up with the header. `grid-column: 1 / -1` works in the canvas too: the
+     wrapper around a block there has no box, so the row is still the
+     grid's own item. */
+  .kometio-comparison-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    border-block-start: 1px solid var(--border);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+  }
+
+  /* `break-word`, not `anywhere`: measured at 390px, `anywhere` let the
+     column shrink below its longest word and "Unlimited" broke in two.
+     With `break-word` the word keeps the column wide, and the table
+     scrolls sideways instead — which is what it is there to do. */
+  .kometio-comparison-row > * {
+    display: flex;
+    align-items: center;
+    padding: var(--kometio-override-padding-y, 0.75rem)
+      var(--kometio-override-padding-x, 1rem);
+    overflow-wrap: break-word;
+  }
+
+  .kometio-comparison-row__feature {
+    font-weight: 500;
+  }
+
+  .kometio-comparison-row__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .kometio-comparison-row__mark {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .kometio-comparison-row__mark--yes {
+    color: var(--primary);
+  }
+
+  .kometio-comparison-row__mark--no {
+    color: var(--muted-foreground);
+  }
+</style>

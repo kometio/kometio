@@ -1,0 +1,58 @@
+---
+import type { ProductGridProps } from '@kometio/shared-types';
+import CollectionLayout from '../CollectionLayout.astro';
+
+export type Props = ProductGridProps & {
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+  emptyChildLabel?: string | null;
+  locale: string;
+};
+
+const { display, editable, hasChildren, instanceClass, emptyChildLabel, locale } =
+  Astro.props;
+---
+
+<CollectionLayout
+  blockClass="kometio-product-grid"
+  display={display}
+  editable={editable}
+  hasChildren={hasChildren}
+  instanceClass={instanceClass}
+  emptyChildLabel={emptyChildLabel}
+  locale={locale}
+  step="item"
+>
+  <slot />
+</CollectionLayout>
+
+<script>
+  import { collectionBehaviors } from '../../lib/block-behaviors/collection';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, collectionBehaviors);
+</script>
+
+<style>
+  /* `:global()` for Testimonials.astro's reason: CollectionLayout renders
+     the element, so this file's scoped styles would never reach it. */
+  :global(.kometio-product-grid) {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  /* `min(15rem, 100%)`: a column narrower than 15rem cannot hold one, and
+     a fixed 15rem minimum would overflow a phone-width sidebar. */
+  :global(.kometio-product-grid.kometio-collection--grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+    gap: var(--kometio-override-gap, 1.5rem);
+  }
+  :global(.kometio-product-grid[data-kometio-editable-outline]) {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

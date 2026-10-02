@@ -1,0 +1,210 @@
+---
+import type { PublishedPage, PublishedTerm } from '@kometio/api-contracts';
+import PageLayout from '../layouts/PageLayout.astro';
+import {
+  buildBlockInstanceRulesCss,
+  buildRootBlockSpacingCss,
+} from '@kometio/shared-types';
+import BlockRenderer from './BlockRenderer.astro';
+import ErrorPageShell from './ErrorPageShell.astro';
+import NotFound from './NotFound.astro';
+import { getPublishedSiteChrome } from '../lib/public-api-client';
+// The one definition of a root block's wrapper — shared with the canvas
+// bridge, which has to build the identical thing for a block inserted
+// live. See root-block-layout.ts for why that matters.
+import { rootBlockWrapper } from '../lib/root-block-layout';
+
+// Purely presentational — the 404 status itself must be set by the calling
+// page route (src/pages/index.astro, src/pages/[slug].astro), not here:
+// Astro.response.status only takes effect when set in a top-level page
+// component, not a nested one (verified directly — a version of this that
+// set it here rendered the right NotFound markup but still answered 200).
+interface Props {
+  page: PublishedPage | null;
+  // Only the preview route passes it (see the visual editor plan, Day 2) —
+  // the real published route never does, so it stays undefined and the
+  // published HTML is byte-identical to before.
+  editable?: boolean;
+  // Only the real public routes pass it ([locale]/[...slug].astro,
+  // [locale]/index.astro) — preview/[pageId].astro does not (an expired
+  // token does not guarantee a reliable locale or domain to derive the site
+  // chrome from, and it is not a path a real visitor sees anyway). Used
+  // ONLY for the `page === null` branch below: it fetches the site's real
+  // header and footer so a 404 shows the actual navigation rather than a
+  // bare page — when it is missing, or the fetch fails, the long-standing
+  // behaviour remains.
+  locale?: string;
+}
+
+/**
+ * Only a term can ask to be kept out of search engines, and only when
+ * whoever publishes said so (docs/adr/0078) — a page's own answer is the
+ * site-wide setting, which `PageLayout` reads for itself.
+ */
+function isTerm(value: PublishedPage): value is PublishedTerm {
+  return 'term' in value;
+}
+
+const { page, editable, locale } = Astro.props;
+// Set here and not in middleware: middleware runs before the route has
+// resolved which page it is, and this component is the one funnel every
+// route that renders a page goes through. Read by the Form block — see
+// env.d.ts for why it travels as ambient context rather than as a prop.
+Astro.locals.pageTranslationId = page?.id ?? null;
+// Built here, not in PageLayout: the page's own content only exists on
+// this side of the slot, and an instance rule for a block nobody rendered
+// would be dead CSS on every page.
+// `page` is null on the 404 path, which renders the themed NotFound
+// instead — nothing of the site's own content, so nothing to style.
+const instanceStyleCss = page
+  ? [
+      buildBlockInstanceRulesCss([
+        page.content,
+        page.header ?? [],
+        page.footer ?? [],
+      ]),
+      // The space AROUND a root block, which belongs to the wrapper rather
+      // than to the block, and is therefore a separate set of rules on a
+      // separate class (ADR-0050). Page content only: the header and
+      // footer lists space their blocks with a flex `gap` and have no
+      // wrapper to carry a margin.
+      buildRootBlockSpacingCss(page.content),
+    ]
+      .filter(Boolean)
+      .join('\n')
+  : '';
+
+// Best-effort, not a second point of failure: when the site or domain does
+// not exist or the API does not answer, `chrome` stays `null` and the code
+// below falls back to the bare <NotFound /> as always — the same "nothing
+// to show" collapse search.astro already uses for the exact same problem (a
+// route with no real Page behind it).
+const chrome =
+  !page && locale
+    ? await getPublishedSiteChrome(Astro.url.hostname, locale).catch(
+        () => null,
+      )
+    : null;
+
+
+// LanguageSwitcher resolves its links from `translations`, matched against
+// `site.enabledLocales` — there's no real Page here to have real
+// translations, but "switch language on a 404" only ever makes sense as
+// "go to that language's Home" anyway, so this fakes exactly that: one
+// fabricated translation entry per enabled locale, all pointing at "home".
+// Without this the switcher silently renders nothing (0 links) on every
+// themed error page — found live-testing this exact fix, not guessed.
+const errorPageTranslations =
+  chrome?.site.enabledLocales.map((enabledLocale) => ({
+    locale: enabledLocale,
+    slug: 'home',
+    // "home" is a root-level page, so there is no chain to walk.
+    ancestorSlugs: [],
+  })) ?? [];
+
+---
+
+{
+  page ? (
+    <PageLayout
+      seoMeta={page.seoMeta}
+      locale={page.locale}
+      translations={page.translations}
+      site={page.site}
+      header={page.header}
+      footer={page.footer}
+      headerSticky={page.headerSticky}
+      ancestors={page.ancestors}
+      instanceStyleCss={instanceStyleCss}
+      editable={editable}
+      noindex={isTerm(page) && page.term.noindex}
+      route="page"
+    >
+      {
+        // The generic baseline layout every page gets for free: a vertical
+        // gap between stacked blocks, and a centered max-width column with
+        // horizontal padding — before this, BlockRenderer/PageLayout
+        // applied neither, so every page ran blocks together edge-to-edge
+        // AND stretched full-viewport-width on a wide desktop, regardless
+        // of theme. One wrapper here fixes both site-wide instead of
+        // touching all ~46 block files individually.
+        //
+        // The width itself is no longer written here (ADR-0049). It used
+        // to be `max-w-5xl px-6` on the <main> below — one literal number
+        // that no theme could reach, because it sat inside the slot a
+        // theme's ContentShell wraps. It now lives on the per-block
+        // wrapper as `.kometio-root-block`, reading a theme token the site
+        // can override, which is what makes `wide` and `full` possible at
+        // all: a constraint on the common ancestor is one no descendant
+        // can escape.
+        //
+        // The vertical gap itself is `margin`, not flex `gap`, on a
+        // one-per-block wrapper below (rootBlockSpacing) — this is what
+        // makes it possible for a root-level block to override its own
+        // spacing (docs/adr/0022's per-instance style popover,
+        // "Style this block" → editor-app's block-toolbar-overlay.tsx)
+        // without affecting spacing anywhere else on the page.
+      }
+      <main
+        id="main-content"
+        class="flex flex-col"
+        data-kometio-root-blocks={editable ? 'page' : undefined}
+      >
+        {page.content.map((block) => {
+          const wrapper = rootBlockWrapper(block);
+          return (
+            <div
+              class:list={wrapper.classNames}
+              data-kometio-align={wrapper.align}
+              data-kometio-hover={wrapper.hover}
+            >
+              <BlockRenderer
+                block={block}
+                locale={page.locale}
+                translations={page.translations}
+                site={page.site}
+                ancestors={page.ancestors}
+                currentPageTitle={page.seoMeta.title}
+                editable={editable}
+              />
+            </div>
+          );
+        })}
+      </main>
+    </PageLayout>
+  ) : chrome && locale ? (
+    <PageLayout
+      seoMeta={{ title: '404', description: '' }}
+      locale={locale}
+      translations={errorPageTranslations}
+      site={chrome.site}
+      header={chrome.header}
+      footer={chrome.footer}
+      headerSticky={chrome.headerSticky}
+      ancestors={[]}
+      route="error"
+    >
+      <NotFound locale={locale} />
+    </PageLayout>
+  ) : (
+    <ErrorPageShell title="404" locale={locale}>
+      <NotFound locale={locale} />
+    </ErrorPageShell>
+  )
+}
+
+{/*
+  The entrance animations (docs/adr/0060). Here and not in PageLayout
+  because the wrappers it observes are rendered by THIS component — the
+  header and footer have no root-block wrappers and nothing to animate.
+
+  A module import rather than inline code, like every block's own script:
+  it keeps the logic testable and lets the canvas re-run it after a live
+  insert. A second consumer exists for the same reason the CSP gotcha of
+  2026-09-02 taught — but even with one, this stays a real module rather
+  than inline text.
+*/}
+<script>
+  import { initEntranceAnimations } from '../lib/block-behaviors/entrance-animation';
+  initEntranceAnimations();
+</script>

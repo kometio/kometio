@@ -1,0 +1,78 @@
+---
+import type { SocialLinkProps } from '@kometio/shared-types';
+
+type Props = SocialLinkProps & {
+  /** Resolved by BlockRenderer from the `icon` prop (docs/adr/0023). */
+  iconSvg?: string | null;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { label, url, iconSvg, instanceClass } = Astro.props;
+
+// `rel="noopener"` because a social profile is by definition somebody
+// else's site: without it the opened page can reach back through
+// `window.opener`. `noreferrer` is deliberately NOT added — these links
+// exist to send traffic somewhere, and the referrer is how that traffic
+// is recognised at the other end.
+//
+// `aria-label` sits on the <a> rather than on the icon, so it names the
+// thing that is actually focusable. It is why `label` is required: an
+// icon-only link with no accessible name is announced as "link" and
+// nothing else.
+---
+
+{
+  url && (
+    <a
+      class:list={['kometio-social-link', instanceClass]}
+      href={url}
+      rel="noopener"
+      target="_blank"
+      aria-label={label}
+    >
+      {/* No icon picked yet: the label itself keeps the link usable and
+          visible instead of rendering an empty box nobody can click. */}
+      {iconSvg ? (
+        <span
+          class="kometio-social-link__icon"
+          aria-hidden="true"
+          set:html={iconSvg}
+        />
+      ) : (
+        <span class="kometio-social-link__fallback">{label}</span>
+      )}
+    </a>
+  )
+}
+
+<style>
+  .kometio-social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* A comfortable target on a touch screen: 2.5rem is 40px, and the
+       icon inside stays 1.25rem. */
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--kometio-override-text, inherit);
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 50%);
+    border: var(--kometio-override-border-width, 1px)
+      var(--kometio-override-border-style, solid)
+      var(--kometio-override-border-color, var(--border));
+  }
+  .kometio-social-link__icon {
+    display: inline-flex;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .kometio-social-link__icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  .kometio-social-link__fallback {
+    font-size: 0.75rem;
+    padding-inline: 0.25rem;
+  }
+</style>

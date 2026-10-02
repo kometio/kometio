@@ -1,0 +1,15 @@
+---
+import ErrorPageShell from '../components/ErrorPageShell.astro';
+import NotFound from '../components/NotFound.astro';
+
+Astro.response.status = 404;
+
+// A truly locale-less URL (Astro's own last-resort 404, not a within-
+// locale "page not found" — that's PublicPageContent.astro's own null-page
+// branch, which DOES try the real site chrome) has no reliable locale to
+// fetch a site's chrome with, so this stays the plain bare shell.
+---
+
+<ErrorPageShell title="404">
+	<NotFound />
+</ErrorPageShell>

@@ -1,0 +1,181 @@
+---
+import type { PickedMedia, ProductGalleryProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+
+type Props = ProductGalleryProps & {
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const { images, aspectRatio, locale, editable, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+
+type ShownImage = ProductGalleryProps['images'][number] & { media: PickedMedia };
+const shown = images.filter(
+  (image): image is ShownImage => image.media !== null,
+);
+---
+
+{
+  shown.length > 0 ? (
+    <div
+      class:list={[
+        'kometio-product-gallery',
+        `kometio-product-gallery--ratio-${aspectRatio}`,
+        instanceClass,
+      ]}
+      data-kometio-product-gallery
+    >
+      <div class="kometio-product-gallery__stage">
+        {/* Every picture is in the page from the start and only one is
+            shown: switching is then instant, and the first picture is
+            the one a search engine and a no-JS visitor see. */}
+        {shown.map((image, index) => (
+          <figure
+            class="kometio-product-gallery__slide"
+            hidden={index !== 0}
+          >
+            <OptimizedImage
+              media={image.media}
+              alt={image.isDecorative ? '' : image.alt}
+              class="kometio-product-gallery__image"
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+            {image.caption && (
+              <figcaption class="kometio-product-gallery__caption">
+                {image.caption}
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+      {shown.length > 1 && (
+        <div
+          class="kometio-product-gallery__thumbs"
+          role="group"
+          aria-label={i18n.t('productGallery.thumbnails')}
+        >
+          {shown.map((image, index) => (
+            <button
+              type="button"
+              class="kometio-product-gallery__thumb"
+              aria-pressed={index === 0 ? 'true' : 'false'}
+              aria-label={i18n.t('productGallery.show', {
+                index: index + 1,
+                total: shown.length,
+              })}
+            >
+              <OptimizedImage
+                media={image.media}
+                alt=""
+                class="kometio-product-gallery__thumb-image"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  ) : (
+    editable && (
+      <p class="kometio-product-gallery--empty">
+        {i18n.t('productGallery.empty')}
+      </p>
+    )
+  )
+}
+
+<script>
+  import { productGalleryBehaviors } from '../../lib/block-behaviors/product-gallery';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, productGalleryBehaviors);
+</script>
+
+<style>
+  /* 40rem unless told otherwise: dropped straight on a page, a square
+     picture as wide as the content column was a metre tall on a desktop.
+     Beside the product's words, in a column, the column decides. */
+  .kometio-product-gallery {
+    display: grid;
+    gap: var(--kometio-override-gap, 0.75rem);
+    min-width: 0;
+    max-width: var(--kometio-override-max-width, 40rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-product-gallery__slide {
+    margin: 0;
+  }
+
+  :global(.kometio-product-gallery__image) {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    border-radius: var(--kometio-override-radius, var(--radius));
+  }
+
+  .kometio-product-gallery--ratio-square :global(.kometio-product-gallery__image) {
+    aspect-ratio: 1 / 1;
+  }
+  .kometio-product-gallery--ratio-landscape :global(.kometio-product-gallery__image) {
+    aspect-ratio: 4 / 3;
+  }
+  .kometio-product-gallery--ratio-portrait :global(.kometio-product-gallery__image) {
+    aspect-ratio: 3 / 4;
+  }
+  .kometio-product-gallery--ratio-wide :global(.kometio-product-gallery__image) {
+    aspect-ratio: 16 / 9;
+  }
+
+  .kometio-product-gallery__caption {
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  /* A row that scrolls rather than wraps: twelve thumbnails on a phone are
+     one swipe, not four rows pushing the price off the screen. */
+  .kometio-product-gallery__thumbs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-block-end: 0.25rem;
+  }
+
+  .kometio-product-gallery__thumb {
+    flex: 0 0 4rem;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: calc(var(--radius) * 0.75);
+    background: none;
+    cursor: pointer;
+    opacity: 0.7;
+  }
+
+  .kometio-product-gallery__thumb[aria-pressed='true'] {
+    border-color: var(--primary);
+    opacity: 1;
+  }
+
+  .kometio-product-gallery__thumb:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  :global(.kometio-product-gallery__thumb-image) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+  .kometio-product-gallery--empty {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+</style>

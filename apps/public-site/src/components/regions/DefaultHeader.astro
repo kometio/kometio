@@ -1,0 +1,46 @@
+---
+import type { ThemeHeaderProps } from '@kometio/theme-runtime';
+
+/**
+ * The header wrapper used when the active theme supplies no
+ * `regions/Header.astro` of its own. The markup is identical to what
+ * PageLayout.astro held inline before regions existed — a theme that
+ * declares nothing gets exactly the page it always had.
+ *
+ * The `<div data-kometio-root-blocks>` holding the blocks is NOT here: it
+ * arrives as a slot from core, so it stays core's even when a theme
+ * replaces this file (it is the visual editor's hook for root-level
+ * insertion).
+ */
+type Props = ThemeHeaderProps;
+
+const { sticky } = Astro.props;
+---
+
+<header
+	class:list={[
+		'border-b border-border bg-background px-6 py-4',
+		{ 'kometio-header--sticky': sticky },
+	]}
+>
+	<slot />
+</header>
+
+<style>
+	/* Here rather than in the layout because Astro's scoped styles follow
+	   the file the element is written in: the moment <header> moved here,
+	   the rule back in the layout stopped matching (caught by the first
+	   diff of the rendered HTML, not by reasoning).
+
+	   Configurable per (site, locale) — the header editor's "sticky on
+	   scroll" switch (docs/adr/0018). The z-index is high enough to sit
+	   above the content but not high enough to fight the hamburger and
+	   nav-dropdown panels, which use 10. A theme supplying its own
+	   regions/Header.astro receives `sticky` as a prop and decides for
+	   itself how to honour it. */
+	.kometio-header--sticky {
+		position: sticky;
+		top: 0;
+		z-index: 40;
+	}
+</style>

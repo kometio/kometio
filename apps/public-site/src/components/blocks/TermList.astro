@@ -1,0 +1,187 @@
+---
+import type { TermListProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import {
+  selectedTermSlugs,
+  termFilterHref,
+  TERM_PARAM,
+} from '../../lib/filter-grid-items';
+
+type Props = TermListProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The language being rendered: its own words are the only ones it has. */
+  locale?: string;
+};
+
+const { behaviour, style, showAll, choices, instanceClass, locale } =
+  Astro.props;
+const i18n = new Translator(locale ?? '');
+
+// Empty both when no dimension has been chosen and when the one chosen
+// has no terms in this language. The reader is shown the same nothing
+// either way, which is honest: there is nothing to narrow by.
+const isFilter = behaviour === 'filter';
+const selected = isFilter ? selectedTermSlugs(Astro.url) : [];
+
+/** Where one control points: a narrower version of this page, or the term's own page. */
+function hrefFor(slug: string, path: string): string {
+  return isFilter ? termFilterHref(Astro.url, slug) : path;
+}
+
+const label = isFilter ? i18n.t('termList.label') : i18n.t('termList.browseLabel');
+---
+
+{
+  choices.length > 0 && (
+    <nav
+      class:list={[
+        'kometio-term-list',
+        `kometio-term-list--${style}`,
+        instanceClass,
+      ]}
+      aria-label={label}
+      data-kometio-term-list={isFilter ? 'filter' : 'browse'}
+    >
+      {style === 'dropdown' ? (
+        /*
+         * A real GET form, so it narrows the page with JavaScript off as
+         * well: the browser writes `?term=…` itself and the server answers
+         * with the filtered archive. The enhancement below only removes
+         * the round trip.
+         */
+        <form class="kometio-term-list__form" method="get" action={Astro.url.pathname}>
+          <label class="kometio-term-list__select-label">
+            <span class="kometio-term-list__select-text">
+              {i18n.t('termList.selectLabel')}
+            </span>
+            <select class="kometio-term-list__select" name={TERM_PARAM}>
+              <option value="">{i18n.t('termList.all')}</option>
+              {choices.map((choice) => (
+                <option value={choice.slug} selected={selected.includes(choice.slug)}>
+                  {choice.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button class="kometio-term-list__apply" type="submit">
+            {i18n.t('termList.apply')}
+          </button>
+        </form>
+      ) : (
+        <ul class="kometio-term-list__items">
+          {isFilter && showAll && (
+            <li class="kometio-term-list__item">
+              <a
+                class="kometio-term-list__control"
+                href={termFilterHref(Astro.url, null)}
+                aria-current={selected.length === 0 ? 'true' : undefined}
+              >
+                {i18n.t('termList.all')}
+              </a>
+            </li>
+          )}
+          {choices.map((choice) => (
+            <li class="kometio-term-list__item">
+              <a
+                class="kometio-term-list__control"
+                href={hrefFor(choice.slug, choice.path)}
+                aria-current={selected.includes(choice.slug) ? 'true' : undefined}
+              >
+                {choice.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </nav>
+  )
+}
+
+<script>
+  // No framework (docs/adr/0007): the links work on their own, and this
+  // only spares the round trip. In a plain importable module rather than
+  // inline, both so a live canvas insert can re-run it and because a
+  // script with one consumer gets inlined and then dropped by the CSP —
+  // see block-behaviors/block-behavior-registry.ts.
+  import { termListBehaviors } from '../../lib/block-behaviors/term-list';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, termListBehaviors);
+</script>
+
+<style>
+  /* An unstyled row of links is the fallback everywhere, so a TermList
+     nobody has styled still reads as a set of controls. */
+  .kometio-term-list {
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    border-width: var(--kometio-override-border-width, 0);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+  }
+
+  .kometio-term-list__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    /* Wraps rather than scrolls: a dimension with twenty terms is a real
+       thing, and a row that overflows the page is not (the responsive
+       rule every block here follows). */
+    flex-wrap: wrap;
+    gap: var(--kometio-override-gap, 0.5rem);
+    align-items: center;
+  }
+
+  .kometio-term-list__control {
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* A pill, which is what "chip" means to everybody who has used one. */
+  .kometio-term-list--chips .kometio-term-list__control {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.9em;
+  }
+
+  .kometio-term-list--buttons .kometio-term-list__control {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid currentColor;
+    border-radius: 0.375rem;
+  }
+
+  .kometio-term-list--links .kometio-term-list__control {
+    text-decoration: underline;
+  }
+
+  /* The one that says which is on. `aria-current` and not a class: the
+     mark a screen reader reads and the mark everybody else sees are the
+     same fact, and two of them would drift apart. */
+  .kometio-term-list__control[aria-current] {
+    color: var(--background, canvas);
+    background: var(--foreground, currentColor);
+  }
+
+  .kometio-term-list__form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--kometio-override-gap, 0.5rem);
+    align-items: end;
+  }
+
+  .kometio-term-list__select-label {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .kometio-term-list__select-text {
+    font-size: 0.85em;
+  }
+</style>

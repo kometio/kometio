@@ -1,0 +1,126 @@
+---
+import type { BannerProps } from '@kometio/shared-types';
+import { resolveLinkHref } from '@kometio/theme-runtime';
+
+type Props = BannerProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The variant's modifier class, from BlockRenderer — see blockVariantClassName. */
+  variantClass?: string | null;
+};
+
+const {
+  title,
+  text,
+  buttonLabel,
+  linkType,
+  page,
+  url,
+  instanceClass,
+  variantClass,
+} = Astro.props;
+// One answer for both questions: where this points, and whether there
+// is a button at all. They used to be two expressions that could
+// disagree — `hasLink` was true for a picked page with no address in
+// this locale, and `href` then fell back to the url field (ADR-0063).
+const href = resolveLinkHref({ linkType, page, url });
+const hasLink = href !== null;
+---
+
+{/* The words and the button are wrapped separately so that `split` has
+    two things to put on the two ends of a row. Both wrappers are emitted
+    in every variant: a structure that changes with the look is a
+    structure a theme override cannot rely on. */}
+<div class:list={['kometio-banner', variantClass, instanceClass]}>
+  <div class="kometio-banner__body">
+    <h2 class="kometio-banner__title" data-kometio-field="title">{title}</h2>
+    <div class="kometio-banner__text kometio-rich-text" data-kometio-field="text" set:html={text} />
+  </div>
+  {
+    hasLink && (
+      <div class="kometio-banner__actions">
+        <a class="kometio-banner__button" href={href} data-kometio-field="buttonLabel">
+          {buttonLabel}
+        </a>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .kometio-banner {
+    padding: var(--kometio-override-padding-y, 2.5rem)
+      var(--kometio-override-padding-x, 1.5rem);
+    border-radius: var(--kometio-override-radius, 12px);
+    background: var(--kometio-override-bg, var(--secondary));
+    color: var(--kometio-override-text, inherit);
+    /* Zero width by default, so the frame is there to be turned on and
+       the banner looks exactly as it did before. */
+    border-width: var(--kometio-override-border-width, 0);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+    text-align: center;
+  }
+  .kometio-banner__title {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  .kometio-banner__text {
+    margin: 0.5rem 0 0;
+  }
+  .kometio-banner__button {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    text-decoration: none;
+  }
+
+  /*
+   * The call-to-action bar: the words on one side, the button on the
+   * other (ADR-0058). This is what a banner looks like on most sites, and
+   * it was the one shape a block whose markup was a fixed centred stack
+   * could not make.
+   *
+   * `flex-wrap` rather than a container query. A query here would measure
+   * the banner's ANCESTOR, and what decides whether a paragraph and a
+   * button fit on one line is the width of the banner itself — the two
+   * are not the same number the moment the banner has a max-width, sits
+   * in a column, or the ancestor is padded. Wrapping asks the question at
+   * the right element and needs no breakpoint chosen in advance.
+   */
+  .kometio-banner--split {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--kometio-override-gap, 1.5rem);
+    text-align: start;
+  }
+  /* The minimum below which the words stop being readable beside a
+     button: under it the two put themselves on separate lines. `1 1` and
+     not `0 1`, so the body takes the whole width once it is alone on its
+     line rather than leaving the button's share empty beside it. */
+  .kometio-banner--split .kometio-banner__body {
+    flex: 1 1 18rem;
+  }
+  .kometio-banner--split .kometio-banner__actions {
+    flex: 0 0 auto;
+  }
+  /* The button carries a top margin for the stacked look, where it sits
+     under the text; beside the words, and on its own wrapped line where
+     the flex gap already provides the space, that margin only pushes it
+     out of alignment. */
+  .kometio-banner--split .kometio-banner__button {
+    margin-top: 0;
+  }
+
+  /* The quiet banner: a frame instead of a fill, for a page that already
+     has a filled block above it. */
+  .kometio-banner--outline {
+    background: var(--kometio-override-bg, transparent);
+    border-width: var(--kometio-override-border-width, 1px);
+  }
+</style>

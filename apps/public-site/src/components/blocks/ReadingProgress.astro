@@ -1,0 +1,65 @@
+---
+import type { ReadingProgressProps } from '@kometio/shared-types';
+
+type Props = ReadingProgressProps & {
+  instanceClass?: string | null;
+};
+
+const { position, instanceClass } = Astro.props;
+---
+
+{
+  /* aria-hidden: the bar repeats what the scrollbar already says, and a
+     progressbar announced at every scroll would be noise. */
+}
+<div
+  class:list={[
+    'kometio-reading-progress',
+    `kometio-reading-progress--${position}`,
+    instanceClass,
+  ]}
+  aria-hidden="true"
+>
+  <span class="kometio-reading-progress__bar"></span>
+</div>
+
+<style>
+  .kometio-reading-progress {
+    position: fixed;
+    inset-inline: 0;
+    z-index: 50;
+    height: var(--kometio-override-min-height, 3px);
+    pointer-events: none;
+  }
+
+  .kometio-reading-progress--top {
+    top: 0;
+  }
+
+  .kometio-reading-progress--bottom {
+    bottom: 0;
+  }
+
+  .kometio-reading-progress__bar {
+    display: block;
+    height: 100%;
+    background: var(--kometio-override-bg, var(--primary));
+    transform: scaleX(var(--kometio-reading-progress, 0));
+    /* From the start edge in either direction: in Arabic the bar fills
+       from the right. */
+    transform-origin: left;
+  }
+
+  :global([dir='rtl']) .kometio-reading-progress__bar {
+    transform-origin: right;
+  }
+</style>
+
+<script>
+  // No framework (docs/adr/0007). In a module shared with the canvas's
+  // re-run registry, so it is bundled as a file the CSP allows rather than
+  // inlined and dropped — see block-behavior-registry.ts.
+  import { readingProgressBehaviors } from '../../lib/block-behaviors/reading-progress';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, readingProgressBehaviors);
+</script>

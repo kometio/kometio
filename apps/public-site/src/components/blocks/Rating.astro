@@ -1,0 +1,50 @@
+---
+import {
+  STAR_ICON_PATH,
+  type RatingProps,
+} from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = RatingProps & { locale?: string; instanceClass?: string | null };
+
+const { rating, label, locale, instanceClass } = Astro.props;
+// Said in the page's language: this was Italian on every site, so an
+// English page's stars were announced as "5 su 5 stelle".
+const i18n = new Translator(locale ?? '');
+
+const STAR_POSITIONS = [1, 2, 3, 4, 5];
+---
+
+<div class:list={['kometio-rating', instanceClass]}>
+  {label && <p class="kometio-rating__label">{label}</p>}
+  <div
+    class="kometio-rating__stars"
+    role="img"
+    aria-label={i18n.t('rating.label', { value: rating })}
+  >
+    {
+      STAR_POSITIONS.map((position) => (
+        // Filled stars are the rating colour (global.css), not a brand one.
+        <svg viewBox="0 0 20 20" width="24" height="24" aria-hidden="true">
+          <path
+            d={STAR_ICON_PATH}
+            fill={position <= rating ? 'var(--kometio-rating)' : 'var(--border)'}
+          />
+        </svg>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .kometio-rating {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  .kometio-rating__stars {
+    display: flex;
+    gap: 4px;
+  }
+</style>

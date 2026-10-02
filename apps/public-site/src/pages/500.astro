@@ -1,0 +1,102 @@
+---
+// Security review 2026-08-24, "third pass": [locale]/[...slug].astro and
+// [locale]/index.astro call the public API without a try/catch — a backend
+// 500 or a timeout (see public-api-client.ts) propagated as an unhandled
+// exception. Astro (output:'server', the Node adapter) renders this page
+// automatically for any error not caught during the SSR render — covering
+// every route, not just those two, without an ad-hoc try/catch in each.
+import ErrorPageShell from '../components/ErrorPageShell.astro';
+import ServerError from '../components/ServerError.astro';
+import NotSetUp from '../components/NotSetUp.astro';
+import {
+  getPublishedSiteChrome,
+  hasDeploymentBeenSetUp,
+} from '../lib/public-api-client';
+import { editorAppUrl } from '../lib/editor-app-url';
+import PageLayout from '../layouts/PageLayout.astro';
+
+Astro.response.status = 500;
+
+// One failure here has a remedy worth naming: a deployment nobody has run
+// the first-run wizard on yet. Every route that needs a site ends up on
+// this page in that state, so this is the one place the check has to
+// happen — and it is cheap, since it only runs when something has already
+// gone wrong.
+//
+// It would be more honest as a 503 (the installation is fine, it is
+// unfinished), and it cannot be: Astro serves this page with a hardcoded
+// 500 for any uncaught SSR error, whatever `Astro.response.status` says
+// here — measured with a deliberately absurd status code, which came back
+// 500 too. The line above is decorative for the same reason.
+const setUp = await hasDeploymentBeenSetUp();
+
+// requireEnv throws when unset, and this page is the last error handler —
+// a missing EDITOR_APP_URL must not become a second failure with nowhere
+// to go. The message degrades to "open the editor" instead of a link.
+const resolvedEditorAppUrl = (() => {
+  try {
+    return editorAppUrl();
+  } catch {
+    return null;
+  }
+})();
+
+// This IS the final error handler for the whole app — unlike every other
+// route, a failure here has nowhere left to propagate to, so the chrome
+// fetch below is wrapped in an explicit try/catch rather than left to
+// throw: the very reason we're on this page might be that the backend
+// itself is down, in which case this same fetch fails too, and that must
+// resolve to the bare fallback below, not a second unhandled exception.
+//
+// No [locale] segment on this route (it's Astro's own catch-all for an
+// unhandled exception, can fire on any path) — the first path segment is
+// a reasonable-effort guess, not a validated locale; getPublishedSiteChrome
+// itself resolves to `null` for one that isn't real, which already falls
+// through to the bare shell below.
+const guessedLocale = Astro.url.pathname.split('/').filter(Boolean)[0];
+const chrome = guessedLocale
+  ? await getPublishedSiteChrome(Astro.url.hostname, guessedLocale).catch(
+      () => null,
+    )
+  : null;
+
+
+// Same fabricated "switch language -> go to that language's Home" links as
+// PublicPageContent.astro's themed 404 branch — without this LanguageSwitcher
+// resolves 0 links from an empty `translations` array and renders nothing.
+const errorPageTranslations =
+  chrome?.site.enabledLocales.map((enabledLocale) => ({
+    locale: enabledLocale,
+    slug: 'home',
+    // "home" is a root-level page, so there is no chain to walk.
+    ancestorSlugs: [],
+  })) ?? [];
+---
+
+{
+  !setUp ? (
+    // Before the wizard has run there is no site, no theme and no chrome
+    // to render this inside — NotSetUp brings its own.
+    <ErrorPageShell title="Not set up yet">
+      <NotSetUp editorAppUrl={resolvedEditorAppUrl} />
+    </ErrorPageShell>
+  ) : chrome && guessedLocale ? (
+    <PageLayout
+      seoMeta={{ title: '500', description: '' }}
+      locale={guessedLocale}
+      translations={errorPageTranslations}
+      site={chrome.site}
+      header={chrome.header}
+      footer={chrome.footer}
+      headerSticky={chrome.headerSticky}
+      ancestors={[]}
+      route="error"
+    >
+      <ServerError locale={guessedLocale} />
+    </PageLayout>
+  ) : (
+    <ErrorPageShell title="500">
+      <ServerError locale={guessedLocale} />
+    </ErrorPageShell>
+  )
+}

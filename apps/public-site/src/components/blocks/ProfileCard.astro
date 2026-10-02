@@ -1,0 +1,89 @@
+---
+import type { ProfileCardProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import { resolveThemeBlockOverride } from '../../lib/resolve-theme-block-override';
+import { telHref } from '../../lib/contact-links';
+import TeamMemberCore from './TeamMember.astro';
+
+type Props = ProfileCardProps & {
+  locale: string;
+  themeName: string;
+  instanceClass?: string | null;
+};
+
+const { photo, name, role, bio, email, phone, locale, themeName, instanceClass } =
+  Astro.props;
+const i18n = new Translator(locale);
+// The theme's Team member card when it has one, so a profile and a team
+// on the same site are the same card.
+const TeamMember = resolveThemeBlockOverride(
+  'TeamMember',
+  TeamMemberCore,
+  themeName,
+);
+const emailAddress = email.trim();
+const phoneNumber = phone.trim();
+---
+
+<div class:list={['kometio-profile-card', instanceClass]}>
+  <TeamMember photo={photo} name={name} role={role} bio={bio} />
+  {(emailAddress || phoneNumber) && (
+    <ul class="kometio-profile-card__contacts">
+      {emailAddress && (
+        <li>
+          <a href={`mailto:${emailAddress}`}>
+            <span class="kometio-visually-hidden">{i18n.t('contactDetails.email')}: </span>
+            {emailAddress}
+          </a>
+        </li>
+      )}
+      {phoneNumber && (
+        <li>
+          <a href={telHref(phoneNumber)}>
+            <span class="kometio-visually-hidden">{i18n.t('contactDetails.phone')}: </span>
+            {phoneNumber}
+          </a>
+        </li>
+      )}
+    </ul>
+  )}
+</div>
+
+<style>
+  /* The card's own styling lives on this wrapper, and the Team member
+     inside starts from its own defaults: the override variables set here
+     would otherwise reach it too, and a padding set on the card would be
+     applied twice. */
+  .kometio-profile-card {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: center;
+    text-align: center;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-profile-card > :global(*) {
+    --kometio-override-bg: initial;
+    --kometio-override-radius: initial;
+    --kometio-override-padding-x: initial;
+    --kometio-override-padding-y: initial;
+  }
+
+  .kometio-profile-card__contacts {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+
+  .kometio-profile-card__contacts a {
+    color: inherit;
+    overflow-wrap: anywhere;
+  }
+</style>

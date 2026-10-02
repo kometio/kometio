@@ -1,0 +1,224 @@
+---
+import type { GalleryProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+import { resolveImageAlt } from '../../lib/image-alt';
+import { GRID_ITEM_SIZES } from '../../lib/image-sizes';
+
+type Props = GalleryProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /**
+   * `masonry` is MasonryGallery: the same pictures in columns, each at its
+   * own height. Not a prop of the Gallery block — its column count means
+   * the same thing in both, its shapes do not.
+   */
+  layout?: 'grid' | 'masonry';
+};
+
+const {
+  images,
+  columns,
+  aspectRatio,
+  lightbox,
+  locale,
+  instanceClass,
+  layout = 'grid',
+} = Astro.props;
+const i18n = new Translator(locale);
+---
+
+<div
+  class:list={[
+    // The type class, for the site-wide style of Gallery; `gallery` is
+    // what everything written before it already targets.
+    'kometio-gallery',
+    'gallery',
+    { 'gallery--masonry': layout === 'masonry' },
+    `gallery--cols-${columns}`,
+    `gallery--ratio-${aspectRatio}`,
+    instanceClass,
+  ]}
+  data-kometio-lightbox={lightbox ? '' : undefined}
+  data-kometio-lightbox-close={lightbox ? i18n.t('image.lightboxClose') : undefined}
+>
+  {
+    images.some((image) => image.media) ? (
+      images.map((image) => {
+        const alt = resolveImageAlt(image);
+        return image.media ? (
+          <figure class="gallery-item">
+            {/* Same reasoning as Image.astro: a real <button> when the
+                picture opens, so it is reachable by keyboard and
+                announced as something that does something. */}
+            {lightbox ? (
+              <button
+                type="button"
+                class="gallery-item__zoom"
+                data-kometio-lightbox-src={image.media.url}
+                data-kometio-lightbox-alt={alt}
+                aria-label={i18n.t('image.lightboxOpen')}
+              >
+                <OptimizedImage
+                  media={image.media}
+                  alt={alt}
+                  class="gallery-image"
+                  sizes={GRID_ITEM_SIZES}
+                />
+              </button>
+            ) : (
+              <OptimizedImage
+                media={image.media}
+                alt={alt}
+                class="gallery-image"
+                sizes={GRID_ITEM_SIZES}
+              />
+            )}
+            {image.caption && (
+              <figcaption class="gallery-item__caption">
+                {image.caption}
+              </figcaption>
+            )}
+          </figure>
+        ) : null;
+      })
+    ) : (
+      <p>{i18n.t('gallery.empty')}</p>
+    )
+  }
+</div>
+
+<style>
+  /* `gap` is the one that was missing most: the space between thumbnails
+     was a fixed 0.5rem, so a tight contact sheet and an airy portfolio
+     were the same gallery. Fallbacks are the values already in use. */
+  .gallery {
+    display: grid;
+    /* `auto` is the responsive grid this block always had — as many
+       200px columns as fit. A fixed count is what a three-up layout that
+       must STAY three-up needs, and `minmax(0, 1fr)` rather than `1fr`
+       so a wide picture cannot push the track past its share. */
+    grid-template-columns: var(
+      --kometio-gallery-columns,
+      repeat(auto-fill, minmax(200px, 1fr))
+    );
+    gap: var(--kometio-override-gap, 0.5rem);
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  /* :global() because OptimizedImage (a child component) renders the
+  actual <img> — see Image.astro's own style block for the full reasoning. */
+  .gallery--cols-2 {
+    --kometio-gallery-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gallery--cols-3 {
+    --kometio-gallery-columns: repeat(3, minmax(0, 1fr));
+  }
+  .gallery--cols-4 {
+    --kometio-gallery-columns: repeat(4, minmax(0, 1fr));
+  }
+  .gallery--cols-5 {
+    --kometio-gallery-columns: repeat(5, minmax(0, 1fr));
+  }
+  .gallery--cols-6 {
+    --kometio-gallery-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  /* A fixed column count has to stop being fixed on a narrow screen, or
+     six columns on a phone are six unreadable slivers. Container query,
+     not media: a gallery in a sidebar should collapse for the same
+     reason (ADR-0047). */
+  @container (max-width: 768px) {
+    .gallery--cols-4,
+    .gallery--cols-5,
+    .gallery--cols-6 {
+      --kometio-gallery-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @container (max-width: 480px) {
+    .gallery--cols-2,
+    .gallery--cols-3,
+    .gallery--cols-4,
+    .gallery--cols-5,
+    .gallery--cols-6 {
+      --kometio-gallery-columns: minmax(0, 1fr);
+    }
+  }
+
+  .gallery-item {
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* MasonryGallery. CSS columns rather than a grid: a grid row is as tall
+     as its tallest picture, which is the gap masonry exists to close.
+     Pictures run down each column in page order, and a figure is never
+     split across two. */
+  .gallery--masonry {
+    display: block;
+    columns: var(--kometio-masonry-columns, 3);
+    column-gap: var(--kometio-override-gap, 0.5rem);
+  }
+  .gallery--masonry.gallery--cols-2 {
+    --kometio-masonry-columns: 2;
+  }
+  .gallery--masonry.gallery--cols-4 {
+    --kometio-masonry-columns: 4;
+  }
+  .gallery--masonry .gallery-item {
+    break-inside: avoid;
+    margin-block-end: var(--kometio-override-gap, 0.5rem);
+  }
+  @container (max-width: 768px) {
+    .gallery--masonry.gallery--cols-4 {
+      --kometio-masonry-columns: 3;
+    }
+  }
+  @container (max-width: 480px) {
+    .gallery--masonry.gallery--cols-3,
+    .gallery--masonry.gallery--cols-4 {
+      --kometio-masonry-columns: 2;
+    }
+  }
+  .gallery-item__zoom {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+    width: 100%;
+  }
+  .gallery-item__caption {
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  :global(.gallery-image) {
+    width: 100%;
+    object-fit: cover;
+  }
+  /* `square` is what this block always rendered, so it stays the
+     default; `original` is the one that declares nothing. */
+  .gallery--ratio-square :global(.gallery-image) {
+    aspect-ratio: 1 / 1;
+  }
+  .gallery--ratio-landscape :global(.gallery-image) {
+    aspect-ratio: 4 / 3;
+  }
+  .gallery--ratio-portrait :global(.gallery-image) {
+    aspect-ratio: 3 / 4;
+  }
+  .gallery--ratio-wide :global(.gallery-image) {
+    aspect-ratio: 16 / 9;
+  }
+</style>
+
+<script>
+  import { lightboxBehaviors } from '../../lib/block-behaviors/lightbox';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, lightboxBehaviors);
+</script>

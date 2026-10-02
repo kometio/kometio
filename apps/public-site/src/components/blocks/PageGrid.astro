@@ -1,0 +1,297 @@
+---
+import type { PageGridProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import {
+  gridPageHref,
+  paginateGridItems,
+} from '../../lib/paginate-grid-items';
+import { filterGridItems, selectedTermSlugs } from '../../lib/filter-grid-items';
+
+type Props = PageGridProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  /** The language being rendered, so a date is written the way its readers write dates. */
+  locale?: string;
+  /**
+   * Whether a `TermList` on this page may narrow this list.
+   *
+   * True for an archive, which is what a filter is for. False where the
+   * list is an answer about one page rather than a list of the site's
+   * own — `RelatedPages` delegates here, and narrowing "what else to
+   * read" by the filter the reader set on some other list would empty it
+   * for no reason they could see.
+   */
+  filterable?: boolean;
+};
+
+const {
+  layout,
+  limit,
+  perPage,
+  emptyText,
+  items,
+  instanceClass,
+  locale,
+  filterable = true,
+} = Astro.props;
+const i18n = new Translator(locale ?? '');
+
+// `items` is resolved server-side (resolvePageGridItems) and is empty
+// both when the term has no pages and when the block has no term yet —
+// the reader is shown the same nothing either way, which is correct: an
+// author who has not chosen a term has not asked for anything.
+// The reader's own narrowing first, then the author's cap, then the
+// slice: a filtered archive of three articles is three articles, not the
+// first three of everything with two of them hidden.
+const narrowed = filterable
+  ? filterGridItems(items, selectedTermSlugs(Astro.url))
+  : items;
+const capped = limit > 0 ? narrowed.slice(0, limit) : narrowed;
+
+// The slice this reader asked for. The page number lives in the address
+// so that a page of an archive can be linked, shared and indexed; with
+// `perPage: 0` there is one page and no pager, which is what every list
+// built before this did.
+const {
+  items: shown,
+  page,
+  totalPages,
+} = paginateGridItems(capped, perPage, Astro.url.searchParams.get('page'));
+
+// Cards are the only layout with room for a date, a summary and a
+// picture; a list of links has nowhere to put them, so it does not
+// pretend to.
+const isCards = layout === 'cards';
+
+/**
+ * The date as this language writes it, and `null` for one we cannot
+ * read: a card is not the place to print "Invalid Date" at a reader.
+ */
+function readableDate(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString(locale ?? undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+---
+
+<!-- One region, so a filter can put a narrowed list in its place without
+     reloading the page: the entries and the pager change together, and
+     the pager of a list that is no longer there would be a set of links
+     to nowhere. See block-behaviors/term-list.ts. -->
+<div class="kometio-page-grid__region" data-kometio-grid>
+{
+  shown.length > 0 ? (
+    <ul
+      class:list={[
+        'kometio-page-grid',
+        `kometio-page-grid--${layout}`,
+        instanceClass,
+      ]}
+    >
+      {shown.map((item) => (
+        <li class="kometio-page-grid__item">
+          {isCards ? (
+            <a class="kometio-page-grid__card" href={item.path}>
+              {item.image && (
+                <img
+                  class="kometio-page-grid__image"
+                  src={item.image}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              {readableDate(item.publishedAt) && (
+                <time
+                  class="kometio-page-grid__date"
+                  datetime={item.publishedAt ?? undefined}
+                >
+                  {readableDate(item.publishedAt)}
+                </time>
+              )}
+              <span class="kometio-page-grid__title">{item.title}</span>
+              {item.excerpt && (
+                <span class="kometio-page-grid__excerpt">{item.excerpt}</span>
+              )}
+            </a>
+          ) : (
+            <a class="kometio-page-grid__link" href={item.path}>
+              {item.title}
+            </a>
+          )}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    emptyText && (
+      <p class:list={['kometio-page-grid__empty', instanceClass]}>{emptyText}</p>
+    )
+  )
+}
+
+{
+  totalPages > 1 && (
+    <nav class="kometio-page-grid__pager" aria-label={i18n.t('pageGrid.pagerLabel')}>
+      {page > 1 ? (
+        <a
+          class="kometio-page-grid__pager-link"
+          href={gridPageHref(Astro.url, page - 1)}
+          rel="prev"
+        >
+          {i18n.t('pageGrid.previous')}
+        </a>
+      ) : (
+        <span class="kometio-page-grid__pager-link" aria-hidden="true" />
+      )}
+      <span class="kometio-page-grid__pager-position" aria-current="page">
+        {i18n.t('pageGrid.pageOf', {
+          page: String(page),
+          total: String(totalPages),
+        })}
+      </span>
+      {page < totalPages ? (
+        <a
+          class="kometio-page-grid__pager-link"
+          href={gridPageHref(Astro.url, page + 1)}
+          rel="next"
+        >
+          {i18n.t('pageGrid.next')}
+        </a>
+      ) : (
+        <span class="kometio-page-grid__pager-link" aria-hidden="true" />
+      )}
+    </nav>
+  )
+}
+</div>
+
+<style>
+  /* Every fallback is what an unstyled list of links already looked
+     like, so an untouched PageGrid is unchanged by the style system. */
+  .kometio-page-grid {
+    list-style: none;
+    margin: 0;
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+    display: grid;
+    gap: var(--kometio-override-gap, 0.75rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    /* Zero width by default, so the frame is there to be turned on. */
+    border-width: var(--kometio-override-border-width, 0);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+    /* Measured by its own children, so the grid can answer to the space
+       it actually has rather than to the viewport (ADR-0050). */
+    container-type: inline-size;
+  }
+
+  .kometio-page-grid--cards,
+  .kometio-page-grid--grid {
+    /* `minmax(0, 1fr)` and not `1fr`: a grid item's min-width is `auto`,
+       so a long title would push the track wider than its share and
+       overflow the page (the responsive rule every block here follows). */
+    grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+  }
+
+  .kometio-page-grid__item {
+    min-width: 0;
+  }
+
+  .kometio-page-grid__link {
+    /* `var(--primary)`, NOT `inherit`: global.css colours a bare `<a>`,
+       and a scoped rule here outranks that layer — `inherit` would
+       quietly turn these links the colour of the surrounding text. */
+    color: var(--kometio-override-text, var(--primary));
+    text-decoration: none;
+  }
+
+  .kometio-page-grid__link:hover,
+  .kometio-page-grid__link:focus-visible {
+    text-decoration: underline;
+  }
+
+  /* The whole card is the link: a reader aiming at the picture, the
+     date or the title of an article all mean the same thing. */
+  .kometio-page-grid__card {
+    display: grid;
+    gap: 0.375rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .kometio-page-grid__image {
+    width: 100%;
+    /* Never taller than wide: an article with a portrait photograph must
+       not push the card below it three screens down. */
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--kometio-override-radius, 0.5rem);
+  }
+
+  .kometio-page-grid__date {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-page-grid__title {
+    font-weight: 600;
+    color: var(--kometio-override-text, inherit);
+  }
+
+  .kometio-page-grid__card:hover .kometio-page-grid__title,
+  .kometio-page-grid__card:focus-visible .kometio-page-grid__title {
+    text-decoration: underline;
+  }
+
+  .kometio-page-grid__excerpt {
+    color: var(--muted-foreground);
+    /* Three lines, whatever the author wrote: cards in one row have to
+       end at the same height or the grid reads as broken. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Three columns with the position in the middle, so "Next" sits where
+     it sat on the previous page instead of sliding as the labels change
+     length between languages. */
+  .kometio-page-grid__pager {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .kometio-page-grid__pager-link:last-child {
+    justify-self: end;
+  }
+
+  .kometio-page-grid__pager-link {
+    color: var(--primary);
+    text-decoration: none;
+  }
+
+  a.kometio-page-grid__pager-link:hover,
+  a.kometio-page-grid__pager-link:focus-visible {
+    text-decoration: underline;
+  }
+
+  .kometio-page-grid__pager-position {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-page-grid__empty {
+    margin: 0;
+    color: var(--kometio-override-text, var(--muted-foreground));
+  }
+</style>

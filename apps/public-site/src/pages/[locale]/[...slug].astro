@@ -1,0 +1,133 @@
+---
+import { authorPathSegment, isCanonicalSlug } from '@kometio/shared-types';
+import {
+  getPublishedAuthorBySlug,
+  getPublishedPageBySlug,
+  getPublishedTermByPath,
+} from '../../lib/public-api-client';
+import { buildContentSecurityPolicy } from '../../lib/content-security-policy';
+import PublicPageContent from '../../components/PublicPageContent.astro';
+
+// A dynamic route ([locale]/[...slug]) with no getStaticPaths() is
+// ambiguous to Astro without this: it can't tell whether params should
+// come from a build-time-enumerated list (SSG) or from each incoming
+// request (SSR). output: 'server' alone resolves that ambiguity for
+// static routes but not dynamic ones — this makes the SSR intent
+// explicit, matching how the content is actually served here (fetched
+// per-request from apps/api, never known at build time, see
+// astro.config.mjs).
+export const prerender = false;
+
+// [...slug] is a rest param: Astro hands it back as one slash-joined
+// string (e.g. "servizi/idraulica"), or undefined for zero segments —
+// never an array. The page is looked up by walking the WHOLE path
+// top-down, one segment at a time (see resolvePageByPath): slug
+// uniqueness is sibling-scoped, not site-wide, so the trailing segment
+// alone no longer identifies a page uniquely — two different pages under
+// two different parents can share the same final slug.
+const { locale } = Astro.params;
+const requestedPath = Astro.params.slug ?? '';
+const segments = requestedPath.split('/').filter(Boolean);
+// A path that cannot be a slug cannot be a page or a term either, and it
+// is not asked about. The API refuses it with a 400, which surfaced here
+// as a 500 — for `/en/wp-login.php`, `/en/.env` and every other address a
+// bot tries on any site it finds. It is a 404, like any other page that
+// is not there.
+const lookupable =
+  Boolean(locale) && segments.length > 0 && segments.every(isCanonicalSlug);
+
+const result =
+  locale && lookupable
+    ? await getPublishedPageBySlug(Astro.url.hostname, locale, segments)
+    : null;
+
+// The content moved to a term's address (docs/adr/0067): 301, not 302 —
+// a page that has become a term's landing page lives there now, and a
+// permanent redirect is what hands the inbound links and the ranking
+// over instead of splitting them across two URLs. Before the term
+// lookup, because this address is a PAGE's, not a term's.
+if (result && !result.found && result.movedTo) {
+  return Astro.redirect(result.movedTo + Astro.url.search, 301);
+}
+
+// A page always wins, and asking in this order is what makes that true at
+// render time and not only in the write-path checks (docs/adr/0064): a
+// term is looked up only where no page answered. What comes back is
+// page-shaped on purpose, so everything below this line — the CSP, the
+// 404, the rendering — treats the two the same.
+const pageOrTerm =
+  (result?.found ? result.page : null) ??
+  (locale && lookupable && segments.length <= 2
+    ? await getPublishedTermByPath(Astro.url.hostname, locale, segments)
+    : null);
+
+// An author's page (docs/adr/0071) — `/it/autore/giulia-rossi` — asked for
+// last, where neither a page nor a term answered: what an editor put at an
+// address always wins over what the system made there. Page-shaped too,
+// so nothing below this line needs to know which of the three it is.
+const authorSlug =
+  !pageOrTerm &&
+  locale &&
+  lookupable &&
+  segments.length === 2 &&
+  segments[0] === authorPathSegment(locale)
+    ? segments[1]
+    : undefined;
+const authorResult =
+  authorSlug && locale
+    ? await getPublishedAuthorBySlug(Astro.url.hostname, locale, authorSlug)
+    : null;
+// The person changed their address: 301 to the new one, as for a page.
+if (authorResult && !authorResult.found && authorResult.movedTo) {
+  return Astro.redirect(authorResult.movedTo + Astro.url.search, 301);
+}
+const page = pageOrTerm ?? (authorResult?.found ? authorResult.author : null);
+
+// Direct navigation/old link/crawler on a (locale, path) never translated —
+// `untranslatedPageFallback: 'redirect-to-default'` promises visitors land
+// somewhere instead of a bare 404 (the language switcher already does this
+// once a page IS found; this is the same promise for when it never loads
+// in the first place). `redirect-to-default`/no fallback available both
+// still end in a real 404, same as before this existed.
+//
+// AFTER the term lookup, not before: the fallback answers "this address
+// has no page in this language", and a term living at that address is
+// exactly the case where that is the wrong conclusion — redirecting
+// first would send a visitor away from a page that does exist.
+if (!page && result && !result.found && result.fallback) {
+  return Astro.redirect(
+    localePathFromAncestors(
+      result.fallback.locale,
+      result.fallback.segments.slice(0, -1),
+      result.fallback.segments.at(-1) ?? '',
+    ) + Astro.url.search,
+    302,
+  );
+}
+
+if (!page) {
+  Astro.response.status = 404;
+}
+
+// ADR-0031: this site's own admin-managed tracker whitelist, on top of the
+// hardcoded default (see content-security-policy.ts) — a 404 here still
+// gets the strict default (no site resolved yet, nothing to widen it for).
+Astro.response.headers.set(
+  'Content-Security-Policy',
+  buildContentSecurityPolicy(
+    `'self'`,
+    Astro.locals.cspNonce,
+    page?.site.themeSettings.allowedTrackerDomains,
+  ),
+);
+
+// Sibling-scoped slugs mean the top-down walk above only ever succeeds
+// for the page's actual, current path — there's no "found the right page
+// via a wrong intermediate segment" case left to correct with a redirect
+// (unlike before this ADR, when a page was found by its trailing slug
+// alone regardless of what came before it in the URL). A URL with the
+// wrong ancestor segments simply doesn't resolve, and 404s above like any
+// other not-found path.
+---
+
+<PublicPageContent page={page} locale={locale} />

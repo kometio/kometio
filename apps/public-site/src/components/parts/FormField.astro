@@ -1,0 +1,104 @@
+---
+import { formFieldMaxLength, type FormField } from '@kometio/shared-types';
+
+interface Props {
+  formId: string;
+  field: FormField;
+}
+
+const { formId, field } = Astro.props;
+// A field with a condition starts hidden and disabled: nothing has been
+// answered yet, so its condition cannot be met. The form's script shows it
+// once it is (block-behaviors/form.ts); a disabled control is neither
+// validated nor submitted, which is what keeps a hidden required field
+// from blocking the form.
+const conditional = Boolean(field.showWhen);
+// The same limit the submission is checked against, so an answer that
+// long stops at the keyboard instead of failing after it is sent.
+const maxLength = formFieldMaxLength(field.type);
+---
+
+<div
+  class="kometio-form__field"
+  data-kometio-form-field={field.id}
+  hidden={conditional}
+>
+  <label for={`${formId}-${field.id}`}>
+    {field.label}
+    {field.required && ' *'}
+  </label>
+  {
+    field.type === 'textarea' ? (
+      <textarea
+        id={`${formId}-${field.id}`}
+        name={field.id}
+        maxlength={maxLength}
+        required={field.required}
+        disabled={conditional}
+      />
+    ) : field.type === 'select' ? (
+      <select
+        id={`${formId}-${field.id}`}
+        name={field.id}
+        required={field.required}
+        disabled={conditional}
+      >
+        <option value="" />
+        {(field.options ?? []).map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+    ) : field.type === 'checkbox' || field.type === 'newsletter-consent' ? (
+      <input
+        type="checkbox"
+        id={`${formId}-${field.id}`}
+        name={field.id}
+        required={field.required}
+        disabled={conditional}
+      />
+    ) : (
+      <input
+        type={field.type}
+        id={`${formId}-${field.id}`}
+        name={field.id}
+        maxlength={maxLength}
+        required={field.required}
+        disabled={conditional}
+      />
+    )
+  }
+</div>
+
+<style>
+  /* Moved here from Form.astro's own <style> when this markup was
+     extracted into its own component — Astro scopes styles per-component,
+     so a selector declared in Form.astro no longer reaches elements a
+     child component renders. */
+  .kometio-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  /* `display: flex` above outranks the browser's own rule for `hidden`,
+     so a field waiting on its condition would still show without this. */
+  .kometio-form__field[hidden] {
+    display: none;
+  }
+  .kometio-form__field:has(input[type='checkbox']) {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  input,
+  textarea,
+  select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+  }
+  textarea {
+    min-height: 6rem;
+  }
+</style>

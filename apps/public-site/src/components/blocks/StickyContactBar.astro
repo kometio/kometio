@@ -1,0 +1,214 @@
+---
+import type { StickyContactBarProps } from '@kometio/shared-types';
+import type { PublishedSite } from '@kometio/api-contracts';
+import { formatBusinessAddress } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import {
+  mapSearchHref,
+  telHref,
+  whatsAppHref,
+} from '../../lib/contact-links';
+
+type Props = StickyContactBarProps & {
+  site: PublishedSite;
+  locale: string;
+  editable?: boolean;
+  instanceClass?: string | null;
+};
+
+const {
+  showCall,
+  whatsappNumber,
+  showDirections,
+  showEmail,
+  site,
+  locale,
+  editable,
+  instanceClass,
+} = Astro.props;
+const i18n = new Translator(locale);
+
+const phone = showCall ? site.businessPhone?.trim() : '';
+// One line here, not the envelope's three: it is only ever handed to a map
+// search (docs/adr/0081).
+const address =
+  showDirections && site.businessAddress
+    ? formatBusinessAddress(site.businessAddress, locale)
+    : '';
+const email = showEmail ? site.businessEmail?.trim() : '';
+const whatsapp = whatsAppHref(whatsappNumber);
+
+// Lucide's phone, message-circle, map-pin and mail — part of the bar's
+// own design, inlined like FileDownload's icon.
+const actions = [
+  phone && {
+    key: 'call',
+    href: telHref(phone),
+    label: i18n.t('stickyContactBar.call'),
+    external: false,
+    icon: '<path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" />',
+  },
+  whatsapp && {
+    key: 'whatsapp',
+    href: whatsapp,
+    label: 'WhatsApp',
+    external: true,
+    icon: '<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />',
+  },
+  address && {
+    key: 'map',
+    href: mapSearchHref(address),
+    label: i18n.t('stickyContactBar.map'),
+    external: true,
+    icon: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /><circle cx="12" cy="10" r="3" />',
+  },
+  email && {
+    key: 'email',
+    href: `mailto:${email}`,
+    label: i18n.t('stickyContactBar.email'),
+    external: false,
+    icon: '<path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" />',
+  },
+].flatMap((action) => (action ? [action] : []));
+---
+
+{
+  actions.length > 0 ? (
+    <nav
+      class:list={[
+        'kometio-sticky-contact-bar',
+        // On the site it is fixed to the bottom of a phone's screen. In
+        // the canvas it stays where it was dropped, at every width, or it
+        // could be neither seen on a desktop preview nor selected.
+        editable ? 'kometio-sticky-contact-bar--editable' : 'kometio-sticky-contact-bar--live',
+        instanceClass,
+      ]}
+      aria-label={i18n.t('stickyContactBar.label')}
+    >
+      {editable && (
+        <p class="kometio-sticky-contact-bar__note">
+          {i18n.t('stickyContactBar.editorNote')}
+        </p>
+      )}
+      <ul class="kometio-sticky-contact-bar__actions">
+        {actions.map((action) => (
+          <li class="kometio-sticky-contact-bar__item">
+            <a
+              class="kometio-sticky-contact-bar__action"
+              href={action.href}
+              target={action.external ? '_blank' : undefined}
+              rel={action.external ? 'noopener noreferrer' : undefined}
+            >
+              <svg
+                class="kometio-sticky-contact-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                set:html={action.icon}
+              />
+              <span>{action.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  ) : (
+    editable && (
+      <p class="kometio-sticky-contact-bar--empty">
+        {i18n.t('stickyContactBar.empty')}
+      </p>
+    )
+  )
+}
+
+<style>
+  .kometio-sticky-contact-bar {
+    background: var(--kometio-override-bg, var(--background));
+    color: var(--kometio-override-text, var(--foreground));
+  }
+
+  .kometio-sticky-contact-bar__actions {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    margin: 0;
+    padding: var(--kometio-override-padding-y, 0.5rem)
+      var(--kometio-override-padding-x, 0.5rem);
+    list-style: none;
+  }
+
+  .kometio-sticky-contact-bar__action {
+    display: grid;
+    justify-items: center;
+    gap: 0.125rem;
+    min-height: 2.75rem;
+    padding: 0.25rem;
+    border-radius: var(--radius);
+    color: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .kometio-sticky-contact-bar__action:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+
+  .kometio-sticky-contact-bar__icon {
+    width: 1.375rem;
+    height: 1.375rem;
+    color: var(--primary);
+  }
+
+  .kometio-sticky-contact-bar--editable {
+    border: 1px dashed var(--border);
+  }
+
+  .kometio-sticky-contact-bar__note,
+  .kometio-sticky-contact-bar--empty {
+    margin: 0;
+    padding: 0.5rem 0.75rem 0;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  /* A desktop has the header's phone number and room for the Contacts
+     block; the bar is what a phone lacks. */
+  .kometio-sticky-contact-bar--live {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .kometio-sticky-contact-bar--live {
+      display: block;
+      position: fixed;
+      inset-inline: 0;
+      bottom: 0;
+      z-index: 35;
+      padding-block-end: env(safe-area-inset-bottom);
+      border-block-start: 1px solid var(--border);
+      box-shadow: 0 -4px 16px rgb(0 0 0 / 8%);
+    }
+
+    /* The page's last lines must not end up under the bar — measured at
+       67px with its four actions, so a little more than that. */
+    :global(body:has(.kometio-sticky-contact-bar--live)) {
+      padding-block-end: calc(4.5rem + env(safe-area-inset-bottom));
+    }
+
+    /* The other things fixed to the bottom corners move up above it —
+       each of them independent and unaware of the bar, as they are of
+       each other. */
+    :global(
+        body:has(.kometio-sticky-contact-bar--live)
+          :is(.kometio-whatsapp-button, .kometio-back-to-top, .kometio-cookie-consent-reopen)
+      ) {
+      bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+  }
+</style>

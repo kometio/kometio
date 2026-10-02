@@ -1,0 +1,125 @@
+---
+// Shared by VideoEmbed.astro and MapEmbed.astro (both GDPR-conscious
+// third-party iframes) so the click-to-load mechanism exists in exactly
+// one place — see either block's own comment for why a click gate: no
+// request to the third party, no cookie, until the visitor explicitly
+// asks for it, a complete mitigation on its own that doesn't depend on a
+// cookie-consent banner Kometio doesn't have yet (batch H, not built).
+interface Props {
+  src: string;
+  title: string;
+  buttonLabel: string;
+  /**
+   * Passed through from the block that owns this gate (VideoEmbed,
+   * MapEmbed) so its per-instance style lands on the element the visitor
+   * actually sees. Neither block has a root element of its own — this IS
+   * their root — so without it neither could be styled at all.
+   */
+  instanceClass?: string | null;
+  /**
+   * Shown behind the button until the visitor asks for the embed
+   * (ADR-0057). It is what makes a consent gate look like a video rather
+   * than a grey box — and since nothing has been requested from the third
+   * party yet, this image is the ONLY thing there is to look at.
+   */
+  posterUrl?: string | null;
+  /** The gate must be the same shape as the thing it stands in for, or the page reflows the moment it loads. */
+  aspectRatio?: string | null;
+  /**
+   * A fixed height instead of a shape, for what is tall whatever its
+   * width — a booking calendar is as long on a phone as on a desktop, and
+   * a ratio would make it shortest exactly where it needs the most room.
+   */
+  height?: string | null;
+}
+
+const { src, title, buttonLabel, instanceClass, posterUrl, aspectRatio, height } =
+  Astro.props;
+---
+
+<div
+  class:list={['kometio-consent-embed', instanceClass]}
+  style={[
+    posterUrl ? `--kometio-embed-poster: url(${JSON.stringify(posterUrl)});` : '',
+    aspectRatio ? `--kometio-embed-ratio: ${aspectRatio};` : '',
+    height ? `--kometio-embed-height: ${height};` : '',
+  ]
+    .filter(Boolean)
+    .join(' ')}
+>
+  <button
+    type="button"
+    class="kometio-consent-embed__trigger"
+    data-embed-src={src}
+    data-embed-title={title}
+  >
+    {buttonLabel}
+  </button>
+</div>
+
+<script>
+  // Logic lives in a plain importable module, not inline here — a
+  // self-contained inline script (no `import`, only one consumer) gets
+  // inlined by Astro directly into the SSR HTML instead of hoisted to an
+  // external file, and the strict CSP then blocks it with no visible
+  // error (see cookie-consent-panel-script.ts's own comment, PR #125,
+  // for the confirmed root cause). Also lets this re-run after a live
+  // canvas insert/patch — see block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { consentGatedEmbedBehaviors } from '../lib/block-behaviors/consent-gated-embed';
+  import { runBlockBehaviors } from '../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, consentGatedEmbedBehaviors);
+</script>
+
+<style>
+  .kometio-consent-embed {
+    position: relative;
+    aspect-ratio: var(--kometio-embed-ratio, 16 / 9);
+    width: 100%;
+    /* With a definite width and a definite height, the ratio above has
+       nothing left to decide — which is exactly what a height asks for. */
+    height: var(--kometio-embed-height, auto);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--muted);
+    /* The poster sits behind the button. A `background-image` rather than
+       an <img>: it is decoration for a control, not content — a screen
+       reader gains nothing from being told the video has a thumbnail. */
+    background-image: var(--kometio-embed-poster, none);
+    background-size: cover;
+    background-position: center;
+    /* Fallbacks are what the gate already rendered, so an embed nobody
+       has styled is unchanged. The border and shadow exist because a
+       framed video is the common ask and there was no way to get one. */
+    border-radius: var(--kometio-override-radius, 8px);
+    border: var(--kometio-override-border-width, 0)
+      var(--kometio-override-border-style, solid)
+      var(--kometio-override-border-color, var(--border));
+    box-shadow: var(--kometio-override-shadow, none);
+    max-width: var(--kometio-override-max-width, none);
+  }
+  .kometio-consent-embed__trigger {
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  /* `:global()`, and not by taste: the iframe is created by the behaviour
+     script when the visitor asks for it, so it never carries the scoped
+     attribute Astro puts on this file's own markup. Scoped, this rule
+     matched nothing and every loaded video, map and booking calendar
+     sat in the browser's default 300×150 box in a corner of its frame. */
+  :global(.kometio-consent-embed__iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    /* The frame's own corners, override included, not a second number. */
+    border-radius: inherit;
+  }
+</style>

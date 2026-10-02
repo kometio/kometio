@@ -1,0 +1,65 @@
+---
+import type { TableProps } from '@kometio/shared-types';
+
+type Props = TableProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { rows, instanceClass } = Astro.props;
+const [header, ...body] = rows;
+---
+
+{
+  header && (
+    <div class:list={['kometio-table-scroll', instanceClass]}>
+      <table class="kometio-table">
+        <thead>
+          <tr>
+            {header.map((cell) => <th>{cell}</th>)}
+          </tr>
+        </thead>
+        {body.length > 0 && (
+          <tbody>
+            {body.map((row) => (
+              <tr>
+                {row.map((cell) => <td>{cell}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        )}
+      </table>
+    </div>
+  )
+}
+
+<style>
+  /* A table with many/wide columns can't shrink below its content's
+     intrinsic width — scrolling the table itself horizontally, instead of
+     letting it force the whole page to scroll, is the standard fix. */
+  .kometio-table-scroll {
+    overflow-x: auto;
+  }
+  .kometio-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  /* The overrides land on the CELLS, not on the scroll wrapper they are
+     declared on: a table's padding and borders are what anyone means by
+     styling a table, and a padding on the wrapper would only inset the
+     scrollbar. Every fallback is the value already in use. */
+  .kometio-table th,
+  .kometio-table td {
+    border: var(--kometio-override-border-width, 1px)
+      var(--kometio-override-border-style, solid)
+      var(--kometio-override-border-color, var(--border));
+    padding: var(--kometio-override-padding-y, 0.5rem)
+      var(--kometio-override-padding-x, 0.75rem);
+    text-align: left;
+    color: var(--kometio-override-text, inherit);
+  }
+  .kometio-table th {
+    background: var(--kometio-override-bg, var(--muted));
+    font-weight: 600;
+  }
+</style>

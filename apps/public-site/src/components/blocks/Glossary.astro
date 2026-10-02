@@ -1,0 +1,105 @@
+---
+import type { Block, GlossaryProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+import { glossaryIndex } from '../../lib/glossary-index';
+
+type Props = GlossaryProps & {
+  /** The terms, read off the block's own children for the index (Faq.astro's reason). */
+  items?: Block[];
+  locale: string;
+  editable?: boolean;
+  hasChildren?: boolean;
+  emptyChildLabel?: string | null;
+  instanceClass?: string | null;
+};
+
+const {
+  showIndex,
+  items = [],
+  locale,
+  editable,
+  hasChildren,
+  emptyChildLabel,
+  instanceClass,
+} = Astro.props;
+const i18n = new Translator(locale);
+const index = showIndex ? glossaryIndex(items, locale) : [];
+---
+
+<div
+  class:list={['kometio-glossary', instanceClass]}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  {/* One letter is not an index, just a letter. */}
+  {index.length > 1 && (
+    <nav class="kometio-glossary__index" aria-label={i18n.t('glossary.index')}>
+      <ul class="kometio-glossary__letters">
+        {index.map((entry) => (
+          <li>
+            <a class="kometio-glossary__letter" href={`#${entry.anchor}`}>
+              {entry.letter}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )}
+  <dl class="kometio-glossary__terms">
+    <slot />
+  </dl>
+  <EmptyContainerHint
+    show={!hasChildren && Boolean(editable)}
+    locale={locale}
+    childLabel={emptyChildLabel}
+  />
+</div>
+
+<style>
+  .kometio-glossary {
+    display: grid;
+    gap: 1.25rem;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-glossary__letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kometio-glossary__letter {
+    display: grid;
+    place-items: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.75);
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .kometio-glossary__letter:hover {
+    border-color: currentColor;
+  }
+
+  .kometio-glossary__terms {
+    display: grid;
+    gap: var(--kometio-override-gap, 1rem);
+    margin: 0;
+  }
+
+  .kometio-glossary[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+import { getPublishedPageBySlug } from '../../lib/public-api-client';
+import { buildContentSecurityPolicy } from '../../lib/content-security-policy';
+import PublicPageContent from '../../components/PublicPageContent.astro';
+
+export const prerender = false;
+
+// A locale's own root (e.g. "/it/") answers whichever ROOT-level page is
+// slugged "home" within that locale, by convention (docs/adr/0017) — same
+// as the pre-multilingua single-locale "/" did. Always a single segment:
+// "home" is never nested under another page.
+const { locale } = Astro.params;
+const result = locale
+  ? await getPublishedPageBySlug(Astro.url.hostname, locale, ['home'])
+  : null;
+
+// Same permanent move as [...slug].astro: a home page a term has claimed
+// as its landing page lives at the term's address now (docs/adr/0067).
+// Odd as a choice, but it is the site's to make, and answering it here
+// keeps the two routes from disagreeing about what an address serves.
+if (result && !result.found && result.movedTo) {
+  return Astro.redirect(result.movedTo + Astro.url.search, 301);
+}
+
+// Same fallback promise as [...slug].astro — an enabled locale with no
+// "home" page yet shouldn't just 404 when the site is set to
+// 'redirect-to-default'.
+if (result && !result.found && result.fallback) {
+  return Astro.redirect(
+    localePathFromAncestors(
+      result.fallback.locale,
+      result.fallback.segments.slice(0, -1),
+      result.fallback.segments.at(-1) ?? '',
+    ) + Astro.url.search,
+    302,
+  );
+}
+
+const page = result?.found ? result.page : null;
+
+if (!page) {
+  Astro.response.status = 404;
+}
+
+// ADR-0031: this site's own admin-managed tracker whitelist, on top of the
+// hardcoded default (see content-security-policy.ts).
+Astro.response.headers.set(
+  'Content-Security-Policy',
+  buildContentSecurityPolicy(
+    `'self'`,
+    Astro.locals.cspNonce,
+    page?.site.themeSettings.allowedTrackerDomains,
+  ),
+);
+---
+
+<PublicPageContent page={page} locale={locale} />

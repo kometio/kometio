@@ -1,0 +1,111 @@
+---
+import type { LanguageSwitcherProps } from '@kometio/shared-types';
+import type { PublishedPageTranslation, PublishedSite } from '@kometio/api-contracts';
+import { localePathFromAncestors } from '@kometio/theme-runtime';
+import { Translator } from '@kometio/theme-runtime';
+
+interface Props extends LanguageSwitcherProps {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  translations: PublishedPageTranslation[];
+  site: PublishedSite;
+}
+
+const { position, visibility, locale, translations, site,
+  instanceClass,
+} = Astro.props;
+
+// The default locale's translation doubles as the redirect target for
+// 'redirect-to-default' (docs/adr/0017's fallback setting) — same
+// resolution PageLayout.astro's hreflang x-default alternate uses.
+const defaultTranslation = translations.find(
+  (translation) => translation.locale === site.defaultLocale,
+);
+
+interface LocaleLink {
+  locale: string;
+  href: string;
+}
+
+// One entry per enabled locale that has somewhere to send the visitor:
+// its own translation if published, otherwise the default locale's page
+// when the site is configured to fall back to it — 'not-available'
+// locales are simply omitted, there is nothing to link to.
+const links = site.enabledLocales
+  .map((enabledLocale): LocaleLink | null => {
+    const translation = translations.find(
+      (candidate) => candidate.locale === enabledLocale,
+    );
+    if (translation) {
+      return {
+        locale: enabledLocale,
+        // The ancestor chain, not the bare slug: slugs are scoped to
+        // their siblings (ADR-0029), so `/it/first-run` is not where a
+        // nested page lives and linking there 404s.
+        href: localePathFromAncestors(
+          translation.locale,
+          translation.ancestorSlugs,
+          translation.slug,
+        ),
+      };
+    }
+    if (site.untranslatedPageFallback === 'redirect-to-default' && defaultTranslation) {
+      return {
+        locale: enabledLocale,
+        href: localePathFromAncestors(
+          defaultTranslation.locale,
+          defaultTranslation.ancestorSlugs,
+          defaultTranslation.slug,
+        ),
+      };
+    }
+    return null;
+  })
+  .filter((link): link is LocaleLink => link !== null);
+const i18n = new Translator(locale);
+---
+
+{
+  links.length > 1 && (
+    <nav
+      class:list={[
+        'kometio-language-switcher',
+        { 'kometio-language-switcher--right': position === 'right' },
+        { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+        { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+        instanceClass,
+      ]}
+      aria-label={i18n.t('languageSwitcher.label')}
+    >
+      {links.map((link) => (
+        <a
+          href={link.href}
+          aria-current={link.locale === locale ? 'true' : undefined}
+        >
+          {link.locale.toUpperCase()}
+        </a>
+      ))}
+    </nav>
+  )
+}
+
+<style>
+  /* Fallbacks are what this block already rendered. */
+  .kometio-language-switcher {
+    display: flex;
+    gap: var(--kometio-override-gap, 0.5rem);
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+  .kometio-language-switcher--right {
+    margin-left: auto;
+  }
+  .kometio-language-switcher a[aria-current='true'] {
+    font-weight: 600;
+    text-decoration: underline;
+  }
+</style>

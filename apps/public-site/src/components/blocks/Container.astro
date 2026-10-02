@@ -1,0 +1,147 @@
+---
+import type { ContainerProps } from '@kometio/shared-types';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = ContainerProps & {
+  /** The locale this page renders in — see EmptyContainerHint. */
+  locale?: string;
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+	editable?: boolean;
+	hasChildren?: boolean;
+	instanceClass?: string | null;
+};
+
+const {
+	background,
+	padding,
+	editable,
+	hasChildren,
+	instanceClass,
+  locale,
+  emptyChildLabel,
+} = Astro.props;
+
+// Token-driven (docs/adr/0021) — a theme swap changes what these mean,
+// this component never hardcodes a color. `primary`/`secondary` follow
+// the same convention as Button/the global link color: primary is the
+// accent surface, secondary is supporting/subtle chrome.
+//
+// These stay PRESETS and are not replaced by a free colour (ADR-0050):
+// they follow the theme, and a hex does not. What changes is that they
+// are custom properties rather than Tailwind classes, so a free override
+// can sit in FRONT of the preset in the same declaration
+// (`var(--kometio-override-bg, var(--kometio-container-bg))`) instead of
+// fighting it on specificity and silently losing.
+const backgroundVars: Record<ContainerProps['background'], string> = {
+	none: '',
+	muted: '--kometio-container-bg: var(--muted); --kometio-container-fg: var(--foreground);',
+	primary:
+		'--kometio-container-bg: var(--primary); --kometio-container-fg: var(--primary-foreground);',
+	secondary:
+		'--kometio-container-bg: var(--secondary); --kometio-container-fg: var(--secondary-foreground);',
+};
+
+// A length rather than a Tailwind class, so `--kometio-override-padding-*`
+// can sit in front of it in the same declaration. As a class it won a
+// specificity contest the override could not enter: setting a padding on
+// a Container simply did nothing, with no hint as to why.
+const paddingValue: Record<ContainerProps['padding'], string> = {
+	none: '0',
+	sm: '1rem',
+	md: '2rem',
+	lg: '3rem',
+};
+---
+
+<div
+	class:list={['kometio-container flex rounded-lg', instanceClass]}
+	style={`--kometio-container-padding: ${paddingValue[padding]}; ${backgroundVars[background]}`}
+	data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+	<slot />
+	<EmptyContainerHint
+  show={!hasChildren && Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>
+</div>
+
+<style>
+	/* Editor only (never on the published page, see editable), and only
+	   once it has content — when empty it already shows its own dashed
+	   border through EmptyContainerHint, and a second one here would be
+	   redundant. Without this, a Container holding real content loses
+	   every visible boundary — user feedback from live use, the same
+	   reason as Column.astro. A conditional `data-*` attribute, not a
+	   class inside a ternary expression — the latter is discarded by the
+	   Astro compiler as "unused" (it analyses only static strings in the
+	   markup), observed live on Column.astro itself.
+	   No fixed `padding` here, unlike the other containers: unlike them,
+	   Container already has a user-chosen padding (`none`/`sm`/`md`/`lg`,
+	   above) — a fixed value would override it with higher CSS
+	   specificity, making it look different in the editor from the
+	   published page. The "md" default (2rem) is already enough of a
+	   click target on its own. */
+	.kometio-container[data-kometio-editable-outline] {
+		outline: 1px dashed var(--border);
+		outline-offset: -4px;
+	}
+
+	/* Padding is no longer absent from this list (ADR-0050). It used to be,
+	   on the grounds that a dedicated field and a style override would be
+	   "two conflicting mechanisms" — but they were never in conflict, they
+	   were in a specificity contest the override always lost, silently. A
+	   preset is now the FALLBACK of the same declaration the override
+	   fills: one mechanism, with the preset as its starting value, and the
+	   free value winning when there is one.
+
+	   Background colour follows the same shape. The preset classes remain
+	   because they track the theme where a hex cannot, so a Container set
+	   to `primary` still re-tints itself when the theme changes.
+
+	   Every fallback is the value this block ALREADY had — `gap` matches
+	   the old `gap-4` class, padding matches the preset, direction matches
+	   the old `flex-col` — so a container with nothing overridden renders
+	   byte for byte as it did before. */
+	.kometio-container {
+		flex-direction: var(--kometio-override-direction, column);
+		padding: var(--kometio-override-padding-y, var(--kometio-container-padding))
+			var(--kometio-override-padding-x, var(--kometio-container-padding));
+		background-color: var(
+			--kometio-override-bg,
+			var(--kometio-container-bg, transparent)
+		);
+		border-radius: var(--kometio-override-radius, 0.5rem);
+		color: var(--kometio-override-text, var(--kometio-container-fg, inherit));
+		border-width: var(--kometio-override-border-width, 0);
+		border-style: var(--kometio-override-border-style, solid);
+		border-color: var(--kometio-override-border-color, var(--border));
+		box-shadow: var(--kometio-override-shadow, none);
+		min-height: var(--kometio-override-min-height, auto);
+		max-width: var(--kometio-override-max-width, none);
+		gap: var(--kometio-override-gap, 1rem);
+		/* The element is `flex flex-col`, so align-items is the HORIZONTAL
+		   axis and justify-content the vertical — which is why the two
+		   properties map this way round and not the other. */
+		align-items: var(--kometio-override-align, stretch);
+		justify-content: var(--kometio-override-justify, flex-start);
+		/* The overlay is a flat gradient layer ON TOP of the image, rather
+		   than a `::before` with a negative z-index. A pseudo-element would
+		   need `position: relative` and `isolation: isolate` to sit in the
+		   right place, and both change the stacking context for everything
+		   nested inside — a real risk for a block whose whole job is to
+		   contain other blocks. Transparent by default, so it is invisible
+		   until someone sets it. */
+		background-image:
+			linear-gradient(
+				var(--kometio-override-overlay, transparent),
+				var(--kometio-override-overlay, transparent)
+			),
+			var(--kometio-override-bg-image, none);
+		background-position: var(--kometio-override-bg-position, center);
+		background-size: var(--kometio-override-bg-size, cover);
+		background-repeat: var(--kometio-override-bg-repeat, no-repeat);
+	}
+
+</style>

@@ -1,0 +1,79 @@
+---
+import type { ColumnProps } from '@kometio/shared-types';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = ColumnProps & {
+  /** The locale this page renders in — see EmptyContainerHint. */
+  locale?: string;
+  /** The only child type this container accepts, already translated. */
+  emptyChildLabel?: string | null;
+  editable?: boolean;
+  hasChildren?: boolean;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { editable, hasChildren, instanceClass, locale, emptyChildLabel} = Astro.props;
+
+/*
+ * The width is NOT read from `span` here, deliberately, even though this
+ * block owns that prop.
+ *
+ * A track is a property of the grid, not of the item sitting in it: a
+ * column that took `grid-column: span 4` of a parent divided into equal
+ * shares would claim four of somebody else's tracks. The parent resolves
+ * every column's width together (`resolveColumnSpans`) precisely because
+ * one column's default depends on what the others asked for, and emits
+ * the whole `grid-template-columns` — leaving this element to be a plain
+ * grid item that fills the track it was given.
+ */
+---
+
+<div
+  class:list={['kometio-column', instanceClass]}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  <slot />
+  <EmptyContainerHint
+  show={!hasChildren && Boolean(editable)}
+  locale={locale}
+  childLabel={emptyChildLabel}
+/>
+</div>
+
+<style>
+  /* Grid items default to min-width: auto, which refuses to shrink below
+     the intrinsic size of their content (e.g. a wide image) — that's what
+     let content inside a Column break out of the parent Columns grid
+     regardless of the grid's own 1fr track sizing. min-width: 0 lets this
+     column actually shrink to its track width. */
+  /* Its blocks stacked with room between them, as in a Container: an
+     image and the heading under it used to touch. The gap is the Style
+     panel's, like the Container's. */
+  .kometio-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kometio-override-gap, 1rem);
+    min-width: 0;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  /* Editor only (never on the published page, see editable), and only
+     once it has content — when empty it already shows its own dashed
+     border through EmptyContainerHint, and a second one here would be
+     redundant. Without this, a Column holding real content (a Text block,
+     say) loses every visible boundary: it looks like text floating on the
+     page rather than sitting inside a column — user feedback from live
+     use. A conditional CLASS selector here would be discarded by the
+     Astro compiler as "unused" (it analyses only static strings in the
+     markup, not a ternary expression) — a conditional `data-*` attribute,
+     the same pattern already used elsewhere (`data-kometio-root-blocks`,
+     for instance), does not have that problem. */
+  .kometio-column[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+    padding: 0.5rem;
+  }
+</style>

@@ -1,0 +1,155 @@
+---
+import type { ComparisonTableProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = ComparisonTableProps & {
+  locale: string;
+  editable?: boolean;
+  hasChildren?: boolean;
+  emptyChildLabel?: string | null;
+  instanceClass?: string | null;
+};
+
+const {
+  columns,
+  highlightColumn,
+  locale,
+  editable,
+  hasChildren,
+  emptyChildLabel,
+  instanceClass,
+} = Astro.props;
+const i18n = new Translator(locale);
+
+/** Six at most: past that a comparison is a spreadsheet, and a phone shows none of it. */
+const MAX_COLUMNS = 6;
+const names = columns
+  .split('\n')
+  .map((name) => name.trim())
+  .filter(Boolean)
+  .slice(0, MAX_COLUMNS);
+const highlighted =
+  highlightColumn >= 1 && highlightColumn <= names.length
+    ? highlightColumn
+    : null;
+---
+
+{/*
+  A grid with table roles rather than a <table>, and not by taste: its
+  rows are blocks, and in the canvas every block is wrapped in a <div>.
+  A <div> between <tbody> and <tr> is not something the HTML parser
+  keeps — it moves it out in front of the table, so the canvas would show
+  every row above an empty table. The roles give a screen reader the same
+  table a <table> would.
+*/}
+<div
+  class:list={['kometio-comparison-table', instanceClass]}
+  style={`--kometio-comparison-columns: ${Math.max(names.length, 1)};`}
+  data-columns={names.length}
+  data-highlight={highlighted ?? undefined}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  <div class="kometio-comparison-table__scroll">
+    <div class="kometio-comparison-table__grid" role="table">
+      <div class="kometio-comparison-table__head" role="row">
+        <span class="kometio-comparison-table__corner" role="columnheader">
+          <span class="kometio-visually-hidden">{i18n.t('comparisonTable.feature')}</span>
+        </span>
+        {names.map((name, index) => (
+          <span
+            role="columnheader"
+            class:list={[
+              'kometio-comparison-table__column',
+              { 'kometio-comparison-table__column--highlight': index + 1 === highlighted },
+            ]}
+          >
+            {name}
+          </span>
+        ))}
+      </div>
+      <slot />
+    </div>
+  </div>
+  <EmptyContainerHint
+    show={!hasChildren && Boolean(editable)}
+    locale={locale}
+    childLabel={emptyChildLabel}
+  />
+</div>
+
+<style>
+  .kometio-comparison-table {
+    min-width: 0;
+    overflow: hidden;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, var(--radius));
+    border-width: var(--kometio-override-border-width, 1px);
+    border-style: var(--kometio-override-border-style, solid);
+    border-color: var(--kometio-override-border-color, var(--border));
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  /* Sideways scroll inside the block, never across the page. */
+  .kometio-comparison-table__scroll {
+    overflow-x: auto;
+  }
+
+  .kometio-comparison-table__grid {
+    display: grid;
+    grid-template-columns:
+      minmax(9rem, 1.4fr)
+      repeat(var(--kometio-comparison-columns), minmax(6rem, 1fr));
+    min-width: min-content;
+  }
+
+  .kometio-comparison-table__head {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    font-weight: 600;
+  }
+
+  .kometio-comparison-table__head > * {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    overflow-wrap: break-word;
+  }
+
+  .kometio-comparison-table__column--highlight {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+  }
+
+  /* The highlighted column runs down through every row. The cells belong
+     to ComparisonRow.astro, hence :global(); `n + 1` because the first
+     cell of a row is its feature. */
+  .kometio-comparison-table[data-highlight='1'] :global(.kometio-comparison-row > :nth-child(2)),
+  .kometio-comparison-table[data-highlight='2'] :global(.kometio-comparison-row > :nth-child(3)),
+  .kometio-comparison-table[data-highlight='3'] :global(.kometio-comparison-row > :nth-child(4)),
+  .kometio-comparison-table[data-highlight='4'] :global(.kometio-comparison-row > :nth-child(5)),
+  .kometio-comparison-table[data-highlight='5'] :global(.kometio-comparison-row > :nth-child(6)),
+  .kometio-comparison-table[data-highlight='6'] :global(.kometio-comparison-row > :nth-child(7)) {
+    background: color-mix(in srgb, var(--primary) 6%, transparent);
+  }
+
+  /* A row with more values than the table has columns: the extra ones
+     have no column to sit in, and a subgrid would wrap them onto a line
+     of their own. */
+  .kometio-comparison-table[data-columns='0'] :global(.kometio-comparison-row > :nth-child(n + 2)),
+  .kometio-comparison-table[data-columns='1'] :global(.kometio-comparison-row > :nth-child(n + 3)),
+  .kometio-comparison-table[data-columns='2'] :global(.kometio-comparison-row > :nth-child(n + 4)),
+  .kometio-comparison-table[data-columns='3'] :global(.kometio-comparison-row > :nth-child(n + 5)),
+  .kometio-comparison-table[data-columns='4'] :global(.kometio-comparison-row > :nth-child(n + 6)),
+  .kometio-comparison-table[data-columns='5'] :global(.kometio-comparison-row > :nth-child(n + 7)),
+  .kometio-comparison-table[data-columns='6'] :global(.kometio-comparison-row > :nth-child(n + 8)) {
+    display: none;
+  }
+
+  .kometio-comparison-table[data-kometio-editable-outline] {
+    outline: 1px dashed var(--border);
+    outline-offset: -4px;
+  }
+</style>

@@ -1,0 +1,140 @@
+---
+import type { ImageSliderProps, PickedMedia } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+
+type Props = ImageSliderProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+type SliderImage = ImageSliderProps['images'][number];
+
+function isPictured(
+  image: SliderImage,
+): image is SliderImage & { media: PickedMedia } {
+  return image.media !== null;
+}
+
+const { images, locale, instanceClass } = Astro.props;
+const pictured = images.filter(isPictured);
+const i18n = new Translator(locale);
+---
+
+{
+  pictured.length > 0 ? (
+    <div
+      class:list={[
+        'kometio-image-slider',
+        'kometio-slider',
+        'kometio-collection',
+        'kometio-collection--slider',
+        instanceClass,
+      ]}
+      data-kometio-collection-step="track"
+    >
+      <div class="kometio-collection__track kometio-slider__track">
+        {pictured.map((image, index) => (
+          <OptimizedImage
+            media={image.media}
+            alt={image.isDecorative ? '' : image.alt}
+            class="kometio-slider__slide"
+            loading={index === 0 ? 'eager' : 'lazy'}
+          />
+        ))}
+      </div>
+      {pictured.length > 1 && (
+        <>
+          <button
+            type="button"
+            class="kometio-collection__nav kometio-collection__nav--prev kometio-slider__nav"
+            aria-label={i18n.t('imageSlider.prev')}
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            class="kometio-collection__nav kometio-collection__nav--next kometio-slider__nav"
+            aria-label={i18n.t('imageSlider.next')}
+          >
+            ›
+          </button>
+        </>
+      )}
+    </div>
+  ) : (
+    <p>{i18n.t('imageSlider.empty')}</p>
+  )
+}
+
+<script>
+  // Native CSS scroll-snap already makes this swipeable/scrollable with no
+  // JS at all — the prev/next buttons are a progressive-enhancement layer
+  // on top (scrollBy one track width), not the only way to move it. Logic
+  // lives in a plain importable module (not inline here) so it can also
+  // be re-run after a live canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { collectionBehaviors } from '../../lib/block-behaviors/collection';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, collectionBehaviors);
+</script>
+
+<style>
+  /* Fallbacks are what the slider already rendered. The radius reaches
+     the slides too: rounding the frame while the pictures keep square
+     corners is not what rounding a slider means. */
+  .kometio-slider {
+    position: relative;
+    border-radius: var(--kometio-override-radius, 0);
+    overflow: hidden;
+    max-width: var(--kometio-override-max-width, none);
+    box-shadow: var(--kometio-override-shadow, none);
+  }
+  .kometio-slider__track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .kometio-slider__track::-webkit-scrollbar {
+    display: none;
+  }
+  /* :global() because OptimizedImage (a child component) renders the
+  actual <img> — see Image.astro's own style block for the full reasoning. */
+  :global(.kometio-slider__slide) {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    scroll-snap-align: start;
+  }
+  .kometio-slider__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
+    background: rgb(255 255 255 / 85%);
+    color: var(--foreground);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .kometio-slider__nav--prev {
+    inset-inline-start: 0.75rem;
+  }
+  .kometio-slider__nav--next {
+    inset-inline-end: 0.75rem;
+  }
+  /* Mirror the ‹/› glyph itself under RTL: prev now sits on the visual
+     right and moves the track rightward, so its chevron should point
+     right too (and vice versa for next) — :dir() reads the resolved
+     directionality, no locale prop needs to be threaded down for this. */
+  .kometio-slider__nav:dir(rtl) {
+    transform: translateY(-50%) scaleX(-1);
+  }
+</style>

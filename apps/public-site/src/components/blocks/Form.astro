@@ -1,0 +1,281 @@
+---
+import {
+  type FormBlockProps,
+  type FormField,
+  type FormStep,
+} from '@kometio/shared-types';
+import { getPublicForm } from '../../lib/public-api-client';
+import { Translator } from '@kometio/theme-runtime';
+import FormFieldComponent from '../parts/FormField.astro';
+
+type Props = FormBlockProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  locale: string;
+};
+
+const { form: pickedForm, locale, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+const form = pickedForm ? await getPublicForm(pickedForm.formId) : null;
+
+// Read back from the submission proxy's redirect (src/pages/api/forms/[id]/
+// submit.ts) — keyed by form id so two Form blocks on the same page never
+// cross-show each other's status.
+const submitted = form && Astro.url.searchParams.get('formSubmitted') === form.id;
+const errored = form && Astro.url.searchParams.get('formError') === form.id;
+
+// Strips the status params before handing the URL back as the redirect
+// target, so refreshing the page after a submit doesn't re-show the banner
+// forever and doesn't accumulate params across repeat submissions.
+const redirectParams = new URLSearchParams(Astro.url.search);
+redirectParams.delete('formSubmitted');
+redirectParams.delete('formError');
+const redirectTo =
+  Astro.url.pathname + (redirectParams.size > 0 ? `?${redirectParams}` : '');
+
+// newsletter-consent renders and submits exactly like a checkbox
+// (shared-types' own form-fields.ts comment) — both need the same
+// unchecked-checkbox-omits-its-key hint for the submit proxy.
+const checkboxFieldIds = (form?.fields ?? [])
+  .filter((field) => field.type === 'checkbox' || field.type === 'newsletter-consent')
+  .map((field) => field.id)
+  .join(',');
+
+// process.env, not import.meta.env/PUBLIC_ (same reasoning as apiUrl() in
+// public-api-client.ts): read server-side per request, then written into
+// the rendered HTML's data-sitekey — this app doesn't do per-domain
+// build-time bundling, so a build-time-baked client constant would be
+// wrong here anyway.
+const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
+
+// The show-when rules, for the browser to apply as the visitor answers
+// (block-behaviors/form.ts). Only the ids and conditions: the rest of a
+// field is already in the markup. Absent when no field has a condition, so
+// a plain form carries nothing extra.
+const conditions = form?.fields.some((field) => field.showWhen)
+  ? JSON.stringify(
+      form.fields.map(({ id, showWhen }) => ({ id, showWhen: showWhen ?? null })),
+    )
+  : undefined;
+
+// Which page this form is being rendered on, so the submission records
+// where it came from. Ambient (env.d.ts says why), and absent wherever
+// there is no page behind the render — a term with no landing page, a
+// block re-rendered on its own for the canvas.
+//
+// It reaches the API as a hidden input, so it is client-supplied and must
+// be treated as such: submitForm checks the page belongs to the form's
+// own site and stores nothing when it does not.
+const pageId = Astro.locals.pageTranslationId ?? '';
+
+interface StepGroup {
+  step: FormStep | null;
+  fields: FormField[];
+}
+
+// A form with no steps (the default, and every form that existed before
+// this feature — docs/adr/0015's multi-step follow-up) renders exactly as
+// it always has: one flat list of fields, single "Invia" button, no
+// step-navigation markup or script at all. Fields with no matching
+// stepId — an editor left one unassigned, or a step got deleted (the
+// admin UI already clears stepId when that happens, but a stale reference
+// is handled the same way defensively) — land in a `step: null` group
+// rendered first, never silently dropped.
+function groupFieldsByStep(fields: FormField[], steps: FormStep[]): StepGroup[] {
+  const groups: StepGroup[] = steps.map((step) => ({ step, fields: [] }));
+  const unassigned: FormField[] = [];
+  for (const field of fields) {
+    const group = groups.find((g) => g.step?.id === field.stepId);
+    if (group) {
+      group.fields.push(field);
+    } else {
+      unassigned.push(field);
+    }
+  }
+  return unassigned.length > 0 ? [{ step: null, fields: unassigned }, ...groups] : groups;
+}
+
+// Determined solely by form.steps, never by whether any field happens to
+// carry a stepId — a form with an empty steps array must always render
+// flat (docs/adr/0015's backward-compatibility guarantee), even if a
+// field has a stray/leftover stepId from before its step was deleted.
+let isMultiStep = false;
+let stepGroups: StepGroup[] = [];
+if (form && form.steps.length > 0) {
+  isMultiStep = true;
+  stepGroups = groupFieldsByStep(form.fields, form.steps);
+}
+---
+
+{
+  form && (
+    <div class:list={['kometio-form', instanceClass]}>
+      {submitted && (
+        <p role="status" class="kometio-form__status kometio-form__status--success">
+          {i18n.t('form.submitSuccess')}
+        </p>
+      )}
+      {errored && (
+        <p role="alert" class="kometio-form__status kometio-form__status--error">
+          {i18n.t('form.submitError')}
+        </p>
+      )}
+      {!submitted && (
+        // multipart/form-data always, not just when a `file` field is
+        // present — it works identically for every other field type too,
+        // so there's no need to compute a per-form conditional for it.
+        <form
+          method="POST"
+          action={`/api/forms/${form.id}/submit`}
+          enctype="multipart/form-data"
+          data-kometio-form-conditions={conditions}
+        >
+          <input type="hidden" name="_redirectTo" value={redirectTo} />
+          {pageId && <input type="hidden" name="_pageId" value={pageId} />}
+          <input type="hidden" name="_checkboxFields" value={checkboxFieldIds} />
+          {/* Honeypot: real visitors never see or fill this (docs/adr/0015).
+              `_`-prefixed like the other hint fields above, so the proxy
+              never mistakes it for a real form field. */}
+          <div class="kometio-honeypot" aria-hidden="true">
+            <label for={`hp-${form.id}`}>{i18n.t('form.honeypotLabel')}</label>
+            <input
+              type="text"
+              id={`hp-${form.id}`}
+              name="_honeypot"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+          {isMultiStep ? (
+            <>
+              <p
+                class="kometio-form__step-indicator"
+                data-step-indicator
+                data-step-indicator-template={i18n.t('form.stepIndicator', {
+                  current: '{current}',
+                  total: '{total}',
+                })}
+              />
+              {stepGroups.map((group, index) => (
+                <div class="kometio-form__step" data-step-index={index}>
+                  {group.fields.map((field) => (
+                    <FormFieldComponent formId={form.id} field={field} />
+                  ))}
+                </div>
+              ))}
+              <div class="kometio-form__step-nav">
+                <button type="button" class="kometio-form__prev" data-step-prev>
+                  {i18n.t('form.stepPrev')}
+                </button>
+                <button type="button" class="kometio-form__next" data-step-next>
+                  {i18n.t('form.stepNext')}
+                </button>
+              </div>
+            </>
+          ) : (
+            form.fields.map((field) => (
+              <FormFieldComponent formId={form.id} field={field} />
+            ))
+          )}
+          {
+            turnstileSiteKey && (
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} />
+            )
+          }
+          <button
+            type="submit"
+            class="kometio-form__submit"
+            data-step-submit
+            hidden={isMultiStep}
+          >
+            {i18n.t('form.submit')}
+          </button>
+        </form>
+      )}
+    </div>
+  )
+}
+
+<script>
+  // Multi-step nav (Indietro/Avanti) and the Turnstile widget (rendered
+  // explicitly, not via Turnstile's own auto-scan — see
+  // block-behaviors/turnstile.ts for why) both live in plain importable
+  // modules, not inline here, so they can also be re-run after a live
+  // canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts. A no-op for a
+  // plain single-step form: formBehaviors' own selector finds nothing.
+  import { formBehaviors } from '../../lib/block-behaviors/form';
+  import { turnstileBehaviors } from '../../lib/block-behaviors/turnstile';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, [...formBehaviors, ...turnstileBehaviors]);
+</script>
+
+<style>
+  .kometio-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 32rem;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  .kometio-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .kometio-form__step {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  /* Author styles always win over the browser's own [hidden] UA rule
+     regardless of selector specificity — found via a real screenshot
+     during verification: the JS was correctly setting the hidden
+     attribute (confirmed via DOM queries) but every step still rendered
+     visibly stacked, because the plain `display: flex` rule above
+     silently overrode `[hidden] { display: none }`. This selector's own
+     specificity is what actually matters here, so it has to win. */
+  .kometio-form__step[hidden] {
+    display: none;
+  }
+  .kometio-form__step-indicator {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+  .kometio-form__step-nav {
+    display: flex;
+    justify-content: space-between;
+  }
+  .kometio-form button {
+    align-self: flex-start;
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font: inherit;
+    cursor: pointer;
+  }
+  .kometio-form__prev {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--border);
+  }
+  .kometio-form__status {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+  }
+  /* The state colours (global.css): a status, not a brand colour. */
+  .kometio-form__status--success {
+    background: var(--kometio-success-surface);
+    color: var(--kometio-success-text);
+  }
+  .kometio-form__status--error {
+    background: var(--kometio-error-surface);
+    color: var(--kometio-error-text);
+  }
+</style>

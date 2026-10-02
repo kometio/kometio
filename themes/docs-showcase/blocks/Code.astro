@@ -1,0 +1,106 @@
+---
+// Override of apps/public-site/src/components/blocks/Code.astro
+// (docs/adr/0021's per-block escalation) — same props/Shiki rendering as
+// core, the difference is purely presentational: a macOS-style terminal
+// window chrome (traffic-light dots + title bar showing the language)
+// around the snippet, reference https://ellevas.dev/docs (user's own
+// site, 2026-08-30). Restyle only, no new fields — same boundary as every
+// other theme block override here.
+import { Code as ShikiCode } from 'astro:components';
+import type { CodeLanguage } from 'astro';
+import type { CodeProps } from '@kometio/shared-types';
+
+// `instanceClass` and not `styleOverride` since ADR-0047: the per-instance
+// override is a generated CSS rule now, not an inline attribute, because
+// an inline `style` cannot hold the container query a per-breakpoint value
+// needs. The block receives the class that rule targets.
+type Props = CodeProps & { instanceClass?: string | null };
+
+const { code, language, instanceClass } = Astro.props;
+
+// Same reasoning as core Code.astro's own cast: `language` is a plain
+// `string` in the domain schema, the curated options in code.block.ts are
+// all valid Shiki language ids.
+const shikiLang = language as CodeLanguage;
+---
+
+<div class:list={['kometio-code', instanceClass]}>
+  <div class="kometio-code__titlebar" aria-hidden="true">
+    <span class="kometio-code__dot kometio-code__dot--red"></span>
+    <span class="kometio-code__dot kometio-code__dot--yellow"></span>
+    <span class="kometio-code__dot kometio-code__dot--green"></span>
+    {language && <span class="kometio-code__lang">{language}</span>}
+  </div>
+  <div class="kometio-code__body">
+    {/* The same colour theme as core's Code block, for the same reason:
+        its faintest text colour reads 6.15:1, where github-dark's comments
+        read 3.05:1. */}
+    <ShikiCode code={code} lang={shikiLang} theme="github-dark-default" />
+  </div>
+</div>
+
+<style>
+  /* #0d1117 matches Shiki's own github-dark-default <pre> background exactly
+     (verified against its rendered inline style) — the title bar and body
+     share one continuous surface, no seam between them. */
+  .kometio-code {
+    border-radius: var(--kometio-override-radius, var(--radius));
+    overflow: hidden;
+    /* `--kometio-override-window-tint` is this theme's OWN style property,
+       declared in Code.style.ts (ADR-0047) — core has no such property.
+       The variable name is derived from the key, so nothing here had to
+       be registered anywhere: the emitter writes it from whatever the
+       agency sets, and this fallback is what shows until they do. */
+    border: 1px solid var(--kometio-override-window-tint, rgb(255 255 255 / 10%));
+    background: #0d1117;
+  }
+  .kometio-code__titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: color-mix(in oklab, #0d1117 85%, white 6%);
+    border-bottom: 1px solid rgb(255 255 255 / 8%);
+  }
+  .kometio-code__dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  /* Classic macOS traffic-light colors, the whole point of this chrome
+     being instantly recognizable as "a window", not chosen from the
+     theme's own palette. */
+  .kometio-code__dot--red {
+    background: #ff5f56;
+  }
+  .kometio-code__dot--yellow {
+    background: #ffbd2e;
+  }
+  .kometio-code__dot--green {
+    background: #27c93f;
+  }
+  .kometio-code__lang {
+    margin-left: auto;
+    font-family: var(--font-sans-value);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    /* 45% read 3.8:1 on the title bar, under AA; 70% reads 6.8:1. */
+    color: rgb(255 255 255 / 70%);
+  }
+  .kometio-code__body {
+    padding: var(--kometio-override-padding-y, 1rem)
+      var(--kometio-override-padding-x, 1.25rem);
+    overflow-x: auto;
+  }
+  /* The theme's code face (--kometio-code-font, Geist Mono in theme.css). */
+  .kometio-code__body :global(pre),
+  .kometio-code__body :global(code) {
+    margin: 0;
+    font-family: var(--kometio-code-font);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+</style>

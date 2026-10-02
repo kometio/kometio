@@ -1,0 +1,13 @@
+---
+import type { ThemeContentShellProps } from '@kometio/theme-runtime';
+
+/**
+ * No wrapper at all: the page content goes where it would have gone
+ * anyway. It is a component rather than a ternary branch so that all three
+ * regions have the same shape (`the theme's ?? core's own`) in
+ * PageLayout.astro.
+ */
+export type Props = ThemeContentShellProps;
+---
+
+<slot />

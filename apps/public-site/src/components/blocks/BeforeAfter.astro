@@ -1,0 +1,152 @@
+---
+import type { BeforeAfterProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+import { labelledImageAlt } from '../../lib/image-alt';
+
+type Props = BeforeAfterProps & {
+  locale: string;
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const {
+  beforeImage,
+  afterImage,
+  beforeLabel,
+  afterLabel,
+  locale,
+  instanceClass,
+} =
+  Astro.props;
+const canRender = beforeImage !== null && afterImage !== null;
+const i18n = new Translator(locale);
+---
+
+{
+  canRender ? (
+    <div
+      class:list={['kometio-before-after', instanceClass]}
+      style="--reveal: 50%"
+    >
+      {
+        /* loading="eager" (same reasoning as Image.astro): full-width,
+        can be the first block on a page, so it can be the page's own LCP
+        element — lazy-loading that would delay it instead of helping CWV. */
+      }
+      <OptimizedImage
+        media={afterImage}
+        alt={labelledImageAlt(afterLabel, afterImage)}
+        class="kometio-before-after__image"
+        loading="eager"
+      />
+      <div class="kometio-before-after__reveal">
+        <OptimizedImage
+          media={beforeImage}
+          alt={labelledImageAlt(beforeLabel, beforeImage)}
+          class="kometio-before-after__image"
+          loading="eager"
+        />
+      </div>
+      <div class="kometio-before-after__divider" aria-hidden="true" />
+      <span class="kometio-before-after__label kometio-before-after__label--before" data-kometio-field="beforeLabel">
+        {beforeLabel}
+      </span>
+      <span class="kometio-before-after__label kometio-before-after__label--after" data-kometio-field="afterLabel">
+        {afterLabel}
+      </span>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+        class="kometio-before-after__slider"
+        aria-label={i18n.t('beforeAfter.compareLabel', {
+          before: beforeLabel,
+          after: afterLabel,
+        })}
+      />
+    </div>
+  ) : (
+    <p>{i18n.t('beforeAfter.empty')}</p>
+  )
+}
+
+<script>
+  // Logic lives in a plain importable module (not inline here) so it can
+  // also be re-run after a live canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { beforeAfterBehaviors } from '../../lib/block-behaviors/before-after';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, beforeAfterBehaviors);
+</script>
+
+<style>
+  .kometio-before-after {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    overflow: hidden;
+    /* Fallbacks are what this block already rendered. */
+    border-radius: var(--kometio-override-radius, 8px);
+    border: var(--kometio-override-border-width, 0)
+      var(--kometio-override-border-style, solid)
+      var(--kometio-override-border-color, var(--border));
+    box-shadow: var(--kometio-override-shadow, none);
+    max-width: var(--kometio-override-max-width, none);
+  }
+  /* :global() because OptimizedImage (a child component) renders the
+  actual <img> — see Image.astro's own style block for the full reasoning. */
+  :global(.kometio-before-after__image) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+  }
+  .kometio-before-after__reveal {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--reveal)) 0 0);
+  }
+  /* Divider and label stay literal white — they overlay arbitrary photos,
+     not the page's own background, same "overlay control on unpredictable
+     image content" reasoning as ImageSlider/Testimonials' nav buttons. */
+  .kometio-before-after__divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--reveal);
+    width: 2px;
+    background: #fff;
+    box-shadow: 0 0 4px rgb(0 0 0 / 40%);
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+  .kometio-before-after__label {
+    position: absolute;
+    top: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    background: rgb(0 0 0 / 55%);
+    color: #fff;
+    font-size: 0.75rem;
+  }
+  .kometio-before-after__label--before {
+    left: 0.75rem;
+  }
+  .kometio-before-after__label--after {
+    right: 0.75rem;
+  }
+  .kometio-before-after__slider {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    appearance: none;
+  }
+</style>

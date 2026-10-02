@@ -1,0 +1,36 @@
+---
+import { Translator } from '@kometio/theme-runtime';
+import { localePath } from '@kometio/theme-runtime';
+
+// Content-only, same reasoning as NotFound.astro — see ErrorPageShell.astro.
+interface Props {
+  locale?: string;
+}
+
+const { locale } = Astro.props;
+const i18n = new Translator(locale ?? 'it');
+const homeHref = locale ? localePath(locale, 'home') : '/';
+---
+
+<div class="kometio-error-page">
+	<h1>500</h1>
+	<p>{i18n.t('serverError.message')}</p>
+	<a href={homeHref}>{i18n.t('notFound.backHome')}</a>
+</div>
+
+<style>
+	.kometio-error-page {
+		max-width: 32rem;
+		margin: 4rem auto;
+		padding: 0 1.5rem;
+		text-align: center;
+	}
+	.kometio-error-page h1 {
+		font-size: 3rem;
+		margin: 0 0 0.5rem;
+	}
+	.kometio-error-page a {
+		display: inline-block;
+		margin-top: 1.5rem;
+	}
+</style>

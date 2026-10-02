@@ -1,0 +1,31 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "blocks",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+    "emitDeclarationOnly": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
+  },
+  "include": ["blocks/**/*.ts"],
+  "references": [
+    {
+      "path": "../../libs/theme-runtime/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/shared-types/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/block-sdk/tsconfig.lib.json"
+    }
+  ],
+  "exclude": [
+    "vite.config.ts",
+    "vite.config.mts",
+    "vitest.config.ts",
+    "vitest.config.mts",
+    "blocks/**/*.test.ts",
+    "blocks/**/*.spec.ts"
+  ]
+}

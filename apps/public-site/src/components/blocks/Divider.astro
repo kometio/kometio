@@ -1,0 +1,32 @@
+---
+type Props = {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { instanceClass } = Astro.props;
+---
+
+{/*
+  A real `<hr>`, not a styled div: it is the element that MEANS a thematic
+  break, so a screen reader announces the separation instead of skipping
+  a decorative box. Everything about how it looks comes from the style
+  vocabulary (ADR-0053), which is why this block has no props.
+*/}
+<hr class:list={['kometio-divider', instanceClass]} />
+
+<style>
+  .kometio-divider {
+    /* `border-top` and no border elsewhere: an `<hr>` has a default 3D
+       groove border in every browser, and a single edge is what a rule
+       is. Every value here is overridable and these are the defaults. */
+    border: 0;
+    border-top: var(--kometio-override-border-width, 1px)
+      var(--kometio-override-border-style, solid)
+      var(--kometio-override-border-color, var(--border));
+    /* Not `width`: `max-width` lets a narrower divider still shrink on a
+       small screen instead of overflowing it. */
+    max-width: var(--kometio-override-max-width, none);
+    margin-inline: auto;
+  }
+</style>

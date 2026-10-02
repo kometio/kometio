@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Kometio</title>
+    <base href="/" />
+
+    <!--
+      The Content-Security-Policy is NOT here any more (docs/adr/0076). It
+      is sent as a real header: by nginx in the container, built from the
+      same environment the two addresses come from, and by the dev server
+      through vite.config.mts. A `<meta>` tag could only carry what the
+      build knew, which is exactly the thing that had to stop being fixed
+      at build time — and `frame-ancestors`, which the editor wants, is
+      ignored in a meta tag per spec.
+
+      config.js sets `window.__KOMETIO_CONFIG__` with the API and public-site
+      addresses, and must load BEFORE the bundle: src/lib/runtime-config.ts
+      reads it as the modules load. The container rewrites this file at
+      start; a plain build emits it with the build-time values.
+    -->
+    <script src="/config.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,75 @@
+---
+import type { CountdownProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+
+type Props = CountdownProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  locale: string;
+};
+
+const { targetDate, label, locale, instanceClass } = Astro.props;
+const i18n = new Translator(locale);
+---
+
+<div class:list={['kometio-countdown', instanceClass]} data-target-date={targetDate}>
+  {label && <p class="kometio-countdown__label" data-kometio-field="label">{label}</p>}
+  <div class="kometio-countdown__timer">
+    <div class="kometio-countdown__unit">
+      <span class="kometio-countdown__value" data-unit="days">00</span>
+      <span class="kometio-countdown__name">{i18n.t('countdown.days')}</span>
+    </div>
+    <div class="kometio-countdown__unit">
+      <span class="kometio-countdown__value" data-unit="hours">00</span>
+      <span class="kometio-countdown__name">{i18n.t('countdown.hours')}</span>
+    </div>
+    <div class="kometio-countdown__unit">
+      <span class="kometio-countdown__value" data-unit="minutes">00</span>
+      <span class="kometio-countdown__name">{i18n.t('countdown.minutes')}</span>
+    </div>
+    <div class="kometio-countdown__unit">
+      <span class="kometio-countdown__value" data-unit="seconds">00</span>
+      <span class="kometio-countdown__name">{i18n.t('countdown.seconds')}</span>
+    </div>
+  </div>
+  <p class="kometio-countdown__expired" hidden>{i18n.t('countdown.expired')}</p>
+</div>
+
+<script>
+  // No framework here on purpose (docs/adr/0007, same reasoning as
+  // HamburgerMenu.astro) — the only difference from that block is that
+  // this one updates on a timer (setInterval) instead of a click listener,
+  // the first "tick" rather than "event" driven block in the public site.
+  // Logic lives in a plain importable module (not inline here) so it can
+  // also be re-run after a live canvas insert/patch — see
+  // block-behaviors/run-block-behaviors-in-subtree.ts.
+  import { countdownBehaviors } from '../../lib/block-behaviors/countdown';
+  import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
+  runBlockBehaviors(document, countdownBehaviors);
+</script>
+
+<style>
+  .kometio-countdown {
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  .kometio-countdown__timer {
+    display: flex;
+    gap: 1rem;
+  }
+  .kometio-countdown__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .kometio-countdown__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .kometio-countdown__name {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+</style>

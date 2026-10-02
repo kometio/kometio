@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": false,
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "lib": ["es2022", "dom"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "playwright.config.ts"],
+  "references": [
+    {
+      "path": "../../libs/env-config"
+    }
+  ]
+}

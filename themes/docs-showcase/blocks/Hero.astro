@@ -1,0 +1,97 @@
+---
+// Override of apps/public-site/src/components/blocks/Hero.astro, resolved
+// via resolveThemeBlockOverride (docs/adr/0021's per-block escalation) —
+// same title/subtitle props as core, themes/README.md's own boundary: a
+// theme restyles, it doesn't get new data fields on an existing block.
+// The pill above the title is core's `eyebrow` field, shown only when the
+// editor fills it in.
+// A relative path, not the bare specifier — see the comment in
+// ../PageLayout.astro for why.
+import type { HeroProps } from '@kometio/shared-types';
+
+// `instanceClass` travels with the props since ADR-0047: the per-instance
+// override is a generated CSS rule, and this element has to carry the
+// class that rule targets — an override that drops it silently disables
+// per-instance styling for every Hero on every site using this theme.
+// What each declaration then DOES is still this theme's business: here
+// the background is transparent until a site asks for a band.
+type Props = HeroProps & {
+	instanceClass?: string | null;
+	/** A Hero is a container since ADR-0056 — an override that drops the slot loses every child block on every site using this theme. */
+	hasChildren?: boolean;
+};
+
+const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
+---
+
+<header class:list={['kometio-docs-hero', instanceClass]}>
+	{/* Only what the editor wrote: a badge saying "Built with Kometio itself"
+	    appeared on every site using this theme, whatever the site was. */}
+	{eyebrow && <div class="kometio-docs-hero__badge">{eyebrow}</div>}
+	<h1 class="kometio-docs-hero__title">{title}</h1>
+	{/* `set:html`, and a container that may hold paragraphs: `subtitle` is
+	a rich text field (ADR-0046), so its value is HTML the API has already
+	sanitised. Interpolating it would show the reader `<p>` as text. Any
+	theme overriding a block with a rich text field has to do the same. */}
+	<div class="kometio-docs-hero__subtitle kometio-rich-text" set:html={subtitle} />
+	{hasChildren && (
+		<div class="kometio-docs-hero__content">
+			<slot />
+		</div>
+	)}
+</header>
+
+<style>
+	/* Type on the page itself, not a coloured slab: the accent is kept for
+	   what can be done (the buttons), so it still stands out when it
+	   matters. Centred, because this theme's Button centres itself: a
+	   left-aligned hero sat above a centred "Get started" on the first
+	   page tried. The per-instance
+	   background override applies, for a site that wants a band. */
+	.kometio-docs-hero {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: 1.25rem;
+		padding: 5rem 0 4rem;
+		background: var(--kometio-override-bg, transparent);
+		color: var(--kometio-override-text, var(--foreground));
+	}
+	.kometio-docs-hero__badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.25rem 0.75rem;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--muted);
+		color: var(--muted-foreground);
+		font-size: 0.8125rem;
+		font-weight: 500;
+	}
+	.kometio-docs-hero__title {
+		max-width: 44rem;
+		margin: 0;
+		font-size: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);
+		line-height: 1.05;
+		font-weight: 650;
+		letter-spacing: -0.045em;
+		text-wrap: balance;
+	}
+	.kometio-docs-hero__subtitle {
+		max-width: 38rem;
+		margin: 0;
+		font-size: 1.1875rem;
+		line-height: 1.55;
+		color: var(--muted-foreground);
+		text-wrap: pretty;
+	}
+	.kometio-docs-hero__content {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+	}
+</style>

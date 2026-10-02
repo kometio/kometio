@@ -1,0 +1,73 @@
+---
+import type { StepProps } from '@kometio/shared-types';
+
+type Props = StepProps & { instanceClass?: string | null };
+
+const { title, description, instanceClass } = Astro.props;
+---
+
+<li class:list={['kometio-step', instanceClass]}>
+  <span class="kometio-step__number" aria-hidden="true"></span>
+  <div class="kometio-step__content">
+    <h3 class="kometio-step__title" data-kometio-field="title">{title}</h3>
+    {description && (
+      <div
+        class="kometio-step__description kometio-rich-text"
+        data-kometio-field="description"
+        set:html={description}
+      />
+    )}
+  </div>
+</li>
+
+<style>
+  /* Number above the words by default; Steps puts them beside it, through
+     `--kometio-step-columns`, when the steps are one under the other. */
+  .kometio-step {
+    counter-increment: kometio-step;
+    display: grid;
+    grid-template-columns: var(--kometio-step-columns, minmax(0, 1fr));
+    align-content: start;
+    gap: 0.75rem;
+    min-width: 0;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-step__number {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kometio-step__number::before {
+    content: counter(kometio-step);
+  }
+
+  .kometio-step__content {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .kometio-step__title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .kometio-step__description {
+    font-size: 0.9375rem;
+    color: var(--muted-foreground);
+  }
+</style>

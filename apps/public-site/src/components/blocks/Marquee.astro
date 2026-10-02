@@ -1,0 +1,142 @@
+---
+import type { MarqueeProps } from '@kometio/shared-types';
+import EmptyContainerHint from '../EmptyContainerHint.astro';
+
+type Props = MarqueeProps & {
+  locale?: string;
+  emptyChildLabel?: string | null;
+  editable?: boolean;
+  hasChildren?: boolean;
+  instanceClass?: string | null;
+};
+
+const {
+  speed,
+  direction,
+  pauseOnHover,
+  locale,
+  emptyChildLabel,
+  editable,
+  hasChildren,
+  instanceClass,
+} = Astro.props;
+
+// In the canvas nothing moves and nothing is copied: a block that slides
+// away while somebody is trying to click it cannot be edited, and a copy
+// would be a second set of the same blocks to select by mistake.
+const animated = !editable && hasChildren;
+const content = animated ? await Astro.slots.render('default') : '';
+---
+
+<div
+  class:list={[
+    'kometio-marquee',
+    `kometio-marquee--${speed}`,
+    `kometio-marquee--${direction}`,
+    pauseOnHover && 'kometio-marquee--pause-on-hover',
+    animated && 'kometio-marquee--animated',
+    instanceClass,
+  ]}
+  data-kometio-editable-outline={editable && hasChildren ? '' : undefined}
+>
+  {
+    animated ? (
+      <div class="kometio-marquee__track">
+        <div class="kometio-marquee__group" set:html={content} />
+        {/* The second copy is what makes the loop seamless. It is hidden
+            from assistive technology and unreachable by keyboard, so the
+            content is read and tabbed through once. */}
+        <div class="kometio-marquee__group" aria-hidden="true" inert set:html={content} />
+      </div>
+    ) : (
+      <div class="kometio-marquee__group">
+        <slot />
+        <EmptyContainerHint
+          show={!hasChildren && Boolean(editable)}
+          locale={locale}
+          childLabel={emptyChildLabel}
+        />
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .kometio-marquee {
+    overflow: hidden;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+    --kometio-marquee-duration: 30s;
+  }
+
+  .kometio-marquee--slow {
+    --kometio-marquee-duration: 50s;
+  }
+
+  .kometio-marquee--fast {
+    --kometio-marquee-duration: 15s;
+  }
+
+  .kometio-marquee__track {
+    display: flex;
+    width: max-content;
+    gap: var(--kometio-override-gap, 2.5rem);
+    animation: kometio-marquee var(--kometio-marquee-duration) linear infinite;
+  }
+
+  .kometio-marquee__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--kometio-override-gap, 2.5rem);
+  }
+
+  .kometio-marquee--animated .kometio-marquee__group {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .kometio-marquee--backward .kometio-marquee__track {
+    animation-direction: reverse;
+  }
+
+  .kometio-marquee--pause-on-hover:hover .kometio-marquee__track,
+  .kometio-marquee--pause-on-hover:focus-within .kometio-marquee__track {
+    animation-play-state: paused;
+  }
+
+  /* Half the track, plus half a gap, is exactly one copy: the second copy
+     then sits where the first began, and the jump back is invisible. */
+  @keyframes kometio-marquee {
+    to {
+      transform: translateX(calc(-50% - var(--kometio-override-gap, 2.5rem) / 2));
+    }
+  }
+
+  :global([dir='rtl']) .kometio-marquee__track {
+    animation-direction: reverse;
+  }
+
+  :global([dir='rtl']) .kometio-marquee--backward .kometio-marquee__track {
+    animation-direction: normal;
+  }
+
+  /* A reader who asked for less motion gets the content, still and
+     wrapped, with the copy removed. */
+  @media (prefers-reduced-motion: reduce) {
+    .kometio-marquee__track {
+      animation: none;
+      width: auto;
+      flex-wrap: wrap;
+    }
+    .kometio-marquee__group[aria-hidden='true'] {
+      display: none;
+    }
+    .kometio-marquee--animated .kometio-marquee__group {
+      flex-wrap: wrap;
+    }
+  }
+</style>

@@ -1,0 +1,83 @@
+---
+import type { NavDropdownProps } from '@kometio/shared-types';
+
+type Props = NavDropdownProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { label, position, visibility, instanceClass } = Astro.props;
+---
+
+<details
+  class:list={[
+    'kometio-nav-dropdown',
+    { 'kometio-nav-dropdown--right': position === 'right' },
+    { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
+    { 'kometio-visibility-mobile-only': visibility === 'mobile-only' },
+    instanceClass,
+  ]}
+>
+  <summary class="kometio-nav-dropdown__trigger" data-kometio-field="label">{label}</summary>
+  <div class="kometio-nav-dropdown__panel">
+    <slot />
+  </div>
+</details>
+
+<style>
+  /* Native <details>/<summary> — click to open/close, keyboard-accessible
+     by default, no JS needed at all. The trigger is not itself a link
+     (docs/adr/0018 follow-up): combining "click opens the submenu" and
+     "click navigates" on one element is the classic mega-menu UX
+     conflict, so this is a pure disclosure toggle. */
+  .kometio-nav-dropdown {
+    position: relative;
+  }
+  .kometio-nav-dropdown--right {
+    margin-left: auto;
+  }
+
+  .kometio-nav-dropdown__trigger {
+    cursor: pointer;
+    list-style: none;
+  }
+  .kometio-nav-dropdown__trigger::-webkit-details-marker {
+    display: none;
+  }
+  .kometio-nav-dropdown__trigger::after {
+    content: ' ▾';
+  }
+
+  /* The overrides land on the PANEL, not on the wrapper they are
+     declared on: the wrapper is a positioning context with no appearance
+     of its own, and styling it would leave the visible menu untouched —
+     the silent no-op ADR-0047 exists to prevent. Every fallback is the
+     value already in use. */
+  .kometio-nav-dropdown__panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    z-index: 10;
+    min-width: 12rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--kometio-override-gap, 0.25rem);
+    padding: var(--kometio-override-padding-y, 0.75rem)
+      var(--kometio-override-padding-x, 0.75rem);
+    background: var(--kometio-override-bg, var(--background));
+    color: var(--kometio-override-text, inherit);
+    border: var(--kometio-override-border-width, 1px)
+      var(--kometio-override-border-style, solid)
+      var(--kometio-override-border-color, var(--border));
+    border-radius: var(--kometio-override-radius, 8px);
+    box-shadow: var(--kometio-override-shadow, 0 8px 24px rgb(0 0 0 / 12%));
+  }
+  .kometio-nav-dropdown__panel :global(.kometio-nav-link) {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+  }
+  .kometio-nav-dropdown__panel :global(.kometio-nav-link:hover) {
+    background: var(--muted);
+  }
+</style>

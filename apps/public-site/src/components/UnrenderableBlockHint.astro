@@ -1,0 +1,48 @@
+---
+/**
+ * Shown in place of a block whose saved props do not satisfy its own
+ * schema — on the editor canvas only, never on the published page.
+ *
+ * The alternative, until a page of documentation was published with a
+ * heading level the running code did not yet accept, was that
+ * `schema.parse()` threw and took the WHOLE page's content down with it:
+ * the layout and navigation still rendered, and every block on the page
+ * disappeared. One bad block is a bad block; it is not a reason to stop
+ * showing the other thirty.
+ *
+ * A visitor sees nothing at all rather than a diagnostic — the message
+ * is for the person who can fix it, and reaches them where they work.
+ * `show` is computed by the caller from `editable`, the same way
+ * `EmptyContainerHint` does it.
+ */
+import { Translator } from '@kometio/theme-runtime';
+
+export interface Props {
+  show: boolean;
+  type: string;
+  locale: string;
+}
+
+const { show, type, locale } = Astro.props;
+const i18n = new Translator(locale);
+---
+
+{
+  show && (
+    <p class="kometio-unrenderable-block" role="status">
+      {i18n.t('blockRenderer.unrenderable', { type })}
+    </p>
+  )
+}
+
+<style>
+  .kometio-unrenderable-block {
+    margin: 0;
+    padding: 1.5rem;
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+</style>

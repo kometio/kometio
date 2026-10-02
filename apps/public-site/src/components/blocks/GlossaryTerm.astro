@@ -1,0 +1,62 @@
+---
+import type { GlossaryTermProps } from '@kometio/shared-types';
+import { glossaryTermAnchor } from '../../lib/glossary-index';
+
+type Props = GlossaryTermProps & {
+  /** Its own block id, which the glossary's index links to. */
+  blockId?: string;
+  instanceClass?: string | null;
+};
+
+const { term, definition, blockId, instanceClass } = Astro.props;
+---
+
+<div
+  class:list={['kometio-glossary-term', instanceClass]}
+  id={blockId ? glossaryTermAnchor(blockId) : undefined}
+>
+  {/* <dfn>: this is where the word is defined, which is what a reader
+      jumping here from the index — or a screen reader — is looking for. */}
+  <dt class="kometio-glossary-term__term">
+    <dfn data-kometio-field="term">{term}</dfn>
+  </dt>
+  {definition && (
+    <dd
+      class="kometio-glossary-term__definition kometio-rich-text"
+      data-kometio-field="definition"
+      set:html={definition}
+    />
+  )}
+</div>
+
+<style>
+  .kometio-glossary-term {
+    display: grid;
+    gap: 0.25rem;
+    /* A sticky header must not cover the term the index jumped to. */
+    scroll-margin-block-start: 6rem;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-glossary-term__term {
+    font-weight: 600;
+  }
+
+  .kometio-glossary-term__term dfn {
+    font-style: normal;
+  }
+
+  .kometio-glossary-term__definition {
+    margin: 0;
+    color: var(--muted-foreground);
+  }
+
+  .kometio-glossary-term:target {
+    outline: 2px solid var(--primary);
+    outline-offset: 0.25rem;
+  }
+</style>

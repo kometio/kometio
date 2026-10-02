@@ -1,0 +1,27 @@
+{
+  "name": "@kometio/theme-classic",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "nx": {
+    "tags": [
+      "app"
+    ],
+    "targets": {
+      "typecheck": {
+        "command": "tsc --build tsconfig.json --emitDeclarationOnly && astro check --tsconfig tsconfig.astro.json",
+        "options": {
+          "cwd": "themes/classic"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@kometio/block-sdk": "workspace:*",
+    "@kometio/shared-types": "workspace:*",
+    "@kometio/theme-runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "astro": "^7.3.5"
+  }
+}

@@ -1,0 +1,69 @@
+---
+import {
+  type LogoStripProps,
+  type PickedMedia,
+} from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import OptimizedImage from '../OptimizedImage.astro';
+import { fixedHeightSizes } from '../../lib/image-sizes';
+
+type Props = LogoStripProps & {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+  locale: string;
+};
+type LogoItem = LogoStripProps['logos'][number];
+
+function isPictured(logo: LogoItem): logo is LogoItem & { media: PickedMedia } {
+  return logo.media !== null;
+}
+
+const { logos, locale, instanceClass } = Astro.props;
+const pictured = logos.filter(isPictured);
+const i18n = new Translator(locale);
+---
+
+{
+  pictured.length > 0 ? (
+    <div class:list={['kometio-logo-strip', instanceClass]}>
+      {pictured.map((logo) => (
+        <OptimizedImage
+          media={logo.media}
+          alt={logo.isDecorative ? '' : logo.alt}
+          class="kometio-logo-strip__logo"
+          sizes={fixedHeightSizes(40, logo.media)}
+        />
+      ))}
+    </div>
+  ) : (
+    <p>{i18n.t('logoStrip.empty')}</p>
+  )
+}
+
+<style>
+  .kometio-logo-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    background: var(--kometio-override-bg, transparent);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  /* :global() because OptimizedImage (a child component) renders the
+  actual <img> — see Image.astro's own style block for the full reasoning. */
+  :global(.kometio-logo-strip__logo) {
+    max-width: 100%;
+    height: 2.5rem;
+    width: auto;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    transition: filter 0.2s ease, opacity 0.2s ease;
+  }
+  :global(.kometio-logo-strip__logo):hover {
+    filter: none;
+    opacity: 1;
+  }
+</style>

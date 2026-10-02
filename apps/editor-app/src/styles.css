@@ -1,0 +1,228 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', sans-serif;
+  --color-canvas-stage: var(--canvas-stage);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  /*
+   * A state's tint, opaque: what a floating thing (a toast) sits on. The
+   * toast was `bg-success/10`, which over the canvas let the page show
+   * through its sentence. Mixed in oklab, like every mix here: in oklch
+   * the page's hue (0, a white's) is mixed in too, and a green tint came
+   * out pink. Its text: 4.66:1 and 5.95:1 light, 11.43:1 and 8.04:1 dark.
+   */
+  --color-success-surface: color-mix(
+    in oklab,
+    var(--success) 10%,
+    var(--background)
+  );
+  --color-destructive-surface: color-mix(
+    in oklab,
+    var(--destructive) 10%,
+    var(--background)
+  );
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * The light theme, which nobody had looked at in months: dark is the
+ * default and theme.ts ignored the system preference, so the only way here
+ * was the toggle. It was a wireframe — white cards on white, an accent that
+ * was simply black, a grey focus ring — because it was still shadcn's
+ * neutral default with the brand colour added to `.dark` alone.
+ */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  /*
+   * Tailwind's blue ramp, the same one the dark theme wears — 600 here,
+   * 300 there. One accent read at two lightnesses, rather than two
+   * products: before this the primary button, the "Published" badge,
+   * "Publish" itself and the selected row in Layers were BLACK in the light
+   * theme and blue in the dark one, so changing theme changed brand.
+   * White text on it, measured at 5.26:1 (AA); against the page it reads
+   * 5.26:1 as well, where the old near-black read 17.9:1 and looked like
+   * body text that had been emboldened.
+   */
+  --primary: oklch(0.546 0.245 262.9);
+  --primary-foreground: oklch(1 0 0);
+  /*
+   * The primary button under the pointer. It was `bg-primary/80`, which
+   * on white lightened the blue under white text to 3.75:1. Darker
+   * instead: 6.62:1 for the text, 1.26:1 away from the button at rest.
+   * In oklab, so the blue stays the blue (oklch turned it 12° violet).
+   */
+  --primary-hover: color-mix(in oklab, var(--primary), var(--foreground) 14%);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.955 0 0);
+  /*
+   * Secondary text sits on the page and on the muted fill of a hovered or
+   * chosen row. At 0.556 it read 4.74:1 on the page and 4.16:1 on that
+   * fill: the path under a chosen page, the counts in a chosen form, a
+   * term's address on hover. Measured on the painted pixels: 5.49:1 on
+   * the page, 4.82:1 on `muted`, 5.04:1 on `accent` and `secondary`.
+   */
+  --muted-foreground: oklch(0.52 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  /*
+   * Measured in Chrome, as Tailwind draws it: text on its own 10% tint
+   * (the destructive button) read 3.98:1 at 0.577 / 0.245 — every Delete
+   * and Remove under AA, and the hover tint lower still. Painted pixels
+   * now: 5.79:1 on the page, 5.43:1 in a dialog's footer and 4.56:1 on its
+   * hover; chroma inside sRGB, where 0.245 was clipped to a flat red.
+   */
+  --destructive: oklch(0.49 0.19 27.325);
+  /*
+   * WCAG 1.4.11 asks 3:1 of the boundary of a UI component, and no border
+   * in this app has ever been near it: these were 1.26:1 on the page, which
+   * is why "you cannot see where a field ends". They are 1.44:1 and 1.58:1
+   * now — a real improvement that is still short of the bar, and
+   * deliberately so: 3:1 in the light theme means a mid-grey rule around
+   * every input, which reads as a form from 2004. The fill (`bg-input/30`)
+   * carries the rest of the job.
+   */
+  --border: oklch(0.88 0 0);
+  --input: oklch(0.85 0 0);
+  /* The focus ring is the accent in both themes, so being focused looks
+     like the product rather than like the browser's default outline. */
+  --ring: var(--primary);
+  /*
+   * State, as opposed to brand. "Unpublished changes" was `bg-amber-500
+   * text-amber-950` written into a component, the only saturated colour in
+   * the interface besides the accent, and it read as an error; "Published"
+   * borrowed `--primary`, which encodes a state with the brand colour. Two
+   * tokens instead, with a variant of Badge each. Each one is also the
+   * colour of a warning SENTENCE, not only of a pill, so it is picked to
+   * read on the page: `text-amber-600` measured 3.19:1 on white, under AA
+   * for body text, and every "this field is required" line in the app wore
+   * it. This reads 5.72:1, and white on it as a fill reads the same.
+   */
+  --warning: oklch(0.52 0.14 62);
+  --warning-foreground: oklch(1 0 0);
+  --success: oklch(0.508 0.118 165.6);
+  --success-foreground: oklch(1 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.88 0 0);
+  /* What sits behind the page in the canvas — a plane, so the page has an
+     edge instead of starting out of nowhere. */
+  --canvas-stage: oklch(0.95 0 0);
+}
+
+/*
+ * Three planes, not one. The dark theme was a black sheet: background
+ * #0a0a0a, cards #171717 at 1.10:1 against it, borders white/10% at
+ * 1.25:1, and a sidebar with no background at all. Nothing had an edge, so
+ * nothing looked like it sat on anything.
+ */
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  /* 1.10:1 -> 1.14:1 against the page. Small numbers, but they are the
+     difference between a card and a rectangle of the same colour. */
+  --card: oklch(0.22 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.22 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  /*
+   * Tailwind's blue-300 — unchanged, and now the light theme's 600 is the
+   * same ramp rather than a different idea. The comment that used to sit
+   * here claimed an indigo/periwinkle sampled from ellevas.dev at
+   * rgb(165 180 252); that colour is hue 275, and this token has always
+   * been hue 252. Twenty-three degrees apart, and the comment was the half
+   * that was wrong.
+   */
+  --primary: oklch(0.809 0.105 251.813);
+  --primary-foreground: oklch(0.145 0 0);
+  /*
+   * Dark text on a light blue: here the hover darkens towards the page,
+   * 8.73:1 for the text and the same 1.25:1 step from rest as the light
+   * theme's. Towards the text colour the step was 1.06:1 — no hover.
+   */
+  --primary-hover: color-mix(in oklab, var(--primary), var(--background) 10%);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  /*
+   * In a dialog the button read 4.41:1 at 0.704, and 3.67:1 on hover. With
+   * this and the button's tints one step lower in dark (15%, hover 20%:
+   * button.tsx), painted pixels read 7.07:1 on the page, 5.54:1 in a
+   * dialog's footer and 4.93:1 on its hover.
+   */
+  --destructive: oklch(0.78 0.15 22.216);
+  /* 1.25:1 -> 1.47:1, and the input border 1.47:1 -> 1.98:1. See the
+     light theme's note for why neither goes to 3:1. */
+  --border: oklch(1 0 0 / 15%);
+  --input: oklch(1 0 0 / 23%);
+  --ring: var(--primary);
+  /* 11.07:1 on the page as text, and near-black on it as a fill. */
+  --warning: oklch(0.82 0.16 75);
+  --warning-foreground: oklch(0.145 0 0);
+  --success: oklch(0.845 0.143 164.978);
+  --success-foreground: oklch(0.145 0 0);
+  /* Between the page and a card: the sidebar is a quieter surface than
+     the things you read, not the same surface as the void behind them. */
+  --sidebar: oklch(0.185 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 15%);
+  --canvas-stage: oklch(0.17 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

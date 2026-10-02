@@ -1,0 +1,183 @@
+name: Docker build
+
+# docs/adr/0042. Every PR gets a build-only check (no registry credentials
+# needed) — with published images the default distribution path, this is
+# the one automated signal that a Dockerfile change didn't break the
+# build. Pushes to main (and version tags, once releases start being cut)
+# additionally publish to ghcr.io.
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'libs/**'
+      - 'themes/**'
+      - '**/Dockerfile'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.dockerignore'
+      - '.github/workflows/docker-build.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+# One run per branch at a time. On main this keeps the tags in commit
+# order: two merges a minute apart used to build side by side, and whichever
+# finished last owned `main`, the older commit included. A run waits for the
+# one before it, and a newer one replaces any still waiting. On a pull
+# request a new push makes the running build pointless, so it is cancelled.
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # One job per image and architecture, each on a runner of that
+  # architecture: arm64 builds natively on GitHub's arm64 runners instead of
+  # under QEMU, where pnpm install and the Nx builds would take many times
+  # as long. Each job pushes its image by digest only; `merge` below puts the
+  # two digests of an image behind its tags as one multi-arch image, so a
+  # server — or an Apple Silicon Mac — pulls the one for its own CPU.
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [api, public-site, editor-app, public-site-builder]
+        platform: [linux/amd64, linux/arm64]
+        include:
+          - image: api
+            dockerfile: apps/api/Dockerfile
+          - image: public-site
+            dockerfile: apps/public-site/Dockerfile
+          - image: editor-app
+            dockerfile: apps/editor-app/Dockerfile
+          # The public site's workspace, installed and unbuilt, for a theme
+          # kept in its own repository (docs/adr/0089). Always published
+          # with the same tags as kometio-public-site: a theme is built on
+          # one and runs on the other, and the two must match.
+          - image: public-site-builder
+            dockerfile: apps/public-site/Dockerfile
+            target: builder
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            arch: amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # in it is refused.
+      - name: Image name
+        run: echo "IMAGE=ghcr.io/${OWNER,,}/kometio-${{ matrix.image }}" >> "$GITHUB_ENV"
+        env:
+          OWNER: ${{ github.repository_owner }}
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Log in to ghcr.io
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        id: meta
+        with:
+          images: ${{ env.IMAGE }}
+
+      # On a pull request this is the build-only check; elsewhere it pushes
+      # the image by digest, untagged — the tags come from `merge`.
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        id: build
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) }}
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
+
+      - name: Keep the digest for merge
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p "${{ runner.temp }}/digests"
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: github.event_name != 'pull_request'
+        with:
+          # A dot, not a dash, before the architecture: image names contain
+          # dashes, and `digests-public-site-*` also matched
+          # public-site-builder's digests, which merge then looked for in the
+          # wrong repository.
+          name: digests-${{ matrix.image }}.${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    if: github.event_name != 'pull_request'
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [api, public-site, editor-app, public-site-builder]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Image name
+        run: echo "IMAGE=ghcr.io/${OWNER,,}/kometio-${{ matrix.image }}" >> "$GITHUB_ENV"
+        env:
+          OWNER: ${{ github.repository_owner }}
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-${{ matrix.image }}.*
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Log in to ghcr.io
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        id: meta
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Tag the multi-arch image
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          digests=(*)
+          if [ "${#digests[@]}" -ne 2 ]; then
+            echo "Expected one digest per architecture, got ${#digests[@]}: ${digests[*]}"
+            exit 1
+          fi
+          args=()
+          while read -r tag; do args+=(-t "$tag"); done < <(jq -r '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          for digest in "${digests[@]}"; do args+=("$IMAGE@sha256:$digest"); done
+          docker buildx imagetools create "${args[@]}"
+
+      - name: Check both architectures are there
+        env:
+          TAG: ${{ steps.meta.outputs.version }}
+        run: |
+          platforms=$(docker buildx imagetools inspect "$IMAGE:$TAG" --format '{{json .Manifest}}' | jq -r '[.manifests[].platform | select(.os != "unknown") | .architecture] | sort | join(",")')
+          echo "$IMAGE:$TAG: $platforms"
+          test "$platforms" = "amd64,arm64"

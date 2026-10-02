@@ -1,0 +1,25 @@
+---
+type Props = {
+  /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
+  instanceClass?: string | null;
+};
+
+const { instanceClass } = Astro.props;
+---
+
+{/*
+  `aria-hidden` and no content: this is space, and a screen reader has
+  nothing to gain from being told it exists. The height is `minHeight`, an
+  ordinary style property, so it can differ per breakpoint — which is the
+  whole point of a spacer being a block rather than a hardcoded margin.
+*/}
+<div class:list={['kometio-spacer', instanceClass]} aria-hidden="true"></div>
+
+<style>
+  .kometio-spacer {
+    /* 2rem when nobody has said otherwise: enough to read as deliberate
+       space rather than as a rendering mistake. */
+    min-height: var(--kometio-override-min-height, 2rem);
+    background: var(--kometio-override-bg, transparent);
+  }
+</style>

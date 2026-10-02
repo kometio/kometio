@@ -1,0 +1,114 @@
+---
+import type { MediaTextProps } from '@kometio/shared-types';
+import OptimizedImage from '../OptimizedImage.astro';
+import { HALF_WIDTH_SIZES } from '../../lib/image-sizes';
+
+type Props = MediaTextProps & { instanceClass?: string | null };
+
+const { media, alt, heading, body, mediaSide, mediaWidth, verticalAlign, instanceClass } =
+  Astro.props;
+---
+
+<div
+  class:list={[
+    'kometio-media-text',
+    `kometio-media-text--media-${mediaSide}`,
+    `kometio-media-text--width-${mediaWidth}`,
+    `kometio-media-text--align-${verticalAlign}`,
+    instanceClass,
+  ]}
+>
+  <div class="kometio-media-text__inner">
+    <div class="kometio-media-text__media">
+      {media && (
+        <OptimizedImage
+          media={media}
+          alt={alt}
+          class="kometio-media-text__image"
+          sizes={HALF_WIDTH_SIZES}
+        />
+      )}
+    </div>
+    <div class="kometio-media-text__content">
+      {heading && (
+        <h2 class="kometio-media-text__heading" data-kometio-field="heading">
+          {heading}
+        </h2>
+      )}
+      <div class="kometio-media-text__body kometio-rich-text" data-kometio-field="body" set:html={body} />
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Measured by its own box, not by the screen: the same block sits in a
+     full-width band or in one column of three (ADR-0050). A container
+     cannot query itself, hence the inner element (the trap from PR #162). */
+  .kometio-media-text {
+    container-type: inline-size;
+    background: var(--kometio-override-bg, transparent);
+    color: var(--kometio-override-text, inherit);
+    border-radius: var(--kometio-override-radius, 0);
+    padding: var(--kometio-override-padding-y, 0)
+      var(--kometio-override-padding-x, 0);
+  }
+
+  .kometio-media-text__inner {
+    display: grid;
+    gap: var(--kometio-override-gap, 2rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kometio-media-text__media,
+  .kometio-media-text__content {
+    min-width: 0;
+  }
+
+  .kometio-media-text__media :global(img) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+  }
+
+  .kometio-media-text__heading {
+    margin: 0 0 0.75rem;
+  }
+
+  @container (min-width: 36rem) {
+    .kometio-media-text__inner {
+      grid-template-columns: var(--kometio-media-text-columns);
+    }
+    .kometio-media-text--width-third .kometio-media-text__inner {
+      --kometio-media-text-columns: minmax(0, 1fr) minmax(0, 2fr);
+    }
+    .kometio-media-text--width-half .kometio-media-text__inner {
+      --kometio-media-text-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .kometio-media-text--width-two-thirds .kometio-media-text__inner {
+      --kometio-media-text-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+    /* `end` swaps the columns by ORDER, never by physical side, so the
+       picture follows the page's reading direction. The column widths are
+       flipped with it, so "a third" stays the picture's share. */
+    .kometio-media-text--media-end .kometio-media-text__media {
+      order: 2;
+    }
+    .kometio-media-text--media-end.kometio-media-text--width-third .kometio-media-text__inner {
+      --kometio-media-text-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+    .kometio-media-text--media-end.kometio-media-text--width-two-thirds .kometio-media-text__inner {
+      --kometio-media-text-columns: minmax(0, 1fr) minmax(0, 2fr);
+    }
+    .kometio-media-text--align-start .kometio-media-text__inner {
+      align-items: start;
+    }
+    .kometio-media-text--align-center .kometio-media-text__inner {
+      align-items: center;
+    }
+    .kometio-media-text--align-end .kometio-media-text__inner {
+      align-items: end;
+    }
+  }
+</style>

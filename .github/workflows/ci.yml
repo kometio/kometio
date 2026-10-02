@@ -1,0 +1,319 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+# Shared by every job below via `env:` — GitHub Actions has no clean way to
+# share an env block across jobs without a reusable workflow (overkill
+# here), so it's duplicated per job rather than factored out. Only the
+# Postgres-dependent values (POSTGRES_HOST/POSTGRES_PASSWORD/
+# POSTGRES_APP_PASSWORD) are set separately, by the `test` and `e2e` jobs,
+# since they don't exist until the job starts its own Postgres container
+# (.github/actions/start-services).
+env:
+  POSTGRES_USER: kometio
+  POSTGRES_DB: kometio
+  # Not secrets: the seed creates the deployment's tenant and site with
+  # these ids (docs/adr/0010), and the tests read them back. Any fixed UUIDs
+  # work; they just need to agree between the seed step and the test run.
+  DEFAULT_TENANT_ID: 31329174-2ede-4151-be9d-a3e765d21e1f
+  DEFAULT_SITE_ID: 568b7d6a-3483-45f2-83f1-3b31b433c5eb
+  # Same reasoning: this seeds a throwaway CI-only database destroyed at the
+  # end of the run, so a fixed dev-only value (matching .env.example,
+  # already public) carries no real risk.
+  DEFAULT_USER_EMAIL: admin@example.com
+  DEFAULT_USER_PASSWORD: changeme_dev_password
+  # Needed for AuthModule to compile in apps/api's unit tests (see
+  # app.module.spec.ts/auth.module.spec.ts) — the SMTP values point at the
+  # Mailpit container started in the test job, no real provider needed.
+  EDITOR_APP_URL: http://localhost:4200
+  SMTP_HOST: localhost
+  SMTP_PORT: 1025
+  SMTP_FROM_ADDRESS: noreply@kometio.local
+  # Needed for PublicFormsModule to compile in apps/api's unit tests (see
+  # app.module.spec.ts) — Cloudflare's own documented "always passes, no
+  # real challenge" test secret (see .env.example), not a real one. No live
+  # siteverify call happens in CI's non-integration unit tests.
+  TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+  # Needed for PagesModule/SiteLayoutSectionsModule/PublicPagesModule/
+  # PublicSiteLayoutSectionsModule to compile (requireEnv) — it signs the
+  # stateless preview tokens (@kometio/preview-token-adapter), not a credential
+  # for an external service, so a fixed test value is enough.
+  PREVIEW_TOKEN_SECRET: ci-test-preview-token-secret
+  VITE_API_URL: http://localhost:3000/api
+  # Needed for apps/public-site's public-api-client.ts (requireEnv), same
+  # value as VITE_API_URL above but read via process.env (Node/SSR), not
+  # import.meta.env.
+  API_URL: http://localhost:3000/api
+  # The editor's fallback when no /config.js was served (docs/adr/0076):
+  # runtime-config.ts requires it, and its spec reads it back. The `e2e`
+  # job, the one place a browser follows it, sets its own.
+  VITE_PUBLIC_SITE_URL: http://localhost:4321
+  # Needed for login-form.spec.tsx/forgot-password-form.spec.tsx to render
+  # the Turnstile widget (security review 2026-08-24, point 13) —
+  # Cloudflare's own "always passes" test site key (see .env.example), not a
+  # real one. No live Turnstile script actually loads in CI.
+  VITE_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+  # Needed for MediaModule to compile in apps/api's unit tests (see
+  # app.module.spec.ts) — see ADR-0013. No upload actually happens in CI, so
+  # MEDIA_UPLOAD_DIR is never written to.
+  MEDIA_UPLOAD_DIR: /tmp/kometio-ci-uploads
+  API_PUBLIC_URL: http://localhost:3000/api
+  # Needed for SitesModule to compile in apps/api's unit tests (see
+  # app.module.spec.ts) — docs/adr/0042's ThemeCatalogPort. Points at the
+  # checkout's real themes/ rather than a placeholder: unlike
+  # MEDIA_UPLOAD_DIR above this directory is actually *read* (readdir) the
+  # moment anything lists the available themes, so a fake path would turn
+  # a future test into a confusing ENOENT instead of real data.
+  THEMES_DIR: ${{ github.workspace }}/themes
+
+jobs:
+  # Typecheck/lint/build/test used to be steps inside one "main" job —
+  # GitHub reports one check per JOB, not per step, so a PR only ever showed
+  # a single "main" check no matter how many named steps ran inside it (the
+  # step split still helped the log, but not the PR checks list). Four
+  # separate jobs give four separate checks, and as a side effect also fixes
+  # the tsc --build race this workflow used to work around with
+  # --parallel=1 for build/typecheck sharing one runner: sibling jobs run on
+  # entirely separate VMs, so there's no shared filesystem left to race
+  # over. Only typecheck/lint/build don't need a live Postgres at all (pure
+  # static analysis / bundling, nothing executes against a real DB) — only
+  # `test` starts Postgres/Mailpit.
+  #
+  # Only `test` is gated on typecheck+lint (`needs:` below) — it's by far
+  # the most expensive job (spins up Postgres+Mailpit, runs migrations,
+  # seed, a pg_dump/pg_restore round-trip check, then the full coverage
+  # suite), so failing fast on the cheap checks first avoids paying that
+  # cost on a PR that already has a trivial lint/type error. `build` is
+  # comparatively cheap with Nx caching, so it now runs fully parallel
+  # alongside typecheck/lint rather than waiting on them.
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # --parallel=1: nx.json's `typecheck: { dependsOn: ['^typecheck'] }`
+      # orders the *Nx tasks* correctly, but each project's own
+      # `tsc --build` independently walks its TS project references and can
+      # still end up racing another concurrent `tsc --build` process on
+      # *this* runner over the same output files (found by direct
+      # reproduction, 2026-08-20 — not reproducible locally even with every
+      # cache cleared, only at this runner's actual core count/scheduling).
+      # Splitting typecheck into its own job removed the *build vs
+      # typecheck* half of that race; this flag still guards the remaining
+      # *typecheck-vs-itself-across-projects* half.
+      - run: pnpm exec nx run-many -t typecheck --parallel=1
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 — only this job needs full history, for
+      # `format:check --base=origin/main`'s diff against main.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec nx format:check --base=origin/main
+      # Cheap, and it turns a confusing failure into a named one: a
+      # generated tsconfig that restates the module resolution makes
+      # every extensionless relative import stop resolving, and the
+      # error tsc prints for that does not mention tsconfig at all.
+      - run: pnpm run check:tsconfig
+      - run: pnpm exec nx run-many -t lint --parallel=1
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # --parallel=1: same tsc --build race as typecheck above.
+      - run: pnpm exec nx run-many -t build --parallel=1
+
+  test:
+    needs: [typecheck, lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      - uses: ./.github/actions/start-services
+
+      # A migration written by hand leaves drizzle-kit's snapshot behind the
+      # schema, and nothing notices until the next person runs db:generate
+      # and gets a migration that recreates tables that already exist. That
+      # happened twice before the 2026-09-25 squash. A schema in step with its
+      # migrations generates nothing, so anything it writes is the failure.
+      - name: Check the schema and its migrations agree
+        run: |
+          pnpm --filter @kometio/postgres-db run db:generate
+          drift=$(git status --porcelain -- libs/adapters/postgres-db/drizzle)
+          if [ -n "$drift" ]; then
+            echo "::error::schema.ts has changes no migration snapshot records. Run db:generate locally and commit what it writes (see docs/development.md)."
+            echo "$drift"
+            exit 1
+          fi
+        env:
+          POSTGRES_HOST: localhost
+
+      # drizzle-kit (0.31.10, verified via --help) has no down-migration
+      # concept at all — `generate` only ever produces forward SQL, and
+      # `migrate` has no --to/--steps flag to target an earlier point. Real
+      # protection against a migration gone wrong is therefore "we can
+      # always get back to the last known-good backup", not "we can invert
+      # the SQL" — this proves that mechanism actually works against THIS
+      # schema (RLS policies, functions, sequences included), with real
+      # seeded data, not just that pg_dump/pg_restore exit 0 on an empty
+      # database. Runs against a second, throwaway database in the same
+      # cluster — never touches the one the rest of this job's tests use.
+      - name: Verify a pg_dump/pg_restore round-trip preserves the migrated schema and data
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          # Every pg_* command runs INSIDE the "postgres" container from the
+          # "Start Postgres" step above, not via a client installed on the
+          # runner itself — pg_dump/pg_restore refuse to talk to a server
+          # newer than themselves (hit this exact error running the same
+          # commands locally: the runner's own postgresql-client version is
+          # whatever Ubuntu's default repo ships, not guaranteed to match
+          # postgres:16-alpine). Running inside the container guarantees a
+          # client that's always the exact same build as the server.
+          docker exec -e PGPASSWORD -u postgres postgres \
+            pg_dump --no-owner -U "$POSTGRES_USER" "$POSTGRES_DB" \
+            > /tmp/kometio-ci-backup.sql
+
+          restore_db=kometio_restore_check
+          docker exec -e PGPASSWORD -u postgres postgres \
+            createdb -U "$POSTGRES_USER" "$restore_db"
+          docker exec -i -e PGPASSWORD -u postgres postgres \
+            psql -U "$POSTGRES_USER" --dbname="$restore_db" -v ON_ERROR_STOP=1 -q \
+            < /tmp/kometio-ci-backup.sql
+
+          # `row_security` off, same as every other superuser-run check
+          # against this schema (docs/adr/0002) — this verifies the DATA
+          # round-tripped, not that RLS itself still behaves, which the
+          # dumped policies already prove by existing in the restored schema.
+          seeded_user_count=$(docker exec -e PGPASSWORD -u postgres postgres \
+            psql -U "$POSTGRES_USER" --dbname="$restore_db" --tuples-only --no-align -q \
+            -c "SET row_security = off; SELECT count(*) FROM users WHERE email = '$DEFAULT_USER_EMAIL';")
+          if [ "$seeded_user_count" -ne 1 ]; then
+            echo "::error::Restored database is missing the seeded user — the pg_dump/pg_restore round-trip did not preserve data."
+            exit 1
+          fi
+
+          docker exec -e PGPASSWORD -u postgres postgres \
+            dropdb -U "$POSTGRES_USER" "$restore_db"
+
+      # Sequential, not --parallel: see
+      # docs/adr/0009-enforced-coverage-thresholds.md.
+      - run: pnpm exec nx run-many -t test --coverage --parallel=1
+        env:
+          POSTGRES_HOST: localhost
+
+  # The browser suite (apps/e2e, see docs/development.md "End-to-end
+  # tests"): the API, the editor and the public site built and started for
+  # real against a fresh database and Mailpit, then driven by Playwright.
+  # Not a required check yet: it proves itself stable on PRs first.
+  e2e:
+    needs: [typecheck, lint]
+    runs-on: ubuntu-latest
+    env:
+      # Where the suite and the editor's canvas find the public site, and
+      # where playwright.config.ts starts it — the same port as locally
+      # (docs/development.md).
+      VITE_PUBLIC_SITE_URL: http://localhost:4322
+      # The public site's half of the captcha: without it forms render no
+      # widget and cannot be sent. Cloudflare's "always passes" test key,
+      # the pair of the TURNSTILE_SECRET_KEY above.
+      TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      POSTGRES_HOST: localhost
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      - uses: ./.github/actions/start-services
+
+      # The editor's build writes config.js from VITE_PUBLIC_SITE_URL above,
+      # so it has to be built here, with this job's addresses.
+      - run: pnpm exec nx run-many -t build -p @kometio/api @kometio/editor-app @kometio/public-site --parallel=1
+
+      # The browser is ~100 MB; cached per Playwright version. Its system
+      # libraries are not in the cache and are installed either way.
+      - name: Read the Playwright version
+        id: playwright
+        run: echo "version=$(pnpm --filter @kometio/e2e exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        id: browser-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @kometio/e2e exec playwright install --with-deps chromium
+      - if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @kometio/e2e exec playwright install-deps chromium
+
+      - run: pnpm exec nx run @kometio/e2e:e2e
+
+      # The report, with a trace of every failed test: open it with
+      # `pnpm --filter @kometio/e2e exec playwright show-report <folder>`.
+      # The traces record requests with their headers, the admin's session
+      # cookie included. It opens this job's own database, which is gone
+      # when the job ends, and its password is the public dev default
+      # above — so it is left in rather than traded for traces that cannot
+      # show what failed. (The saved session file itself, in the hidden
+      # .auth/ folder, is left out by upload-artifact's default.)
+      - if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: e2e-report
+          path: dist/e2e/
+          retention-days: 14
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      # Blocking since 2026-09-16: the workspace audits clean, so a new
+      # advisory is news, not noise. What cannot be fixed by a version
+      # range is pinned in pnpm-workspace.yaml's overrides, each with the
+      # reason it is safe here.
+      - run: pnpm audit --audit-level moderate

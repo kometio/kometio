@@ -1,0 +1,25 @@
+---
+import type { SiblingPagesProps } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
+import PrevNextNav from '../PrevNextNav.astro';
+import { delegatedRootClass } from '../../lib/delegated-root-class';
+
+type Props = SiblingPagesProps & {
+  instanceClass?: string | null;
+  locale?: string;
+};
+
+const { previous, next, instanceClass, locale } = Astro.props;
+const i18n = new Translator(locale ?? '');
+// Filled by resolveSiteNavigationBlocks: the siblings on either side, in
+// the page tree's own order.
+---
+
+<PrevNextNav
+  previous={previous}
+  next={next}
+  label={i18n.t('siblingPages.label')}
+  previousLabel={i18n.t('siblingPages.previous')}
+  nextLabel={i18n.t('siblingPages.next')}
+  instanceClass={delegatedRootClass('kometio-sibling-pages', instanceClass)}
+/>
