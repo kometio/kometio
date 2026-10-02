@@ -52,6 +52,14 @@ overrides:
   # latest, still pins 1.18.1. The audit is blocking, so it is lifted here.
   # Drop it once nx asks for a fixed range itself.
   axios: ^1.20.0
+  # GHSA-67c8-pqhq-4rmx (published 2026-10-01, critical): a prototype-pollution
+  # gadget in piscina's ThreadPool.options reaches code execution through
+  # execArgv / loadBalancer / env; fixed in 4.9.4 on the 4.x line. Reached only
+  # through @swc/cli (`.>@swc/cli>piscina`), which Nx's @nx/js runs at build
+  # time on our own sources, never on a visitor's input. @swc/cli 0.8.1 asks
+  # for ^4.3.1, which already allows the fix, so this only stops the lockfile
+  # from keeping 4.9.3. Drop it once the lockfile would resolve 4.9.4 anyway.
+  piscina: ^4.9.4
 
 # sharp is astro:assets' default image service (apps/public-site) — its
 # install script wires up the prebuilt native binary for the current
