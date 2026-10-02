@@ -13,6 +13,7 @@ overrides:
   brace-expansion@>=2.0.0 <2.1.7: ^2.1.7
   brace-expansion@>=4.0.0 <5.0.12: ^5.0.12
   axios: ^1.20.0
+  piscina: ^4.9.4
 
 importers:
 
@@ -422,21 +423,6 @@ importers:
 
   apps/editor-app:
     dependencies:
-      '@kometio/api-contracts':
-        specifier: workspace:*
-        version: link:../../libs/api-contracts
-      '@kometio/block-registry':
-        specifier: workspace:*
-        version: link:../../libs/block-registry
-      '@kometio/rich-text':
-        specifier: workspace:*
-        version: link:../../libs/rich-text
-      '@kometio/rich-text-editor':
-        specifier: workspace:*
-        version: link:../../libs/rich-text-editor
-      '@kometio/shared-types':
-        specifier: workspace:*
-        version: link:../../libs/shared-types
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -452,6 +438,21 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.88.0(react@19.3.0))(zod@4.6.5)
+      '@kometio/api-contracts':
+        specifier: workspace:*
+        version: link:../../libs/api-contracts
+      '@kometio/block-registry':
+        specifier: workspace:*
+        version: link:../../libs/block-registry
+      '@kometio/rich-text':
+        specifier: workspace:*
+        version: link:../../libs/rich-text
+      '@kometio/rich-text-editor':
+        specifier: workspace:*
+        version: link:../../libs/rich-text-editor
+      '@kometio/shared-types':
+        specifier: workspace:*
+        version: link:../../libs/shared-types
       '@tanstack/react-query':
         specifier: ^5.103.2
         version: 5.103.2(react@19.3.0)
@@ -10163,8 +10164,8 @@ packages:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
 
-  piscina@4.9.3:
-    resolution: {integrity: sha512-3e3ka9QCE8RJ5I9uszdAADZnkcYi21cqmF3gxox3u884N72qpFHCsIVhHt8cEQ9t3Auq/NqoiCEuhxlxxQuDWA==}
+  piscina@4.9.4:
+    resolution: {integrity: sha512-RyBDr2VheQ8ZfH3N8SzQZHztqVyOtadTwLnUYof6gdj5161/eu2wNhCbGl5GHnNKDpnkicJYpKtL2J+y/gk6XA==}
 
   pkce-challenge@5.0.1:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
@@ -17041,7 +17042,7 @@ snapshots:
       '@xhmikosr/bin-wrapper': 14.5.1
       commander: 8.3.0
       minimatch: 9.0.9
-      piscina: 4.9.3
+      piscina: 4.9.4
       semver: 7.8.5
       slash: 3.0.0
       source-map: 0.7.4
@@ -22814,7 +22815,7 @@ snapshots:
 
   pirates@4.0.7: {}
 
-  piscina@4.9.3:
+  piscina@4.9.4:
     optionalDependencies:
       '@napi-rs/nice': 1.1.1
 
