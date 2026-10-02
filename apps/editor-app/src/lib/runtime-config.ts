@@ -22,6 +22,8 @@ import { requireViteEnv } from './require-vite-env';
 export interface KometioRuntimeConfig {
   apiUrl?: string;
   publicSiteUrl?: string;
+  /** Public by design, like the two addresses: see turnstile-site-key.ts. */
+  turnstileSiteKey?: string;
 }
 
 declare global {
@@ -39,15 +41,22 @@ function isUsable(value: string | undefined): value is string {
   return typeof value === 'string' && value.length > 0 && !value.includes('${');
 }
 
+/** What the container wrote for `key`, or `undefined` if it wrote nothing usable. */
+export function containerValue(
+  key: keyof KometioRuntimeConfig,
+): string | undefined {
+  const value =
+    typeof window === 'undefined'
+      ? undefined
+      : window.__KOMETIO_CONFIG__?.[key];
+  return isUsable(value) ? value : undefined;
+}
+
 function runtimeValue(
   key: keyof KometioRuntimeConfig,
   viteName: string,
 ): string {
-  const fromContainer =
-    typeof window === 'undefined'
-      ? undefined
-      : window.__KOMETIO_CONFIG__?.[key];
-  return isUsable(fromContainer) ? fromContainer : requireViteEnv(viteName);
+  return containerValue(key) ?? requireViteEnv(viteName);
 }
 
 export function apiBaseUrl(): string {

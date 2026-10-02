@@ -62,10 +62,23 @@ The dev server keeps a `<meta>` policy of its own, injected by
 `vite.config.mts`. Losing CSP while developing would mean a violation first
 appearing in production, which is exactly backwards.
 
-### What stays a build input
+### The captcha key (amended 2026-10-02)
 
-`VITE_TURNSTILE_SITE_KEY`: it has no runtime half here, and a wrong captcha
-key fails visibly at the login screen rather than silently.
+`VITE_TURNSTILE_SITE_KEY` was first left as a build input alone: it had no
+runtime half, and a wrong key fails visibly at the login screen rather than
+silently. That held while every image was built by the person who ran it. The
+image on the registry is not: it is built without one, and the build set the
+variable to the empty string, which the editor's `??` fallback to Cloudflare's
+test key does not take for "unset". The widget was handed `""`, raised
+`Invalid input for parameter "sitekey"`, and the login button stayed disabled
+for everyone who pulled the image.
+
+The key now travels like the two addresses: `KOMETIO_TURNSTILE_SITE_KEY` is
+written into `/config.js` at start, and the editor takes, in this order, what
+the container wrote, what the build knew, then Cloudflare's test key. An empty
+value is "unset" at every step. The key is public by design, so nothing here
+widens what the browser can see. `docker-compose.prod.yml` passes it as
+environment; the build argument stays as the fallback.
 
 ## Consequences
 
