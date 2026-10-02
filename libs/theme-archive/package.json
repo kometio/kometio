@@ -23,7 +23,7 @@
     "yauzl": "^3.4.0"
   },
   "devDependencies": {
-    "@types/yauzl": "^2.10.3",
+    "@types/yauzl": "^3.4.0",
     "@types/yazl": "^3.3.0",
     "yazl": "^3.3.1"
   }
