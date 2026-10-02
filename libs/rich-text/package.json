@@ -23,6 +23,6 @@
     "@kometio/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "@types/sanitize-html": "^2.16.1"
+    "@types/sanitize-html": "^2.16.2"
   }
 }
