@@ -61,6 +61,34 @@ overrides:
   # from keeping 4.9.3. Drop it once the lockfile would resolve 4.9.4 anyway.
   piscina: ^4.9.4
 
+# Advisories with NO fixed version anywhere (`first_patched_version` is null on
+# GitHub, and npm's latest release of each package is inside the vulnerable
+# range), so there is nothing an override could pin to. Each one was checked on
+# 2026-10-03 against what this workspace ships, not only against where it sits
+# in the lockfile; the audit stays blocking for everything else.
+#
+# Take an entry out as soon as `npm view <package> version` is newer than the
+# range below: a fix would not reach this file by itself, since Dependabot does
+# not bump transitive dependencies.
+auditConfig:
+  ignoreGhsas:
+    # braces <= 3.0.3: a stack overflow on deeply nested brace patterns
+    # (CVE-2026-93687, published 2026-09-18). It needs a pattern chosen by an
+    # attacker; every use here is a glob written in our own configuration, in
+    # build tooling (`@nx/*`, webpack-dev-server, chokidar) and in shadcn's CLI,
+    # of which the editor imports only a stylesheet. No runtime image contains
+    # the package (checked in the single image: API, site and editor).
+    - GHSA-vfj7-8cjw-p6xm
+    # http-cache-semantics <= 4.2.0: a shared cache can hand one visitor another's
+    # cached response when the request carries a large `max-stale`
+    # (CVE-2026-93748, published 2026-09-18). Reached through `astro`
+    # (apps/public-site) and, in the build tooling, through @swc/cli's
+    # downloader. Astro uses it in one place, assets/build/remote.js, when it
+    # builds remote images: it makes the request itself and asks only
+    # `storable()` and `timeToLive()`, so no visitor's headers reach it and no
+    # cache is shared. Nothing in the running site imports it.
+    - GHSA-ch52-4w7c-c8xp
+
 # sharp is astro:assets' default image service (apps/public-site) — its
 # install script wires up the prebuilt native binary for the current
 # platform, no compilation involved. Without this, pnpm silently skips
