@@ -1,6 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import type { ExecutionContext } from '@nestjs/common';
 import type { AuthPort, Session } from '@kometio/ports';
+import { DeploymentNotSetUpError } from '../deployment-tenant.resolver';
 import { SessionAuthGuard } from './session-auth.guard';
 import { SESSION_COOKIE_NAME } from './session-cookies';
 import type { AuthenticatedRequest } from './session-auth.guard';
@@ -65,6 +66,32 @@ describe('SessionAuthGuard', () => {
     await expect(guard.canActivate(context)).rejects.toThrow(
       UnauthorizedException,
     );
+  });
+
+  /*
+   * A deployment with no tenant yet cannot hold a session, so a cookie that
+   * arrives there is simply not a valid one. It does arrive: cookies do not
+   * tell ports apart, so a login left on `localhost` by another Kometio (a
+   * development stack, a trial whose volume was deleted and made again)
+   * reaches an installation that is still waiting for its first account.
+   * Answered 503, the editor retried three times, showed a white page for
+   * seven seconds, and ended on an error with no way to the setup form.
+   */
+  it('answers Unauthorized, not 503, to a session on a deployment not set up yet', async () => {
+    authPort.validateSession.mockRejectedValue(new DeploymentNotSetUpError());
+    const context = buildContext({ [SESSION_COOKIE_NAME]: 'left-over-token' });
+
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      UnauthorizedException,
+    );
+  });
+
+  it('lets any other failure of the session lookup surface as itself', async () => {
+    const failure = new Error('the database is down');
+    authPort.validateSession.mockRejectedValue(failure);
+    const context = buildContext({ [SESSION_COOKIE_NAME]: 'any-token' });
+
+    await expect(guard.canActivate(context)).rejects.toBe(failure);
   });
 
   it('attaches tenantId/userId to the request and allows access for a valid session', async () => {

@@ -5,16 +5,16 @@
 # container whose only job is serving static files + an SPA fallback).
 #
 # The two addresses the browser needs — the API's and the public site's —
-# are NOT baked in any more (docs/adr/0076): the entrypoint below writes
-# them into /config.js at start, from KOMETIO_API_URL and
-# KOMETIO_PUBLIC_SITE_URL, and nginx builds its Content-Security-Policy
-# header from the same values. One published image therefore serves any
-# domain; changing one is a restart, not a rebuild.
+# and the captcha's public key are NOT baked in any more (docs/adr/0076):
+# the entrypoint below writes them into /config.js at start, from
+# KOMETIO_API_URL, KOMETIO_PUBLIC_SITE_URL and KOMETIO_TURNSTILE_SITE_KEY,
+# and nginx builds its Content-Security-Policy header from the addresses.
+# One published image therefore serves any domain and any captcha key;
+# changing one is a restart, not a rebuild.
 #
 # The VITE_* build args stay as the fallback compiled into the bundle (a
 # dist/ served by some other static host, or a container started with
-# neither variable set) and for VITE_TURNSTILE_SITE_KEY, which is a build
-# input with no runtime half.
+# none of the variables set).
 
 FROM node:24-alpine AS build
 WORKDIR /workspace

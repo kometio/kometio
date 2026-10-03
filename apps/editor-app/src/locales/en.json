@@ -77,7 +77,7 @@
     "title": "Welcome to Kometio",
     "description": "This installation has not been set up yet. Create your administrator account to get started.",
     "tokenLabel": "Setup token",
-    "tokenHint": "Printed in the API's log when it starts. On a Docker deployment: `docker compose logs api`. It proves you are the person running this server, so nobody else can claim the installation before you.",
+    "tokenHint": "Printed in the API's log when it starts. With Docker: `docker logs kometio` for the one-image install, `docker compose logs api` for the compose stack. It proves you are the person running this server, so nobody else can claim the installation before you.",
     "tokenError": "That setup token is not valid. It is printed in the API's log and changes every time the API restarts — check the log again and use the most recent one.",
     "siteNameLabel": "Site name",
     "localeLabel": "Default language",

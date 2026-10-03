@@ -242,6 +242,9 @@ services:
     environment:
       KOMETIO_API_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
       KOMETIO_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://${DOMAIN:?Set DOMAIN in .env}}
+      # The captcha's public key, read at start like the two addresses above:
+      # an image pulled from the registry (built without one) works with it.
+      KOMETIO_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
     restart: unless-stopped
 
   caddy:

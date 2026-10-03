@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { AuthPage } from './auth-page';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { TURNSTILE_SITE_KEY } from '../../lib/turnstile-site-key';
+import { turnstileSiteKey } from '../../lib/turnstile-site-key';
 import { TurnstileWidget } from './turnstile-widget';
 import { useForgotPasswordRequest } from './use-forgot-password-request';
 
@@ -59,7 +59,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
             />
           </div>
           <TurnstileWidget
-            siteKey={TURNSTILE_SITE_KEY}
+            siteKey={turnstileSiteKey()}
             onToken={setCaptchaToken}
           />
           <Button

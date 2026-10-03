@@ -86,9 +86,10 @@ export class SetupController {
     // SetupTokenRegistry for why that is the bar.
     if (!this.setupToken.verify(body.setupToken)) {
       throw new UnauthorizedException(
-        'Invalid setup token. It is printed in the API container log — ' +
-          '`docker compose logs api` — and changes each time the API ' +
-          'restarts, so use the most recent one.',
+        'Invalid setup token. It is printed in the API log — ' +
+          '`docker logs kometio` for the one-image install, ' +
+          '`docker compose logs api` for the compose stack — and changes ' +
+          'each time the API restarts, so use the most recent one.',
       );
     }
 

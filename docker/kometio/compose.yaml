@@ -1,0 +1,21 @@
+# The `docker run` in README.md, as a file: `docker compose up -d`.
+#
+# `name:` is not decoration. Compose names a project after its folder, and
+# this folder is called `kometio`, like the repository's own development stack
+# (docker-compose.yml at the root): without it, `docker compose down` here
+# would treat that stack's containers as its own leftovers.
+name: kometio-trial
+
+services:
+  kometio:
+    image: ghcr.io/kometio/kometio:main
+    ports:
+      - '4200:80' # the editor
+      - '3000:3000' # the API
+      - '4322:4322' # the public site
+    volumes:
+      - kometio-data:/data
+    restart: unless-stopped
+
+volumes:
+  kometio-data:

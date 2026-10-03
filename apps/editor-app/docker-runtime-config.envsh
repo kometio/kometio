@@ -12,17 +12,20 @@
 
 KOMETIO_API_URL="${KOMETIO_API_URL:-}"
 KOMETIO_PUBLIC_SITE_URL="${KOMETIO_PUBLIC_SITE_URL:-}"
+# The captcha's public key. Empty is fine: the editor falls back to what it was built with.
+KOMETIO_TURNSTILE_SITE_KEY="${KOMETIO_TURNSTILE_SITE_KEY:-}"
 
 # The origin alone: CSP source expressions match paths inconsistently
 # across browsers, so the policy allows the whole API host rather than
 # pinning "/api" (the same reasoning the old build-time plugin carried).
 KOMETIO_API_ORIGIN="$(printf '%s' "$KOMETIO_API_URL" | sed -E 's#^([a-zA-Z][a-zA-Z0-9+.-]*://[^/]+).*#\1#')"
-export KOMETIO_API_URL KOMETIO_PUBLIC_SITE_URL KOMETIO_API_ORIGIN
+export KOMETIO_API_URL KOMETIO_PUBLIC_SITE_URL KOMETIO_TURNSTILE_SITE_KEY KOMETIO_API_ORIGIN
 
 cat > /usr/share/nginx/html/config.js <<EOF
 window.__KOMETIO_CONFIG__ = {
   "apiUrl": "${KOMETIO_API_URL}",
-  "publicSiteUrl": "${KOMETIO_PUBLIC_SITE_URL}"
+  "publicSiteUrl": "${KOMETIO_PUBLIC_SITE_URL}",
+  "turnstileSiteKey": "${KOMETIO_TURNSTILE_SITE_KEY}"
 };
 EOF
 

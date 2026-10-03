@@ -80,6 +80,11 @@ export class DeploymentTenantResolver {
    * deployment itself issued. There are no sessions before there is a
    * tenant, so a caller here failing is a real fault rather than a
    * not-set-up-yet visitor, and it should surface as one.
+   *
+   * One visitor does get here without a fault: a browser still holding a
+   * session cookie left by ANOTHER installation on the same host (cookies do
+   * not tell ports apart). `SessionAuthGuard` answers that one as "no
+   * session"; everything else that reaches `require()` stays a 503.
    */
   async require(): Promise<string> {
     const id = await this.resolve();
