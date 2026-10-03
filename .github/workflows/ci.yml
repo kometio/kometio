@@ -315,5 +315,6 @@ jobs:
       # Blocking since 2026-09-16: the workspace audits clean, so a new
       # advisory is news, not noise. What cannot be fixed by a version
       # range is pinned in pnpm-workspace.yaml's overrides, each with the
-      # reason it is safe here.
+      # reason it is safe here; an advisory with no fixed version at all is
+      # listed under its `auditConfig`, with what was checked.
       - run: pnpm audit --audit-level moderate
