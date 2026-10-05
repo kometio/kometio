@@ -45,13 +45,19 @@ test('a person who starts the image reaches a working site, and can sign in agai
   playwright,
 }) => {
   const siteName = 'First Run Site';
+  // On a server with a name the addresses are HTTPS, and on the machine this runs
+  // on the certificate is Caddy's own authority's, which nothing here trusts: it
+  // is a throwaway installation made by this suite, so it is accepted. Never for
+  // an address that is not https, where there is no certificate to accept.
+  const secure = environment.editorUrl.startsWith('https://');
+  const trust = { ignoreHTTPSErrors: secure };
   const siteHost = new URL(environment.publicSiteUrl).hostname;
 
   // A login left on this host by another installation: cookies do not tell
   // ports apart, so a developer who has used Kometio before has one. It used
   // to reach an installation with no account yet, answer 503, and leave a
   // white page for seven seconds and then a dead end.
-  const first = await browser.newContext();
+  const first = await browser.newContext(trust);
   await first.addCookies([
     {
       name: 'kometio_session',
@@ -90,7 +96,7 @@ test('a person who starts the image reaches a working site, and can sign in agai
   // fetched from anywhere else, so the whole thing runs with no network.
   // What it submits is checked by the server, which is the point of the next
   // lines: the login has to be accepted, not only enabled.
-  const second = await browser.newContext();
+  const second = await browser.newContext(trust);
   const login = await second.newPage();
   await login.goto(`${environment.editorUrl}login`);
   const logIn = login.getByRole('button', { name: 'Log in' });
@@ -99,6 +105,12 @@ test('a person who starts the image reaches a working site, and can sign in agai
   await login.getByLabel('Password').fill(environment.adminPassword);
   await logIn.click();
   await expect(login).toHaveURL(/\/pages/);
+  // Behind HTTPS the session cookie is `Secure`: a browser keeps it off any
+  // plain connection. (A trial is plain HTTP and its cookie is not.)
+  const session = (await second.cookies()).find(
+    (cookie) => cookie.name === 'kometio_session',
+  );
+  expect(session?.secure).toBe(secure);
 
   // Invite somebody, on an installation with no mail server. It used to answer
   // 500 after the person was already made; now the invitation is made, and the
@@ -125,7 +137,7 @@ test('a person who starts the image reaches a working site, and can sign in agai
 
   // Forgot the password, before there is a session: told that no email will
   // come before asking, and after asking, the same whatever the address.
-  const third = await browser.newContext();
+  const third = await browser.newContext(trust);
   const forgot = await third.newPage();
   await forgot.goto(`${environment.editorUrl}login`);
   await forgot.getByText('Forgot your password?').click();
@@ -141,6 +153,7 @@ test('a person who starts the image reaches a working site, and can sign in agai
   // A form on the site, sent by a visitor, with no captcha keys anywhere.
   const api = new KometioApi(
     await playwright.request.newContext({
+      ...trust,
       baseURL: environment.apiUrl,
       storageState: await first.storageState(),
     }),
@@ -166,7 +179,7 @@ test('a person who starts the image reaches a working site, and can sign in agai
   });
   await api.publishTranslation(translation.id);
 
-  const visitor = await browser.newContext();
+  const visitor = await browser.newContext(trust);
   const contact = await visitor.newPage();
   await contact.goto(
     `${environment.publicSiteUrl}${formSite.defaultLocale}/contact`,

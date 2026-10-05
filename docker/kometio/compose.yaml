@@ -16,6 +16,12 @@ services:
     volumes:
       - kometio-data:/data
     restart: unless-stopped
+    # On a server with a name, instead of the three ports above (README.md, "On a
+    # server"): the DNS of the name has to point here first.
+    #   ports: ['80:80', '443:443', '443:443/udp']
+    #   environment:
+    #     DOMAIN: example.com
+    #     ACME_EMAIL: you@example.com
 
 volumes:
   kometio-data:

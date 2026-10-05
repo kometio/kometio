@@ -11,8 +11,9 @@
 # run it the same way on your machine: it needs Docker, curl, node and openssl,
 # and, for the full run, `pnpm install` done and Playwright's Chromium.
 #
-# It uses names and ports of its own (`kometio-check*`, 15200/15000/15322, and
-# Mailpit on 11025/18025), so it can run next to your development stack, and it
+# It uses names and ports of its own (`kometio-check*`, 15200/15000/15322, the
+# server with a name on 18080/18443, and Mailpit on 11025/18025), so it can run
+# next to your development stack, and it
 # refuses to start if one of those names is taken: what it removes at the end
 # is only what it created.
 set -euo pipefail
@@ -30,6 +31,15 @@ FIRST_VOLUME=kometio-check-first-data
 FIRST_EDITOR_PORT=16200
 FIRST_API_PORT=16000
 FIRST_SITE_PORT=16322
+# The third, a server with a name (DOMAIN, docs/adr/0104): HTTPS through Caddy
+# with its own certificate authority, since no public one can issue for a name
+# that only this machine knows. `*.localhost` is the machine itself, to a browser
+# and to this machine's resolver, so no DNS is needed.
+HTTPS=kometio-check-https
+HTTPS_VOLUME=kometio-check-https-data
+HTTPS_DOMAIN=kometio-check.localhost
+HTTPS_HTTP_PORT=18080
+HTTPS_PORT=18443
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -69,14 +79,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    if docker ps -a --format '{{.Names}}' | grep -qx "$FIRST"; then
-      printf '\n== the last lines of the first-run image log\n'
-      docker logs --tail 40 "$FIRST" 2>&1 || true
-    fi
+    for other in "$FIRST" "$HTTPS"; do
+      if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
+        printf '\n== the last lines of the log of %s\n' "$other"
+        docker logs --tail 40 "$other" 2>&1 || true
+      fi
+    done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -85,13 +97,13 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT" "$FIRST"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -129,6 +141,14 @@ setup_token() {
 
 status_code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 
+# --- the part of the launcher that is only logic ---------------------------------
+#
+# What DOMAIN may be, and the addresses it makes (docs/adr/0104): no container
+# needed, so it is the first thing asked.
+step "what DOMAIN may be"
+check "DOMAIN is read as documented, and a mistake in it says what to write" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/server-mode.test.mjs"
+
 # --- the first run, in a browser ------------------------------------------------
 #
 # On an installation of its own, started the way the quickstart says: no captcha
@@ -137,23 +157,23 @@ status_code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 # server so that the rest of the suite can use them, and that hides what a person
 # meets first (docs/adr/0101): a login button that stayed disabled for lack of a
 # key, a login left on the host by another installation, a site "not found".
-if [ "$SMOKE_ONLY" = false ]; then
-  step "the first run, in a browser, as the image is delivered"
-  FIRST_EDITOR_URL="http://localhost:${FIRST_EDITOR_PORT}"
-  FIRST_API_URL="http://localhost:${FIRST_API_PORT}/api"
-  FIRST_SITE_URL="http://localhost:${FIRST_SITE_PORT}"
-  docker run -d --name "$FIRST" \
-    -p "${FIRST_EDITOR_PORT}:80" -p "${FIRST_API_PORT}:3000" -p "${FIRST_SITE_PORT}:4322" \
-    -e "EDITOR_APP_URL=${FIRST_EDITOR_URL}" \
-    -e "API_PUBLIC_URL=${FIRST_API_URL}" \
-    -e "PUBLIC_SITE_URL=${FIRST_SITE_URL}" \
-    -v "${FIRST_VOLUME}:/data" \
-    "$IMAGE" >/dev/null
-  wait_for_banners 1 "$FIRST" >/dev/null
+#
+# It runs twice, on two installations that differ only in how they are reached:
+# on plain ports, and on a server with a name over HTTPS (below).
+
+# Starts $1 on the volume $2, walks the first run in a browser against the three
+# addresses that follow ($3 editor, $4 API, $5 site), and checks its log. The
+# docker arguments after them say how it is published and reached. It leaves the
+# container running: whoever called it has more to ask of it.
+first_run() {
+  local container="$1" volume="$2" editor_url="$3" api_url="$4" site_url="$5" log
+  shift 5
+  docker run -d --name "$container" "$@" -v "${volume}:/data" "$IMAGE" >/dev/null
+  wait_for_banners 1 "$container" >/dev/null
   if (
     cd "$(git rev-parse --show-toplevel)"
-    E2E_SETUP_TOKEN="$(setup_token "$FIRST")" \
-      VITE_API_URL="$FIRST_API_URL" EDITOR_APP_URL="$FIRST_EDITOR_URL" VITE_PUBLIC_SITE_URL="$FIRST_SITE_URL" \
+    E2E_SETUP_TOKEN="$(setup_token "$container")" \
+      VITE_API_URL="$api_url" EDITOR_APP_URL="$editor_url" VITE_PUBLIC_SITE_URL="$site_url" \
       DEFAULT_USER_EMAIL="$ADMIN_EMAIL" DEFAULT_USER_PASSWORD="$ADMIN_PASSWORD" \
       E2E_INVITEE_EMAIL="$INVITEE_EMAIL" \
       pnpm exec nx run @kometio/e2e:first-run
@@ -164,19 +184,72 @@ if [ "$SMOKE_ONLY" = false ]; then
   fi
   # No mail server: the invitation the test made is in the log, link included
   # (docs/adr/0103). Without this a quiet log would pass for a working mailer.
-  first_log="$(docker logs "$FIRST" 2>&1 || true)"
+  log="$(docker logs "$container" 2>&1 || true)"
   check "an invitation with no mail server is written to the log" \
-    grep -q "To:      ${INVITEE_EMAIL}" <<<"$first_log"
+    grep -q "To:      ${INVITEE_EMAIL}" <<<"$log"
   check "the logged invitation carries its link" \
-    grep -q "${FIRST_EDITOR_URL}/accept-invite?inviteToken=" <<<"$first_log"
+    grep -q "${editor_url}/accept-invite?inviteToken=" <<<"$log"
   check "a password reset with no mail server is written to the log, link included" \
-    grep -q "${FIRST_EDITOR_URL}/reset-password?resetToken=" <<<"$first_log"
+    grep -q "${editor_url}/reset-password?resetToken=" <<<"$log"
   # With no Turnstile keys the captcha is the built-in one, and it hands out a
   # signed challenge to anyone who asks (the login of the test above solved one).
   check "with no Turnstile keys the API hands out a challenge of its own" \
-    sh -c "curl -sf '${FIRST_API_URL}/captcha/challenge' | grep -q '\"signature\"'"
+    sh -c "curl -skf '${api_url}/captcha/challenge' | grep -q '\"signature\"'"
+}
+
+if [ "$SMOKE_ONLY" = false ]; then
+  step "the first run, in a browser, as the image is delivered"
+  FIRST_EDITOR_URL="http://localhost:${FIRST_EDITOR_PORT}"
+  FIRST_API_URL="http://localhost:${FIRST_API_PORT}/api"
+  FIRST_SITE_URL="http://localhost:${FIRST_SITE_PORT}"
+  first_run "$FIRST" "$FIRST_VOLUME" "$FIRST_EDITOR_URL" "$FIRST_API_URL" "$FIRST_SITE_URL" \
+    -p "${FIRST_EDITOR_PORT}:80" -p "${FIRST_API_PORT}:3000" -p "${FIRST_SITE_PORT}:4322" \
+    -e "EDITOR_APP_URL=${FIRST_EDITOR_URL}" \
+    -e "API_PUBLIC_URL=${FIRST_API_URL}" \
+    -e "PUBLIC_SITE_URL=${FIRST_SITE_URL}"
   docker rm -fv "$FIRST" >/dev/null
   docker volume rm "$FIRST_VOLUME" >/dev/null 2>&1 || true
+
+  # --- a server with a name, over HTTPS -----------------------------------------
+  #
+  # DOMAIN is all a server is told (docs/adr/0104): Caddy takes ports 80 and 443,
+  # the editor is at admin. and the API at api. The three addresses are written
+  # out here only because the ports are not 80 and 443, which a machine running
+  # this may need for itself; the names are the ones DOMAIN would have given.
+  step "a server with a name, over HTTPS (Caddy's own certificate authority)"
+  if ! node -e "require('dns').lookup('admin.${HTTPS_DOMAIN}', (error) => process.exit(error ? 1 : 0))"; then
+    echo "This machine does not resolve admin.${HTTPS_DOMAIN}: *.localhost has to mean this machine (RFC 6761); add the three names to /etc/hosts." >&2
+    exit 2
+  fi
+  HTTPS_EDITOR_URL="https://admin.${HTTPS_DOMAIN}:${HTTPS_PORT}"
+  HTTPS_API_URL="https://api.${HTTPS_DOMAIN}:${HTTPS_PORT}/api"
+  HTTPS_SITE_URL="https://${HTTPS_DOMAIN}:${HTTPS_PORT}"
+  first_run "$HTTPS" "$HTTPS_VOLUME" "$HTTPS_EDITOR_URL" "$HTTPS_API_URL" "$HTTPS_SITE_URL" \
+    -p "${HTTPS_HTTP_PORT}:80" -p "${HTTPS_PORT}:443" \
+    -e "DOMAIN=${HTTPS_DOMAIN}" \
+    -e "EDITOR_APP_URL=${HTTPS_EDITOR_URL}" \
+    -e "API_PUBLIC_URL=${HTTPS_API_URL}" \
+    -e "PUBLIC_SITE_URL=${HTTPS_SITE_URL}"
+  # What the browser cannot say: how the connection was made, and what the
+  # server sent with it. Host names resolve to this machine, as above.
+  check "the editor answers over HTTPS" \
+    test "$(status_code -k "${HTTPS_EDITOR_URL}/")" = 200
+  check "the site answers over HTTPS, at the name itself" \
+    test "$(status_code -k "${HTTPS_SITE_URL}/api/health")" = 200
+  check "the API answers over HTTPS, at its own name" \
+    test "$(status_code -k "${HTTPS_API_URL}/health")" = 200
+  check "the certificate is Caddy's, which is what a local name gets" \
+    sh -c "echo | openssl s_client -connect 'admin.${HTTPS_DOMAIN}:${HTTPS_PORT}' -servername 'admin.${HTTPS_DOMAIN}' 2>/dev/null | openssl x509 -noout -issuer | grep -q 'Caddy Local Authority'"
+  check "every response asks browsers to stay on HTTPS (HSTS)" \
+    sh -c "curl -skI '${HTTPS_EDITOR_URL}/' | grep -qi '^strict-transport-security:'"
+  check "port 80 sends a browser to HTTPS (308)" \
+    test "$(status_code "http://admin.${HTTPS_DOMAIN}:${HTTPS_HTTP_PORT}/")" = 308
+  # The half that is not Caddy's: the three halves are inside, and this container
+  # published only 80 and 443, so there is no way to them that skips the proxy.
+  check "the editor was told the HTTPS addresses, not the plain ones" \
+    sh -c "curl -sk '${HTTPS_EDITOR_URL}/config.js' | grep -q 'apiUrl.*https://api.${HTTPS_DOMAIN}:${HTTPS_PORT}/api'"
+  docker rm -fv "$HTTPS" >/dev/null
+  docker volume rm "$HTTPS_VOLUME" >/dev/null 2>&1 || true
 fi
 
 # --- start ---------------------------------------------------------------------

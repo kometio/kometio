@@ -24,6 +24,8 @@ on:
       - 'themes/**'
       - 'docker/**'
       - '**/Dockerfile'
+      # The proxy's own file, which the single image and the compose stack share.
+      - 'Caddyfile'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.dockerignore'
@@ -265,6 +267,13 @@ jobs:
         run: pnpm --filter @kometio/e2e exec playwright install --with-deps chromium
       - if: steps.browser-cache.outputs.cache-hit == 'true'
         run: pnpm --filter @kometio/e2e exec playwright install-deps chromium
+
+      # check.sh's server with a name lives at *.localhost, which means this
+      # machine to a browser by definition and to a machine's resolver by
+      # RFC 6761 (the runner's does not always say so): written down, the
+      # names are certain.
+      - name: Make the names of the HTTPS check resolve
+        run: echo '127.0.0.1 kometio-check.localhost admin.kometio-check.localhost api.kometio-check.localhost www.kometio-check.localhost' | sudo tee -a /etc/hosts
 
       - run: docker/kometio/check.sh kometio:ci
 
