@@ -149,18 +149,21 @@ check "a left-over login cookie is 'no session' (401), not a 503" \
 
 # --- the first account, as the wizard makes it ----------------------------------
 
-step "the first account and the site's domain"
+step "the first account, with the site's address"
+# What the editor's setup form sends. It proposes the hostname of the address the
+# deployment was told to serve the site on (here http://localhost:15322), and the
+# site is found by that name, so the request carries it: nothing has to be set by
+# hand afterwards for the site to answer.
+SITE_DOMAIN=localhost
 TOKEN="$(setup_token)"
 CODE="$(curl -s -o /dev/null -c "$COOKIES" -w '%{http_code}' -H 'content-type: application/json' \
-  -d "{\"setupToken\":\"${TOKEN}\",\"siteName\":\"Check Site\",\"defaultLocale\":\"en\",\"adminEmail\":\"${ADMIN_EMAIL}\",\"adminPassword\":\"${ADMIN_PASSWORD}\"}" \
+  -d "{\"setupToken\":\"${TOKEN}\",\"siteName\":\"Check Site\",\"defaultLocale\":\"en\",\"domain\":\"${SITE_DOMAIN}\",\"adminEmail\":\"${ADMIN_EMAIL}\",\"adminPassword\":\"${ADMIN_PASSWORD}\"}" \
   "${API_URL}/setup")"
-if [ "$CODE" = 201 ]; then pass "the wizard's request creates the administrator (201)"; else fail "the wizard's request answered ${CODE}, not 201"; fi
-SITE_ID="$(curl -s -b "$COOKIES" "${API_URL}/sites/current" | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).id')"
-# What Settings > General does: until a site has a domain, its address answers "not found".
-CODE="$(curl -s -o /dev/null -b "$COOKIES" -X PATCH -w '%{http_code}' -H 'content-type: application/json' \
-  -d '{"name":"Check Site","domain":"localhost"}' "${API_URL}/sites/${SITE_ID}/general-settings")"
-if [ "$CODE" = 200 ]; then pass "the domain is saved (200)"; else fail "saving the domain answered ${CODE}"; fi
-check "the site is served at its address, with its name" sh -c "curl -sL '${SITE_URL}/' | grep -q '<title>Check Site'"
+if [ "$CODE" = 201 ]; then pass "the wizard's request creates the administrator (201)"; else fail "the wizard's request answers ${CODE}, not 201"; fi
+check "the site holds the address it was given" sh -c "curl -s -b '$COOKIES' '${API_URL}/sites/current' | grep -q '\"domain\":\"${SITE_DOMAIN}\"'"
+check "the site answers at its address at once, with its name" sh -c "curl -sL '${SITE_URL}/' | grep -q '<title>Check Site'"
+# A setup form that sends a name nothing would match is refused, not stored.
+check "an address that is not a hostname is refused (400)" test "$(status_code -H 'content-type: application/json' -d '{"setupToken":"x","siteName":"x","defaultLocale":"en","domain":"https://nope.test/","adminEmail":"a@example.test","adminPassword":"a-long-enough-password"}' "${API_URL}/setup")" = 400
 check "the new session is valid" test "$(status_code -b "$COOKIES" "${API_URL}/auth/session")" = 200
 check "a made-up session is not" test "$(status_code -H 'Cookie: kometio_session=made-up' "${API_URL}/auth/session")" = 401
 
