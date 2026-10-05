@@ -40,6 +40,13 @@ HTTPS_VOLUME=kometio-check-https-data
 HTTPS_DOMAIN=kometio-check.localhost
 HTTPS_HTTP_PORT=18080
 HTTPS_PORT=18443
+# The fourth, the first one's site moved: exported while it runs, opened into a
+# volume that has never been used, and started under another address (docs/adr/0105).
+MOVED=kometio-check-moved
+MOVED_VOLUME=kometio-check-moved-data
+MOVED_EDITOR_PORT=19200
+MOVED_API_PORT=19000
+MOVED_SITE_PORT=19322
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -79,16 +86,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    for other in "$FIRST" "$HTTPS"; do
+    for other in "$FIRST" "$HTTPS" "$MOVED"; do
       if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
         printf '\n== the last lines of the log of %s\n' "$other"
         docker logs --tail 40 "$other" 2>&1 || true
       fi
     done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -97,13 +104,13 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -143,11 +150,13 @@ status_code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 
 # --- the part of the launcher that is only logic ---------------------------------
 #
-# What DOMAIN may be, and the addresses it makes (docs/adr/0104): no container
-# needed, so it is the first thing asked.
-step "what DOMAIN may be"
+# What DOMAIN may be and the addresses it makes (docs/adr/0104), and when an
+# archive is trusted (docs/adr/0105): no container needed, so it is asked first.
+step "the launcher's own logic"
 check "DOMAIN is read as documented, and a mistake in it says what to write" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/server-mode.test.mjs"
+check "an archive is trusted as documented: its manifest, its migrations, what it may hold" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive.test.mjs"
 
 # --- the first run, in a browser ------------------------------------------------
 #
@@ -325,6 +334,71 @@ tokens_after="$(docker logs "$NAME" 2>&1 | grep -c 'enter this setup token' || t
 check "no new setup token is asked for" test "$tokens_after" = "$tokens_before"
 check "the same session is still valid" test "$(status_code -b "$COOKIES" "${API_URL}/auth/session")" = 200
 check "the site is still served" sh -c "curl -sL '${SITE_URL}/' | grep -q '<title>Check Site'"
+
+# --- moving the site ------------------------------------------------------------
+#
+# docs/adr/0105. The site above, with an uploaded file in it, is exported while
+# the server runs; the archive is opened into a volume that has never been used
+# (the server is not running there: a database is made again under it); and the
+# result is started under another address. It has to be the same site with
+# nothing to set up, and it must not be a way to keep what was only a moment.
+step "moving the site: export, import into a new volume, start it elsewhere"
+SITE_ID="$(curl -s -b "$COOKIES" "${API_URL}/sites/current" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)"
+node -e "require('fs').writeFileSync(process.argv[1], Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'))" "${WORK}/pixel.png"
+UPLOADED="$(curl -s -b "$COOKIES" -H "Origin: ${EDITOR_URL}" -F "siteId=${SITE_ID}" -F "file=@${WORK}/pixel.png;type=image/png" "${API_URL}/media" | grep -o '/uploads/[^"]*' | head -1)"
+check "a file is uploaded to the site that will be exported" test -n "$UPLOADED"
+check "the server exports its site while it runs" \
+  sh -c "docker exec '$NAME' node /opt/kometio/cli.mjs export > '${WORK}/site.tar.gz'"
+check "the archive is a .tar.gz with its manifest, its database and its uploads" \
+  sh -c "tar tzf '${WORK}/site.tar.gz' | grep -q 'manifest.json' && tar tzf '${WORK}/site.tar.gz' | grep -q 'database.sql.gz' && tar tzf '${WORK}/site.tar.gz' | grep -q 'uploads/'"
+check "a file that is not an archive is refused, and nothing is started for it" \
+  sh -c "! echo 'not an archive' | docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import 2>/dev/null"
+# The one thing that must never happen: a second container starting Postgres on
+# files the first has open. Nothing in Docker or in Postgres can tell it from here
+# (the pid file names a process in another container), so the command looks for the
+# pid file and refuses; this is the check of that, and of what it protected.
+check "an import onto a volume that a running server uses is refused" \
+  sh -c "! docker run --rm -i -v '${VOLUME}:/data' '$IMAGE' import < '${WORK}/site.tar.gz' 2>/dev/null"
+check "and that server's database was not touched: its pid file is still there" \
+  docker exec "$NAME" test -f /data/postgres/postmaster.pid
+check "the archive is opened into a new volume, under another address" \
+  sh -c "docker run --rm -i -v '${MOVED_VOLUME}:/data' -e 'PUBLIC_SITE_URL=http://moved.localhost:${MOVED_SITE_PORT}' '$IMAGE' import < '${WORK}/site.tar.gz'"
+check "it is not opened a second time over what is there" \
+  sh -c "! docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import < '${WORK}/site.tar.gz' 2>/dev/null"
+docker run -d --name "$MOVED" \
+  -p "${MOVED_EDITOR_PORT}:80" -p "${MOVED_API_PORT}:3000" -p "${MOVED_SITE_PORT}:4322" \
+  -e "EDITOR_APP_URL=http://localhost:${MOVED_EDITOR_PORT}" \
+  -e "API_PUBLIC_URL=http://localhost:${MOVED_API_PORT}/api" \
+  -e "PUBLIC_SITE_URL=http://moved.localhost:${MOVED_SITE_PORT}" \
+  -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}" \
+  -v "${MOVED_VOLUME}:/data" \
+  "$IMAGE" >/dev/null
+wait_for_banners 1 "$MOVED" >/dev/null
+MOVED_API_URL="http://localhost:${MOVED_API_PORT}/api"
+check "the moved site is already set up: no wizard" sh -c "curl -s '${MOVED_API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":true'"
+check "and it asks for no setup token" test -z "$(setup_token "$MOVED")"
+# Cloudflare's test secret is checked by a call to Cloudflare, which a busy minute
+# can refuse; the account is what is being proved here, so a refusal is asked again.
+LOGIN_CODE=000
+for attempt in 1 2 3; do
+  LOGIN_CODE="$(status_code -H 'content-type: application/json' -H "Origin: http://localhost:${MOVED_EDITOR_PORT}" \
+    -d "{\"email\":\"${ADMIN_EMAIL}\",\"password\":\"${ADMIN_PASSWORD}\",\"captchaToken\":\"x\"}" "${MOVED_API_URL}/auth/login")"
+  [ "$LOGIN_CODE" = 200 ] && break
+  [ "$attempt" -lt 3 ] && sleep 3
+done
+if [ "$LOGIN_CODE" = 200 ]; then
+  pass "the account came with it: the same password signs in"
+else
+  fail "the account came with it: the same password signs in (the login answered ${LOGIN_CODE})"
+fi
+check "nobody is signed in that was signed in there: a session does not travel" \
+  test "$(status_code -b "$COOKIES" "${MOVED_API_URL}/auth/session")" = 401
+check "the site is the same one" sh -c "curl -sL 'http://moved.localhost:${MOVED_SITE_PORT}/' | grep -q '<title>Check Site'"
+check "and it answers at the new address only: its old name finds nothing" \
+  test "$(status_code -L "http://localhost:${MOVED_SITE_PORT}/")" = 404
+check "the uploaded file came with it" test "$(status_code "${MOVED_API_URL}${UPLOADED}")" = 200
+docker rm -fv "$MOVED" >/dev/null
+docker volume rm "$MOVED_VOLUME" >/dev/null 2>&1 || true
 
 # --- the browser suite ----------------------------------------------------------
 

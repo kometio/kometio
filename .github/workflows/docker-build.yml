@@ -273,7 +273,7 @@ jobs:
       # RFC 6761 (the runner's does not always say so): written down, the
       # names are certain.
       - name: Make the names of the HTTPS check resolve
-        run: echo '127.0.0.1 kometio-check.localhost admin.kometio-check.localhost api.kometio-check.localhost www.kometio-check.localhost' | sudo tee -a /etc/hosts
+        run: echo '127.0.0.1 kometio-check.localhost admin.kometio-check.localhost api.kometio-check.localhost www.kometio-check.localhost moved.localhost' | sudo tee -a /etc/hosts
 
       - run: docker/kometio/check.sh kometio:ci
 

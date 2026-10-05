@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { parseDomain, serverAddresses } from './server-mode.mjs';
+import {
+  parseDomain,
+  resolveAddresses,
+  serverAddresses,
+} from './server-mode.mjs';
 
 describe('parseDomain', () => {
   it('takes a name, and forgives case, spaces and a trailing dot', () => {
@@ -47,5 +51,45 @@ describe('serverAddresses', () => {
       editorUrl: 'https://admin.example.com',
       apiPublicUrl: 'https://api.example.com/api',
     });
+  });
+});
+
+describe('resolveAddresses', () => {
+  it('is a trial on this machine, on its own ports, with nothing set', () => {
+    assert.deepEqual(resolveAddresses({}), {
+      domain: null,
+      editorUrl: 'http://localhost:4200',
+      apiPublicUrl: 'http://localhost:3000/api',
+      siteUrl: 'http://localhost:4322',
+    });
+  });
+
+  it('is what the name makes, with a name', () => {
+    assert.deepEqual(resolveAddresses({ DOMAIN: 'Example.com' }), {
+      domain: 'example.com',
+      editorUrl: 'https://admin.example.com',
+      apiPublicUrl: 'https://api.example.com/api',
+      siteUrl: 'https://example.com',
+    });
+  });
+
+  it('lets an address set by hand win over the name, one at a time', () => {
+    const resolved = resolveAddresses({
+      DOMAIN: 'example.com',
+      PUBLIC_SITE_URL: 'https://www.example.com',
+    });
+    assert.equal(resolved.siteUrl, 'https://www.example.com');
+    assert.equal(resolved.editorUrl, 'https://admin.example.com');
+  });
+
+  it('takes an empty DOMAIN for none, as an example file leaves it', () => {
+    assert.equal(resolveAddresses({ DOMAIN: '  ' }).domain, null);
+  });
+
+  it('refuses a DOMAIN that is a mistake, saying what to write', () => {
+    assert.throws(
+      () => resolveAddresses({ DOMAIN: 'https://example.com' }),
+      /like example\.com/,
+    );
   });
 });

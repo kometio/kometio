@@ -159,6 +159,59 @@ setup token from `docker logs kometio`, open the editor, create your account.
 - If a browser warns about the certificate, the name's DNS does not point at this
   machine yet. `docker logs kometio` shows Caddy's attempts, and it keeps trying.
 
+## Move a site to another installation
+
+One file carries a site — its pages and their history, forms, categories,
+settings, accounts and uploaded files — from one installation to another: from
+your machine to a server, from a server to another, or as a backup you can open
+anywhere. It is made by the running server and opened into a new one.
+
+**Export**, from the container that has the site (it keeps running; the database
+is read in one consistent snapshot):
+
+```sh
+docker exec kometio node /opt/kometio/cli.mjs export > kometio-site.tar.gz
+```
+
+**Import**, into a volume that has never been used, with the container _stopped_
+(there is none yet, on a new machine). The address it will be reached at is the
+same you would give to `docker run`: `DOMAIN`, or the three addresses, or nothing
+for `localhost`:
+
+```sh
+docker run --rm -i -v kometio-data:/data \
+  -e DOMAIN=example.com \
+  ghcr.io/kometio/kometio:main import < kometio-site.tar.gz
+```
+
+Then start Kometio on that volume as in step 1. There is no setup token and no
+wizard: the site is there, and you sign in with the account you had.
+
+What you should know:
+
+- **The file is a secret.** It holds the accounts' password hashes and every page,
+  draft and form. Keep it the way you keep a password; the export says so.
+- **Nobody is signed in, and no link works.** Sessions, and the links in flight (a
+  password reset, an invitation, an address confirmation), do not travel; an
+  invitation still waiting is sent again from the Users screen. **Form submissions
+  do not travel** either: a copy of a site does not start with somebody else's
+  messages.
+- **The site takes the new address.** Its domain becomes the host of the address
+  the new installation is reached at, not the one it had.
+- **The AI provider's key does not travel.** It is sealed with a key that belongs to
+  the server it was made on; enter it again in Settings (the provider and the model
+  are kept).
+- **It opens only into a new volume.** An installation that already has a site, or
+  uploaded files, refuses, and nothing is changed: the database is made again under
+  an import, and nothing here is thrown away to make room. To redo one, start from a
+  new volume. A volume that another container is using (or that one left without a
+  clean stop) is refused too: stop it first.
+- **A file from an older Kometio opens in a newer one** (the migrations it lacks run
+  after it is restored); **one from a newer Kometio does not open in an older one**,
+  and says so. An archive is also checked before anything is started: it must hold
+  nothing but its manifest, its database and its uploads, as plain files.
+- It needs room for the archive, unpacked, next to the data.
+
 ## What this image does not do yet
 
 Said plainly, so that you do not find out by failing:
@@ -181,26 +234,9 @@ Said plainly, so that you do not find out by failing:
   [On a server](#on-a-server-with-your-own-domain).
 - **You cannot upload a theme from the editor.** That needs a separate
   builder, which is not in this image. The built-in theme is available.
-- **There is no export or import of a site yet.** What there is, for now, is a
-  copy of the whole volume. Stop the container first — copying a database while
-  it runs gives a copy that may not open — then:
-
-  ```sh
-  docker stop kometio
-  docker run --rm -v kometio-data:/data -v "$PWD":/backup alpine \
-    tar czf /backup/kometio-data.tgz -C /data .
-  docker start kometio
-  ```
-
-  To open that copy on another machine, put it back in a new volume and start
-  Kometio on it as in step 1 (no setup token is asked: the account comes with
-  the copy):
-
-  ```sh
-  docker volume create kometio-data
-  docker run --rm -v kometio-data:/data -v "$PWD":/backup alpine \
-    tar xzf /backup/kometio-data.tgz -C /data
-  ```
+- **Export and import are commands for now.** The editor will have them (Settings
+  → Export, and an import on the first-run screen); until then, see
+  [Move a site](#move-a-site-to-another-installation).
 
 ## Build the image from this repository
 

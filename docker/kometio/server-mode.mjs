@@ -54,3 +54,24 @@ export function serverAddresses(domain) {
     apiPublicUrl: `https://api.${domain}/api`,
   };
 }
+
+/**
+ * Where the browser reaches each half of this installation, from its
+ * environment: the three addresses a person set by hand, else the ones a name
+ * (`DOMAIN`) makes, else the ones of a trial on this machine's own ports. What is
+ * set by hand wins, whatever DOMAIN says, as it does behind a proxy of one's own.
+ * `domain` is the name the server was given, or null on a trial. It throws, with
+ * what to write, when DOMAIN is a mistake.
+ */
+export function resolveAddresses(env) {
+  const domain = env.DOMAIN?.trim() ? parseDomain(env.DOMAIN) : null;
+  const served = domain ? serverAddresses(domain) : null;
+  return {
+    domain,
+    editorUrl:
+      env.EDITOR_APP_URL ?? served?.editorUrl ?? 'http://localhost:4200',
+    apiPublicUrl:
+      env.API_PUBLIC_URL ?? served?.apiPublicUrl ?? 'http://localhost:3000/api',
+    siteUrl: env.PUBLIC_SITE_URL ?? served?.siteUrl ?? 'http://localhost:4322',
+  };
+}
