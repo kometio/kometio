@@ -83,6 +83,15 @@ its own, found on the way:
     ours is a bounded map in memory, as the API's rate limiter is. A restart
     forgets it and two instances would not share it, which is accepted at the
     scale of one process.
+  - **What it costs, measured.** On a laptop one attempt (2,000 PBKDF2
+    iterations) takes 0.23 ms and a solution is found in about 4,000 on average:
+    about a second on one thread, which is what the widget uses however many
+    workers it is told to (in a real browser, 1, 2, 4 and 8 workers all solved in
+    roughly one second). A phone several times slower waits several seconds, while
+    the visitor fills the form in (the public site) or before the login button
+    enables (the editor). That was not measured on a phone: Chromium's CPU
+    throttling does not slow a worker. The range of the counter, in
+    `altcha-captcha.adapter.ts`, is the one place to change it.
   - **`GET /api/captcha/challenge`** hands out a challenge to anyone, throttled,
     never cached; it answers 404 on a deployment that uses Turnstile.
   - **The widget** is the library's "external" build, which is what a policy of
@@ -92,6 +101,23 @@ its own, found on the way:
     fetched from the API origin it already allows. It is drawn in the editor's
     own colours, not the widget's, whose `light-dark()` palette follows the
     system and not the editor's switch.
+  - **In the public site** the widget is drawn by `CaptchaWidget.astro`, which
+    both blocks use, from the same key rule (`TURNSTILE_SITE_KEY` set, Turnstile;
+    empty, the built-in one). The browser only ever talks to the site, as it does
+    to send the form (docs/adr/0015): the challenge comes from
+    `/api/captcha/challenge`, which asks the API on the visitor's behalf and is
+    counted against that visitor (`PublicPagesThrottlerGuard`), not against the
+    site's one address. The widget starts when the visitor starts on the form
+    (`auto="onfocus"`), so a page that is only read costs the server no challenge
+    and the visitor's browser no work, and a long form is solved by the time it
+    is finished. Its field is named `_captcha`: no field of a form is, so the
+    submit proxies read it as the solution and never as an answer. The widget and
+    its worker are emitted under `_astro/` and come from the site's own origin; the
+    site's policy needed no change. In the editor's canvas, a sandboxed iframe whose origin is
+    opaque, the widget is drawn and stays unverified: nothing there starts it,
+    and when it is started by hand its challenge request is refused by CORS (the
+    site's `/api/*` answers only the editor's own origin) and it shows its error
+    state. Nothing in the canvas submits a form, so this is left as it is.
   - **The same rule in the editor and the API.** The editor reads the site key it
     already received at start-up: with one, Turnstile; without, the built-in
     widget. It used to fall back to Cloudflare's test key, a captcha that passes
@@ -113,9 +139,7 @@ its own, found on the way:
 - The editor and the public site have to agree on which captcha is in use. The
   rule is the same for both: Turnstile when its keys are there, the built-in
   one when they are not.
-- **What is done and what follows.** The mail half, the reset fix and the
-  notices are in; so are the server side of the built-in captcha and its widget
-  in the editor (the login and the forgotten-password screen). The public site's
-  forms and newsletter come last: until they do, a site that wants to receive
-  form submissions gives both Turnstile keys, and a keyless installation's forms
-  render no widget.
+- **Done.** Mail optional, the reset fix and the notices; the built-in captcha
+  on the server, in the editor (the login and the forgotten-password screen)
+  and in the public site (a form and the newsletter signup). A first server
+  needs no outside account at all.
