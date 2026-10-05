@@ -11,7 +11,8 @@ export const deploymentRecordSchema = z.object({
    * Whether this deployment has a mail server (SMTP_HOST is set). When it has
    * none the emails go to the server's log instead, so an invitation or a
    * password reset still exists but nobody receives it, and the editor says so
-   * to the administrator.
+   * to whoever is about to depend on it. Open to anyone: it is read before
+   * sign-in too, on the forgot-password screen.
    */
   emailConfigured: z.boolean(),
 });

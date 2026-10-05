@@ -1,8 +1,15 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as deployment from '../../lib/deployment-api-client';
 import { ApiError } from '../../lib/http-client';
+import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { ChangeEmailDialog } from './change-email-dialog';
+
+vi.mock('../../lib/deployment-api-client', () => ({
+  getDeployment: vi.fn(),
+}));
 
 const NEW_EMAIL = 'Nuova email';
 const PASSWORD = 'Password attuale';
@@ -25,7 +32,11 @@ function renderDialog(
       />
     );
   }
-  render(<Harness />);
+  render(
+    <QueryClientProvider client={createTestQueryClient()}>
+      <Harness />
+    </QueryClientProvider>,
+  );
   return { onRequestEmailChange, onOpenChange };
 }
 
@@ -42,8 +53,35 @@ const submit = () =>
   fireEvent.click(screen.getByRole('button', { name: 'Invia il link' }));
 
 describe('ChangeEmailDialog', () => {
+  beforeEach(() => {
+    vi.mocked(deployment.getDeployment).mockResolvedValue({
+      emailConfigured: true,
+    });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('does not say a link was sent when the server has no mail server: it is in its log', async () => {
+    vi.mocked(deployment.getDeployment).mockResolvedValue({
+      emailConfigured: false,
+    });
+    renderDialog();
+    await waitFor(() => expect(deployment.getDeployment).toHaveBeenCalled());
+
+    fill('nuova@example.com', 'my-password');
+    submit();
+
+    expect(
+      await screen.findByRole('heading', { name: 'Nessuna email è partita' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Questa installazione non può inviare email: il link per nuova@example.com è stato scritto nel log del server. Finché non lo apri continui ad accedere con giulia@example.com.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/abbiamo mandato un link/i)).toBeNull();
   });
 
   it('asks for the change, then says where the link went and that nothing has changed yet', async () => {

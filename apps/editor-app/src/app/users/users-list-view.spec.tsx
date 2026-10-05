@@ -287,7 +287,7 @@ describe('UsersListView', () => {
     });
 
     it('sends the link again, and says to whom', async () => {
-      vi.mocked(api.resendInvite).mockResolvedValue(undefined);
+      vi.mocked(api.resendInvite).mockResolvedValue({ emailSent: true });
       renderView([invitee]);
 
       fireEvent.click(screen.getByRole('button', { name: 'Reinvia invito' }));
@@ -304,7 +304,7 @@ describe('UsersListView', () => {
       vi.mocked(deployment.getDeployment).mockResolvedValue({
         emailConfigured: false,
       });
-      vi.mocked(api.resendInvite).mockResolvedValue(undefined);
+      vi.mocked(api.resendInvite).mockResolvedValue({ emailSent: true });
       renderView([invitee]);
       await screen.findByText(/non può inviare email/i);
 
@@ -313,6 +313,20 @@ describe('UsersListView', () => {
       expect(
         await screen.findByText(
           'Il nuovo invito per nuova@example.com è pronto, ma nessuna email è partita: il suo link è nel log del server.',
+        ),
+      ).toBeTruthy();
+      expect(screen.queryByText(/reinviato a/)).toBeNull();
+    });
+
+    it('says the email could not be sent, and what to do, when the mail server refused it', async () => {
+      vi.mocked(api.resendInvite).mockResolvedValue({ emailSent: false });
+      renderView([invitee]);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Reinvia invito' }));
+
+      expect(
+        await screen.findByText(
+          'L’invito per nuova@example.com è pronto, ma l’email non è partita. Riprova quando il mail server funziona.',
         ),
       ).toBeTruthy();
       expect(screen.queryByText(/reinviato a/)).toBeNull();
@@ -384,8 +398,8 @@ describe('UsersListView', () => {
 
   it('says the invitation was sent, and to whom', async () => {
     vi.mocked(api.inviteUser).mockResolvedValue({
-      ...userOne,
-      email: 'nuova@example.com',
+      user: { ...userOne, email: 'nuova@example.com' },
+      emailSent: true,
     });
     renderView([]);
 
@@ -410,8 +424,8 @@ describe('UsersListView', () => {
       emailConfigured: false,
     });
     vi.mocked(api.inviteUser).mockResolvedValue({
-      ...userOne,
-      email: 'nuova@example.com',
+      user: { ...userOne, email: 'nuova@example.com' },
+      emailSent: true,
     });
     renderView([]);
 
@@ -434,6 +448,37 @@ describe('UsersListView', () => {
     expect(screen.queryByText(/riceverà un’email/)).toBeNull();
   });
 
+  /*
+   * A mail server that refuses the message used to be a 500 after the person
+   * was made, and the next try was refused because the address was taken. The
+   * person is invited; the administrator is told the email did not go out.
+   */
+  it('says the person is invited but the email could not be sent, when the mail server refused it', async () => {
+    vi.mocked(api.inviteUser).mockResolvedValue({
+      user: { ...userOne, email: 'nuova@example.com' },
+      emailSent: false,
+    });
+    renderView([]);
+
+    fireEvent.click(screen.getByRole('button', { name: /invita utente/i }));
+    fireEvent.change(await screen.findByLabelText('Email'), {
+      target: { value: 'nuova@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Nome'), {
+      target: { value: 'Nuova Persona' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Invita' }));
+
+    expect(
+      await screen.findByText(
+        'nuova@example.com è stato invitato, ma l’email non è partita. Quando il mail server funziona, usa «Reinvia invito».',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/riceverà un’email/)).toBeNull();
+    // Done: the dialog is closed, and a second try is not what is asked for.
+    await waitFor(() => expect(screen.queryByLabelText('Email')).toBeNull());
+  });
+
   describe('the language of the invitation', () => {
     async function fillInvitation() {
       fireEvent.click(screen.getByRole('button', { name: /invita utente/i }));
@@ -446,7 +491,10 @@ describe('UsersListView', () => {
     }
 
     it('is offered in the language the inviter reads the editor in, and sent with the invitation', async () => {
-      vi.mocked(api.inviteUser).mockResolvedValue(userOne);
+      vi.mocked(api.inviteUser).mockResolvedValue({
+        user: userOne,
+        emailSent: true,
+      });
       renderView([]);
 
       await fillInvitation();
@@ -463,7 +511,10 @@ describe('UsersListView', () => {
     });
 
     it('can be another one: the inviter chooses what the invitee is written to in', async () => {
-      vi.mocked(api.inviteUser).mockResolvedValue(userOne);
+      vi.mocked(api.inviteUser).mockResolvedValue({
+        user: userOne,
+        emailSent: true,
+      });
       renderView([]);
 
       await fillInvitation();

@@ -16,10 +16,11 @@ import { environment } from '../support/environment';
  * site that was created without a domain answered "not found". Each was found
  * by walking it by hand.
  *
- * It also invites a person, with no mail server: the invitation has to be
- * made, the editor has to say that no email went out, and the link has to be
- * in the installation's log (docker/kometio/check.sh reads it there, for the
- * address in E2E_INVITEE_EMAIL).
+ * It also invites a person and asks for a password reset, with no mail
+ * server: the invitation has to be made, the editor has to say that no email
+ * went out, and the link of each has to be in the installation's log
+ * (docker/kometio/check.sh reads them there, for the address in
+ * E2E_INVITEE_EMAIL and the administrator's own).
  *
  * It spends the installation: the setup token is single-use and the account is
  * made here, so it runs once, on its own installation, and never retries.
@@ -102,6 +103,22 @@ test('a person who starts the image reaches a working site, and can sign in agai
     login.getByText(`${invitee} is invited, but no email was sent`),
   ).toBeVisible();
 
+  // Forgot the password, before there is a session: told that no email will
+  // come before asking, and after asking, the same whatever the address.
+  const third = await browser.newContext();
+  const forgot = await third.newPage();
+  await forgot.goto(`${environment.editorUrl}login`);
+  await forgot.getByText('Forgot your password?').click();
+  await expect(
+    forgot.getByText('This installation cannot send email'),
+  ).toBeVisible();
+  await forgot.getByLabel('Email').fill(environment.adminEmail);
+  const sendLink = forgot.getByRole('button', { name: 'Send reset link' });
+  await expect(sendLink).toBeEnabled({ timeout: 30_000 });
+  await sendLink.click();
+  await expect(forgot.getByText(/it is in the server's log/)).toBeVisible();
+
   await first.close();
   await second.close();
+  await third.close();
 });

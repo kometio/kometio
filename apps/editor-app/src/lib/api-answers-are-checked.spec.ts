@@ -6,6 +6,7 @@ import { getDeployment } from './deployment-api-client';
 import { previewLegalDocuments } from './legal-documents-api-client';
 import { createTranslationPreviewToken } from './preview-token-api-client';
 import { fetchSetupStatus } from './setup-api-client';
+import { inviteUser, resendInvite } from './users-api-client';
 import { request, send } from './http-client';
 
 /**
@@ -50,6 +51,18 @@ describe('answers the editor reads', () => {
     ],
     ['the dashboard', () => getDashboardStats('s1'), { pages: {} }],
     ['the deployment', () => getDeployment(), { emailConfigured: 'yes' }],
+    [
+      'an invitation',
+      () =>
+        inviteUser({
+          email: 'a@esempio.test',
+          displayName: 'A',
+          role: 'editor',
+          language: 'en',
+        }),
+      { emailSent: true },
+    ],
+    ['a resent invitation', () => resendInvite('u1'), { emailSent: 'yes' }],
     [
       'a legal preview',
       () =>

@@ -231,17 +231,19 @@ accessibility.spec.tsx` checks it for every block type.
   and in the invitation, where the choice is made; the role being chosen
   is set apart by weight and colour, never by dimming the others (a
   dimmed muted line fails contrast).
-- **A fact about the server** (`EmailNotConfiguredNotice`,
-  `app/common`): "this installation cannot send email", said where the
-  person is about to depend on it — the users' list and the invitation —
-  from `GET /api/deployment`. A neutral bordered card with a `warning`
-  icon, which is decoration (the words carry the meaning), and no way to
-  dismiss it: it is true until the server changes. It draws nothing while
-  the answer is unknown or could not be fetched; a notice that might be wrong
-  is worse than none. A confirmation that would say "sent" says what really
-  happened instead (`useServerSendsEmail`).
-- **A dialog taller than the screen scrolls** (`max-h-[calc(100dvh-2rem)]
-overflow-y-auto` on its `DialogContent`, as the invitation's): the
+- **A fact about the server** (`EmailNotConfiguredNotice`, `app/common`):
+  "this installation cannot send email", said where the person is about to
+  depend on it — the users' list, the invitation, and the forgot-password
+  screen, which is read before sign-in — from `GET /api/deployment`, open to
+  anyone. A neutral bordered card with a `warning` icon, which is
+  decoration (the words carry the meaning), and no way to dismiss it: it is
+  true until the server changes. It draws nothing while the answer is
+  unknown or could not be fetched; a notice that might be wrong is worse
+  than none. A confirmation that would say "sent" says what really happened
+  instead (`useServerSendsEmail`, and `emailSent` in an invitation's answer):
+  no mail server, or a mail server that refused it.
+- **A dialog taller than the screen scrolls**: `max-h-[calc(100dvh-2rem)]`
+  and `overflow-y-auto` on its `DialogContent`, as the invitation's has. The
   `Dialog` primitive is centred and does not limit itself, so a long form
   loses its buttons below the edge of a phone.
 - **ContextMenu** (`context-menu.tsx`): what a right-click, the menu key

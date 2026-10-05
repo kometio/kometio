@@ -319,7 +319,7 @@ describe('inviting someone gives them an author address from their name', () => 
       }),
     );
 
-    const invited = await inviteUser(
+    const { user: invited } = await inviteUser(
       {
         userRepository,
         authPort: new FakeAuthPort(),

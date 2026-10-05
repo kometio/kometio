@@ -13,6 +13,7 @@ import { InlineError } from '../../components/ui/inline-error';
 import { Label } from '../../components/ui/label';
 import { ApiError, actionErrorMessage } from '../../lib/http-client';
 import type { RequestEmailChangeInput } from '../../lib/account-api-client';
+import { useServerSendsEmail } from '../common/deployment-queries';
 import { PasswordField } from './password-field';
 
 export interface ChangeEmailDialogProps {
@@ -42,6 +43,9 @@ export function ChangeEmailDialog({
 }: ChangeEmailDialogProps) {
   const { t } = useTranslation();
   const emailId = useId();
+  // "We sent a link" is only true when the server can send: without a mail
+  // server the link is in its log, and the dialog says that instead.
+  const sendsEmail = useServerSendsEmail();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [problems, setProblems] = useState<Problems>({});
@@ -112,17 +116,23 @@ export function ChangeEmailDialog({
         <DialogHeader>
           <DialogTitle>
             {sentTo
-              ? t('account.emailDialog.sentTitle')
+              ? t(
+                  sendsEmail
+                    ? 'account.emailDialog.sentTitle'
+                    : 'account.emailDialog.sentNoEmailTitle',
+                )
               : t('account.emailDialog.title')}
           </DialogTitle>
         </DialogHeader>
         {sentTo ? (
           <div className="flex flex-col gap-4">
             <p className="text-sm">
-              {t('account.emailDialog.sent', {
-                email: sentTo,
-                current: currentEmail,
-              })}
+              {t(
+                sendsEmail
+                  ? 'account.emailDialog.sent'
+                  : 'account.emailDialog.sentNoEmail',
+                { email: sentTo, current: currentEmail },
+              )}
             </p>
             <p className="text-xs text-muted-foreground">
               {t('account.emailDialog.sentNote')}

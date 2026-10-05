@@ -34,6 +34,7 @@
       "title": "Forgot password",
       "description": "Enter your email to receive a reset link",
       "sentMessage": "If that address exists, we've sent you an email with instructions to reset your password.",
+      "sentMessageNoEmail": "If that address has an account, a reset link was made, but this installation cannot send email: it is in the server's log.",
       "backToLogin": "Back to login",
       "submitIdle": "Send reset link",
       "submitPending": "Sending..."
@@ -227,6 +228,8 @@
       "busy": "Sending...",
       "sentTitle": "Check your inbox",
       "sent": "We sent a link to {{email}}. Until you open it you keep signing in with {{current}}.",
+      "sentNoEmailTitle": "No email was sent",
+      "sentNoEmail": "This installation cannot send email, so the link for {{email}} was written to the server's log. Until you open it you keep signing in with {{current}}.",
       "sentNote": "The link works for 24 hours.",
       "failed": "The request to change the email was not sent. Try again."
     },
@@ -1357,6 +1360,7 @@
       "cancelInvite": "Cancel invite",
       "inviteResent": "Invite sent again to {{email}}",
       "inviteResentNoEmail": "A new invitation for {{email}} is made, but no email was sent: its link is in the server's log.",
+      "inviteResentNotMailed": "The invitation for {{email}} is ready, but the email could not be sent. Try again once the mail server works.",
       "inviteCancelled": "Invite to {{email}} cancelled",
       "cancelInviteConfirm": {
         "title": "Cancel this invite?",
@@ -1376,6 +1380,7 @@
       "emailTaken": "A user with this email already exists.",
       "sent": "Invitation sent to {{email}}: they will get an email to choose a password.",
       "sentNoEmail": "{{email}} is invited, but no email was sent: the invitation link is in the server's log.",
+      "notMailed": "{{email}} is invited, but the email could not be sent. Once the mail server works, use “Resend invite”.",
       "languageLabel": "Language",
       "languageHint": "The invitation and every email they get afterwards will be written in this language, until they choose another.",
       "failed": "The invitation was not sent. Try again."

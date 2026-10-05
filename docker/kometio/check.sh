@@ -163,6 +163,8 @@ if [ "$SMOKE_ONLY" = false ]; then
     grep -q "To:      ${INVITEE_EMAIL}" <<<"$first_log"
   check "the logged invitation carries its link" \
     grep -q "${FIRST_EDITOR_URL}/accept-invite?inviteToken=" <<<"$first_log"
+  check "a password reset with no mail server is written to the log, link included" \
+    grep -q "${FIRST_EDITOR_URL}/reset-password?resetToken=" <<<"$first_log"
   docker rm -fv "$FIRST" >/dev/null
   docker volume rm "$FIRST_VOLUME" >/dev/null 2>&1 || true
 fi

@@ -43,7 +43,7 @@ describe('inviteUser', () => {
   it('creates an inactive user and emails an accept-invite link', async () => {
     const deps = setup();
 
-    const user = await inviteUser(deps, {
+    const { user } = await inviteUser(deps, {
       tenantId,
       email: 'nuovo@example.com',
       displayName: 'Nuovo Utente',
@@ -62,6 +62,44 @@ describe('inviteUser', () => {
     );
     const saved = await deps.userRepository.findById(tenantId, user.id);
     expect(saved).not.toBeNull();
+  });
+
+  /*
+   * The invitation used to throw when the mail server did, after the person
+   * and the token were already written: the administrator saw an error, the
+   * person was in the list waiting, and a second try was refused because the
+   * address was taken. It is the person who is made; the email is reported.
+   */
+  it('still invites when the mail server is down, and reports the email that did not go out', async () => {
+    const deps = setup();
+    const failure = new Error('connect ECONNREFUSED');
+    deps.emailPort.failEverySendWith(failure);
+
+    const { user, undelivered } = await inviteUser(deps, {
+      tenantId,
+      email: 'nuovo@example.com',
+      displayName: 'Nuovo Utente',
+      role: 'editor',
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    expect(undelivered).toEqual([{ to: 'nuovo@example.com', reason: failure }]);
+    const saved = await deps.userRepository.findById(tenantId, user.id);
+    expect(saved?.invitePending).toBe(true);
+  });
+
+  it('reports nothing undelivered when the email went out', async () => {
+    const deps = setup();
+
+    const { undelivered } = await inviteUser(deps, {
+      tenantId,
+      email: 'nuovo@example.com',
+      displayName: 'Nuovo Utente',
+      role: 'editor',
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    expect(undelivered).toEqual([]);
   });
 
   it('throws UserEmailAlreadyExistsError for an email already in use, sending no email', async () => {
@@ -116,9 +154,32 @@ describe('inviteUser', () => {
 });
 
 describe('resendInvite', () => {
+  it('reports the email that did not go out instead of failing, when the mail server is down', async () => {
+    const deps = setup();
+    const { user } = await inviteUser(deps, {
+      tenantId,
+      email: 'in-attesa@example.com',
+      displayName: 'In Attesa',
+      role: 'editor',
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+    const failure = new Error('connect ECONNREFUSED');
+    deps.emailPort.failEverySendWith(failure);
+
+    const { undelivered } = await resendInvite(deps, {
+      tenantId,
+      userId: user.id,
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    expect(undelivered).toEqual([
+      { to: 'in-attesa@example.com', reason: failure },
+    ]);
+  });
+
   it('mints a fresh invite token and re-sends the email for a pending user', async () => {
     const deps = setup();
-    const user = await inviteUser(deps, {
+    const { user } = await inviteUser(deps, {
       tenantId,
       email: 'in-attesa@example.com',
       displayName: 'In Attesa',
@@ -198,7 +259,7 @@ describe('cancelInvite', () => {
     await cancelInvite(deps, { tenantId, userId: 'invitee' });
 
     expect(await deps.userRepository.findById(tenantId, 'invitee')).toBeNull();
-    const again = await inviteUser(deps, {
+    const { user: again } = await inviteUser(deps, {
       tenantId,
       email: 'nuovo@example.com',
       displayName: 'Nuovo',

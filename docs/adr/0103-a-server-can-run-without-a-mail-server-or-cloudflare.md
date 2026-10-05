@@ -38,11 +38,28 @@ its own, found on the way:
   server, with the same trust the first-run setup token already asks for.
 - **It does not throw.** An adapter that fails for lack of a mail server would
   bring back the 500 and the half-made invitation. The editor tells the
-  administrator what is happening, so a quiet log is not mistaken for a
-  working mail server: a notice on the Users screen and in the invite dialog
-  (from `GET /api/deployment`, which says whether the server has a mail
-  server), and confirmations that say "no email was sent" where they would
-  have said "sent".
+  person what is happening, so a quiet log is not mistaken for a working mail
+  server: a notice on the Users screen, in the invite dialog and on the
+  forgot-password screen (from `GET /api/deployment`, which says whether the
+  server has a mail server), and confirmations that say "no email was sent"
+  where they would have said "sent" (an invitation, sending it again, a request
+  to change one's address, a password reset).
+- **That answer is open to anyone.** The first place it is needed is the
+  forgot-password screen, before there is a session: a person who has forgotten
+  their password on a server with no mail server is told that no email will
+  come, instead of waiting for one. It is throttled like the other public
+  routes, and the record may hold only what is fit for anyone to read and the
+  same for every address: one fact about the server, never about an account.
+- **An invitation reports its email to the administrator.** The person is
+  invited, and the link works, whether or not a configured mail server took
+  the message; the answer says which (`emailSent`) and the editor says "invited,
+  but the email could not be sent: use Resend invite once the mail server
+  works". It used to fail with a 500 after the person was made, and the next
+  try was refused because the address was taken. A reset hides the failure
+  because showing it would say which addresses have an account; an invitation is
+  the administrator's own action on a person they named, so there is nothing to
+  hide, and the failure is the thing they need to know. Sending an invitation
+  again answers the same way. The log gets the reason in every case.
 - **A password reset never reports the delivery.** Whether or not the email
   could be sent, it answers as it does for an address with no account; the
   failure goes to the log. This is a security fix, not a convenience, and holds

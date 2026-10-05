@@ -18,6 +18,20 @@ import { useToast } from '../shell/toast-provider';
 import { InlineError } from '../../components/ui/inline-error';
 import { Pagination } from '../common/pagination';
 
+/** What is said after an invitation, or after sending it again: one wording for each of the three ways it can go. */
+const INVITATION_MESSAGES = {
+  invited: {
+    sent: 'users.inviteDialog.sent',
+    noMailServer: 'users.inviteDialog.sentNoEmail',
+    refused: 'users.inviteDialog.notMailed',
+  },
+  resent: {
+    sent: 'users.list.inviteResent',
+    noMailServer: 'users.list.inviteResentNoEmail',
+    refused: 'users.list.inviteResentNotMailed',
+  },
+} as const;
+
 export interface UsersListViewProps {
   items: UserRecord[];
   page: number;
@@ -42,9 +56,23 @@ export function UsersListView({
     cancelInvite,
   } = useUsers();
   const { toast } = useToast();
-  // "Sent" is only true when the server can send: otherwise the link is in
-  // its log, and the confirmation says so rather than promise an email.
+  // "Sent" is only true when the server can send and the mail server took the
+  // message: otherwise the link is in the log or the mail did not go out, and
+  // the confirmation says so rather than promise an email.
   const sendsEmail = useServerSendsEmail();
+
+  function announceInvitation(
+    kind: 'invited' | 'resent',
+    email: string,
+    emailSent: boolean,
+  ) {
+    const keys = INVITATION_MESSAGES[kind];
+    if (!emailSent) {
+      toast(t(keys.refused, { email }), 'destructive');
+      return;
+    }
+    toast(t(sendsEmail ? keys.sent : keys.noMailServer, { email }), 'success');
+  }
 
   const { session } = useCurrentSession();
 
@@ -108,16 +136,8 @@ export function UsersListView({
   async function handleResendInvite(user: UserRecord) {
     setActionError('');
     try {
-      await resendInvite(user.id);
-      toast(
-        t(
-          sendsEmail
-            ? 'users.list.inviteResent'
-            : 'users.list.inviteResentNoEmail',
-          { email: user.email },
-        ),
-        'success',
-      );
+      const { emailSent } = await resendInvite(user.id);
+      announceInvitation('resent', user.email, emailSent);
     } catch (err) {
       setActionError(actionErrorMessage(err, t('users.list.actionFailed')));
     }
@@ -181,17 +201,8 @@ export function UsersListView({
         open={isInviteDialogOpen}
         onOpenChange={setIsInviteDialogOpen}
         onInvite={async (input) => {
-          const invited = await inviteUser(input);
-          toast(
-            t(
-              sendsEmail
-                ? 'users.inviteDialog.sent'
-                : 'users.inviteDialog.sentNoEmail',
-              { email: input.email },
-            ),
-            'success',
-          );
-          return invited;
+          const { emailSent } = await inviteUser(input);
+          announceInvitation('invited', input.email, emailSent);
         }}
       />
       {pendingCancellation && (

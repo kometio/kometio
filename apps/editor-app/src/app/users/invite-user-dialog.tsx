@@ -17,11 +17,7 @@ import { OptionsSelect } from '../../components/ui/select';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { ApiError, actionErrorMessage } from '../../lib/http-client';
-import type {
-  InviteUserInput,
-  UserRecord,
-  UserRole,
-} from '../../lib/users-api-client';
+import type { InviteUserInput, UserRole } from '../../lib/users-api-client';
 import { InlineError } from '../../components/ui/inline-error';
 import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
 import { UI_LANGUAGES } from '../account/interface-languages';
@@ -30,7 +26,7 @@ import { RoleDescriptions } from './role-descriptions';
 export interface InviteUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onInvite: (input: InviteUserInput) => Promise<UserRecord>;
+  onInvite: (input: InviteUserInput) => Promise<void>;
 }
 
 export function InviteUserDialog({

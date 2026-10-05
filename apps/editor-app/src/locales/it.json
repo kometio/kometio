@@ -34,6 +34,7 @@
       "title": "Password dimenticata",
       "description": "Inserisci la tua email per ricevere un link di reimpostazione",
       "sentMessage": "Se l'indirizzo esiste, ti abbiamo inviato un'email con le istruzioni per reimpostare la password.",
+      "sentMessageNoEmail": "Se questo indirizzo ha un account, il link è stato creato, ma questa installazione non può inviare email: lo trovi nel log del server.",
       "backToLogin": "Torna al login",
       "submitIdle": "Invia link di reset",
       "submitPending": "Invio in corso..."
@@ -227,6 +228,8 @@
       "busy": "Invio in corso...",
       "sentTitle": "Controlla la posta",
       "sent": "Abbiamo mandato un link a {{email}}. Finché non lo apri continui ad accedere con {{current}}.",
+      "sentNoEmailTitle": "Nessuna email è partita",
+      "sentNoEmail": "Questa installazione non può inviare email: il link per {{email}} è stato scritto nel log del server. Finché non lo apri continui ad accedere con {{current}}.",
       "sentNote": "Il link vale 24 ore.",
       "failed": "La richiesta di cambio email non è stata inviata. Riprova."
     },
@@ -1357,6 +1360,7 @@
       "cancelInvite": "Annulla invito",
       "inviteResent": "Invito reinviato a {{email}}",
       "inviteResentNoEmail": "Il nuovo invito per {{email}} è pronto, ma nessuna email è partita: il suo link è nel log del server.",
+      "inviteResentNotMailed": "L’invito per {{email}} è pronto, ma l’email non è partita. Riprova quando il mail server funziona.",
       "inviteCancelled": "Invito a {{email}} annullato",
       "cancelInviteConfirm": {
         "title": "Annullare l’invito?",
@@ -1376,6 +1380,7 @@
       "emailTaken": "Esiste già un utente con questa email.",
       "sent": "Invito inviato a {{email}}: riceverà un’email per scegliere la password.",
       "sentNoEmail": "{{email}} è stato invitato, ma nessuna email è partita: il link dell’invito è nel log del server.",
+      "notMailed": "{{email}} è stato invitato, ma l’email non è partita. Quando il mail server funziona, usa «Reinvia invito».",
       "languageLabel": "Lingua",
       "languageHint": "L’invito e ogni mail che riceverà dopo saranno scritti in questa lingua, finché non ne sceglie un’altra.",
       "failed": "L’invito non è stato inviato. Riprova."

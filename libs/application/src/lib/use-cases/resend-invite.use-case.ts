@@ -12,6 +12,7 @@ import {
   type EmailLanguageDeps,
 } from '../emails/email-language';
 import { buildInviteEmail } from '../emails/invite-email.template';
+import { trySendEmail, type UndeliveredEmail } from '../emails/try-send-email';
 
 // Same TTL as the original invite (inviteUser) — a re-invite is just a
 // fresh shot at the same 7-day window, not a different policy.
@@ -30,6 +31,11 @@ export interface ResendInviteInput {
   inviteUrlBase: string;
 }
 
+export interface ResendInviteResult {
+  /** The invitation, if the mail server did not take it: the new link exists all the same. */
+  undelivered: UndeliveredEmail[];
+}
+
 /**
  * Security review 2026-08-24, "terzo giro": inviteUser creates the User
  * row immediately with isActive:false; the 7-day invite token then simply
@@ -44,7 +50,7 @@ export interface ResendInviteInput {
 export async function resendInvite(
   deps: ResendInviteDeps,
   input: ResendInviteInput,
-): Promise<void> {
+): Promise<ResendInviteResult> {
   const user = await deps.userRepository.findById(input.tenantId, input.userId);
   if (!user) {
     throw new UserNotFoundError(input.userId);
@@ -62,8 +68,10 @@ export async function resendInvite(
   const inviteUrlBase = input.inviteUrlBase.replace(/\/$/, '');
   const inviteUrl = `${inviteUrlBase}/accept-invite?inviteToken=${inviteToken.token}`;
 
-  await deps.emailPort.sendEmail({
-    to: user.email,
-    ...buildInviteEmail(await emailLanguageOfUser(deps, user), inviteUrl),
-  });
+  return {
+    undelivered: await trySendEmail(deps.emailPort, {
+      to: user.email,
+      ...buildInviteEmail(await emailLanguageOfUser(deps, user), inviteUrl),
+    }),
+  };
 }
