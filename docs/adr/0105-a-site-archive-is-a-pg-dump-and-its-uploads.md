@@ -63,8 +63,8 @@ The choices, with the reasons they went as they did:
   administrator's credentials (ADR-0101), `kometio_app` is under row level security,
   and a restore needs a superuser. The commands run as the container's root, the
   way the launcher does, and share the launcher's own helpers
-  (`processes.mjs`, `embedded-postgres.mjs`). The first-run screen's import comes
-  next, on the same helper in the launcher.
+  (`processes.mjs`, `embedded-postgres.mjs`). The first-run screen's import is the
+  same operation, done by the launcher while it runs (ADR-0106).
 - **Export from the editor** (Settings → Export, an administrator's) is the same code
   reached through the launcher, which listens on a Unix socket
   (`/run/kometio/control.sock`, in a folder only the API's user can open: the user a

@@ -31,6 +31,12 @@ export interface SetupWizardFormProps {
    * there is none worth proposing, and the field then starts empty.
    */
   proposedDomain?: string;
+  /**
+   * Offered only where the server can open a site archive (the single image,
+   * docs/adr/0106): a way to bring a site from another installation instead of
+   * making a new one. Left out, the wizard is only the wizard.
+   */
+  onChooseImport?: () => void;
   onSubmit: (input: {
     setupToken: string;
     siteName: string;
@@ -67,6 +73,7 @@ export interface SetupWizardFormProps {
  */
 export function SetupWizardForm({
   onSubmit,
+  onChooseImport,
   proposedDomain = '',
 }: SetupWizardFormProps) {
   const { t } = useTranslation();
@@ -262,6 +269,16 @@ export function SetupWizardForm({
         <Button type="submit" disabled={submitting}>
           {submitting ? t('setup.submitPending') : t('setup.submitIdle')}
         </Button>
+        {onChooseImport && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onChooseImport}
+            disabled={submitting}
+          >
+            {t('setup.import.choose')}
+          </Button>
+        )}
       </form>
     </AuthPage>
   );

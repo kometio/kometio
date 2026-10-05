@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
+import { SetupImportForm } from '../app/auth/setup-import-form';
 import { SetupWizardForm } from '../app/auth/setup-wizard-form';
+import { useServerFeatures } from '../app/common/deployment-queries';
 import { domainOfAddress } from '../app/settings/domain-input';
 import { publicSiteUrl } from '../lib/runtime-config';
 import { bootstrapDeployment, fetchSetupStatus } from '../lib/setup-api-client';
@@ -26,12 +29,29 @@ export const Route = createFileRoute('/setup')({
 
 function SetupRoute() {
   const navigate = useNavigate();
+  const { siteArchive } = useServerFeatures();
+  const [importing, setImporting] = useState(false);
+
+  if (importing) {
+    return (
+      <SetupImportForm
+        // The site and its accounts are the archive's: there is nothing to sign
+        // in as yet, and the login says so.
+        onImported={() =>
+          void navigate({ to: '/login', search: { imported: true } })
+        }
+        onBack={() => setImporting(false)}
+      />
+    );
+  }
 
   return (
     <SetupWizardForm
       // The address this deployment was told to serve the site on: the same
       // one the editor's "View page" links use, so it is the one that is right.
       proposedDomain={domainOfAddress(publicSiteUrl())}
+      // Only where the server can open an archive (docs/adr/0106).
+      onChooseImport={siteArchive ? () => setImporting(true) : undefined}
       onSubmit={async (input) => {
         // The response sets the session cookie itself — see the endpoint's
         // own comment for why signing in here rather than through /login
