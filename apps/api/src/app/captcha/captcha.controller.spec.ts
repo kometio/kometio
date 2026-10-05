@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttler.guard';
 import { CaptchaController } from './captcha.controller';
 
 describe('CaptchaController', () => {
@@ -15,5 +16,21 @@ describe('CaptchaController', () => {
     await expect(new CaptchaController(null).challenge()).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  /*
+   * The public site asks on behalf of each visitor. With the default guard
+   * the whole site would be one visitor, and thirty page loads with a form in
+   * a minute would answer 429 to everybody (the guard's own comment tells the
+   * story for the pages). Its behaviour is its own spec's; this is that the
+   * route uses it.
+   */
+  it('counts the visitor the public site vouches for, not the public site', () => {
+    const guards: unknown[] = Reflect.getMetadata(
+      '__guards__',
+      CaptchaController,
+    );
+
+    expect(guards).toContain(PublicPagesThrottlerGuard);
   });
 });
