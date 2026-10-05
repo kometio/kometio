@@ -157,6 +157,8 @@ check "DOMAIN is read as documented, and a mistake in it says what to write" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/server-mode.test.mjs"
 check "an archive is trusted as documented: its manifest, its migrations, what it may hold" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive.test.mjs"
+check "the launcher's control socket answers as documented: one archive at a time, a refusal before it starts, a cut when it fails on its way" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/control-server.test.mjs"
 
 # --- the first run, in a browser ------------------------------------------------
 #
@@ -351,6 +353,50 @@ check "the server exports its site while it runs" \
   sh -c "docker exec '$NAME' node /opt/kometio/cli.mjs export > '${WORK}/site.tar.gz'"
 check "the archive is a .tar.gz with its manifest, its database and its uploads" \
   sh -c "tar tzf '${WORK}/site.tar.gz' | grep -q 'manifest.json' && tar tzf '${WORK}/site.tar.gz' | grep -q 'database.sql.gz' && tar tzf '${WORK}/site.tar.gz' | grep -q 'uploads/'"
+
+# The same archive through the editor's door (Settings → Export, docs/adr/0105):
+# the API asks the launcher on a socket and streams what comes back. It is the one
+# that is opened below, since it is the one a person has.
+check "the server says its site can be exported (the single image makes the archive)" \
+  sh -c "curl -s '${API_URL}/deployment' | grep -q '\"siteArchive\":true'"
+check "nobody signed in is refused the archive (401)" \
+  test "$(status_code "${API_URL}/site-archive")" = 401
+check "a link followed from another site is refused (403)" \
+  test "$(status_code -b "$COOKIES" -H 'Sec-Fetch-Site: cross-site' "${API_URL}/site-archive")" = 403
+check "an administrator downloads the archive while the server runs" \
+  sh -c "curl -sf -b '$COOKIES' -D '${WORK}/export.headers' -o '${WORK}/site-from-editor.tar.gz' '${API_URL}/site-archive'"
+check "it is sent as a file to keep, named, and never from a cache" \
+  sh -c "grep -qi '^content-type: application/gzip' '${WORK}/export.headers' && grep -qi '^content-disposition: attachment; filename=\"kometio-site-[0-9]*-[0-9]*.tar.gz\"' '${WORK}/export.headers' && grep -qi '^cache-control: no-store' '${WORK}/export.headers'"
+check "it is not compressed a second time on its way" \
+  sh -c "! grep -qi '^content-encoding:' '${WORK}/export.headers'"
+check "it is an archive of the same shape as the command's: manifest, database and uploads" \
+  sh -c "tar tzf '${WORK}/site-from-editor.tar.gz' | grep -q 'manifest.json' && tar tzf '${WORK}/site-from-editor.tar.gz' | grep -q 'database.sql.gz' && tar tzf '${WORK}/site-from-editor.tar.gz' | grep -q 'uploads/'"
+# One at a time, and a reader who leaves must not leave the next one waiting: the
+# first is read slowly, so that it is still being made; the second is refused; and
+# once the first reader is gone the launcher lets go and the next one is made. A
+# site this small is archived faster than anything can be read slowly (a few
+# megabytes of it sit in the sockets' buffers), so it is given 40 MB of bytes that
+# do not compress, where the uploads are; they are taken away again below.
+docker exec "$NAME" sh -c "head -c 40000000 /dev/urandom > /data/uploads/ballast.bin && chown kometio:kometio /data/uploads/ballast.bin"
+curl -s -b "$COOKIES" --limit-rate 1k -o /dev/null "${API_URL}/site-archive" &
+SLOW_READER=$!
+sleep 3
+check "a second export while one is being made is refused (409)" \
+  test "$(status_code -b "$COOKIES" "${API_URL}/site-archive")" = 409
+kill "$SLOW_READER" 2>/dev/null || true
+wait "$SLOW_READER" 2>/dev/null || true
+sleep 3
+check "when the reader leaves, the next export is made" \
+  test "$(status_code -b "$COOKIES" "${API_URL}/site-archive")" = 200
+check "and nothing of the unfinished one is left on the volume" \
+  sh -c "test \"\$(docker exec '$NAME' sh -c 'ls /data/state | grep -c ^export- || true')\" = 0"
+docker exec "$NAME" rm -f /data/uploads/ballast.bin
+# The socket is the launcher's door, and only the API's user can open it: the user
+# a theme's code runs as cannot even reach the folder it is in.
+check "the API's own user can open the control socket (the control of the next check)" \
+  docker exec -u kometio "$NAME" node -e "require('net').connect('/run/kometio/control.sock').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"
+check "the user a theme's code runs as cannot open it" \
+  sh -c "! docker exec -u kometio-site '$NAME' node -e \"require('net').connect('/run/kometio/control.sock').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\""
 check "a file that is not an archive is refused, and nothing is started for it" \
   sh -c "! echo 'not an archive' | docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import 2>/dev/null"
 # The one thing that must never happen: a second container starting Postgres on
@@ -361,10 +407,10 @@ check "an import onto a volume that a running server uses is refused" \
   sh -c "! docker run --rm -i -v '${VOLUME}:/data' '$IMAGE' import < '${WORK}/site.tar.gz' 2>/dev/null"
 check "and that server's database was not touched: its pid file is still there" \
   docker exec "$NAME" test -f /data/postgres/postmaster.pid
-check "the archive is opened into a new volume, under another address" \
-  sh -c "docker run --rm -i -v '${MOVED_VOLUME}:/data' -e 'PUBLIC_SITE_URL=http://moved.localhost:${MOVED_SITE_PORT}' '$IMAGE' import < '${WORK}/site.tar.gz'"
+check "the archive the editor gave is opened into a new volume, under another address" \
+  sh -c "docker run --rm -i -v '${MOVED_VOLUME}:/data' -e 'PUBLIC_SITE_URL=http://moved.localhost:${MOVED_SITE_PORT}' '$IMAGE' import < '${WORK}/site-from-editor.tar.gz'"
 check "it is not opened a second time over what is there" \
-  sh -c "! docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import < '${WORK}/site.tar.gz' 2>/dev/null"
+  sh -c "! docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import < '${WORK}/site-from-editor.tar.gz' 2>/dev/null"
 docker run -d --name "$MOVED" \
   -p "${MOVED_EDITOR_PORT}:80" -p "${MOVED_API_PORT}:3000" -p "${MOVED_SITE_PORT}:4322" \
   -e "EDITOR_APP_URL=http://localhost:${MOVED_EDITOR_PORT}" \

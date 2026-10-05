@@ -3503,6 +3503,33 @@
     "publishPlaceholdersBody_other": "{{count}} blocchi hanno ancora un segnaposto al posto di un nome, un ruolo, un prezzo o un numero veri; li segnala Livelli. Chi visita il sito li vedrebbe così come sono.",
     "publishPlaceholdersAction": "Pubblica comunque"
   },
+  "siteArchive": {
+    "description": "Tutto il sito in un file, da aprire in un’altra installazione di Kometio: dal tuo computer a un server, da un server a un altro, o da tenere come copia di sicurezza.",
+    "includes": {
+      "title": "Cosa c’è nel file",
+      "content": "Le pagine e la loro cronologia, i moduli, le categorie e le impostazioni del sito.",
+      "accounts": "Gli account, con l’impronta delle loro password.",
+      "files": "Tutti i file caricati."
+    },
+    "excludes": {
+      "title": "Cosa non c’è",
+      "sessions": "Chi ha effettuato l’accesso e i link ancora in attesa: reimpostazioni di password, inviti, conferme di indirizzo.",
+      "submissions": "Le risposte che le persone hanno inviato con i tuoi moduli.",
+      "aiKey": "La chiave del fornitore di AI, che solo il server su cui è stata inserita sa leggere: va inserita di nuovo nella nuova installazione."
+    },
+    "secret": {
+      "title": "Custodisci il file come una password",
+      "body": "Contiene l’impronta della password di ogni account e ogni pagina, bozza e modulo. Conservalo dove solo tu puoi leggerlo e cancellalo quando non ti serve più."
+    },
+    "download": "Scarica il sito",
+    "downloadHint": "Il download parte subito e il file è completo quando il browser dice che ha finito: un sito grande richiede un po’ di tempo. Se fallisce, riprova tra un minuto; si può fare una sola esportazione alla volta.",
+    "open": {
+      "title": "Aprilo in un’altra installazione",
+      "body": "Su un server mai usato, con il container fermo, esegui questo con l’indirizzo a cui sarà raggiungibile (vedi «Move a site to another installation» nel README dell’immagine):",
+      "command": "docker run --rm -i -v kometio-data:/data -e DOMAIN=example.com ghcr.io/kometio/kometio:main import < kometio-site.tar.gz",
+      "after": "Poi avvia Kometio su quel volume. Non c’è né un token di setup né la procedura guidata: il sito è già lì e accedi con l’account che avevi."
+    }
+  },
   "settings": {
     "title": "Impostazioni",
     "description": "Come il sito è configurato: vale per tutte le pagine e per chi lo visita.",
@@ -3524,7 +3551,8 @@
         "ai": "Generazione AI",
         "cookies": "Cookie e privacy",
         "retention": "Conservazione dati",
-        "users": "Utenti"
+        "users": "Utenti",
+        "export": "Esporta"
       }
     },
     "sections": {

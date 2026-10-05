@@ -4,6 +4,7 @@ import type { UserRole } from '@kometio/shared-types';
 import { useCurrentSession } from '../auth/use-current-session';
 import { sessionAs } from '../../test/current-session.test-fixture';
 import { chooseOption } from '../../test/select.test-fixture';
+import { useServerFeatures } from '../common/deployment-queries';
 import { useIsNarrow } from '../common/use-is-narrow';
 import { SettingsNav } from './settings-nav';
 
@@ -14,6 +15,7 @@ const { navigate, location } = vi.hoisted(() => ({
 
 vi.mock('../auth/use-current-session', () => ({ useCurrentSession: vi.fn() }));
 vi.mock('../common/use-is-narrow', () => ({ useIsNarrow: vi.fn() }));
+vi.mock('../common/deployment-queries', () => ({ useServerFeatures: vi.fn() }));
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual =
     await importOriginal<typeof import('@tanstack/react-router')>();
@@ -37,6 +39,7 @@ function renderNav(role: UserRole = 'admin') {
 describe('SettingsNav', () => {
   beforeEach(() => {
     vi.mocked(useIsNarrow).mockReturnValue(false);
+    vi.mocked(useServerFeatures).mockReturnValue({ siteArchive: false });
     location.pathname = '/settings/seo';
   });
 
@@ -91,6 +94,39 @@ describe('SettingsNav', () => {
         .getAllByRole('heading', { level: 2 })
         .map((heading) => heading.textContent),
     ).toEqual(['Sito']);
+  });
+
+  // It depends on what the server can do as well as on the role: the single
+  // image makes the archive, and a deployment with a database of its own cannot.
+  describe('the export', () => {
+    const linksOf = () =>
+      within(
+        screen.getByRole('navigation', { name: 'Sezioni delle impostazioni' }),
+      )
+        .getAllByRole('link')
+        .map((link) => [link.textContent, link.getAttribute('href')]);
+
+    it('is offered to an administrator on a server that can make it, last, with the privacy sections', () => {
+      vi.mocked(useServerFeatures).mockReturnValue({ siteArchive: true });
+
+      renderNav('admin');
+
+      expect(linksOf().at(-1)).toEqual(['Esporta', '/settings/export']);
+    });
+
+    it('is not offered where the server cannot make it', () => {
+      renderNav('admin');
+
+      expect(linksOf().map(([name]) => name)).not.toContain('Esporta');
+    });
+
+    it('is not offered to a publisher, whatever the server can do', () => {
+      vi.mocked(useServerFeatures).mockReturnValue({ siteArchive: true });
+
+      renderNav('publisher');
+
+      expect(linksOf().map(([name]) => name)).toEqual(['Collezioni']);
+    });
   });
 
   describe('on a phone', () => {
