@@ -290,6 +290,22 @@ export async function readArchive({ dataDir, input, say }) {
   }
 }
 
+const ALREADY_HAS_A_SITE =
+  'this installation already has a site: an archive is opened into a new volume, never over a site';
+
+/** Whether a site has been made here: the tables are there and a tenant is in them. */
+export function installationHasSite() {
+  // Two queries: one that names `tenants` is refused at parse time when the table is not there.
+  const hasTenantsTable = queryJson(
+    'kometio',
+    "select to_json(to_regclass('public.tenants') is not null)",
+  );
+  return (
+    hasTenantsTable &&
+    queryJson('kometio', 'select to_json(exists (select 1 from tenants))')
+  );
+}
+
 /**
  * Opens an archive that `readArchive` accepted into this installation, which
  * has to be new: no site yet and no uploaded file. The server must not be
@@ -309,21 +325,54 @@ export async function restoreArchive({
   if (existsSync(uploadsDir) && readdirSync(uploadsDir).length > 0) {
     throw new Refusal(
       `${uploadsDir} already has files: an archive is opened into a new volume, never over a site`,
+      { conflict: true },
     );
   }
-  // Two queries: one that names `tenants` is refused at parse time when the table is not there.
-  const hasTenantsTable = queryJson(
-    'kometio',
-    "select to_json(to_regclass('public.tenants') is not null)",
-  );
-  const hasSite =
-    hasTenantsTable &&
-    queryJson('kometio', 'select to_json(exists (select 1 from tenants))');
-  if (hasSite) {
-    throw new Refusal(
-      'this installation already has a site: an archive is opened into a new volume, never over a site',
-    );
+  if (installationHasSite()) {
+    throw new Refusal(ALREADY_HAS_A_SITE, { conflict: true });
   }
+
+  try {
+    await restoreInto({ dataDir, content, manifest, known, siteUrl, say });
+  } catch (error) {
+    // The installation was new when this began, so putting it back as it was
+    // is not throwing anything away: a half-opened site (a restore that came
+    // through and a migration that did not, files copied and no room for the
+    // rest) would otherwise be refused as "already a site" at the next try, and
+    // be what the server starts on.
+    resetToNew(uploadsDir, say);
+    throw error;
+  }
+}
+
+/** The database and the uploads as a new installation has them: no site, no file. */
+function resetToNew(uploadsDir, say) {
+  try {
+    psql('postgres', [
+      '-c',
+      'drop database if exists kometio',
+      '-c',
+      'create database kometio owner kometio',
+    ]);
+    if (existsSync(uploadsDir)) {
+      for (const entry of readdirSync(uploadsDir)) {
+        rmSync(`${uploadsDir}/${entry}`, { recursive: true, force: true });
+      }
+    }
+  } catch (error) {
+    say(`the installation could not be put back as it was: ${error.message}`);
+  }
+}
+
+async function restoreInto({
+  dataDir,
+  content,
+  manifest,
+  known,
+  siteUrl,
+  say,
+}) {
+  const uploadsDir = `${dataDir}/uploads`;
 
   say('restoring the database');
   psql('postgres', [

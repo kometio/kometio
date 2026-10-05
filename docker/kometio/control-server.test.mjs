@@ -46,8 +46,27 @@ function ask(path, method = 'GET') {
   });
 }
 
+/** A POST with a body, over the socket: the status and what was answered. */
+function post(path, body) {
+  return new Promise((resolve) => {
+    const req = request({ socketPath, path, method: 'POST' }, (response) => {
+      const chunks = [];
+      response.on('data', (chunk) => chunks.push(chunk));
+      response.on('end', () =>
+        resolve({
+          status: response.statusCode,
+          body: Buffer.concat(chunks).toString(),
+        }),
+      );
+    });
+    req.on('error', (error) => resolve({ failed: error }));
+    req.end(body);
+  });
+}
+
 describe('the control server', () => {
   let prepare;
+  let openArchive;
   let server;
   const said = [];
 
@@ -55,6 +74,7 @@ describe('the control server', () => {
     server = await startControlServer({
       socketPath,
       prepare: () => prepare(),
+      openArchive: (input) => openArchive(input),
       say: (message) => said.push(message),
     });
   });
@@ -195,5 +215,119 @@ describe('the control server', () => {
     assert.equal((await ask('/')).status, 404);
     assert.equal((await ask('/export/extra')).status, 404);
     assert.equal((await ask('/export', 'POST')).status, 405);
+  });
+  describe('opening a site archive', () => {
+    const opened = ({ run = async () => undefined, discarded = [] } = {}) => ({
+      run,
+      discard: () => discarded.push('discarded'),
+    });
+
+    it('reads what arrives and answers that it is accepted while the work is still to do', async () => {
+      let received = '';
+      let started = false;
+      let finish;
+      const gate = new Promise((resolve) => (finish = resolve));
+      openArchive = async (input) => {
+        for await (const chunk of input) received += chunk;
+        return opened({
+          run: async () => {
+            started = true;
+            await gate;
+          },
+        });
+      };
+
+      // The answer comes while `run` is still waiting for its gate: it does
+      // not wait for the work, which stops the very process that relays it.
+      const answer = await post('/import', 'the archive');
+      const startedBeforeFinish = started;
+      finish();
+
+      assert.equal(answer.status, 202);
+      assert.equal(received, 'the archive');
+      assert.equal(startedBeforeFinish, true);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+
+    it('cleans up after the work, and lets the next thing in', async () => {
+      const discarded = [];
+      openArchive = async () => opened({ discarded });
+
+      assert.equal((await post('/import', 'x')).status, 202);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      assert.deepEqual(discarded, ['discarded']);
+      prepare = async () =>
+        fakeArchive({ discarded: [], write: async (out) => out.write('ok') });
+      assert.equal((await ask('/export')).status, 200);
+    });
+
+    it('keeps everything else out while the work runs: no export, no second import', async () => {
+      let finish;
+      const gate = new Promise((resolve) => (finish = resolve));
+      openArchive = async () => opened({ run: () => gate });
+
+      assert.equal((await post('/import', 'x')).status, 202);
+      const export_ = await ask('/export');
+      const second = await post('/import', 'y');
+      finish();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      assert.equal(export_.status, 409);
+      assert.match(JSON.parse(export_.body).message, /being opened/);
+      assert.equal(second.status, 409);
+    });
+
+    it('says an archive that cannot be opened is a 400, and nothing was started', async () => {
+      openArchive = async () => {
+        throw new Refusal(
+          'this is not a Kometio site archive: it is not a .tar.gz',
+        );
+      };
+
+      const answer = await post('/import', 'not an archive');
+
+      assert.equal(answer.status, 400);
+      assert.match(
+        JSON.parse(answer.body).message,
+        /not a Kometio site archive/,
+      );
+    });
+
+    it('says an installation that already has a site is a 409', async () => {
+      openArchive = async () => {
+        throw new Refusal('this installation already has a site', {
+          conflict: true,
+        });
+      };
+
+      const answer = await post('/import', 'x');
+
+      assert.equal(answer.status, 409);
+    });
+
+    it('lets the next thing in after a refusal', async () => {
+      openArchive = async () => {
+        throw new Refusal('no');
+      };
+      await post('/import', 'x');
+      prepare = async () =>
+        fakeArchive({ discarded: [], write: async (out) => out.write('ok') });
+
+      assert.equal((await ask('/export')).status, 200);
+    });
+
+    it('answers a failure of its own as a 500', async () => {
+      openArchive = async () => {
+        throw new Error('disk on fire');
+      };
+
+      assert.equal((await post('/import', 'x')).status, 500);
+    });
+
+    it('says only POST, and that is only for the import', async () => {
+      assert.equal((await ask('/import')).status, 405);
+      assert.equal((await post('/export', 'x')).status, 405);
+    });
   });
 });

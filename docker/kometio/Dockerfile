@@ -52,7 +52,7 @@ COPY --from=editor /docker-entrypoint.d/10-kometio-runtime-config.envsh /opt/kom
 # artefact, so they are always those of the version of the code that starts.
 COPY docker/kometio/launcher.mjs docker/kometio/server-mode.mjs docker/kometio/processes.mjs docker/kometio/embedded-postgres.mjs docker/kometio/migrate.mjs docker/kometio/nginx.conf /opt/kometio/
 # `export` and `import` (docs/adr/0105): the image's two commands besides running.
-COPY docker/kometio/cli.mjs docker/kometio/archive.mjs docker/kometio/archive-commands.mjs docker/kometio/control-server.mjs /opt/kometio/
+COPY docker/kometio/cli.mjs docker/kometio/archive.mjs docker/kometio/archive-commands.mjs docker/kometio/control-server.mjs docker/kometio/site-import.mjs /opt/kometio/
 # The compose stack's own Caddyfile, so that the security headers and the
 # compression are defined once; the launcher tells it where each half is.
 COPY Caddyfile /opt/kometio/Caddyfile
