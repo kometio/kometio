@@ -14,6 +14,13 @@
           "command": "playwright test",
           "cwd": "apps/e2e"
         }
+      },
+      "first-run": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "playwright test --config=playwright.first-run.config.ts",
+          "cwd": "apps/e2e"
+        }
       }
     }
   },
