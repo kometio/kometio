@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { paginatedUsersSchema, userRecordSchema } from './user-record';
+import {
+  invitationRecordSchema,
+  invitationResendRecordSchema,
+  paginatedUsersSchema,
+  userRecordSchema,
+} from './user-record';
 
 const user = {
   id: 'u1',
@@ -68,5 +73,28 @@ describe('paginatedUsersSchema', () => {
     expect(paginatedUsersSchema.parse({ items: [user], total: 1 }).total).toBe(
       1,
     );
+  });
+});
+
+describe('invitationRecordSchema', () => {
+  const waiting = { ...user, isActive: false, invitePending: true };
+
+  it('carries the person and whether the email went out', () => {
+    expect(
+      invitationRecordSchema.parse({ user: waiting, emailSent: false }),
+    ).toEqual({ user: waiting, emailSent: false });
+  });
+
+  it('refuses an answer that does not say whether the email went out', () => {
+    expect(invitationRecordSchema.safeParse({ user: waiting }).success).toBe(
+      false,
+    );
+    expect(invitationResendRecordSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('carries whether a resent invitation went out', () => {
+    expect(invitationResendRecordSchema.parse({ emailSent: true })).toEqual({
+      emailSent: true,
+    });
   });
 });

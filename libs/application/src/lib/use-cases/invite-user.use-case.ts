@@ -13,6 +13,7 @@ import {
   type EmailLanguageDeps,
 } from '../emails/email-language';
 import { buildInviteEmail } from '../emails/invite-email.template';
+import { trySendEmail, type UndeliveredEmail } from '../emails/try-send-email';
 import { chooseAuthorSlug } from './author-profile';
 
 // Longer than password-reset's 1h: accepting an invite isn't a
@@ -42,6 +43,17 @@ export interface InviteUserInput {
   inviteUrlBase: string;
 }
 
+export interface InviteUserResult {
+  user: User;
+  /**
+   * The invitation if the mail server did not take it. The person is invited
+   * all the same, with a link that works: it is the administrator's to be told
+   * (and to resend once the mail server works), not an error that leaves them
+   * to try again and be told the address is taken.
+   */
+  undelivered: UndeliveredEmail[];
+}
+
 /**
  * Creates the User row immediately, inactive (`isActive: false`) with an
  * unguessable random password hash — nobody can sign in until
@@ -54,7 +66,7 @@ export interface InviteUserInput {
 export async function inviteUser(
   deps: InviteUserDeps,
   input: InviteUserInput,
-): Promise<User> {
+): Promise<InviteUserResult> {
   const existing = await deps.userRepository.findByEmail(
     input.tenantId,
     input.email,
@@ -93,10 +105,10 @@ export async function inviteUser(
   const inviteUrlBase = input.inviteUrlBase.replace(/\/$/, '');
   const inviteUrl = `${inviteUrlBase}/accept-invite?inviteToken=${inviteToken.token}`;
 
-  await deps.emailPort.sendEmail({
+  const undelivered = await trySendEmail(deps.emailPort, {
     to: user.email,
     ...buildInviteEmail(await emailLanguageOfUser(deps, user), inviteUrl),
   });
 
-  return user;
+  return { user, undelivered };
 }

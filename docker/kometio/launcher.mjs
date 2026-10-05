@@ -305,11 +305,9 @@ function apiEnvironment(s) {
     PUBLIC_API_SERVICE_TOKEN: s.publicApiServiceToken,
     EDITOR_APP_URL: EDITOR_URL,
     API_PUBLIC_URL,
-    // Nothing listens here: in a trial the emails (invitations, password
-    // reset) simply cannot be sent. Set SMTP_* to a real server to send them.
-    SMTP_HOST: '127.0.0.1',
-    SMTP_PORT: '1025',
-    SMTP_FROM_ADDRESS: 'kometio@localhost',
+    // No SMTP_* here: without a mail server the API writes each email (an
+    // invitation, a password reset) to its log, link included. Set SMTP_* to
+    // a real server to send them (docs/adr/0103).
     MEDIA_UPLOAD_DIR: `${DATA}/uploads`,
     THEMES_DIR: '/opt/api/themes',
     KOMETIO_SECRETS_DIR: `${DATA}/secrets`,

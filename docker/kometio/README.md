@@ -122,9 +122,12 @@ Changing them later is a restart of the container, not a new image.
 Said plainly, so that you do not find out by failing:
 
 - **It sends no email.** Invitations and password resets need a mail server,
-  and a trial has none. Give it one with `SMTP_HOST`, `SMTP_PORT`, and, if the
-  server asks for them, `SMTP_USER` and `SMTP_PASSWORD` (`-e SMTP_HOST=…` on
-  the `docker run`; `.env.prod.example` lists the rest).
+  and a trial has none, so each of those emails is written to the container's
+  log instead, link included (`docker logs kometio`). The editor says so on the
+  Users screen. Give it a mail server with `SMTP_HOST`, `SMTP_PORT`,
+  `SMTP_FROM_ADDRESS` and, if the server asks for them, `SMTP_USER` and
+  `SMTP_PASSWORD` (`-e SMTP_HOST=…` on the `docker run`; `.env.prod.example`
+  lists the rest).
 - **Its captcha lets everybody through.** The login and the site's forms use
   Cloudflare's published test keys, which accept any answer, so that a trial
   needs no Cloudflare account. Do not put this container on the internet: your

@@ -76,6 +76,58 @@ describe('validateApiEnv', () => {
     ).toThrow(/BREVO_API_KEY[\s\S]*BREVO_LIST_ID/);
   });
 
+  /*
+   * A deployment with no mail server is a real one: a freelancer's first server
+   * has no SMTP account yet. It writes its emails to the log (docs/adr/0103)
+   * instead of refusing to start.
+   */
+  describe('the mail server', () => {
+    const { SMTP_HOST, SMTP_PORT, SMTP_FROM_ADDRESS, ...WITHOUT_SMTP } =
+      VALID_ENV;
+    void [SMTP_HOST, SMTP_PORT, SMTP_FROM_ADDRESS];
+
+    it('is optional: without SMTP_HOST the API starts', () => {
+      expect(() => validateApiEnv(WITHOUT_SMTP)).not.toThrow();
+    });
+
+    it('reads an empty SMTP_HOST as not set, which is how an example file leaves it', () => {
+      expect(() =>
+        validateApiEnv({
+          ...WITHOUT_SMTP,
+          SMTP_HOST: '',
+          SMTP_PORT: '587',
+          SMTP_FROM_ADDRESS: 'noreply@example.com',
+        }),
+      ).not.toThrow();
+    });
+
+    it('asks for the port and the sender once a host is given', () => {
+      expect(() =>
+        validateApiEnv({ ...WITHOUT_SMTP, SMTP_HOST: 'mail.example.test' }),
+      ).toThrow(/SMTP_PORT[\s\S]*SMTP_FROM_ADDRESS/);
+    });
+
+    it('starts in production without one too', () => {
+      expect(() =>
+        validateApiEnv({
+          ...WITHOUT_SMTP,
+          NODE_ENV: 'production',
+          POSTGRES_APP_PASSWORD: 'a-real-database-password',
+          PREVIEW_TOKEN_SECRET: 'a'.repeat(64),
+          TURNSTILE_SECRET_KEY: '0x4AAAAAAAInventedRealLookingKey',
+        }),
+      ).not.toThrow();
+    });
+  });
+
+  it('reads an empty PUBLIC_API_SERVICE_TOKEN as not set, as .env.example leaves it', () => {
+    // It said "left empty, nothing changes", and the schema refused the empty
+    // string: a copied example did not start.
+    expect(() =>
+      validateApiEnv({ ...VALID_ENV, PUBLIC_API_SERVICE_TOKEN: '' }),
+    ).not.toThrow();
+  });
+
   describe('in the production image', () => {
     const PRODUCTION: NodeJS.ProcessEnv = {
       ...VALID_ENV,

@@ -12,6 +12,7 @@ import {
   PAGE_TRANSLATION_REPOSITORY,
 } from '../adapters/port.tokens';
 import { DeploymentTenantModule } from '../deployment-tenant.module';
+import { EmailsModule } from '../emails/emails.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
 import { moduleDeps } from '../module-deps';
 import { DeploymentSiteModule } from '../sites/deployment-site.module';
@@ -25,6 +26,7 @@ import { PUBLIC_FORMS_DEPS } from './public-forms.tokens';
     AdaptersModule,
     DeploymentTenantModule,
     DeploymentSiteModule,
+    EmailsModule,
     // A write endpoint (unlike PublicPagesController's reads) is exactly
     // what a spam bot wants to hit repeatedly — stricter than page-view
     // traffic (120/60s) but more generous than login's 5/60s, since a

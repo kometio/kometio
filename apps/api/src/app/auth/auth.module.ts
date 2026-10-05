@@ -11,6 +11,7 @@ import {
 } from '../adapters/port.tokens';
 import { ApiEnvModule } from '../api-env.module';
 import { DeploymentTenantModule } from '../deployment-tenant.module';
+import { EmailsModule } from '../emails/emails.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
 import { DeploymentSiteModule } from '../sites/deployment-site.module';
 import { moduleDeps } from '../module-deps';
@@ -36,6 +37,7 @@ import { SessionCookies } from './session-cookies';
     ApiEnvModule,
     DeploymentTenantModule,
     DeploymentSiteModule,
+    EmailsModule,
     // Only applied to specific routes (via @UseGuards(ThrottlerGuard))
     // — not registered as a global guard, so the rest of the API is
     // unaffected.

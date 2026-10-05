@@ -131,6 +131,7 @@
     "@kometio/rich-text": "workspace:*",
     "@kometio/s3-attachment-storage": "workspace:*",
     "@kometio/s3-media-storage": "workspace:*",
+    "@kometio/log-email-adapter": "workspace:*",
     "@kometio/session-auth-adapter": "workspace:*",
     "@kometio/sharp-image-optimizer": "workspace:*",
     "@kometio/shared-types": "workspace:*",

@@ -6,7 +6,6 @@ import {
   Get,
   HttpCode,
   Inject,
-  Logger,
   Patch,
   Post,
   UploadedFile,
@@ -42,6 +41,7 @@ import type { AccountDeps } from './account.deps';
 import { ACCOUNT_DEPS } from './account.tokens';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 import { PerUserThrottlerGuard } from '../auth/per-user-throttler.guard';
 import {
   SessionToken,
@@ -60,11 +60,10 @@ import {
 @Controller('account')
 @UseGuards(SessionAuthGuard)
 export class AccountController {
-  private readonly logger = new Logger(AccountController.name);
-
   constructor(
     @Inject(ACCOUNT_DEPS) private readonly deps: AccountDeps,
     @Inject(API_ENV) private readonly env: ApiEnv,
+    private readonly undeliveredEmails: UndeliveredEmailLog,
   ) {}
 
   @Get('profile')
@@ -127,12 +126,10 @@ export class AccountController {
     });
     // The password is changed: a notice that did not go out is for the log,
     // not an error for the person who has just done what they meant to.
-    for (const { to, reason } of undeliveredNotices) {
-      this.logger.error(
-        `Password of ${userId}: the notice to ${to} was not sent`,
-        reason instanceof Error ? reason.stack : String(reason),
-      );
-    }
+    this.undeliveredEmails.report(
+      `Password change (user ${userId})`,
+      undeliveredNotices,
+    );
   }
 
   /**

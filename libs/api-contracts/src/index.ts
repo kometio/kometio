@@ -2,6 +2,7 @@ export * from './lib/account-profile';
 export * from './lib/author-record';
 export * from './lib/available-theme';
 export * from './lib/collection-record';
+export * from './lib/deployment-record';
 export * from './lib/form-record';
 export * from './lib/import-job-record';
 export * from './lib/media-record';

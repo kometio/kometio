@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/button';
 import { actionErrorMessage } from '../../lib/http-client';
 import type { UserRecord, UserRole } from '../../lib/users-api-client';
 import { ConfirmActionDialog } from '../common/confirm-action-dialog';
+import { useServerSendsEmail } from '../common/deployment-queries';
+import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
 import { InviteUserDialog } from './invite-user-dialog';
 import { useCurrentSession } from '../auth/use-current-session';
 import { RoleDescriptions } from './role-descriptions';
@@ -15,6 +17,20 @@ import { SettingsSectionHeader } from '../settings/settings-section';
 import { useToast } from '../shell/toast-provider';
 import { InlineError } from '../../components/ui/inline-error';
 import { Pagination } from '../common/pagination';
+
+/** What is said after an invitation, or after sending it again: one wording for each of the three ways it can go. */
+const INVITATION_MESSAGES = {
+  invited: {
+    sent: 'users.inviteDialog.sent',
+    noMailServer: 'users.inviteDialog.sentNoEmail',
+    refused: 'users.inviteDialog.notMailed',
+  },
+  resent: {
+    sent: 'users.list.inviteResent',
+    noMailServer: 'users.list.inviteResentNoEmail',
+    refused: 'users.list.inviteResentNotMailed',
+  },
+} as const;
 
 export interface UsersListViewProps {
   items: UserRecord[];
@@ -40,6 +56,23 @@ export function UsersListView({
     cancelInvite,
   } = useUsers();
   const { toast } = useToast();
+  // "Sent" is only true when the server can send and the mail server took the
+  // message: otherwise the link is in the log or the mail did not go out, and
+  // the confirmation says so rather than promise an email.
+  const sendsEmail = useServerSendsEmail();
+
+  function announceInvitation(
+    kind: 'invited' | 'resent',
+    email: string,
+    emailSent: boolean,
+  ) {
+    const keys = INVITATION_MESSAGES[kind];
+    if (!emailSent) {
+      toast(t(keys.refused, { email }), 'destructive');
+      return;
+    }
+    toast(t(sendsEmail ? keys.sent : keys.noMailServer, { email }), 'success');
+  }
 
   const { session } = useCurrentSession();
 
@@ -103,8 +136,8 @@ export function UsersListView({
   async function handleResendInvite(user: UserRecord) {
     setActionError('');
     try {
-      await resendInvite(user.id);
-      toast(t('users.list.inviteResent', { email: user.email }), 'success');
+      const { emailSent } = await resendInvite(user.id);
+      announceInvitation('resent', user.email, emailSent);
     } catch (err) {
       setActionError(actionErrorMessage(err, t('users.list.actionFailed')));
     }
@@ -132,6 +165,7 @@ export function UsersListView({
         }
       />
       {actionError && <InlineError>{actionError}</InlineError>}
+      <EmailNotConfiguredNotice />
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('users.list.empty')}</p>
       ) : (
@@ -167,12 +201,8 @@ export function UsersListView({
         open={isInviteDialogOpen}
         onOpenChange={setIsInviteDialogOpen}
         onInvite={async (input) => {
-          const invited = await inviteUser(input);
-          toast(
-            t('users.inviteDialog.sent', { email: input.email }),
-            'success',
-          );
-          return invited;
+          const { emailSent } = await inviteUser(input);
+          announceInvitation('invited', input.email, emailSent);
         }}
       />
       {pendingCancellation && (

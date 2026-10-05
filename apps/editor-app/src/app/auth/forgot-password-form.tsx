@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/button';
 import { AuthPage } from './auth-page';
+import { useServerSendsEmail } from '../common/deployment-queries';
+import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { turnstileSiteKey } from '../../lib/turnstile-site-key';
@@ -15,6 +17,7 @@ export interface ForgotPasswordFormProps {
 export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
   const { t } = useTranslation();
   const { requestReset, isSubmitting } = useForgotPasswordRequest();
+  const sendsEmail = useServerSendsEmail();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -35,8 +38,12 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
     >
       {sent ? (
         <div className="flex flex-col gap-4">
+          {/* The same for every address: the server has a mail server or it
+              has not, whoever asked. */}
           <p className="text-sm text-muted-foreground">
-            {t('auth.forgotPassword.sentMessage')}
+            {sendsEmail
+              ? t('auth.forgotPassword.sentMessage')
+              : t('auth.forgotPassword.sentMessageNoEmail')}
           </p>
           <Button
             variant="link"
@@ -48,6 +55,8 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Read before waiting for an email that will not come. */}
+          <EmailNotConfiguredNotice />
           <div className="flex flex-col gap-2">
             <Label htmlFor="forgot-email">{t('auth.login.emailLabel')}</Label>
             <Input

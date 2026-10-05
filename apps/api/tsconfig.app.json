@@ -36,6 +36,9 @@
       "path": "../../libs/theme-archive/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/adapters/log-email-adapter/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/adapters/smtp-email-adapter/tsconfig.lib.json"
     },
     {

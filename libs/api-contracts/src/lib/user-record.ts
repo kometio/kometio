@@ -40,3 +40,27 @@ export const paginatedUsersSchema = z.object({
 });
 
 export type PaginatedUsers = z.infer<typeof paginatedUsersSchema>;
+
+/**
+ * What an invitation, or sending it again, answers (docs/adr/0103).
+ *
+ * `emailSent` is false only when the server has a mail server and it did not
+ * take the message. The person is invited all the same, with a link that works,
+ * so the administrator is told rather than left with an error and an address
+ * that is now taken. A server with no mail server at all writes the email to
+ * its log and answers true: whether it has one is `GET /deployment`'s to say.
+ */
+export const invitationRecordSchema = z.object({
+  user: userRecordSchema,
+  emailSent: z.boolean(),
+});
+
+export type InvitationRecord = z.infer<typeof invitationRecordSchema>;
+
+export const invitationResendRecordSchema = z.object({
+  emailSent: z.boolean(),
+});
+
+export type InvitationResendRecord = z.infer<
+  typeof invitationResendRecordSchema
+>;

@@ -66,10 +66,10 @@ describe('Invite -> accept-invite (integration)', () => {
         role: 'editor',
       })
       .expect(201);
-    expect(inviteRes.body.isActive).toBe(false);
+    expect(inviteRes.body.user.isActive).toBe(false);
     // Waiting to join, and the list can tell that from an admin's switch-off.
-    expect(inviteRes.body.invitePending).toBe(true);
-    integration.trackUser(inviteRes.body.id);
+    expect(inviteRes.body.user.invitePending).toBe(true);
+    integration.trackUser(inviteRes.body.user.id);
 
     const inviteToken = await fetchInviteToken(inviteeEmail);
     const newPassword = 'a-brand-new-password';
@@ -98,7 +98,7 @@ describe('Invite -> accept-invite (integration)', () => {
         captchaToken: 'test-token',
       })
       .expect(200);
-    expect(loginRes.body.userId).toBe(inviteRes.body.id);
+    expect(loginRes.body.userId).toBe(inviteRes.body.user.id);
   });
 
   it.each([
@@ -118,13 +118,13 @@ describe('Invite -> accept-invite (integration)', () => {
           language,
         })
         .expect(201);
-      integration.trackUser(res.body.id);
+      integration.trackUser(res.body.user.id);
 
       await waitForMessageCount(inviteeEmail, 1);
       expect(await subjectsOfEmailsTo(inviteeEmail)).toEqual([subject]);
       const stored = await app
         .get<UserRepositoryPort>(USER_REPOSITORY)
-        .findById(integration.tenantId, res.body.id);
+        .findById(integration.tenantId, res.body.user.id);
       expect(stored?.language).toBe(language);
       // The users list says it, so an admin can see who is written to in what.
       const list = await adminAgent
@@ -132,7 +132,7 @@ describe('Invite -> accept-invite (integration)', () => {
         .query({ pageSize: 100 })
         .expect(200);
       expect(
-        list.body.items.find((u: { id: string }) => u.id === res.body.id)
+        list.body.items.find((u: { id: string }) => u.id === res.body.user.id)
           .language,
       ).toBe(language);
     },
@@ -156,7 +156,7 @@ describe('Invite -> accept-invite (integration)', () => {
       .post('/users/invite')
       .send({ email: inviteeEmail, displayName: 'Primo', role: 'editor' })
       .expect(201);
-    integration.trackUser(first.body.id);
+    integration.trackUser(first.body.user.id);
 
     await adminAgent
       .post('/users/invite')
@@ -178,7 +178,7 @@ describe('Invite -> accept-invite (integration)', () => {
         role: 'editor',
       })
       .expect(201);
-    integration.trackUser(inviteRes.body.id);
+    integration.trackUser(inviteRes.body.user.id);
     const inviteToken = await fetchInviteToken(inviteeEmail);
 
     await request(app.getHttpServer())
@@ -227,11 +227,11 @@ describe('Invite -> accept-invite (integration)', () => {
         role: 'editor',
       })
       .expect(201);
-    integration.trackUser(inviteRes.body.id);
+    integration.trackUser(inviteRes.body.user.id);
     await fetchInviteToken(inviteeEmail);
 
     await adminAgent
-      .post(`/users/${inviteRes.body.id}/resend-invite`)
+      .post(`/users/${inviteRes.body.user.id}/resend-invite`)
       .expect(200);
     await waitForMessageCount(inviteeEmail, 2);
 
@@ -252,7 +252,7 @@ describe('Invite -> accept-invite (integration)', () => {
         role: 'editor',
       })
       .expect(201);
-    integration.trackUser(inviteRes.body.id);
+    integration.trackUser(inviteRes.body.user.id);
     const inviteToken = await fetchInviteToken(inviteeEmail);
     await request(app.getHttpServer())
       .post('/auth/accept-invite')
@@ -260,7 +260,7 @@ describe('Invite -> accept-invite (integration)', () => {
       .expect(200);
 
     await adminAgent
-      .post(`/users/${inviteRes.body.id}/resend-invite`)
+      .post(`/users/${inviteRes.body.user.id}/resend-invite`)
       .expect(409);
   });
 
@@ -270,7 +270,7 @@ describe('Invite -> accept-invite (integration)', () => {
       .post('/users/invite')
       .send({ email: inviteeEmail, displayName: 'Prima Volta', role: 'editor' })
       .expect(201);
-    integration.trackUser(inviteRes.body.id);
+    integration.trackUser(inviteRes.body.user.id);
 
     await adminAgent
       .post('/users/invite')
@@ -289,8 +289,8 @@ describe('Invite -> accept-invite (integration)', () => {
         .post('/users/invite')
         .send({ email, displayName, role: 'editor' })
         .expect(201);
-      integration.trackUser(res.body.id);
-      return { email, id: res.body.id as string };
+      integration.trackUser(res.body.user.id);
+      return { email, id: res.body.user.id as string };
     }
 
     it('cancels one nobody has accepted: the person is gone and the link no longer works', async () => {
@@ -319,7 +319,7 @@ describe('Invite -> accept-invite (integration)', () => {
           role: 'editor',
         })
         .expect(201)
-        .then((res) => integration.trackUser(res.body.id));
+        .then((res) => integration.trackUser(res.body.user.id));
     });
 
     it('409s cancelling one that was accepted — that person is a user now', async () => {

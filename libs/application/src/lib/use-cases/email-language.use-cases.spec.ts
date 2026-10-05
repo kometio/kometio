@@ -229,7 +229,10 @@ describe('inviting someone in a language', () => {
     const deps = await world({ language: null, siteLocale: 'it' });
     deps.emailPort.sentEmails.length = 0;
 
-    const invited = await inviteUser(deps, { ...invitation, language: 'en' });
+    const { user: invited } = await inviteUser(deps, {
+      ...invitation,
+      language: 'en',
+    });
 
     expect(only(deps).subject).toBe(SUBJECTS.invite.en);
     // Theirs from now on: what they are sent later is in it too.
@@ -243,7 +246,7 @@ describe('inviting someone in a language', () => {
     const deps = await world({ language: null, siteLocale: 'en' });
     deps.emailPort.sentEmails.length = 0;
 
-    const invited = await inviteUser(deps, invitation);
+    const { user: invited } = await inviteUser(deps, invitation);
 
     expect(only(deps).subject).toBe(SUBJECTS.invite.en);
     // Not chosen, so not stored: if the site changes language, so do they.

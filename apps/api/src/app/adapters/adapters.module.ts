@@ -1,4 +1,4 @@
-import { Module, type FactoryProvider } from '@nestjs/common';
+import { Logger, Module, type FactoryProvider } from '@nestjs/common';
 import { DrizzleDashboardStatsRepository } from '@kometio/postgres-dashboard-stats-repository';
 import {
   DrizzleDeploymentBootstrapAdapter,
@@ -42,7 +42,6 @@ import { DrizzleUserRepository } from '@kometio/postgres-user-repository';
 import type { PageGeneratorConnection } from '@kometio/ports';
 import { PreviewTokenAdapter } from '@kometio/preview-token-adapter';
 import { SessionAuthAdapter } from '@kometio/session-auth-adapter';
-import { SmtpEmailAdapter } from '@kometio/smtp-email-adapter';
 import { TurnstileCaptchaAdapter } from '@kometio/turnstile-captcha';
 import { VerificationTokenAdapter } from '@kometio/verification-token-adapter';
 import { WxrExportReader } from '@kometio/wordpress-wxr';
@@ -54,6 +53,7 @@ import {
   DEPLOYMENT_TENANT_RESOLVER,
   type DeploymentTenantResolver,
 } from '../deployment-tenant.resolver';
+import { createEmailPort } from './email.factory';
 import { createNewsletterPort } from './newsletter.factory';
 import { createPageGenerator } from './page-generator.factory';
 import { coreContentSanitizer } from '../rich-text/sanitize-page-content';
@@ -197,17 +197,11 @@ const PROVIDERS = [
 
   // SMTP_USER/SMTP_PASSWORD are optional — Mailpit (local dev) needs
   // neither, see docs/development.md.
-  configured(
-    port.EMAIL_PORT,
-    (env) =>
-      new SmtpEmailAdapter({
-        host: env.SMTP_HOST,
-        port: env.SMTP_PORT,
-        fromAddress: env.SMTP_FROM_ADDRESS,
-        user: env.SMTP_USER || undefined,
-        password: env.SMTP_PASSWORD || undefined,
-      }),
-  ),
+  // The mail server when SMTP_HOST is set, the log when it is not (docs/adr/0103).
+  configured(port.EMAIL_PORT, (env) => {
+    const log = new Logger('Email');
+    return createEmailPort(env, (entry) => log.warn(entry));
+  }),
   configured(
     port.CAPTCHA_PORT,
     (env) =>

@@ -9,6 +9,7 @@ import {
   VERIFICATION_TOKEN_PORT,
 } from '../adapters/port.tokens';
 import { AuthModule } from '../auth/auth.module';
+import { EmailsModule } from '../emails/emails.module';
 import { ApiEnvModule } from '../api-env.module';
 import { moduleDeps } from '../module-deps';
 import { DeploymentSiteModule } from '../sites/deployment-site.module';
@@ -17,7 +18,13 @@ import type { UsersDeps } from './users.deps';
 import { USERS_DEPS } from './users.tokens';
 
 @Module({
-  imports: [AdaptersModule, AuthModule, ApiEnvModule, DeploymentSiteModule],
+  imports: [
+    AdaptersModule,
+    AuthModule,
+    ApiEnvModule,
+    DeploymentSiteModule,
+    EmailsModule,
+  ],
   controllers: [UsersController],
   providers: [
     moduleDeps<UsersDeps>(USERS_DEPS, {

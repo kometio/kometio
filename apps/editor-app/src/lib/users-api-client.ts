@@ -1,13 +1,23 @@
 import { type InterfaceLanguage, type UserRole } from '@kometio/shared-types';
 import {
+  type InvitationRecord,
+  type InvitationResendRecord,
   type PaginatedUsers,
   type UserRecord,
+  invitationRecordSchema,
+  invitationResendRecordSchema,
   paginatedUsersSchema,
   userRecordSchema,
 } from '@kometio/api-contracts';
 import { request, send } from './http-client';
 
-export type { PaginatedUsers, UserRecord, UserRole };
+export type {
+  InvitationRecord,
+  InvitationResendRecord,
+  PaginatedUsers,
+  UserRecord,
+  UserRole,
+};
 
 export async function listUsers(
   page: number,
@@ -30,8 +40,11 @@ export interface InviteUserInput {
   language: InterfaceLanguage;
 }
 
-export async function inviteUser(input: InviteUserInput): Promise<UserRecord> {
-  return userRecordSchema.parse(
+/** The person is invited whether or not the email went out: `emailSent` says which. */
+export async function inviteUser(
+  input: InviteUserInput,
+): Promise<InvitationRecord> {
+  return invitationRecordSchema.parse(
     await request('/users/invite', {
       method: 'POST',
       body: JSON.stringify(input),
@@ -64,8 +77,12 @@ export async function setUserActive(
 }
 
 /** Sends the invitation again, with a fresh link — the old one may have expired. */
-export function resendInvite(id: string): Promise<void> {
-  return send(`/users/${id}/resend-invite`, { method: 'POST' });
+export async function resendInvite(
+  id: string,
+): Promise<InvitationResendRecord> {
+  return invitationResendRecordSchema.parse(
+    await request(`/users/${id}/resend-invite`, { method: 'POST' }),
+  );
 }
 
 /** Withdraws an invitation that has not been accepted: the link stops working and the person is removed. */

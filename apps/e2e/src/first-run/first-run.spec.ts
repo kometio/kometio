@@ -16,6 +16,12 @@ import { environment } from '../support/environment';
  * site that was created without a domain answered "not found". Each was found
  * by walking it by hand.
  *
+ * It also invites a person and asks for a password reset, with no mail
+ * server: the invitation has to be made, the editor has to say that no email
+ * went out, and the link of each has to be in the installation's log
+ * (docker/kometio/check.sh reads them there, for the address in
+ * E2E_INVITEE_EMAIL and the administrator's own).
+ *
  * It spends the installation: the setup token is single-use and the account is
  * made here, so it runs once, on its own installation, and never retries.
  */
@@ -74,6 +80,45 @@ test('a person who starts the image reaches a working site, and can sign in agai
   await logIn.click();
   await expect(login).toHaveURL(/\/pages/);
 
+  // Invite somebody, on an installation with no mail server. It used to answer
+  // 500 after the person was already made; now the invitation is made, and the
+  // editor says that nothing was mailed instead of "they will get an email".
+  const invitee = requireEnv('E2E_INVITEE_EMAIL');
+  await login.goto(`${environment.editorUrl}users`);
+  await expect(
+    login.getByRole('heading', { name: 'Users', exact: true }),
+  ).toBeVisible();
+  await expect(
+    login.getByText('This installation cannot send email'),
+  ).toBeVisible();
+  await login.getByRole('button', { name: 'Invite user' }).click();
+  const dialog = login.getByRole('dialog');
+  await expect(
+    dialog.getByText('This installation cannot send email'),
+  ).toBeVisible();
+  await dialog.getByLabel('Email').fill(invitee);
+  await dialog.getByLabel('Name').fill('New Colleague');
+  await dialog.getByRole('button', { name: 'Invite', exact: true }).click();
+  await expect(
+    login.getByText(`${invitee} is invited, but no email was sent`),
+  ).toBeVisible();
+
+  // Forgot the password, before there is a session: told that no email will
+  // come before asking, and after asking, the same whatever the address.
+  const third = await browser.newContext();
+  const forgot = await third.newPage();
+  await forgot.goto(`${environment.editorUrl}login`);
+  await forgot.getByText('Forgot your password?').click();
+  await expect(
+    forgot.getByText('This installation cannot send email'),
+  ).toBeVisible();
+  await forgot.getByLabel('Email').fill(environment.adminEmail);
+  const sendLink = forgot.getByRole('button', { name: 'Send reset link' });
+  await expect(sendLink).toBeEnabled({ timeout: 30_000 });
+  await sendLink.click();
+  await expect(forgot.getByText(/it is in the server's log/)).toBeVisible();
+
   await first.close();
   await second.close();
+  await third.close();
 });

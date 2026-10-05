@@ -20,8 +20,12 @@ import {
 } from '@kometio/application';
 import type { User } from '@kometio/domain-core';
 import {
+  type InvitationRecord,
+  type InvitationResendRecord,
   type PaginatedUsers,
   type UserRecord,
+  invitationRecordSchema,
+  invitationResendRecordSchema,
   paginatedUsersSchema,
   userRecordSchema,
 } from '@kometio/api-contracts';
@@ -45,6 +49,7 @@ import { USERS_DEPS } from './users.tokens';
 import { TenantId, UserId } from '../auth/session-identity.decorator';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 
 // Every endpoint here is admin-only (Fase 5c: "Admin: tutto, incluse
 // gestione utenti") — gated at the controller level, not per-method,
@@ -57,6 +62,7 @@ export class UsersController {
   constructor(
     @Inject(USERS_DEPS) private readonly deps: UsersDeps,
     @Inject(API_ENV) private readonly env: ApiEnv,
+    private readonly undeliveredEmails: UndeliveredEmailLog,
   ) {}
 
   @Get()
@@ -79,8 +85,8 @@ export class UsersController {
   async invite(
     @TenantId() tenantId: string,
     @Body(new ZodValidationPipe(inviteUserBodySchema)) body: InviteUserBody,
-  ) {
-    const user = await inviteUser(this.deps, {
+  ): Promise<InvitationRecord> {
+    const { user, undelivered } = await inviteUser(this.deps, {
       tenantId,
       email: body.email,
       displayName: body.displayName,
@@ -88,7 +94,14 @@ export class UsersController {
       language: body.language,
       inviteUrlBase: this.env.EDITOR_APP_URL,
     });
-    return this.toDto(user);
+    // The person is made and the link works: a mail server that refused the
+    // message is told to the administrator who is looking (`emailSent`), and
+    // to the log for the reason.
+    this.undeliveredEmails.report('Invitation', undelivered);
+    return invitationRecordSchema.parse({
+      user: this.toDto(user),
+      emailSent: undelivered.length === 0,
+    });
   }
 
   /**
@@ -101,13 +114,19 @@ export class UsersController {
    */
   @Post(':id/resend-invite')
   @HttpCode(200)
-  async resend(@TenantId() tenantId: string, @UuidParam('id') id: string) {
-    await resendInvite(this.deps, {
+  async resend(
+    @TenantId() tenantId: string,
+    @UuidParam('id') id: string,
+  ): Promise<InvitationResendRecord> {
+    const { undelivered } = await resendInvite(this.deps, {
       tenantId,
       userId: id,
       inviteUrlBase: this.env.EDITOR_APP_URL,
     });
-    return { success: true };
+    this.undeliveredEmails.report('Invitation (sent again)', undelivered);
+    return invitationResendRecordSchema.parse({
+      emailSent: undelivered.length === 0,
+    });
   }
 
   /**
