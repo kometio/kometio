@@ -40,6 +40,24 @@ export default defineConfig({
     // this exported handler with its own static serving via `sirv` instead.
     mode: 'middleware',
   }),
+  security: {
+    // Behind a proxy that ends TLS (Caddy, in the compose stack and in the single
+    // image on a server: docs/adr/0104) this server only ever sees plain HTTP, so
+    // it built every request's address as http://, and Astro's own cross-site
+    // check (a POST's `Origin` against that address) refused every form and
+    // newsletter signup with a 403: the browser's Origin is https://. The proxy
+    // says which it was in X-Forwarded-Proto, and Astro believes that header only
+    // for the protocols listed here: https, so a request that claims plain HTTP
+    // changes nothing and the deployments with no proxy are as they were.
+    //
+    // No hostnames, on purpose: one built image serves whichever domains its env
+    // points at, so there is no list to write here. Astro then also reads
+    // X-Forwarded-Host, which a visitor reaching this server directly could send;
+    // all it would pick is which domain's page this single-site deployment looks
+    // up, and the compose stack and the image publish this port to nobody but the
+    // proxy.
+    allowedDomains: [{ protocol: 'https' }],
+  },
   // Available to any theme (docs/adr/0021), not used by core's own blocks:
   // ADR-0019's "no framework" precedent stays the default for blocks we
   // ship, but nothing stops a theme author from dropping a .tsx component

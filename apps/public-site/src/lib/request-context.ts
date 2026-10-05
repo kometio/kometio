@@ -39,9 +39,10 @@ export function currentVisitorIp(): string | null {
  * to begin with — so the first entry is whatever the client typed and the
  * last is the one the proxy closest to us observed. Astro's own
  * `clientAddress` takes the first, which is the client-controlled end, and
- * it only consults the header at all when `security.allowedDomains` is
- * configured — a build-time list this project deliberately does not have,
- * because one built image serves whichever domains its env points at.
+ * it consults the header only when `security.allowedDomains` is configured
+ * (astro.config.mjs lists https there, for the protocol and nothing else, so
+ * it does now): which is why this reads the header itself and falls back to
+ * `clientAddress` only when there is none to read.
  *
  * Trusting the header is sound only because of how this is deployed:
  * `docker-compose.prod.yml` publishes ports for Caddy alone, so nothing
