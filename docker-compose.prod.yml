@@ -256,7 +256,7 @@ services:
       - '443:443'
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
-      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env, Let's Encrypt needs a contact address}
+      KOMETIO_ACME_EMAIL_LINE: email ${ACME_EMAIL:?Set ACME_EMAIL in .env, Let's Encrypt needs a contact address}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

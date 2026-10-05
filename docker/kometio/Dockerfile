@@ -25,7 +25,14 @@ FROM ${EDITOR_IMAGE} AS editor
 FROM node:24-alpine AS runtime
 # postgresql16-contrib: the same extension set the official postgres:16 image
 # carries, so a database restored from a stack that ran on that one opens here.
-RUN apk add --no-cache postgresql16 postgresql16-contrib nginx tini
+#
+# caddy is the proxy of a server (DOMAIN set; docs/adr/0104): ports 80 and 443
+# and the certificates. A trial does not start it. It runs as its own user, which
+# may bind a port below 1024 only if the binary is given that one capability
+# (setcap's package is only needed for this line, and goes again).
+RUN apk add --no-cache postgresql16 postgresql16-contrib nginx tini caddy libcap-utils \
+ && setcap cap_net_bind_service=+ep /usr/sbin/caddy \
+ && apk del libcap-utils
 
 # One user per half, so that the public site (which can run code from a theme)
 # cannot read the API's files, and neither of them the database's.
@@ -43,11 +50,15 @@ COPY --from=editor /docker-entrypoint.d/10-kometio-runtime-config.envsh /opt/kom
 
 # The migrations are not copied here: they are already inside the API
 # artefact, so they are always those of the version of the code that starts.
-COPY docker/kometio/launcher.mjs docker/kometio/migrate.mjs docker/kometio/nginx.conf /opt/kometio/
+COPY docker/kometio/launcher.mjs docker/kometio/server-mode.mjs docker/kometio/migrate.mjs docker/kometio/nginx.conf /opt/kometio/
+# The compose stack's own Caddyfile, so that the security headers and the
+# compression are defined once; the launcher tells it where each half is.
+COPY Caddyfile /opt/kometio/Caddyfile
 
 VOLUME /data
-# 3000 the API, 4322 the public site, 80 the editor (nginx).
-EXPOSE 3000 4322 80
+# A trial: 3000 the API, 4322 the public site, 80 the editor (nginx). A server
+# (DOMAIN set): 80 and 443 only, which is Caddy; the three above are then inside.
+EXPOSE 3000 4322 80 443
 
 # `127.0.0.1`, not `localhost`: the latter resolves ::1 first here, and the
 # API's own server only answers on IPv4.

@@ -6,10 +6,12 @@ single volume. In about two minutes you have a site you can edit in the
 browser.
 
 Use it to try Kometio, to build a theme against it, or to see it before you
-propose it to a client. It is a trial setup, not a production deployment:
+propose it to a client. On your own machine it is a trial setup;
+[On a server, with your own domain](#on-a-server-with-your-own-domain) is the
+same image with HTTPS, and
 [What this image does not do yet](#what-this-image-does-not-do-yet) says where
-the line is, and [docs/self-hosting.md](../../docs/self-hosting.md) is the
-guide for a real server.
+the line is. [docs/self-hosting.md](../../docs/self-hosting.md) is the guide
+for the version with a database of its own.
 
 **You need:** Docker (Docker Desktop, or Docker Engine), and ports `4200`,
 `3000` and `4322` free on your machine. If they are not,
@@ -117,6 +119,46 @@ docker run -d --name kometio --restart unless-stopped \
 
 Changing them later is a restart of the container, not a new image.
 
+## On a server, with your own domain
+
+Give the image a name and it serves the site over HTTPS, with certificates it
+gets and renews by itself (Let's Encrypt, through Caddy, which is in the image):
+
+```sh
+docker run -d --name kometio --restart unless-stopped \
+  -p 80:80 -p 443:443 -p 443:443/udp \
+  -e DOMAIN=example.com \
+  -e ACME_EMAIL=you@example.com \
+  -v kometio-data:/data \
+  ghcr.io/kometio/kometio:main
+```
+
+Before you run it, the DNS of the name has to point at the server — the
+certificates are issued only for names that do. Two records are enough, an `A`
+for the name itself and an `A` for `*` (a wildcard), both with the server's
+address; or four, one each for `example.com`, `www`, `admin` and `api`. Your
+site is then at `https://example.com`, the editor at `https://admin.example.com`
+and the API at `https://api.example.com`. Everything else is as above: read the
+setup token from `docker logs kometio`, open the editor, create your account.
+
+- **`DOMAIN`** is the name alone, like `example.com` — no `https://`, no port, no
+  path. Anything else is refused at start with a message that says what to write.
+- **`ACME_EMAIL`** is optional: the address Let's Encrypt writes to when a
+  certificate is about to expire and could not be renewed.
+- **Ports 80 and 443** are what the server publishes, and the only ones. The
+  three halves of Kometio are inside the container, and nothing reaches them but
+  the proxy. Port 80 is needed too: it answers Let's Encrypt's check, and sends a
+  browser that comes by plain HTTP to HTTPS. (`-p 443:443/udp` is for HTTP/3;
+  leave it out if you like.)
+- **The certificates live in the volume**, with everything else, so a restart does
+  not ask Let's Encrypt again: it limits how often it will issue for one name.
+- A server runs as `production`: the login cookie is `Secure`, and the container
+  refuses to start on example secrets or on Cloudflare's test captcha keys. Behind
+  a proxy of your own instead, leave `DOMAIN` out and set the three addresses as
+  in [Use other ports](#use-other-ports).
+- If a browser warns about the certificate, the name's DNS does not point at this
+  machine yet. `docker logs kometio` shows Caddy's attempts, and it keeps trying.
+
 ## What this image does not do yet
 
 Said plainly, so that you do not find out by failing:
@@ -134,9 +176,9 @@ Said plainly, so that you do not find out by failing:
   to be the last word on abuse. To use Cloudflare Turnstile instead, give both of
   your keys, `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (`-e` on the
   `docker run`; both, or neither).
-- **It has no HTTPS and no domain of its own.** It is reached at `localhost`.
-  A real domain with a certificate is the production setup in
-  [docs/self-hosting.md](../../docs/self-hosting.md).
+- **Without `DOMAIN` it has no HTTPS.** It is reached at `localhost`, over plain
+  HTTP: right for a trial, not for a server — see
+  [On a server](#on-a-server-with-your-own-domain).
 - **You cannot upload a theme from the editor.** That needs a separate
   builder, which is not in this image. The built-in theme is available.
 - **There is no export or import of a site yet.** What there is, for now, is a
@@ -183,11 +225,13 @@ its two siblings) instead.
 ## How it is put together
 
 `launcher.mjs` starts, in order, Postgres, the migrations, the API, the public
-site and the editor's web server, and stops them in reverse. If any one of
+site, the editor's web server and, when `DOMAIN` is set, Caddy, and stops them in
+reverse. If any one of
 them dies it stops the rest and the container exits, so that Docker's restart
 policy brings the whole thing back clean, instead of leaving half of it
 running. Everything that has to survive lives under `/data`: the database, the
-uploaded files, and the keys the launcher generated.
+uploaded files, the keys the launcher generated and, on a server, Caddy's
+certificates.
 
 A database inside the container is right for a trial and for a small site you
 back up. For anything you cannot afford to lose, use the compose stack in

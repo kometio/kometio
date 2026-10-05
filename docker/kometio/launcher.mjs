@@ -1,7 +1,11 @@
 // Starts everything the single Kometio image holds, in order, and stops it
 // all, in reverse, when asked to or when any part dies.
 //
-//   Postgres  →  migrations  →  API  →  public site  →  editor (nginx)
+//   Postgres  →  migrations  →  API  →  public site  →  editor (nginx)  →  Caddy
+//
+// Caddy is there only on a server, when DOMAIN is set (docs/adr/0104): it takes
+// ports 80 and 443, gets the certificates, and sends each name to its half.
+// Without DOMAIN the halves answer on their own ports, as they always did.
 //
 // Nothing here is product logic: it is the part of the compose stack that a
 // container cannot do for you. If one process exits, the others are stopped
@@ -13,6 +17,7 @@
 //   uploads/    the media library
 //   secrets/    the key that seals each site's AI provider key (the API's own)
 //   state/      what this launcher generated (root only)
+//   caddy/      the certificates and the account with the certificate authority
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import {
@@ -26,6 +31,7 @@ import {
 import { get } from 'node:http';
 import { createInterface } from 'node:readline';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { parseDomain, serverAddresses } from './server-mode.mjs';
 
 const env = process.env;
 const DATA = env.KOMETIO_DATA_DIR ?? '/data';
@@ -37,17 +43,38 @@ const PG_DATA = `${DATA}/postgres`;
 // contract as the compose stack: docs/self-hosting.md).
 const OWN_DATABASE = !env.POSTGRES_HOST;
 
+// A server has a name (DOMAIN), and with it HTTPS: the site at the name, the
+// editor at admin. and the API at api., as in the compose stack. The three
+// addresses below follow from it; any of them can still be set by hand, as
+// behind a proxy of one's own, and wins.
+let domain = null;
+try {
+  domain = env.DOMAIN?.trim() ? parseDomain(env.DOMAIN) : null;
+} catch (error) {
+  console.error(`[kometio] ${error.message}`);
+  process.exit(1);
+}
+const served = domain ? serverAddresses(domain) : null;
+
 // Where the browser reaches each half. Defaults suit `docker run -p
 // 3000:3000 -p 4322:4322 -p 4200:80` on one machine; behind a proxy, set
 // the three the way docs/self-hosting.md explains.
-const EDITOR_URL = env.EDITOR_APP_URL ?? 'http://localhost:4200';
-const API_PUBLIC_URL = env.API_PUBLIC_URL ?? 'http://localhost:3000/api';
-const SITE_URL = env.PUBLIC_SITE_URL ?? 'http://localhost:4322';
+const EDITOR_URL =
+  env.EDITOR_APP_URL ?? served?.editorUrl ?? 'http://localhost:4200';
+const API_PUBLIC_URL =
+  env.API_PUBLIC_URL ?? served?.apiPublicUrl ?? 'http://localhost:3000/api';
+const SITE_URL =
+  env.PUBLIC_SITE_URL ?? served?.siteUrl ?? 'http://localhost:4322';
 
 const API_PORT = 3000;
 const SITE_PORT = 4322;
+// The editor answers on 80 where nothing else does. On a server Caddy has 80,
+// and the editor moves to a port only this container can reach.
+const EDITOR_PORT = domain ? 8080 : 80;
 
-const NODE_ENV = env.NODE_ENV ?? 'development';
+// A server is production: cookies are `Secure`, and the API refuses the example
+// secrets and the test captcha keys, which is what it is for. A trial is not.
+const NODE_ENV = env.NODE_ENV ?? (domain ? 'production' : 'development');
 
 /** @type {Array<{ name: string, child: import('node:child_process').ChildProcess, stop: NodeJS.Signals }>} */
 const running = [];
@@ -296,6 +323,10 @@ function apiEnvironment(s) {
   return {
     NODE_ENV,
     PORT: String(API_PORT),
+    // Caddy is one hop in front of the API on a server, and every limit per
+    // visitor (five logins a minute, the forms) keys on who the visitor is: with
+    // none, every visitor would be Caddy, and one could lock everybody out.
+    ...(domain ? { TRUSTED_PROXY_HOPS: '1' } : {}),
     PREVIEW_TOKEN_SECRET: s.previewTokenSecret,
     PUBLIC_API_SERVICE_TOKEN: s.publicApiServiceToken,
     EDITOR_APP_URL: EDITOR_URL,
@@ -363,8 +394,55 @@ function configureEditor() {
     if (!(name in values)) throw new Error(`the editor template needs ${name}`);
     return values[name];
   });
-  writeFileSync('/etc/nginx/http.d/default.conf', rendered);
+  // The template is the editor image's own and listens on 80, which is right for
+  // a trial. On a server the editor listens on a loopback port instead, for
+  // Caddy; the line is changed here rather than the template forked, and a
+  // template that no longer has it is an error, not a silent 80.
+  let listening = rendered;
+  if (EDITOR_PORT !== 80) {
+    listening = rendered.replace(
+      /^(\s*)listen 80;/m,
+      `$1listen 127.0.0.1:${EDITOR_PORT};`,
+    );
+    if (listening === rendered) {
+      throw new Error(
+        "the editor's template no longer has a `listen 80;` to move",
+      );
+    }
+  }
+  writeFileSync('/etc/nginx/http.d/default.conf', listening);
   mkdirSync('/run/nginx', { recursive: true });
+}
+
+/**
+ * The proxy of a server: ports 80 and 443, a certificate for each name, and
+ * each name sent to its half. It runs the same Caddyfile as the compose stack,
+ * told by its environment where the three halves are (and with its admin API
+ * off, which a theme's code, running in this container, must not reach).
+ */
+async function startCaddy() {
+  ensureDir(`${DATA}/caddy`, 'caddy', 0o700);
+  start('caddy', 'caddy', ['run', '--config', '/opt/kometio/Caddyfile'], {
+    user: 'caddy',
+    childEnv: {
+      PATH: env.PATH,
+      HOME: '/tmp',
+      // Where Caddy keeps its certificates and its account: the volume, so that
+      // a restart does not ask the certificate authority again (it limits how
+      // often it will issue for a name).
+      XDG_DATA_HOME: `${DATA}/caddy`,
+      XDG_CONFIG_HOME: '/tmp/caddy',
+      DOMAIN: domain,
+      SITE_UPSTREAM: `127.0.0.1:${SITE_PORT}`,
+      EDITOR_UPSTREAM: `127.0.0.1:${EDITOR_PORT}`,
+      API_UPSTREAM: `127.0.0.1:${API_PORT}`,
+      KOMETIO_CADDY_OPTIONS: 'admin off\nskip_install_trust',
+      KOMETIO_ACME_EMAIL_LINE: env.ACME_EMAIL ? `email ${env.ACME_EMAIL}` : '',
+    },
+  });
+  // Up when it answers on 80, which is before it has every certificate: the
+  // first visit to a name waits for its own if it has to.
+  await waitFor('Caddy', () => answers('http://127.0.0.1:80/'), 30);
 }
 
 function announce() {
@@ -372,6 +450,11 @@ function announce() {
   console.log(`\n${line}\n  Kometio is ready\n`);
   console.log(`  Editor      ${EDITOR_URL}`);
   console.log(`  Your site   ${SITE_URL}`);
+  if (domain) {
+    console.log(
+      `\n  HTTPS: certificates are being obtained for ${domain}, www.${domain},\n  admin.${domain} and api.${domain}. If a browser warns, the DNS of those\n  names does not point at this machine yet; docker logs shows the attempts.`,
+    );
+  }
   if (setupToken) {
     console.log(
       '\n  First time here? Open the editor and enter this setup token:',
@@ -385,9 +468,9 @@ async function main() {
   log(
     `starting (${NODE_ENV}${OWN_DATABASE ? ', with its own database' : `, database at ${env.POSTGRES_HOST}`})`,
   );
-  if (env.DOMAIN) {
+  if (domain) {
     log(
-      'DOMAIN is not used by this version. Behind your own proxy, set EDITOR_APP_URL, API_PUBLIC_URL and PUBLIC_SITE_URL instead.',
+      `serving ${domain} over HTTPS (the editor at admin.${domain}, the API at api.${domain}): its DNS has to point at this machine for the certificates to be issued`,
     );
   }
 
@@ -457,7 +540,15 @@ async function main() {
 
   configureEditor();
   start('editor', 'nginx', ['-c', '/opt/kometio/nginx.conf']);
-  await waitFor('the editor', () => answers('http://127.0.0.1:80/'), 30);
+  await waitFor(
+    'the editor',
+    () => answers(`http://127.0.0.1:${EDITOR_PORT}/`),
+    30,
+  );
+
+  if (domain) {
+    await startCaddy();
+  }
 
   announce();
 }

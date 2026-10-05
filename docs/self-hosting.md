@@ -4,6 +4,22 @@ This is the production deployment guide (docs/adr/0042). For local
 development instead, see [docs/development.md](development.md) — this
 doc assumes a real server with a real domain, not a laptop.
 
+**The short way: one container.** The single image
+(`ghcr.io/kometio/kometio`, [its README](../docker/kometio/README.md)) takes the
+same domain and does the rest — HTTPS with certificates of its own, the editor at
+`admin.<domain>`, the API at `api.<domain>` — with a database inside it, kept in
+one volume:
+
+```sh
+docker run -d --name kometio --restart unless-stopped \
+  -p 80:80 -p 443:443 -e DOMAIN=example.com -e ACME_EMAIL=you@example.com \
+  -v kometio-data:/data ghcr.io/kometio/kometio:main
+```
+
+It is the right size for a small site you back up. This guide is the other way:
+a Postgres in a container of its own, every part separate, and your own
+decisions about each; the DNS and the addresses below are the same.
+
 ## Prerequisites
 
 - A server (VPS or otherwise) with Docker and the Docker Compose plugin

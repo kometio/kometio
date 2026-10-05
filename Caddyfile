@@ -8,8 +8,23 @@
 # `caddy` service from docker-compose.prod.yml and point their own proxy
 # at the api/public-site/editor-app containers' internal ports instead
 # (3000/4321/80).
+#
+# Two directives, each in an environment variable of its own and empty when the
+# variable is not set, so that one file serves two deployments:
+#   KOMETIO_ACME_EMAIL_LINE  "email you@example.com": Let's Encrypt's contact
+#       address. The compose stack sets it (docker-compose.prod.yml requires
+#       ACME_EMAIL); the single image does when ACME_EMAIL is given, and goes
+#       without it otherwise, which Let's Encrypt allows.
+#   KOMETIO_CADDY_OPTIONS  "admin off" and "skip_install_trust", on two lines:
+#       the single image sets them. Caddy's admin API listens on localhost and,
+#       in the compose stack, nothing else shares that container; in the image
+#       the public site runs the code of a theme in the same one, and must not be
+#       able to reconfigure the proxy. And a server has no business putting a
+#       certificate authority into its own trust store, which Caddy tries to do
+#       for a local one.
 {
-	email {$ACME_EMAIL}
+	{$KOMETIO_CADDY_OPTIONS:}
+	{$KOMETIO_ACME_EMAIL_LINE:}
 }
 
 # Compression is the proxy's job, not the apps': neither the Astro node
@@ -39,13 +54,13 @@
 {$DOMAIN}, www.{$DOMAIN} {
 	import security_headers
 	import compressed
-	reverse_proxy public-site:4321
+	reverse_proxy {$SITE_UPSTREAM:public-site:4321}
 }
 
 admin.{$DOMAIN} {
 	import security_headers
 	import compressed
-	reverse_proxy editor-app:80
+	reverse_proxy {$EDITOR_UPSTREAM:editor-app:80}
 }
 
 api.{$DOMAIN} {
@@ -54,5 +69,5 @@ api.{$DOMAIN} {
 	# as they are written: `encode` leaves text/event-stream alone (checked
 	# on 2026-09-29 against caddy:2-alpine, audit B15).
 	import compressed
-	reverse_proxy api:3000
+	reverse_proxy {$API_UPSTREAM:api:3000}
 }
