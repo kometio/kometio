@@ -1,6 +1,6 @@
 // Every component under test may call useTranslation() — initialize the
 // real i18next instance once here instead of in every spec file.
-import { afterEach, beforeEach } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 import i18next from './i18n';
 
 // i18next is a global singleton: a test that switches language (see
@@ -13,6 +13,12 @@ import i18next from './i18n';
 // which `afterEach` alone never reaches.
 beforeEach(() => {
   void i18next.changeLanguage('it');
+  // The forms draw Cloudflare's widget when a site has its key, and the one
+  // built into Kometio when it has none (docs/adr/0103). The fake Turnstile
+  // below stands in for the first, so every test gets a key rather than
+  // depending on what the developer's .env holds; a test of the other one
+  // takes it away.
+  vi.stubEnv('VITE_TURNSTILE_SITE_KEY', 'a-site-key-for-tests');
 });
 afterEach(() => {
   void i18next.changeLanguage('it');

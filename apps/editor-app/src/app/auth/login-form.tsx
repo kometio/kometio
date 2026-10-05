@@ -4,8 +4,7 @@ import { Button } from '../../components/ui/button';
 import { AuthPage } from './auth-page';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { turnstileSiteKey } from '../../lib/turnstile-site-key';
-import { TurnstileWidget } from './turnstile-widget';
+import { CaptchaWidget } from './captcha-widget';
 import { InlineError } from '../../components/ui/inline-error';
 
 export interface LoginFormProps {
@@ -24,10 +23,10 @@ export function LoginForm({ onLogin, onForgotPassword }: LoginFormProps) {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  // Incremented after a rejected attempt to force a fresh Turnstile
-  // challenge — the widget still shows "verified" for the OLD token even
-  // though the server has already refused it (single-use), see
-  // TurnstileWidget's own doc comment.
+  // Incremented after a rejected attempt to force a fresh challenge — the
+  // widget still shows "verified" for the OLD token even though the server
+  // has already refused it (single-use), see TurnstileWidget's own doc
+  // comment.
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
 
   async function handleSubmit(event: FormEvent) {
@@ -76,8 +75,7 @@ export function LoginForm({ onLogin, onForgotPassword }: LoginFormProps) {
             required
           />
         </div>
-        <TurnstileWidget
-          siteKey={turnstileSiteKey()}
+        <CaptchaWidget
           onToken={setCaptchaToken}
           resetSignal={captchaResetSignal}
         />

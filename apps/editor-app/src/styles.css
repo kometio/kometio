@@ -226,3 +226,28 @@
     @apply font-sans;
   }
 }
+
+/*
+ * The captcha built into Kometio (docs/adr/0103), in the editor's colours. Its
+ * own palette is written with light-dark(), which follows the system's
+ * preference and not this editor's light/dark switch, so a person who chose
+ * dark on a light system would have had a light box in a dark card. Each of
+ * its colours is one of ours instead, and it fills the width of the form like
+ * the fields do.
+ */
+altcha-widget {
+  --altcha-color-base: var(--card);
+  --altcha-color-base-content: var(--card-foreground);
+  --altcha-color-neutral: var(--border);
+  --altcha-color-neutral-content: var(--muted-foreground);
+  --altcha-color-primary: var(--primary);
+  --altcha-color-primary-content: var(--primary-foreground);
+  --altcha-color-success: var(--success);
+  --altcha-color-success-content: var(--success-foreground);
+  --altcha-color-error: var(--destructive);
+  --altcha-color-error-content: var(--background);
+  --altcha-checkbox-border-color: var(--input);
+  --altcha-checkbox-outline-color: var(--ring);
+  --altcha-border-radius: var(--radius-lg);
+  --altcha-max-width: 100%;
+}
