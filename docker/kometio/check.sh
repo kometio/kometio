@@ -38,8 +38,13 @@ MAILPIT_PORT=18025
 EDITOR_URL="http://localhost:${EDITOR_PORT}"
 API_URL="http://localhost:${API_PORT}/api"
 SITE_URL="http://localhost:${SITE_PORT}"
-# Cloudflare's published test key: the pair of the secret the image uses in a trial.
+# Cloudflare's published test keys, which accept every captcha. Only the main
+# installation is given them: it is how the public site's forms get a widget the
+# suite can pass, until they have the built-in captcha too. The first-run
+# installation is given none, as the quickstart has it, and the login there is
+# the captcha built into Kometio (docs/adr/0103).
 TURNSTILE_TEST_SITE_KEY=1x00000000000000000000AA
+TURNSTILE_TEST_SECRET_KEY=1x0000000000000000000000000000000AA
 
 ADMIN_EMAIL="check-admin@example.test"
 # Invited in the first-run test, on an installation with no mail server.
@@ -165,6 +170,10 @@ if [ "$SMOKE_ONLY" = false ]; then
     grep -q "${FIRST_EDITOR_URL}/accept-invite?inviteToken=" <<<"$first_log"
   check "a password reset with no mail server is written to the log, link included" \
     grep -q "${FIRST_EDITOR_URL}/reset-password?resetToken=" <<<"$first_log"
+  # With no Turnstile keys the captcha is the built-in one, and it hands out a
+  # signed challenge to anyone who asks (the login of the test above solved one).
+  check "with no Turnstile keys the API hands out a challenge of its own" \
+    sh -c "curl -sf '${FIRST_API_URL}/captcha/challenge' | grep -q '\"signature\"'"
   docker rm -fv "$FIRST" >/dev/null
   docker volume rm "$FIRST_VOLUME" >/dev/null 2>&1 || true
 fi
@@ -182,7 +191,7 @@ docker run -d --name "$NAME" \
   -e "API_PUBLIC_URL=${API_URL}" \
   -e "PUBLIC_SITE_URL=${SITE_URL}" \
   -e SMTP_HOST=host.docker.internal -e "SMTP_PORT=${SMTP_PORT}" -e SMTP_FROM_ADDRESS=kometio@localhost \
-  -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" \
+  -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}" \
   -v "${VOLUME}:/data" \
   "$IMAGE" >/dev/null
 seconds="$(wait_for_banners 1)"
@@ -200,6 +209,8 @@ check "the editor serves its three addresses and the captcha key" sh -c "
   curl -s '${EDITOR_URL}/config.js' | grep -q 'publicSiteUrl.*${SITE_URL}' &&
   curl -s '${EDITOR_URL}/config.js' | grep -q 'turnstileSiteKey.*${TURNSTILE_TEST_SITE_KEY}'"
 check "the editor's policy lets the captcha load" sh -c "curl -sI '${EDITOR_URL}/' | grep -i content-security-policy | grep -q challenges.cloudflare.com"
+# The other half of the rule: with Cloudflare's keys there is no challenge of ours.
+check "with Turnstile keys the API has no challenge of its own (404)" test "$(status_code "${API_URL}/captcha/challenge")" = 404
 # Its own health check, not a page: until the first account exists the site has
 # no tenant to show, and its pages answer 500.
 check "the public site answers its health check" curl -sf "${SITE_URL}/api/health"

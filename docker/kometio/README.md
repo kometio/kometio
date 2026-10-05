@@ -128,11 +128,13 @@ Said plainly, so that you do not find out by failing:
   `SMTP_FROM_ADDRESS` and, if the server asks for them, `SMTP_USER` and
   `SMTP_PASSWORD` (`-e SMTP_HOST=…` on the `docker run`; `.env.prod.example`
   lists the rest).
-- **Its captcha lets everybody through.** The login and the site's forms use
-  Cloudflare's published test keys, which accept any answer, so that a trial
-  needs no Cloudflare account. Do not put this container on the internet: your
-  own keys belong to the production setup in
-  [docs/self-hosting.md](../../docs/self-hosting.md).
+- **The site's forms have no captcha yet.** The login uses the captcha built
+  into Kometio, a proof of work the browser solves in the background: no
+  account, no network. The forms of the public site do not have it yet, so a
+  form on your site cannot be sent until you give both of your Cloudflare
+  Turnstile keys, `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (`-e` on the
+  `docker run`; both, or neither). With the keys, the login uses Cloudflare's
+  as well.
 - **It has no HTTPS and no domain of its own.** It is reached at `localhost`.
   A real domain with a certificate is the production setup in
   [docs/self-hosting.md](../../docs/self-hosting.md).

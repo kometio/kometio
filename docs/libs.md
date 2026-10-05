@@ -79,6 +79,7 @@ Outbound communication:
 | [smtp-email-adapter](../libs/adapters/smtp-email-adapter/README.md)                                                                       | `EmailPort` via Nodemailer — generic SMTP, no vendor lock-in.                                                      |
 | [brevo-newsletter](../libs/adapters/brevo-newsletter/README.md) / [mailchimp-newsletter](../libs/adapters/mailchimp-newsletter/README.md) | `NewsletterPort` implementations — Brevo's contacts API (upsert) vs. Mailchimp's Marketing API (MD5-keyed upsert). |
 | [turnstile-captcha](../libs/adapters/turnstile-captcha/README.md)                                                                         | `CaptchaPort` — Cloudflare Turnstile verification, fail-closed.                                                    |
+| [altcha-captcha](../libs/adapters/altcha-captcha/README.md)                                                                               | `CaptchaPort` and `CaptchaChallengePort` — the captcha built into Kometio, a proof of work (ALTCHA).               |
 
 Themes and foreign content:
 

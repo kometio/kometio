@@ -4,7 +4,7 @@ import { environment } from '../support/environment';
 
 /**
  * What a person meets in the first minutes, in a real browser, on an image
- * started the way the quickstart says: no captcha key of its own, no mail
+ * started the way the quickstart says: no captcha keys of its own, no mail
  * server, nothing set up yet.
  *
  * It exists because that is the one path the rest of the suite cannot see.
@@ -67,9 +67,13 @@ test('a person who starts the image reaches a working site, and can sign in agai
   expect(await site.text()).toContain(`<title>${siteName}`);
 
   // Sign in again, in a clean browser, through the form: the captcha has to
-  // give the button its token with the key the image has when nobody gave it
-  // one. With an empty key the widget refused it and the button stayed
-  // disabled for ever, for everyone who pulled the image.
+  // give the button its token when nobody gave the image a key. With an empty
+  // one the widget refused it and the button stayed disabled for ever, for
+  // everyone who pulled the image. It is now the captcha built into Kometio
+  // (docs/adr/0103): a challenge from the API, solved in the page, with nothing
+  // fetched from anywhere else, so the whole thing runs with no network.
+  // What it submits is checked by the server, which is the point of the next
+  // lines: the login has to be accepted, not only enabled.
   const second = await browser.newContext();
   const login = await second.newPage();
   await login.goto(`${environment.editorUrl}login`);

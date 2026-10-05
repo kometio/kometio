@@ -47,11 +47,6 @@ const SITE_URL = env.PUBLIC_SITE_URL ?? 'http://localhost:4322';
 const API_PORT = 3000;
 const SITE_PORT = 4322;
 
-// The test secret Cloudflare publishes for Turnstile: it lets every captcha
-// through. The API refuses it when NODE_ENV is `production`, which is the
-// point: a trial runs as `development`, a real deployment must bring its own.
-const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
-
 const NODE_ENV = env.NODE_ENV ?? 'development';
 
 /** @type {Array<{ name: string, child: import('node:child_process').ChildProcess, stop: NodeJS.Signals }>} */
@@ -311,7 +306,9 @@ function apiEnvironment(s) {
     MEDIA_UPLOAD_DIR: `${DATA}/uploads`,
     THEMES_DIR: '/opt/api/themes',
     KOMETIO_SECRETS_DIR: `${DATA}/secrets`,
-    TURNSTILE_SECRET_KEY: TURNSTILE_TEST_SECRET,
+    // No TURNSTILE_* either: with neither key the captcha is the one built into
+    // Kometio, which needs no account and no network. Both of a site's own keys
+    // switch to Cloudflare's (docs/adr/0103), through `userEnv` below.
     ...userEnv,
     HOME: '/tmp',
     // These are this launcher's to decide, whatever the environment says.
@@ -343,7 +340,7 @@ function configureEditor() {
     PATH: env.PATH,
     KOMETIO_API_URL: API_PUBLIC_URL,
     KOMETIO_PUBLIC_SITE_URL: SITE_URL,
-    // Empty: the editor then uses Cloudflare's test key, which the test secret above accepts.
+    // Empty: no Turnstile keys, and the editor draws the captcha built into Kometio (docs/adr/0103).
     KOMETIO_TURNSTILE_SITE_KEY: env.TURNSTILE_SITE_KEY ?? '',
   };
   // The same script the editor image runs at its start: it writes /config.js

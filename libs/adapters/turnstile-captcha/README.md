@@ -41,8 +41,9 @@ it for this widget too.
 
 ## Configuration
 
-Requires `TURNSTILE_SECRET_KEY` (server-side verification secret — never
-exposed to the browser). The paired `TURNSTILE_SITE_KEY`/
+Used when `TURNSTILE_SECRET_KEY` is set (server-side verification secret —
+never exposed to the browser), which the API's schema requires together with
+`TURNSTILE_SITE_KEY`: both or neither. The paired `TURNSTILE_SITE_KEY`/
 `VITE_TURNSTILE_SITE_KEY` are client-side and consumed by the frontends,
 not this adapter. `.env.example` defaults to Cloudflare's official
 "always pass, visibly marked test-only" key pair, so local dev and CI
@@ -50,11 +51,11 @@ never depend on a real Cloudflare account.
 
 ## Used by
 
-`apps/api` — constructed independently (no shared provider token) in
-`AuthModule` (`apps/api/src/app/auth/auth.module.ts`),
-`PublicFormsModule` (`apps/api/src/app/public-forms/public-forms.module.ts`),
-and `PublicNewsletterModule`
-(`apps/api/src/app/public-newsletter/public-newsletter.module.ts`).
+`apps/api`, in `createCaptcha` (`apps/api/src/app/adapters/captcha.factory.ts`),
+which answers `CAPTCHA_PORT` for every module that checks a captcha (login,
+password reset, the public forms and the newsletter). It is the one used when
+the deployment has both Turnstile keys; with neither, the captcha is the one in
+[altcha-captcha](../altcha-captcha/README.md) (docs/adr/0103).
 
 ## Running unit tests
 
