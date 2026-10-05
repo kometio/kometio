@@ -228,6 +228,12 @@ const PROVIDERS = [
         })
       : null,
   ),
+  // The same adapter, for the first-run screen, which only ever opens an archive.
+  {
+    provide: port.SITE_IMPORT,
+    useFactory: (archive: LauncherSiteArchiveAdapter | null) => archive,
+    inject: [port.SITE_ARCHIVE],
+  },
   configured(port.SECRET_CIPHER, createSecretCipher),
   // Whether a site's model server may be inside the network (a model on
   // the same machine, say) is the operator's call, read once.

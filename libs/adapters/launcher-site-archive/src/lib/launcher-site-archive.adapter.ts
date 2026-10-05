@@ -1,11 +1,28 @@
+import { readFile } from 'node:fs/promises';
 import { request, type IncomingMessage } from 'node:http';
-import { SiteArchiveRefusedError } from '@kometio/domain-core';
-import type { SiteArchive, SiteArchivePort } from '@kometio/ports';
+import { dirname, join } from 'node:path';
+import { pipeline } from 'node:stream/promises';
+import {
+  InvalidSiteArchiveError,
+  SiteArchiveRefusedError,
+} from '@kometio/domain-core';
+import type {
+  SiteArchive,
+  SiteArchivePort,
+  SiteImportPort,
+} from '@kometio/ports';
 
 export interface LauncherSiteArchiveConfig {
   /** The Unix socket the launcher of the single image answers on (docs/adr/0105). */
   socketPath: string;
 }
+
+/**
+ * Where the launcher writes how the last import went, beside its socket
+ * (`IMPORT_RESULT_FILE` in docker/kometio/site-import.mjs, which is not
+ * TypeScript and cannot be imported from here: the name is the contract).
+ */
+const IMPORT_RESULT_FILE = 'import-result.json';
 
 /** What the launcher names its file: a name that is safe to put in a header as it is. */
 const ATTACHMENT = /^attachment; filename="([A-Za-z0-9._-]{1,100})"$/;
@@ -47,6 +64,17 @@ async function messageOf(response: IncomingMessage): Promise<string> {
   return text.trim() || 'no reason given';
 }
 
+function hasFailure(value: unknown): value is { ok: false; message: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'ok' in value &&
+    value.ok === false &&
+    'message' in value &&
+    typeof value.message === 'string'
+  );
+}
+
 function get(socketPath: string, path: string): Promise<IncomingMessage> {
   return new Promise((resolve, reject) => {
     const outgoing = request({ socketPath, path, method: 'GET' }, resolve);
@@ -61,7 +89,9 @@ function get(socketPath: string, path: string): Promise<IncomingMessage> {
  * given those: it asks, over a socket only its user can open, and streams what
  * comes back to the person who asked.
  */
-export class LauncherSiteArchiveAdapter implements SiteArchivePort {
+export class LauncherSiteArchiveAdapter
+  implements SiteArchivePort, SiteImportPort
+{
   constructor(private readonly config: LauncherSiteArchiveConfig) {}
 
   async export(): Promise<SiteArchive> {
@@ -82,5 +112,53 @@ export class LauncherSiteArchiveAdapter implements SiteArchivePort {
       throw new Error('The launcher did not say what the archive is called.');
     }
     return { fileName, content: response };
+  }
+
+  async import(content: AsyncIterable<Uint8Array>): Promise<void> {
+    const response = await new Promise<IncomingMessage>((resolve, reject) => {
+      const outgoing = request(
+        {
+          socketPath: this.config.socketPath,
+          path: '/import',
+          method: 'POST',
+          headers: { 'content-type': 'application/gzip' },
+        },
+        resolve,
+      );
+      outgoing.once('error', reject);
+      // The launcher may answer before the end of the body (and then close the
+      // connection), which is the answer to read, not the broken pipe after it:
+      // whichever settles the promise first wins, and the other is ignored.
+      pipeline(content, outgoing).catch(reject);
+    });
+    if (response.statusCode === 202) {
+      response.resume();
+      return;
+    }
+    const reason = await messageOf(response);
+    if (response.statusCode === 400) throw new InvalidSiteArchiveError(reason);
+    if (response.statusCode === 409) throw new SiteArchiveRefusedError(reason);
+    throw new Error(
+      `The launcher could not open the archive (${response.statusCode}): ${reason}`,
+    );
+  }
+
+  async lastImportFailure(): Promise<string | null> {
+    let written: string;
+    try {
+      written = await readFile(
+        join(dirname(this.config.socketPath), IMPORT_RESULT_FILE),
+        'utf8',
+      );
+    } catch {
+      // No import has been made here, or the launcher has not written one yet.
+      return null;
+    }
+    try {
+      const result: unknown = JSON.parse(written);
+      return hasFailure(result) ? result.message : null;
+    } catch {
+      return null;
+    }
   }
 }

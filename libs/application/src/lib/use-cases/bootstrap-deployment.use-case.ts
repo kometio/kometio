@@ -6,6 +6,7 @@ import type {
   BootstrapHomePage,
   DeploymentBootstrapPort,
   Session,
+  SiteImportPort,
 } from '@kometio/ports';
 
 export interface BootstrapDeploymentDeps {
@@ -18,11 +19,24 @@ export interface BootstrapDeploymentOutcome extends BootstrapDeploymentResult {
   session: Session;
 }
 
-/** Whether the first-run wizard has already been completed on this deployment. */
+/**
+ * Whether the first-run wizard has already been completed on this deployment,
+ * and, while it has not, why the site the screen was waiting for did not come
+ * through (docs/adr/0106): the reason, in words fit for anybody, of the last
+ * archive that was opened here and failed. It is nothing once there is a site —
+ * whatever was said about an old import is old — and where no archive can be
+ * opened.
+ */
 export async function getSetupStatus(deps: {
   deploymentBootstrapPort: Pick<DeploymentBootstrapPort, 'hasBeenSetUp'>;
-}): Promise<{ hasBeenSetUp: boolean }> {
-  return { hasBeenSetUp: await deps.deploymentBootstrapPort.hasBeenSetUp() };
+  siteImport?: Pick<SiteImportPort, 'lastImportFailure'> | null;
+}): Promise<{ hasBeenSetUp: boolean; importFailure: string | null }> {
+  const hasBeenSetUp = await deps.deploymentBootstrapPort.hasBeenSetUp();
+  const importFailure =
+    hasBeenSetUp || !deps.siteImport
+      ? null
+      : await deps.siteImport.lastImportFailure();
+  return { hasBeenSetUp, importFailure };
 }
 
 export interface BootstrapDeploymentInput {

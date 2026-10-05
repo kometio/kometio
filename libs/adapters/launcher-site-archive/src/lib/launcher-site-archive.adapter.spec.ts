@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import {
   createServer,
   type IncomingMessage,
@@ -7,7 +7,10 @@ import {
 } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { SiteArchiveRefusedError } from '@kometio/domain-core';
+import {
+  InvalidSiteArchiveError,
+  SiteArchiveRefusedError,
+} from '@kometio/domain-core';
 import { LauncherSiteArchiveAdapter } from './launcher-site-archive.adapter';
 
 type Handler = (request: IncomingMessage, response: ServerResponse) => void;
@@ -144,5 +147,134 @@ describe('LauncherSiteArchiveAdapter', () => {
     const archive = await adapter.export();
 
     await expect(read(archive.content)).rejects.toThrow();
+  });
+  describe('opening an archive', () => {
+    async function* chunks(...parts: string[]) {
+      for (const part of parts) yield Buffer.from(part);
+    }
+
+    it('hands the body over, as a gzip, and resolves once the launcher has accepted it', async () => {
+      let asked = '';
+      let type: string | undefined;
+      let body = '';
+      handler = (incoming, response) => {
+        asked = `${incoming.method} ${incoming.url}`;
+        type = incoming.headers['content-type'];
+        incoming.on('data', (chunk: Buffer) => (body += chunk));
+        incoming.on('end', () => {
+          response.writeHead(202, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({ message: 'accepted' }));
+        });
+      };
+
+      await adapter.import(chunks('the ', 'archive'));
+
+      expect(asked).toBe('POST /import');
+      expect(type).toBe('application/gzip');
+      expect(body).toBe('the archive');
+    });
+
+    it('turns what is wrong with the archive into a refusal of it, with the launcher’s words', async () => {
+      handler = (incoming, response) => {
+        incoming.resume();
+        incoming.on('end', () => {
+          response.writeHead(400, { 'content-type': 'application/json' });
+          response.end(
+            JSON.stringify({ message: 'this is not a Kometio site archive' }),
+          );
+        });
+      };
+
+      const failure = adapter.import(chunks('not an archive'));
+
+      await expect(failure).rejects.toBeInstanceOf(InvalidSiteArchiveError);
+      await expect(failure).rejects.toThrow('not a Kometio site archive');
+    });
+
+    it('turns an installation that already has a site into a refusal of the state', async () => {
+      handler = (incoming, response) => {
+        incoming.resume();
+        incoming.on('end', () => {
+          response.writeHead(409, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({ message: 'it already has a site' }));
+        });
+      };
+
+      await expect(adapter.import(chunks('x'))).rejects.toBeInstanceOf(
+        SiteArchiveRefusedError,
+      );
+    });
+
+    it('reads the answer when the launcher refuses before the end of the body, and goes on reading it', async () => {
+      handler = (incoming, response) => {
+        // As the launcher does for what it will not use: answer at once, and
+        // read what is still coming to throw it away.
+        response.writeHead(409, { 'content-type': 'application/json' });
+        response.end(
+          JSON.stringify({ message: 'a site is being opened here' }),
+        );
+        incoming.resume();
+      };
+      async function* aLot() {
+        for (let index = 0; index < 200; index += 1) {
+          yield Buffer.alloc(64 * 1024);
+          await new Promise((resolve) => setImmediate(resolve));
+        }
+      }
+
+      const failure = adapter.import(aLot());
+
+      await expect(failure).rejects.toBeInstanceOf(SiteArchiveRefusedError);
+      await expect(failure).rejects.toThrow('a site is being opened here');
+    });
+
+    it('treats any other answer as the launcher failing', async () => {
+      handler = (incoming, response) => {
+        incoming.resume();
+        incoming.on('end', () => {
+          response.writeHead(500, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({ message: 'disk on fire' }));
+        });
+      };
+
+      await expect(adapter.import(chunks('x'))).rejects.toThrow(
+        'The launcher could not open the archive (500): disk on fire',
+      );
+    });
+  });
+
+  describe('how the last import went', () => {
+    const resultFile = join(directory, 'import-result.json');
+
+    afterEach(() => rmSync(resultFile, { force: true }));
+
+    it('is nothing when no import has been made here', async () => {
+      expect(await adapter.lastImportFailure()).toBeNull();
+    });
+
+    it('is the launcher’s sentence when it failed', async () => {
+      writeFileSync(
+        resultFile,
+        JSON.stringify({ ok: false, message: 'there is not enough room' }),
+      );
+
+      expect(await adapter.lastImportFailure()).toBe(
+        'there is not enough room',
+      );
+    });
+
+    it('is nothing when it came through', async () => {
+      writeFileSync(resultFile, JSON.stringify({ ok: true }));
+
+      expect(await adapter.lastImportFailure()).toBeNull();
+    });
+
+    it('is nothing, rather than an error, for a file that is not what the launcher writes', async () => {
+      writeFileSync(resultFile, 'not json');
+      expect(await adapter.lastImportFailure()).toBeNull();
+
+      writeFileSync(resultFile, JSON.stringify({ ok: false }));
+      expect(await adapter.lastImportFailure()).toBeNull();
+    });
   });
 });

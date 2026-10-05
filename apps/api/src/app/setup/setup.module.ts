@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AdaptersModule } from '../adapters/adapters.module';
-import { AUTH_PORT, DEPLOYMENT_BOOTSTRAP_PORT } from '../adapters/port.tokens';
+import {
+  AUTH_PORT,
+  DEPLOYMENT_BOOTSTRAP_PORT,
+  SITE_IMPORT,
+} from '../adapters/port.tokens';
 import { DeploymentTenantModule } from '../deployment-tenant.module';
 import { ApiEnvModule } from '../api-env.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
@@ -27,6 +31,7 @@ import { SETUP_DEPS } from './setup.tokens';
       deploymentBootstrapPort: DEPLOYMENT_BOOTSTRAP_PORT,
       authPort: AUTH_PORT,
       tenant: DEPLOYMENT_TENANT_RESOLVER,
+      siteImport: SITE_IMPORT,
     }),
     SetupTokenRegistry,
     SessionCookies,
