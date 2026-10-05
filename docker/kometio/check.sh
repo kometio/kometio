@@ -42,6 +42,8 @@ SITE_URL="http://localhost:${SITE_PORT}"
 TURNSTILE_TEST_SITE_KEY=1x00000000000000000000AA
 
 ADMIN_EMAIL="check-admin@example.test"
+# Invited in the first-run test, on an installation with no mail server.
+INVITEE_EMAIL="check-invitee@example.test"
 ADMIN_PASSWORD="$(openssl rand -hex 16)"
 
 failed=0
@@ -147,12 +149,20 @@ if [ "$SMOKE_ONLY" = false ]; then
     E2E_SETUP_TOKEN="$(setup_token "$FIRST")" \
       VITE_API_URL="$FIRST_API_URL" EDITOR_APP_URL="$FIRST_EDITOR_URL" VITE_PUBLIC_SITE_URL="$FIRST_SITE_URL" \
       DEFAULT_USER_EMAIL="$ADMIN_EMAIL" DEFAULT_USER_PASSWORD="$ADMIN_PASSWORD" \
+      E2E_INVITEE_EMAIL="$INVITEE_EMAIL" \
       pnpm exec nx run @kometio/e2e:first-run
   ); then
     pass "a person who starts the image reaches a working site, and can sign in again"
   else
     fail "the first run in a browser failed"
   fi
+  # No mail server: the invitation the test made is in the log, link included
+  # (docs/adr/0103). Without this a quiet log would pass for a working mailer.
+  first_log="$(docker logs "$FIRST" 2>&1 || true)"
+  check "an invitation with no mail server is written to the log" \
+    grep -q "To:      ${INVITEE_EMAIL}" <<<"$first_log"
+  check "the logged invitation carries its link" \
+    grep -q "${FIRST_EDITOR_URL}/accept-invite?inviteToken=" <<<"$first_log"
   docker rm -fv "$FIRST" >/dev/null
   docker volume rm "$FIRST_VOLUME" >/dev/null 2>&1 || true
 fi
@@ -169,7 +179,7 @@ docker run -d --name "$NAME" \
   -e "EDITOR_APP_URL=${EDITOR_URL}" \
   -e "API_PUBLIC_URL=${API_URL}" \
   -e "PUBLIC_SITE_URL=${SITE_URL}" \
-  -e SMTP_HOST=host.docker.internal -e "SMTP_PORT=${SMTP_PORT}" \
+  -e SMTP_HOST=host.docker.internal -e "SMTP_PORT=${SMTP_PORT}" -e SMTP_FROM_ADDRESS=kometio@localhost \
   -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" \
   -v "${VOLUME}:/data" \
   "$IMAGE" >/dev/null

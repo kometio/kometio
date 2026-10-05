@@ -12,8 +12,11 @@ doc assumes a real server with a real domain, not a laptop.
   the server before you start: the apex domain, `admin.<domain>`, and
   `api.<domain>` (see "Why three subdomains" below). `www.<domain>` too,
   if you want `www` to work.
-- A real SMTP provider (account verification and password-reset emails
-  go through it — there is no Mailpit here, that's dev-only).
+- Optionally, an SMTP provider (invitations and password-reset emails go
+  through it — there is no Mailpit here, that's dev-only). Without one the API
+  starts anyway and writes each email, link included, to its log
+  (`docker compose logs api`), and the editor says so on the Users screen
+  (docs/adr/0103). Add one before more than one person uses the site.
 
 ## Why three subdomains
 
@@ -58,7 +61,8 @@ address arrives without a hard refresh.
      characters (`openssl rand -hex 24`);
    - `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`: your site's own, from
      the Cloudflare dashboard (Turnstile → Add site);
-   - the `SMTP_*` values of your mail provider.
+   - the `SMTP_*` values of your mail provider, if you have one (all three of
+     `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM_ADDRESS`, or none).
 
    The API refuses to start with a value left empty or too short, or with
    Cloudflare's test captcha keys (which let every captcha through), and
