@@ -20,23 +20,30 @@
 //   caddy/      the certificates and the account with the certificate authority
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import {
-  chmodSync,
-  chownSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { get } from 'node:http';
 import { createInterface } from 'node:readline';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { parseDomain, serverAddresses } from './server-mode.mjs';
+import {
+  SOCKET_DIR,
+  createRoles,
+  postgresArguments,
+  prepareCluster,
+  waitUntilReady,
+} from './embedded-postgres.mjs';
+import {
+  defined,
+  ensureDir,
+  ids,
+  log,
+  minimalEnv,
+  once,
+  waitFor as waitForProcess,
+} from './processes.mjs';
+import { resolveAddresses } from './server-mode.mjs';
 
 const env = process.env;
 const DATA = env.KOMETIO_DATA_DIR ?? '/data';
-const SOCKET_DIR = '/run/postgresql';
-const PG_DATA = `${DATA}/postgres`;
 
 // No POSTGRES_HOST: this image runs its own database. With one, it uses
 // that database, which must already hold the `kometio_app` role (the same
@@ -47,24 +54,22 @@ const OWN_DATABASE = !env.POSTGRES_HOST;
 // editor at admin. and the API at api., as in the compose stack. The three
 // addresses below follow from it; any of them can still be set by hand, as
 // behind a proxy of one's own, and wins.
-let domain = null;
+let addresses;
 try {
-  domain = env.DOMAIN?.trim() ? parseDomain(env.DOMAIN) : null;
+  addresses = resolveAddresses(env);
 } catch (error) {
   console.error(`[kometio] ${error.message}`);
   process.exit(1);
 }
-const served = domain ? serverAddresses(domain) : null;
-
 // Where the browser reaches each half. Defaults suit `docker run -p
 // 3000:3000 -p 4322:4322 -p 4200:80` on one machine; behind a proxy, set
 // the three the way docs/self-hosting.md explains.
-const EDITOR_URL =
-  env.EDITOR_APP_URL ?? served?.editorUrl ?? 'http://localhost:4200';
-const API_PUBLIC_URL =
-  env.API_PUBLIC_URL ?? served?.apiPublicUrl ?? 'http://localhost:3000/api';
-const SITE_URL =
-  env.PUBLIC_SITE_URL ?? served?.siteUrl ?? 'http://localhost:4322';
+const {
+  domain,
+  editorUrl: EDITOR_URL,
+  apiPublicUrl: API_PUBLIC_URL,
+  siteUrl: SITE_URL,
+} = addresses;
 
 const API_PORT = 3000;
 const SITE_PORT = 4322;
@@ -80,34 +85,6 @@ const NODE_ENV = env.NODE_ENV ?? (domain ? 'production' : 'development');
 const running = [];
 let stopping = false;
 let setupToken = null;
-
-const log = (message) => console.log(`[kometio] ${message}`);
-
-/** An environment for a process that runs as another user: nothing of root's. */
-const minimalEnv = { PATH: env.PATH, HOME: '/tmp', LANG: 'C.UTF-8' };
-
-/** Drops what is `undefined`, which a child process would otherwise receive as the text "undefined". */
-const defined = (values) =>
-  Object.fromEntries(
-    Object.entries(values).filter(([, value]) => value !== undefined),
-  );
-
-function ids(user) {
-  const line = readFileSync('/etc/passwd', 'utf8')
-    .split('\n')
-    .find((entry) => entry.startsWith(`${user}:`));
-  if (!line) throw new Error(`no such user: ${user}`);
-  const [, , uid, gid] = line.split(':');
-  return { uid: Number(uid), gid: Number(gid) };
-}
-
-/** Creates a directory owned by `user` the first time; always keeps owner and mode. */
-function ensureDir(path, user, mode) {
-  const { uid, gid } = ids(user);
-  mkdirSync(path, { recursive: true });
-  chownSync(path, uid, gid);
-  chmodSync(path, mode);
-}
 
 function prefixed(stream, name, onLine) {
   createInterface({ input: stream }).on('line', (line) => {
@@ -142,37 +119,9 @@ function start(
   return child;
 }
 
-/** A step that must finish before the next one starts. */
-function once(
-  name,
-  command,
-  args,
-  { user, childEnv = minimalEnv, cwd, input } = {},
-) {
-  const result = spawnSync(command, args, {
-    cwd,
-    env: defined(childEnv),
-    input,
-    encoding: 'utf8',
-    ...(user ? ids(user) : {}),
-  });
-  for (const line of `${result.stdout ?? ''}${result.stderr ?? ''}`.split(
-    '\n',
-  )) {
-    if (line.trim()) console.log(`[${name}] ${line}`);
-  }
-  if (result.status !== 0)
-    throw new Error(`${name} failed (exit ${result.status})`);
-}
-
-async function waitFor(label, probe, seconds) {
-  for (let waited = 0; waited < seconds; waited += 1) {
-    if (stopping) return;
-    if (await probe()) return;
-    await sleep(1000);
-  }
-  throw new Error(`${label} did not come up within ${seconds}s`);
-}
+/** Waits for something to come up, and stops waiting when the launcher is stopping. */
+const waitFor = (label, probe, seconds) =>
+  waitForProcess(label, probe, seconds, () => stopping);
 
 const answers = (url) =>
   new Promise((resolve) => {
@@ -225,84 +174,16 @@ function secrets() {
 
 /** Starts Postgres, and returns what has to be awaited before anything may connect. */
 function startEmbeddedDatabase(appPassword) {
-  ensureDir(SOCKET_DIR, 'postgres', 0o755);
-  ensureDir(PG_DATA, 'postgres', 0o700);
+  prepareCluster(DATA, log);
 
-  if (!existsSync(`${PG_DATA}/PG_VERSION`)) {
-    log('creating the database (first start)');
-    // `local` trusts the socket (reachable only from inside this container);
-    // TCP, which the API uses, wants the application role's password.
-    once(
-      'initdb',
-      'initdb',
-      [
-        '-D',
-        PG_DATA,
-        '-U',
-        'postgres',
-        '-E',
-        'UTF8',
-        '--locale=C.UTF-8',
-        '--auth-local=trust',
-        '--auth-host=scram-sha-256',
-      ],
-      { user: 'postgres' },
-    );
-  }
-
-  start(
-    'postgres',
-    'postgres',
-    [
-      '-D',
-      PG_DATA,
-      '-c',
-      'listen_addresses=127.0.0.1',
-      '-c',
-      `unix_socket_directories=${SOCKET_DIR}`,
-    ],
-    { user: 'postgres', stop: 'SIGINT' },
-  ); // SIGINT is Postgres's "fast" shutdown
+  start('postgres', 'postgres', postgresArguments(DATA), {
+    user: 'postgres',
+    stop: 'SIGINT',
+  }); // SIGINT is Postgres's "fast" shutdown
 
   return async () => {
-    // `-U postgres`: without it the check connects as the OS user (root), a
-    // role that does not exist, and the database logs a FATAL for every probe.
-    await waitFor(
-      'postgres',
-      () =>
-        spawnSync('pg_isready', ['-h', SOCKET_DIR, '-U', 'postgres', '-q'])
-          .status === 0,
-      60,
-    );
-    // `kometio` owns the schema and runs the migrations (a superuser, as
-    // docs/adr/0002 requires, reachable only through the socket); `kometio_app`
-    // is what the API connects as, and what row level security applies to.
-    once(
-      'postgres-setup',
-      'psql',
-      [
-        '-h',
-        SOCKET_DIR,
-        '-U',
-        'postgres',
-        '-d',
-        'postgres',
-        '-v',
-        'ON_ERROR_STOP=1',
-        '-v',
-        `app_password=${appPassword}`,
-      ],
-      {
-        user: 'postgres',
-        input: [
-          "select 'create role kometio superuser login' where not exists (select from pg_roles where rolname = 'kometio') \\gexec",
-          "select format('create role kometio_app login password %L', :'app_password') where not exists (select from pg_roles where rolname = 'kometio_app') \\gexec",
-          "select 'create database kometio owner kometio' where not exists (select from pg_database where datname = 'kometio') \\gexec",
-          // Keeps the role in step with the secret on every start.
-          "alter role kometio_app password :'app_password';",
-        ].join('\n'),
-      },
-    );
+    await waitUntilReady(() => stopping);
+    createRoles(appPassword);
   };
 }
 
@@ -553,11 +434,18 @@ async function main() {
   announce();
 }
 
-for (const signal of ['SIGTERM', 'SIGINT']) {
-  process.on(signal, () => void shutdown(0));
-}
+if (process.argv[2] !== undefined) {
+  // `docker run … export` or `import` (docs/adr/0105): a command, not a server.
+  // It is the same Postgres, started for as long as the command takes.
+  const { run } = await import('./cli.mjs');
+  await run(process.argv[2]);
+} else {
+  for (const signal of ['SIGTERM', 'SIGINT']) {
+    process.on(signal, () => void shutdown(0));
+  }
 
-main().catch((error) => {
-  console.error(`[kometio] ${error.message}`);
-  void shutdown(1);
-});
+  main().catch((error) => {
+    console.error(`[kometio] ${error.message}`);
+    void shutdown(1);
+  });
+}
