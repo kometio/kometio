@@ -51,6 +51,19 @@ minutes, and later one object to put on a server.
   (`apps/e2e/playwright.image.config.ts`), which has no `webServer`: a server
   that is down fails the run, instead of Playwright starting a second API from a
   build against whatever database the root `.env` names.
+- **The first run is walked in a real browser, on an installation of its own**
+  (amended 2026-10-05; `apps/e2e/src/first-run/`, run by `check.sh` before the
+  rest). The suite proper runs on an installation somebody has already set up,
+  with the captcha key and the mail server the suite gives it, and that hides
+  what a person meets first. The image is started a second time the way the
+  quickstart says, with neither, and the test does what a person does: it
+  arrives with a login cookie left by another installation, finds the setup form
+  with the domain already filled in, creates the account, finds the site
+  answering at once, and signs in again through the form in a clean browser. It
+  spends the installation (the setup token is single-use), so it runs once and
+  never retries. It was shown to fail on each of the two defects it is there
+  for, reintroduced one at a time: the left-over cookie (the form never
+  appears), and an empty captcha key (the login button stays disabled).
 
 ## Consequences
 

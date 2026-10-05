@@ -24,6 +24,12 @@ SMOKE_ONLY=false
 NAME=kometio-check
 MAILPIT=kometio-check-mailpit
 VOLUME=kometio-check-data
+# The second installation, for the first run in a browser (full run only).
+FIRST=kometio-check-first
+FIRST_VOLUME=kometio-check-first-data
+FIRST_EDITOR_PORT=16200
+FIRST_API_PORT=16000
+FIRST_SITE_PORT=16322
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -55,10 +61,14 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
+    if docker ps -a --format '{{.Names}}' | grep -qx "$FIRST"; then
+      printf '\n== the last lines of the first-run image log\n'
+      docker logs --tail 40 "$FIRST" 2>&1 || true
+    fi
   fi
-  docker rm -fv "$NAME" "$MAILPIT" >/dev/null 2>&1 || true
-  # Only the volume this script made: the checks below guarantee it did not exist.
-  docker volume rm "$VOLUME" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" >/dev/null 2>&1 || true
+  # Only the volumes this script made: the checks below guarantee they did not exist.
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -67,28 +77,31 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-if docker volume ls -q | grep -qx "$VOLUME"; then
-  echo "A volume named $VOLUME already exists: remove it first." >&2
-  exit 2
-fi
+for taken in "$VOLUME" "$FIRST_VOLUME"; do
+  if docker volume ls -q | grep -qx "$taken"; then
+    echo "A volume named $taken already exists: remove it first." >&2
+    exit 2
+  fi
+done
 
 WORK="$(mktemp -d)"
 COOKIES="${WORK}/cookies.txt"
 trap cleanup EXIT
 
-banners() { docker logs "$NAME" 2>&1 | grep -c 'Kometio is ready' || true; }
+# Each helper takes the container as an optional last argument: the main one by default.
+banners() { docker logs "${1:-$NAME}" 2>&1 | grep -c 'Kometio is ready' || true; }
 
 wait_for_banners() {
-  local wanted="$1" started
+  local wanted="$1" container="${2:-$NAME}" started
   started=$(date +%s)
-  until [ "$(banners)" -ge "$wanted" ]; do
-    if [ "$(docker inspect -f '{{.State.Status}}' "$NAME")" != "running" ]; then
+  until [ "$(banners "$container")" -ge "$wanted" ]; do
+    if [ "$(docker inspect -f '{{.State.Status}}' "$container")" != "running" ]; then
       echo "The container stopped before it was ready." >&2
       return 1
     fi
@@ -103,10 +116,46 @@ wait_for_banners() {
 
 # The one thing a person does first: read the setup token from the log.
 setup_token() {
-  docker logs "$NAME" 2>&1 | grep -E '^\s+[A-Za-z0-9_-]{43}\s*$' | tail -1 | tr -d ' \r'
+  docker logs "${1:-$NAME}" 2>&1 | grep -E '^\s+[A-Za-z0-9_-]{43}\s*$' | tail -1 | tr -d ' \r'
 }
 
 status_code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
+
+# --- the first run, in a browser ------------------------------------------------
+#
+# On an installation of its own, started the way the quickstart says: no captcha
+# key, no mail server, and an address only because this machine's default ports
+# may be taken. The main installation below is given a captcha key and a mail
+# server so that the rest of the suite can use them, and that hides what a person
+# meets first (docs/adr/0101): a login button that stayed disabled for lack of a
+# key, a login left on the host by another installation, a site "not found".
+if [ "$SMOKE_ONLY" = false ]; then
+  step "the first run, in a browser, as the image is delivered"
+  FIRST_EDITOR_URL="http://localhost:${FIRST_EDITOR_PORT}"
+  FIRST_API_URL="http://localhost:${FIRST_API_PORT}/api"
+  FIRST_SITE_URL="http://localhost:${FIRST_SITE_PORT}"
+  docker run -d --name "$FIRST" \
+    -p "${FIRST_EDITOR_PORT}:80" -p "${FIRST_API_PORT}:3000" -p "${FIRST_SITE_PORT}:4322" \
+    -e "EDITOR_APP_URL=${FIRST_EDITOR_URL}" \
+    -e "API_PUBLIC_URL=${FIRST_API_URL}" \
+    -e "PUBLIC_SITE_URL=${FIRST_SITE_URL}" \
+    -v "${FIRST_VOLUME}:/data" \
+    "$IMAGE" >/dev/null
+  wait_for_banners 1 "$FIRST" >/dev/null
+  if (
+    cd "$(git rev-parse --show-toplevel)"
+    E2E_SETUP_TOKEN="$(setup_token "$FIRST")" \
+      VITE_API_URL="$FIRST_API_URL" EDITOR_APP_URL="$FIRST_EDITOR_URL" VITE_PUBLIC_SITE_URL="$FIRST_SITE_URL" \
+      DEFAULT_USER_EMAIL="$ADMIN_EMAIL" DEFAULT_USER_PASSWORD="$ADMIN_PASSWORD" \
+      pnpm exec nx run @kometio/e2e:first-run
+  ); then
+    pass "a person who starts the image reaches a working site, and can sign in again"
+  else
+    fail "the first run in a browser failed"
+  fi
+  docker rm -fv "$FIRST" >/dev/null
+  docker volume rm "$FIRST_VOLUME" >/dev/null 2>&1 || true
+fi
 
 # --- start ---------------------------------------------------------------------
 

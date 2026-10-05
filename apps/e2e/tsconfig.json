@@ -10,7 +10,8 @@
   "include": [
     "src/**/*.ts",
     "playwright.config.ts",
-    "playwright.image.config.ts"
+    "playwright.image.config.ts",
+    "playwright.first-run.config.ts"
   ],
   "references": [
     {
