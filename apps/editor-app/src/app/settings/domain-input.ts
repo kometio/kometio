@@ -1,3 +1,5 @@
+import { isSiteDomain } from '@kometio/shared-types';
+
 /** What was typed as a domain, made into one — and what had to go for it to be one. */
 export interface CleanedDomain {
   domain: string;
@@ -40,4 +42,24 @@ export function cleanDomainInput(raw: string): CleanedDomain {
   if (path) removed.push(path);
 
   return { domain: rest.toLowerCase(), removed };
+}
+
+/**
+ * The domain a site is served on, read from the address it is served at: the
+ * hostname, with the scheme, the port and the path left out, because a domain
+ * has none of them. This is what the first-run wizard proposes, from the
+ * address the deployment was told to serve the site on — a person cannot know
+ * it is the one that matters, and a site without it is found at no address.
+ *
+ * Empty when `address` is not an address, or its host is not one a site can
+ * be found on (an IPv6 literal): a proposal is only worth making if it is
+ * right, and an empty field says "type it" without pretending otherwise.
+ */
+export function domainOfAddress(address: string): string {
+  try {
+    const { hostname } = new URL(address);
+    return isSiteDomain(hostname) ? hostname : '';
+  } catch {
+    return '';
+  }
 }

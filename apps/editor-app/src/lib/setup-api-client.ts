@@ -10,6 +10,8 @@ export interface BootstrapDeploymentRequest {
   setupToken: string;
   siteName: string;
   defaultLocale: string;
+  /** The hostname the site is served on, or `null` to set it later in Settings. */
+  domain: string | null;
   adminEmail: string;
   adminPassword: string;
 }

@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { MIN_ADMIN_PASSWORD_LENGTH } from '@kometio/shared-types';
+import {
+  MIN_ADMIN_PASSWORD_LENGTH,
+  siteDomainSchema,
+} from '@kometio/shared-types';
 
 /**
  * Password rules live here rather than in the use case, the same place
@@ -19,6 +22,12 @@ export const bootstrapDeploymentBodySchema = z.object({
   // Matches the picker in the editor's own locale settings (docs/adr/0017)
   // — a BCP-47 tag, not a free-form string.
   defaultLocale: z.string().trim().min(2).max(35),
+  // Where the site will be reached: the hostname the editor proposed (the
+  // one the deployment was told to serve), as the admin left it. The same
+  // rule as the Site settings screen, so a site cannot be created on a name
+  // that nothing would ever match. Absent or null is "set it later" — which
+  // is also what a client written before this field existed means.
+  domain: siteDomainSchema.nullish().transform((domain) => domain ?? null),
   adminEmail: z.string().trim().email(),
   adminPassword: z.string().min(MIN_ADMIN_PASSWORD_LENGTH).max(200),
 });

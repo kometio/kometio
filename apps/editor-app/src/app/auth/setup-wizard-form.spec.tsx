@@ -9,8 +9,16 @@ import { DEFAULT_SETUP_LOCALE, SetupWizardForm } from './setup-wizard-form';
 
 // The suite runs pinned to Italian (test-setup.ts), so the queries below
 // match the Italian copy — same convention as every other dialog spec here.
-function fillAndSubmit(onSubmit: (input: never) => Promise<void>) {
-  render(<SetupWizardForm onSubmit={onSubmit as never} />);
+function fillAndSubmit(
+  onSubmit: (input: never) => Promise<void>,
+  proposedDomain?: string,
+) {
+  render(
+    <SetupWizardForm
+      onSubmit={onSubmit as never}
+      proposedDomain={proposedDomain}
+    />,
+  );
 
   fireEvent.change(screen.getByLabelText(/token di installazione/i), {
     target: { value: 'the-real-token' },
@@ -41,6 +49,93 @@ describe('SetupWizardForm', () => {
         adminEmail: 'anna@example.test',
       }),
     );
+  });
+
+  /*
+   * The site is found by the domain it was given, so one created without it
+   * answers "not found" at every address until someone sets it by hand. The
+   * wizard starts the field on the domain of the address the deployment was
+   * told to serve, so that leaving it alone is the right answer.
+   */
+  describe("the site's domain", () => {
+    const domainField = () =>
+      screen.getByLabelText(/^dominio/i) as HTMLInputElement;
+
+    it('starts on the domain it was proposed', () => {
+      render(<SetupWizardForm onSubmit={vi.fn()} proposedDomain="localhost" />);
+
+      expect(domainField().value).toBe('localhost');
+    });
+
+    it('starts empty when there is nothing right to propose', () => {
+      render(<SetupWizardForm onSubmit={vi.fn()} />);
+
+      expect(domainField().value).toBe('');
+    });
+
+    it('sends the proposed domain when the user never touches the field', async () => {
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+      fillAndSubmit(onSubmit, 'localhost');
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ domain: 'localhost' }),
+      );
+    });
+
+    it('takes the scheme and the path out of what is typed, and says so', async () => {
+      render(<SetupWizardForm onSubmit={vi.fn()} proposedDomain="localhost" />);
+
+      fireEvent.change(domainField(), {
+        target: { value: 'https://Pasticceria.Test/chi-siamo' },
+      });
+
+      expect(domainField().value).toBe('pasticceria.test');
+      const note = await screen.findByRole('status');
+      expect(note.textContent).toContain('https://');
+      expect(note.textContent).toContain('/chi-siamo');
+    });
+
+    it('sends nothing as the domain when the user empties the field, to set it later', async () => {
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+      render(
+        <SetupWizardForm onSubmit={onSubmit} proposedDomain="localhost" />,
+      );
+
+      fireEvent.change(domainField(), { target: { value: '' } });
+      fireEvent.change(screen.getByLabelText(/token di installazione/i), {
+        target: { value: 'the-real-token' },
+      });
+      fireEvent.change(screen.getByLabelText(/nome del sito/i), {
+        target: { value: 'Pasticceria Rossi' },
+      });
+      fireEvent.change(screen.getByLabelText(/la tua email/i), {
+        target: { value: 'anna@example.test' },
+      });
+      fireEvent.change(screen.getByLabelText(/^password/i), {
+        target: { value: 'a-long-enough-pass' },
+      });
+      fireEvent.click(
+        screen.getByRole('button', { name: /crea il mio account/i }),
+      );
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ domain: null }),
+      );
+    });
+
+    it('does not send a domain that is not a hostname, and says what is wrong under the field', async () => {
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+      fillAndSubmit(onSubmit, 'not a domain');
+
+      const alert = await screen.findByRole('alert');
+      expect(alert.textContent).toMatch(/non sembra un dominio/i);
+      expect(domainField().getAttribute('aria-invalid')).toBe('true');
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
   });
 
   // The token is the one field whose rejection a person can act on, and

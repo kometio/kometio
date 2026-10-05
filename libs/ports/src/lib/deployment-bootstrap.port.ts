@@ -6,6 +6,12 @@ export interface BootstrapDeploymentInput {
   homePage: BootstrapHomePage;
   /** BCP-47, and the site's only enabled locale to start with. */
   defaultLocale: string;
+  /**
+   * The hostname the site is served on, as `sites.domain` holds it, or null
+   * when it is to be set later. The public site finds a site by the request's
+   * Host header, so a site without one is not found at any address.
+   */
+  domain: string | null;
   adminEmail: string;
   /** Already hashed by AuthPort — a plaintext password never reaches this port. */
   adminPasswordHash: string;

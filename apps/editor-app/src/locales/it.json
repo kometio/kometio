@@ -82,6 +82,8 @@
     "siteNameLabel": "Nome del sito",
     "localeLabel": "Lingua predefinita",
     "localeHint": "La lingua in cui nascono i contenuti del sito. Puoi aggiungerne altre più avanti, dalle impostazioni del sito.",
+    "domainLabel": "Dominio",
+    "domainHint": "L'indirizzo del tuo sito come lo digitano i visitatori: senza http:// e senza percorso (per esempio www.iltuosito.it). Abbiamo inserito quello per cui è configurata questa installazione; cambialo se il sito sarà altrove, oppure svuotalo per impostarlo dopo nelle Impostazioni. Finché un sito non ne ha uno, il suo indirizzo risponde «non trovato».",
     "emailLabel": "La tua email",
     "passwordLabel": "Password",
     "passwordHint": "Almeno {{count}} caratteri. Questo è l'account che nessuno può sbloccare al posto tuo: scegli bene.",

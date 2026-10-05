@@ -82,6 +82,8 @@
     "siteNameLabel": "Site name",
     "localeLabel": "Default language",
     "localeHint": "The language your site's content starts in. You can add more later, in Site settings.",
+    "domainLabel": "Domain",
+    "domainHint": "The address of your site as visitors type it: no http:// and no path (for example www.yoursite.com). We filled in the one this installation was set up for; change it if the site will live somewhere else, or empty it to set it later in Settings. Until a site has one, its address answers “not found”.",
     "emailLabel": "Your email",
     "passwordLabel": "Password",
     "passwordHint": "At least {{count}} characters. This is the account nobody can unlock for you, so make it a good one.",

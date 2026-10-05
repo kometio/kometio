@@ -67,21 +67,15 @@ Open <http://localhost:4200>. The first time, it asks for:
 
 - the **setup token** from step 2;
 - a **site name** and the site's **default language**;
+- the site's **domain**, already filled in with `localhost`, the address this
+  installation serves: leave it as it is. Kometio finds your site by that name,
+  so it has to be the one visitors type; you can change it later in
+  **Settings → General**;
 - your **email** and a **password** (at least 12 characters: this account
   cannot be unlocked by anyone else).
 
 Press **Create my account**. You land on the list of pages, with a home page
 already published.
-
-## 4. Tell Kometio your site's address
-
-Kometio serves a site on the domain it has been given, and a new installation
-has none, so until you set one the site's address answers "not found". On your
-own machine the domain is `localhost`.
-
-1. In the editor, open **Settings → General**.
-2. Type `localhost` in **Domain** — only the name, no `http://` and no port.
-3. Press **Save**, then **Change domain** in the box that asks you to confirm.
 
 ## What you should see
 
