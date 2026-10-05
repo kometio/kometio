@@ -11,6 +11,7 @@ import {
 } from '../adapters/port.tokens';
 import { ApiEnvModule } from '../api-env.module';
 import { AuthModule } from '../auth/auth.module';
+import { EmailsModule } from '../emails/emails.module';
 import { DeploymentSiteModule } from '../sites/deployment-site.module';
 import { moduleDeps } from '../module-deps';
 import { AccountController } from './account.controller';
@@ -23,6 +24,7 @@ import { ACCOUNT_DEPS } from './account.tokens';
     ApiEnvModule,
     AuthModule,
     DeploymentSiteModule,
+    EmailsModule,
     // The media library's limit, for the same reason: a profile picture
     // is an upload, and one account could otherwise fill the storage.
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 30 }] }),

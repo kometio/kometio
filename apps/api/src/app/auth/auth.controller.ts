@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   Inject,
-  Logger,
   Post,
   Req,
   Res,
@@ -52,16 +51,16 @@ import type { AuthDeps } from './auth.deps';
 import { AUTH_DEPS } from './auth.tokens';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 
 @Controller('auth')
 @UseFilters(AuthErrorsFilter)
 export class AuthController {
-  private readonly logger = new Logger(AuthController.name);
-
   constructor(
     @Inject(AUTH_DEPS) private readonly deps: AuthDeps,
     @Inject(API_ENV) private readonly env: ApiEnv,
     private readonly cookies: SessionCookies,
+    private readonly undeliveredEmails: UndeliveredEmailLog,
   ) {}
 
   @UseGuards(ThrottlerGuard, LoginThrottlerGuard)
@@ -168,12 +167,10 @@ export class AuthController {
     });
     // The address is changed: the notice to the one left behind that did not
     // go out is for the log, not an error for the person who followed the link.
-    for (const { to, reason } of undeliveredNotices) {
-      this.logger.error(
-        `Email change: the notice to ${to} was not sent`,
-        reason instanceof Error ? reason.stack : String(reason),
-      );
-    }
+    this.undeliveredEmails.report(
+      'Email change (notice to the old address)',
+      undeliveredNotices,
+    );
     return { success: true };
   }
 
@@ -193,12 +190,7 @@ export class AuthController {
     // A mail server that is down is for the log, never for the person who asked:
     // an error for an address that has an account and a success for one that
     // has not would say which is which.
-    for (const { to, reason } of undelivered) {
-      this.logger.error(
-        `Password reset: the email to ${to} was not sent`,
-        reason instanceof Error ? reason.stack : String(reason),
-      );
-    }
+    this.undeliveredEmails.report('Password reset', undelivered);
     // Always the same response, whether or not the email matched a real
     // account — see requestPasswordReset's own anti-enumeration doc comment.
     return { success: true };

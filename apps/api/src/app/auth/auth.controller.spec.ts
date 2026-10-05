@@ -20,6 +20,7 @@ import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
 import { AuthController } from './auth.controller';
 import { testApiEnv } from '../../test/api-env.test-fixture';
 import { SESSION_COOKIE_NAME, SessionCookies } from './session-cookies';
+import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 
 const tenantId = 'tenant-1';
 const editorAppUrl = 'https://editor.example.com';
@@ -98,6 +99,7 @@ describe('AuthController', () => {
       },
       env,
       new SessionCookies(env),
+      new UndeliveredEmailLog(),
     );
   });
 

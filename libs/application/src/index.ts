@@ -120,3 +120,4 @@ export * from './lib/use-cases/get-published-author-by-slug.use-case';
 export * from './lib/page-generation';
 export * from './lib/use-cases/site-ai-settings.use-cases';
 export * from './lib/use-cases/generate-page.use-case';
+export type { UndeliveredEmail } from './lib/emails/try-send-email';

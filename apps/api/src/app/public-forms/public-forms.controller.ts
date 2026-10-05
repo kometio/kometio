@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   Inject,
-  Logger,
   Post,
   Body,
   UploadedFile,
@@ -32,6 +31,7 @@ import {
 } from './attachment-quota.guard';
 import type { PublicFormsDeps } from './public-forms.deps';
 import { PUBLIC_FORMS_DEPS } from './public-forms.tokens';
+import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 
 // No SessionAuthGuard — the public, unauthenticated path apps/public-site's
 // Form block calls (field definitions live-fetched, docs/adr/0015) and its
@@ -41,10 +41,9 @@ import { PUBLIC_FORMS_DEPS } from './public-forms.tokens';
 @Controller('public/forms')
 @UseGuards(ThrottlerGuard)
 export class PublicFormsController {
-  private readonly logger = new Logger(PublicFormsController.name);
-
   constructor(
     @Inject(PUBLIC_FORMS_DEPS) private readonly deps: PublicFormsDeps,
+    private readonly undeliveredEmails: UndeliveredEmailLog,
   ) {}
 
   @Get(':id')
@@ -108,11 +107,9 @@ export class PublicFormsController {
     // The answers are saved: a notification that did not go out is the
     // site owner's to find in the log, and the submission list still has
     // it, rather than the visitor's error to retry.
-    for (const { to, reason } of undeliveredNotifications) {
-      this.logger.error(
-        `Form ${id}: notification to ${to} was not sent`,
-        reason instanceof Error ? reason.stack : String(reason),
-      );
-    }
+    this.undeliveredEmails.report(
+      `Form ${id} (notification)`,
+      undeliveredNotifications,
+    );
   }
 }
