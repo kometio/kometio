@@ -1,5 +1,6 @@
 import { InvalidCaptchaError } from '@kometio/domain-core';
 import { buildPasswordResetEmail } from '../emails/password-reset-email.template';
+import { trySendEmail, type UndeliveredEmail } from '../emails/try-send-email';
 import {
   emailLanguageOfUser,
   type EmailLanguageDeps,
@@ -29,6 +30,16 @@ export interface RequestPasswordResetInput {
   captchaToken: string;
 }
 
+/** What a reset request tells its caller: only what did not go out, for a log. */
+export interface RequestPasswordResetOutcome {
+  /**
+   * Empty for an address with no account and for an email that left. For the
+   * caller to LOG and never to show: a request answered differently for an
+   * address that has an account is exactly what this use case exists not to do.
+   */
+  undelivered: UndeliveredEmail[];
+}
+
 /**
  * Always resolves once past the CAPTCHA check, whether or not the email
  * matches a real user — same anti-enumeration principle as loginUser's
@@ -36,11 +47,18 @@ export interface RequestPasswordResetInput {
  * account with that email" apart from "email sent". A failed CAPTCHA is
  * orthogonal to that — it's checked before any lookup, so it never leaks
  * whether the email exists.
+ *
+ * That includes a mail server that is down. The send is not allowed to throw:
+ * a 500 for an address that has an account against a 204 for one that has not
+ * would hand the answer to anyone who asks, and a deployment with a wrong
+ * SMTP_HOST did exactly that. What did not go out is returned, for the log.
+ * The time a known address takes (a lookup, a token, a send) still differs from
+ * an unknown one's; that is not removed here.
  */
 export async function requestPasswordReset(
   deps: RequestPasswordResetDeps,
   input: RequestPasswordResetInput,
-): Promise<void> {
+): Promise<RequestPasswordResetOutcome> {
   const captchaValid = await deps.captchaPort.verify({
     token: input.captchaToken,
   });
@@ -53,7 +71,7 @@ export async function requestPasswordReset(
     input.email,
   );
   if (!user) {
-    return;
+    return { undelivered: [] };
   }
 
   const resetToken = await deps.verificationTokenPort.createToken(
@@ -65,8 +83,9 @@ export async function requestPasswordReset(
   const resetUrlBase = input.resetUrlBase.replace(/\/$/, '');
   const resetUrl = `${resetUrlBase}/reset-password?resetToken=${resetToken.token}`;
 
-  await deps.emailPort.sendEmail({
+  const undelivered = await trySendEmail(deps.emailPort, {
     to: user.email,
     ...buildPasswordResetEmail(await emailLanguageOfUser(deps, user), resetUrl),
   });
+  return { undelivered };
 }

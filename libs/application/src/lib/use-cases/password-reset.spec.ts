@@ -42,6 +42,52 @@ async function setup() {
 }
 
 describe('requestPasswordReset', () => {
+  /*
+   * The use case promises that nobody can tell an address with an account from
+   * one without. It kept that promise until the mail server failed: the send
+   * threw for an address that exists and there was nothing to send for one that
+   * does not, so a 500 against a 204 told anyone which addresses have an
+   * account. A deployment with a wrong SMTP_HOST handed that out to whoever asked.
+   */
+  it('answers as it does for an unknown address when the mail server is down, and reports what did not go out', async () => {
+    const deps = await setup();
+    deps.emailPort.failEverySendWith(new Error('connect ECONNREFUSED'));
+
+    const known = await requestPasswordReset(deps, {
+      tenantId,
+      email: 'lele@example.com',
+      resetUrlBase: 'https://editor.example.com',
+      captchaToken: 'valid-token',
+    });
+    const unknown = await requestPasswordReset(deps, {
+      tenantId,
+      email: 'nobody@example.com',
+      resetUrlBase: 'https://editor.example.com',
+      captchaToken: 'valid-token',
+    });
+
+    // Neither threw. What the caller hears is the same; what failed is told
+    // apart only in `undelivered`, for the log, never for the person.
+    expect(unknown.undelivered).toEqual([]);
+    expect(known.undelivered).toEqual([
+      { to: 'lele@example.com', reason: expect.any(Error) },
+    ]);
+  });
+
+  it('reports nothing undelivered when the email went out', async () => {
+    const deps = await setup();
+
+    const outcome = await requestPasswordReset(deps, {
+      tenantId,
+      email: 'lele@example.com',
+      resetUrlBase: 'https://editor.example.com',
+      captchaToken: 'valid-token',
+    });
+
+    expect(outcome.undelivered).toEqual([]);
+    expect(deps.emailPort.sentEmails).toHaveLength(1);
+  });
+
   it('sends a reset email with a working link for a known email', async () => {
     const deps = await setup();
 
@@ -68,7 +114,7 @@ describe('requestPasswordReset', () => {
         resetUrlBase: 'https://editor.example.com/',
         captchaToken: 'valid-token',
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual({ undelivered: [] });
     expect(deps.emailPort.sentEmails).toHaveLength(0);
   });
 

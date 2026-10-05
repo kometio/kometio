@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
   InvalidCaptchaError,
@@ -357,6 +358,48 @@ describe('AuthController', () => {
 
       expect(result).toEqual({ success: true });
       expect(emailPort.sendEmail).not.toHaveBeenCalled();
+    });
+
+    /*
+     * With a mail server that is down, a known address used to answer 500 and
+     * an unknown one 204: anyone could tell which addresses have an account.
+     * It answers the same now, and the failure goes where the operator reads.
+     */
+    it('answers as it does for an unknown address when the mail server is down, and says so in the log', async () => {
+      userRepository.findByEmail.mockResolvedValue(
+        User.create({
+          id: 'user-1',
+          tenantId,
+          email: 'lele@example.com',
+          displayName: 'Lele',
+          passwordHash: 'hashed',
+          role: 'admin',
+        }),
+      );
+      verificationTokenPort.createToken.mockResolvedValue({
+        token: 'a-token',
+        userId: 'user-1',
+        tenantId,
+        purpose: 'password-reset',
+        payload: null,
+        expiresAt: new Date(),
+      });
+      emailPort.sendEmail.mockRejectedValue(new Error('connect ECONNREFUSED'));
+      const logged = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+
+      const result = await controller.requestPasswordReset({
+        email: 'lele@example.com',
+        captchaToken: 'valid-token',
+      });
+
+      expect(result).toEqual({ success: true });
+      expect(logged).toHaveBeenCalledWith(
+        expect.stringContaining('lele@example.com'),
+        expect.stringContaining('ECONNREFUSED'),
+      );
+      logged.mockRestore();
     });
 
     it('refuses an invalid captcha before even looking up the account', async () => {

@@ -184,12 +184,21 @@ export class AuthController {
     @Body(new ZodValidationPipe(requestPasswordResetBodySchema))
     body: RequestPasswordResetBody,
   ) {
-    await requestPasswordReset(this.deps, {
+    const { undelivered } = await requestPasswordReset(this.deps, {
       tenantId: await this.deps.tenant.require(),
       email: body.email,
       resetUrlBase: this.env.EDITOR_APP_URL,
       captchaToken: body.captchaToken,
     });
+    // A mail server that is down is for the log, never for the person who asked:
+    // an error for an address that has an account and a success for one that
+    // has not would say which is which.
+    for (const { to, reason } of undelivered) {
+      this.logger.error(
+        `Password reset: the email to ${to} was not sent`,
+        reason instanceof Error ? reason.stack : String(reason),
+      );
+    }
     // Always the same response, whether or not the email matched a real
     // account — see requestPasswordReset's own anti-enumeration doc comment.
     return { success: true };
