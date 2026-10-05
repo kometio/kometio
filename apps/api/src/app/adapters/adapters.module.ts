@@ -42,7 +42,6 @@ import { DrizzleUserRepository } from '@kometio/postgres-user-repository';
 import type { PageGeneratorConnection } from '@kometio/ports';
 import { PreviewTokenAdapter } from '@kometio/preview-token-adapter';
 import { SessionAuthAdapter } from '@kometio/session-auth-adapter';
-import { TurnstileCaptchaAdapter } from '@kometio/turnstile-captcha';
 import { VerificationTokenAdapter } from '@kometio/verification-token-adapter';
 import { WxrExportReader } from '@kometio/wordpress-wxr';
 import type { ApiEnv } from '../../env-schema';
@@ -53,6 +52,7 @@ import {
   DEPLOYMENT_TENANT_RESOLVER,
   type DeploymentTenantResolver,
 } from '../deployment-tenant.resolver';
+import { createCaptcha, type DeploymentCaptcha } from './captcha.factory';
 import { createEmailPort } from './email.factory';
 import { createNewsletterPort } from './newsletter.factory';
 import { createPageGenerator } from './page-generator.factory';
@@ -202,11 +202,21 @@ const PROVIDERS = [
     const log = new Logger('Email');
     return createEmailPort(env, (entry) => log.warn(entry));
   }),
-  configured(
-    port.CAPTCHA_PORT,
-    (env) =>
-      new TurnstileCaptchaAdapter({ secretKey: env.TURNSTILE_SECRET_KEY }),
-  ),
+  // Cloudflare's when the deployment has its keys, the built-in one when it has
+  // none (docs/adr/0103). One object, so the challenge a visitor is given and the
+  // solution that is checked are the same adapter, with the same memory of the
+  // ones already spent.
+  configured(port.DEPLOYMENT_CAPTCHA, createCaptcha),
+  {
+    provide: port.CAPTCHA_PORT,
+    useFactory: (captcha: DeploymentCaptcha) => captcha.verifier,
+    inject: [port.DEPLOYMENT_CAPTCHA],
+  },
+  {
+    provide: port.CAPTCHA_CHALLENGE_PORT,
+    useFactory: (captcha: DeploymentCaptcha) => captcha.challenges,
+    inject: [port.DEPLOYMENT_CAPTCHA],
+  },
   configured(port.NEWSLETTER_PORT, createNewsletterPort),
   configured(port.SECRET_CIPHER, createSecretCipher),
   // Whether a site's model server may be inside the network (a model on

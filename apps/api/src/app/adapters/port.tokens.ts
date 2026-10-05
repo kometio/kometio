@@ -74,7 +74,11 @@ export const CONTENT_SANITIZER = Symbol('CONTENT_SANITIZER');
 export const EMAIL_PORT = Symbol('EMAIL_PORT');
 /** The language of the site this deployment serves — what an email falls back to (docs/adr/0100). Provided by DeploymentSiteModule. */
 export const DEPLOYMENT_LOCALE = Symbol('DEPLOYMENT_LOCALE');
+/** The captcha of this deployment, whole: `createCaptcha`'s answer, which CAPTCHA_PORT and CAPTCHA_CHALLENGE_PORT are the two halves of. */
+export const DEPLOYMENT_CAPTCHA = Symbol('DEPLOYMENT_CAPTCHA');
 export const CAPTCHA_PORT = Symbol('CAPTCHA_PORT');
+/** `null` when the captcha is Cloudflare's, which makes its own challenges. */
+export const CAPTCHA_CHALLENGE_PORT = Symbol('CAPTCHA_CHALLENGE_PORT');
 export const NEWSLETTER_PORT = Symbol('NEWSLETTER_PORT');
 /** `null` when the deployment has nowhere to keep its secrets key: page generation is off. */
 export const SECRET_CIPHER = Symbol('SECRET_CIPHER');

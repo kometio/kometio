@@ -85,7 +85,13 @@ const apiEnvBaseSchema = z.object({
   // is one), so each visitor keeps their own address for rate limits.
   // Unset: 0, the API reached directly.
   TRUSTED_PROXY_HOPS: z.string().regex(/^\d$/).optional(),
-  TURNSTILE_SECRET_KEY: z.string().min(1),
+  // Both or neither (docs/adr/0103): a site's own Cloudflare Turnstile keys, or
+  // none, and then the captcha is the one built into Kometio. The site key is
+  // read by the editor and the public site, which draw the widget; the API
+  // reads it only to refuse a half-set pair, which would leave the widgets
+  // and the verifier on different captchas.
+  TURNSTILE_SITE_KEY: emptyIsUnset(z.string().min(1).optional()),
+  TURNSTILE_SECRET_KEY: emptyIsUnset(z.string().min(1).optional()),
   // Optional: unset, the API trusts no visitor address the public site
   // forwards (public-pages-throttler.guard.ts).
   PUBLIC_API_SERVICE_TOKEN: emptyIsUnset(z.string().min(1).optional()),
@@ -180,7 +186,10 @@ function refuseExampleSecrets(
       `POSTGRES_APP_PASSWORD must be at least ${PASSWORD_MIN_LENGTH} characters`,
     );
   }
-  if (TURNSTILE_TEST_SECRET.test(env.TURNSTILE_SECRET_KEY)) {
+  if (
+    env.TURNSTILE_SECRET_KEY !== undefined &&
+    TURNSTILE_TEST_SECRET.test(env.TURNSTILE_SECRET_KEY)
+  ) {
     fail(
       'TURNSTILE_SECRET_KEY',
       "TURNSTILE_SECRET_KEY is a Cloudflare test key, which accepts every captcha: use your site's own",
@@ -190,6 +199,15 @@ function refuseExampleSecrets(
 
 export const apiEnvSchema = apiEnvBaseSchema.superRefine((env, ctx) => {
   refuseExampleSecrets(env, ctx);
+  const siteKeyGiven = env.TURNSTILE_SITE_KEY !== undefined;
+  const secretGiven = env.TURNSTILE_SECRET_KEY !== undefined;
+  if (siteKeyGiven !== secretGiven) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [siteKeyGiven ? 'TURNSTILE_SECRET_KEY' : 'TURNSTILE_SITE_KEY'],
+      message: `${siteKeyGiven ? 'TURNSTILE_SECRET_KEY' : 'TURNSTILE_SITE_KEY'} is required when ${siteKeyGiven ? 'TURNSTILE_SITE_KEY' : 'TURNSTILE_SECRET_KEY'} is set: both of your Turnstile keys, or neither to use the captcha built into Kometio`,
+    });
+  }
   if (env.SMTP_HOST !== undefined) {
     for (const key of SMTP_REQUIRED_KEYS) {
       if (env[key] === undefined) {
