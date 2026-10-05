@@ -91,7 +91,7 @@ export async function run(command) {
           `the archive is written to stdout: redirect it to a file (> ${archiveFileName(new Date())})`,
         );
       await withDatabase(
-        () => exportArchive({ dataDir: DATA, out: 'inherit', say }),
+        () => exportArchive({ dataDir: DATA, out: process.stdout, say }),
         { mustBeStopped: false },
       );
     } else if (command === 'import') {
