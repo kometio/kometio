@@ -4,6 +4,10 @@ import {
   uploadFormAttachment,
 } from '../../../../lib/public-api-client';
 import { backToPage } from '../../../../lib/back-to-page';
+import {
+  CAPTCHA_FIELD_TURNSTILE,
+  captchaTokenOf,
+} from '../../../../lib/captcha-token';
 
 // Same-origin proxy (docs/adr/0015): the browser only ever POSTs to this
 // app's own origin, never directly to the API — avoids touching ADR-0010's
@@ -20,10 +24,11 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
 
   const formData = await request.formData();
   const honeypot = String(formData.get('_honeypot') ?? '');
-  // Turnstile's widget script injects this hidden input itself once the
-  // visitor completes the check — no extra glue needed on our side to wire
-  // it into the form's own POST body.
-  const captchaToken = String(formData.get('cf-turnstile-response') ?? '');
+  // The widget puts the solution in the form's own POST body itself once the
+  // visitor has completed the check: Turnstile's script as a hidden input
+  // named `cf-turnstile-response`, the built-in widget as one named `_captcha`
+  // (block-behaviors/altcha.ts). A page has one or the other.
+  const captchaToken = captchaTokenOf(formData);
   const redirectTo = String(formData.get('_redirectTo') ?? '/');
   // Which page rendered this form (Form.astro's hidden input). Passed on
   // as-is: the API is the one that decides whether to believe it, since
@@ -44,7 +49,7 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
   // applies to the CAPTCHA verify call.
   if (honeypot.trim() === '') {
     for (const [key, value] of formData.entries()) {
-      if (key.startsWith('_') || key === 'cf-turnstile-response') continue;
+      if (key.startsWith('_') || key === CAPTCHA_FIELD_TURNSTILE) continue;
       if (value instanceof File) {
         // A real <input type="file"> with nothing selected submits its
         // field as an empty string, not a File (WHATWG spec) — so this

@@ -565,6 +565,34 @@ export async function subscribeNewsletter(
   return { ok: false, status: res.status };
 }
 
+// What the captcha built into Kometio asks the browser to solve (docs/adr/0103):
+// opaque to this site, which only passes it on, so all it checks is that it
+// came back as a JSON object.
+const captchaChallengeSchema = z.record(z.string(), z.unknown());
+
+export type CaptchaChallengeResult =
+  | { ok: true; challenge: Record<string, unknown> }
+  | { ok: false; status: number };
+
+/**
+ * Called server-side from this site's own challenge route (pages/api/captcha/
+ * challenge.ts), never directly from the browser: the widget on a page asks the
+ * site it is on, as the form it belongs to posts to it (docs/adr/0015). The
+ * visitor is the one the API counts, through the same two headers every call
+ * here carries; a 404 is the API saying that its captcha is Cloudflare's and
+ * has no challenge of its own to hand out.
+ */
+export async function fetchCaptchaChallenge(): Promise<CaptchaChallengeResult> {
+  const res = await timedFetcher.fetch(`${apiUrl()}/captcha/challenge`);
+  if (!res.ok) {
+    return { ok: false, status: res.status };
+  }
+  return {
+    ok: true,
+    challenge: captchaChallengeSchema.parse(await res.json()),
+  };
+}
+
 /**
  * Whether this deployment has been through its first-run wizard. Only the
  * 500 page asks: it is where every failing route ends up, and "nobody has

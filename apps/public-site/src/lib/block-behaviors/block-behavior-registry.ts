@@ -1,5 +1,6 @@
 import { backToTopBehaviors } from './back-to-top';
 import { beforeAfterBehaviors } from './before-after';
+import { captchaBehaviors } from './captcha';
 import { consentGatedEmbedBehaviors } from './consent-gated-embed';
 import { cookiePreferencesBehaviors } from './cookie-preferences';
 import { copyButtonBehaviors } from './copy-button';
@@ -16,7 +17,6 @@ import { statBehaviors } from './stat';
 import { tabsBehaviors } from './tabs';
 import { termListBehaviors } from './term-list';
 import { readingProgressBehaviors } from './reading-progress';
-import { turnstileBehaviors } from './turnstile';
 import { videoPlaylistBehaviors } from './video-playlist';
 import type { BlockBehavior } from './types';
 
@@ -27,9 +27,9 @@ import type { BlockBehavior } from './types';
 // for why). Every block listed here also runs the exact same behaviors
 // itself, once, from its own <script> at initial page load — this registry
 // exists purely for the live-update case, it isn't the only place these
-// run. Form and NewsletterSignup both register turnstileBehaviors: either
-// can render a Turnstile widget, and the guard in turnstile.ts makes
-// registering it twice on one page harmless.
+// run. Form and NewsletterSignup both register captchaBehaviors: either
+// can render a captcha widget (Cloudflare's or the built-in one), and the guard
+// of each makes registering it twice on one page harmless.
 export const BLOCK_BEHAVIOR_REGISTRY: Record<string, BlockBehavior[]> = {
   Tabs: tabsBehaviors,
   HamburgerMenu: hamburgerMenuBehaviors,
@@ -54,8 +54,8 @@ export const BLOCK_BEHAVIOR_REGISTRY: Record<string, BlockBehavior[]> = {
   PromoBar: promoBarBehaviors,
   BeforeAfter: beforeAfterBehaviors,
   Stat: statBehaviors,
-  Form: [...formBehaviors, ...turnstileBehaviors],
-  NewsletterSignup: turnstileBehaviors,
+  Form: [...formBehaviors, ...captchaBehaviors],
+  NewsletterSignup: captchaBehaviors,
   VideoEmbed: consentGatedEmbedBehaviors,
   MapEmbed: consentGatedEmbedBehaviors,
   EmbedHtml: embedHtmlBehaviors,

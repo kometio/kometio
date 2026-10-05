@@ -115,6 +115,28 @@ describe('POST /api/forms/[id]/submit', () => {
     expect(body.values).not.toHaveProperty('cf-turnstile-response');
   });
 
+  // The captcha built into Kometio (docs/adr/0103): its widget is named so that
+  // no field of a form ever is, which is what keeps it out of the answers.
+  it("forwards the built-in widget's solution as the captcha token, and keeps it out of the answers", async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(undefined, 204));
+
+    const request = formDataRequest({
+      _redirectTo: '/contatti',
+      _checkboxFields: '',
+      _honeypot: '',
+      email: 'visitor@example.com',
+      _captcha: 'built-in-solution',
+    });
+
+    // @ts-expect-error deliberately partial APIContext
+    await POST({ params: { id: 'form-1' }, request, redirect });
+
+    const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
+    const body = JSON.parse(init?.body as string);
+    expect(body.captchaToken).toBe('built-in-solution');
+    expect(body.values).toEqual({ email: 'visitor@example.com' });
+  });
+
   it('marks an unchecked checkbox as false even though the browser never submits its key', async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(undefined, 204));
 

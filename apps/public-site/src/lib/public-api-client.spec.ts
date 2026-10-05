@@ -3,6 +3,7 @@ import { DEFAULT_COOKIE_BANNER_SETTINGS } from '@kometio/shared-types';
 import { type PublishedPage } from '@kometio/api-contracts';
 import type { PublishedSiteChromeDto } from './public-api-client';
 import {
+  fetchCaptchaChallenge,
   getPublicForm,
   getPublishedAuthorBySlug,
   getPublishedPageBySlug,
@@ -453,6 +454,35 @@ describe('public-api-client', () => {
     });
 
     expect(result).toEqual({ ok: false, status: 400 });
+  });
+
+  describe('the challenge of the captcha built into Kometio', () => {
+    it('asks the API for a challenge and hands it back', async () => {
+      const challenge = { parameters: { nonce: 'n' }, signature: 's' };
+      vi.mocked(fetch).mockResolvedValue(jsonResponse(challenge));
+
+      const result = await fetchCaptchaChallenge();
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/captcha/challenge'),
+        expect.anything(),
+      );
+      expect(result).toEqual({ ok: true, challenge });
+    });
+
+    it('reports a refusal with its status, without throwing: 404 where the captcha is Cloudflare’s, 429 for a visitor who asks too often', async () => {
+      vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 404));
+      expect(await fetchCaptchaChallenge()).toEqual({ ok: false, status: 404 });
+
+      vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 429));
+      expect(await fetchCaptchaChallenge()).toEqual({ ok: false, status: 429 });
+    });
+
+    it('does not pass on an answer that is not a JSON object', async () => {
+      vi.mocked(fetch).mockResolvedValue(jsonResponse('not a challenge'));
+
+      await expect(fetchCaptchaChallenge()).rejects.toThrow();
+    });
   });
 
   // Security review 2026-08-24, point 18: simulates what AbortSignal.timeout()

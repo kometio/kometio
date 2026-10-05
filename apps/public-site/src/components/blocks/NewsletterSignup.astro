@@ -1,6 +1,7 @@
 ---
 import type { NewsletterSignupProps } from '@kometio/shared-types';
 import { Translator } from '@kometio/theme-runtime';
+import CaptchaWidget from '../parts/CaptchaWidget.astro';
 
 type Props = NewsletterSignupProps & {
   locale: string;
@@ -23,9 +24,6 @@ redirectParams.delete('newsletterSubscribed');
 redirectParams.delete('newsletterError');
 const redirectTo =
   Astro.url.pathname + (redirectParams.size > 0 ? `?${redirectParams}` : '');
-
-// Same reasoning as Form.astro's own turnstileSiteKey.
-const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
 ---
 
 <div class:list={['kometio-newsletter-signup', instanceClass]}>
@@ -68,23 +66,19 @@ const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
           />
           <button type="submit" data-kometio-field="buttonLabel">{buttonLabel}</button>
         </div>
-        {
-          turnstileSiteKey && (
-            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} />
-          )
-        }
+        <CaptchaWidget locale={locale} />
       </form>
     )
   }
 </div>
 
 <script>
-  // Turnstile rendered explicitly, not via its own auto-scan — see
-  // block-behaviors/turnstile.ts for why (and for the same reasoning
-  // Form.astro's own widget uses).
-  import { turnstileBehaviors } from '../../lib/block-behaviors/turnstile';
+  // The captcha widget: Turnstile rendered explicitly, not via its own
+  // auto-scan (block-behaviors/turnstile.ts says why), or the one built into
+  // Kometio (block-behaviors/altcha.ts) — the same two Form.astro's widget is.
+  import { captchaBehaviors } from '../../lib/block-behaviors/captcha';
   import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
-  runBlockBehaviors(document, turnstileBehaviors);
+  runBlockBehaviors(document, captchaBehaviors);
 </script>
 
 <style>
@@ -110,6 +104,13 @@ const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
   .kometio-newsletter-signup__row input {
     flex: 1;
     min-width: 0;
+  }
+  /* The captcha under the row: a slot rendered by CaptchaWidget, which a
+     scoped rule here cannot name, and the form here is not a flex column with
+     a gap, as Form.astro's is. */
+  .kometio-newsletter-signup :global([data-kometio-altcha]),
+  .kometio-newsletter-signup :global(.cf-turnstile) {
+    margin-top: 0.5rem;
   }
   .kometio-newsletter-signup input {
     padding: 0.5rem 0.75rem;

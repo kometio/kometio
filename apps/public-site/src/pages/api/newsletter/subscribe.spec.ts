@@ -53,6 +53,25 @@ describe('POST /api/newsletter/subscribe', () => {
     });
   });
 
+  it("forwards the built-in captcha widget's solution as the captcha token", async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(undefined, 204));
+
+    const request = formDataRequest({
+      _redirectTo: '/',
+      _honeypot: '',
+      email: 'visitor@example.com',
+      _captcha: 'built-in-solution',
+    });
+
+    // @ts-expect-error deliberately partial APIContext
+    await POST({ request, redirect });
+
+    const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
+    expect(JSON.parse(init?.body as string).captchaToken).toBe(
+      'built-in-solution',
+    );
+  });
+
   it('redirects with newsletterError when the API rejects the subscription', async () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse({ message: 'Invalid email' }, 400),

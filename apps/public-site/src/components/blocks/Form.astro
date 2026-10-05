@@ -7,6 +7,7 @@ import {
 import { getPublicForm } from '../../lib/public-api-client';
 import { Translator } from '@kometio/theme-runtime';
 import FormFieldComponent from '../parts/FormField.astro';
+import CaptchaWidget from '../parts/CaptchaWidget.astro';
 
 type Props = FormBlockProps & {
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
@@ -40,13 +41,6 @@ const checkboxFieldIds = (form?.fields ?? [])
   .filter((field) => field.type === 'checkbox' || field.type === 'newsletter-consent')
   .map((field) => field.id)
   .join(',');
-
-// process.env, not import.meta.env/PUBLIC_ (same reasoning as apiUrl() in
-// public-api-client.ts): read server-side per request, then written into
-// the rendered HTML's data-sitekey — this app doesn't do per-domain
-// build-time bundling, so a build-time-baked client constant would be
-// wrong here anyway.
-const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
 
 // The show-when rules, for the browser to apply as the visitor answers
 // (block-behaviors/form.ts). Only the ids and conditions: the rest of a
@@ -177,11 +171,7 @@ if (form && form.steps.length > 0) {
               <FormFieldComponent formId={form.id} field={field} />
             ))
           )}
-          {
-            turnstileSiteKey && (
-              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} />
-            )
-          }
+          <CaptchaWidget locale={locale} />
           <button
             type="submit"
             class="kometio-form__submit"
@@ -197,17 +187,18 @@ if (form && form.steps.length > 0) {
 }
 
 <script>
-  // Multi-step nav (Indietro/Avanti) and the Turnstile widget (rendered
-  // explicitly, not via Turnstile's own auto-scan — see
-  // block-behaviors/turnstile.ts for why) both live in plain importable
-  // modules, not inline here, so they can also be re-run after a live
-  // canvas insert/patch — see
-  // block-behaviors/run-block-behaviors-in-subtree.ts. A no-op for a
-  // plain single-step form: formBehaviors' own selector finds nothing.
+  // Multi-step nav (Indietro/Avanti) and the captcha widget (Turnstile
+  // rendered explicitly, not via its own auto-scan — see
+  // block-behaviors/turnstile.ts for why — or the one built into Kometio,
+  // block-behaviors/altcha.ts) both live in plain importable modules, not
+  // inline here, so they can also be re-run after a live canvas
+  // insert/patch — see block-behaviors/run-block-behaviors-in-subtree.ts. A
+  // no-op for a plain single-step form: formBehaviors' own selector finds
+  // nothing.
   import { formBehaviors } from '../../lib/block-behaviors/form';
-  import { turnstileBehaviors } from '../../lib/block-behaviors/turnstile';
+  import { captchaBehaviors } from '../../lib/block-behaviors/captcha';
   import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
-  runBlockBehaviors(document, [...formBehaviors, ...turnstileBehaviors]);
+  runBlockBehaviors(document, [...formBehaviors, ...captchaBehaviors]);
 </script>
 
 <style>
