@@ -42,6 +42,9 @@
       "path": "../../libs/adapters/altcha-captcha/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/adapters/launcher-site-archive/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/adapters/smtp-email-adapter/tsconfig.lib.json"
     },
     {

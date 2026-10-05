@@ -155,6 +155,9 @@
     },
     {
       "path": "./libs/adapters/altcha-captcha"
+    },
+    {
+      "path": "./libs/adapters/launcher-site-archive"
     }
   ],
   "compilerOptions": {}

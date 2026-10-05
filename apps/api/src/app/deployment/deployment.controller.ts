@@ -23,6 +23,11 @@ export class DeploymentController {
 
   @Get()
   get(): DeploymentRecord {
-    return { emailConfigured: this.env.SMTP_HOST !== undefined };
+    return {
+      emailConfigured: this.env.SMTP_HOST !== undefined,
+      // Whether the launcher of the single image is there to make the archive
+      // (docs/adr/0105): the same fact SITE_ARCHIVE is wired from.
+      siteArchive: this.env.KOMETIO_CONTROL_SOCKET !== undefined,
+    };
   }
 }

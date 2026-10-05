@@ -26,6 +26,9 @@ describe('DeploymentController (integration)', () => {
       .get('/deployment')
       .expect(200);
 
-    expect(response.body).toEqual({ emailConfigured: expect.any(Boolean) });
+    expect(response.body).toEqual({
+      emailConfigured: expect.any(Boolean),
+      siteArchive: expect.any(Boolean),
+    });
   });
 });

@@ -673,3 +673,28 @@ export class SiteAiSettingsRejectedError extends Error {
     this.name = 'SiteAiSettingsRejectedError';
   }
 }
+
+/**
+ * This deployment cannot make the archive of its site (docs/adr/0105): the
+ * database is not one this server runs itself, so there is nothing here that can
+ * dump it. The editor does not offer the export there; this is for a request
+ * that comes anyway.
+ */
+export class SiteArchiveUnavailableError extends Error {
+  constructor() {
+    super('This deployment cannot export its site from the editor.');
+    this.name = 'SiteArchiveUnavailableError';
+  }
+}
+
+/**
+ * The server declined to make the archive now, and says why in words fit for
+ * the person who asked: another one is being made, or the first-run setup has
+ * not made a site to export yet.
+ */
+export class SiteArchiveRefusedError extends Error {
+  constructor(reason: string) {
+    super(reason);
+    this.name = 'SiteArchiveRefusedError';
+  }
+}

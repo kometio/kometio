@@ -85,6 +85,10 @@ const apiEnvBaseSchema = z.object({
   // is one), so each visitor keeps their own address for rate limits.
   // Unset: 0, the API reached directly.
   TRUSTED_PROXY_HOPS: z.string().regex(/^\d$/).optional(),
+  // The Unix socket on which the launcher of the single Docker image makes the
+  // archive of the site (docs/adr/0105). Set by that launcher, not by hand: unset,
+  // this deployment cannot export its site from the editor, and says so.
+  KOMETIO_CONTROL_SOCKET: emptyIsUnset(z.string().min(1).optional()),
   // Both or neither (docs/adr/0103): a site's own Cloudflare Turnstile keys, or
   // none, and then the captcha is the one built into Kometio. The site key is
   // read by the editor and the public site, which draw the widget; the API

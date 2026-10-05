@@ -6,6 +6,7 @@ import * as deployment from '../../lib/deployment-api-client';
 import { ApiError } from '../../lib/http-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { ChangeEmailDialog } from './change-email-dialog';
+import { deploymentRecord } from '../../test/deployment.test-fixture';
 
 vi.mock('../../lib/deployment-api-client', () => ({
   getDeployment: vi.fn(),
@@ -54,9 +55,9 @@ const submit = () =>
 
 describe('ChangeEmailDialog', () => {
   beforeEach(() => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: true,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: true }),
+    );
   });
 
   afterEach(() => {
@@ -64,9 +65,9 @@ describe('ChangeEmailDialog', () => {
   });
 
   it('does not say a link was sent when the server has no mail server: it is in its log', async () => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: false,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: false }),
+    );
     renderDialog();
     await waitFor(() => expect(deployment.getDeployment).toHaveBeenCalled());
 

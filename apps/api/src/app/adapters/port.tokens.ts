@@ -80,6 +80,8 @@ export const CAPTCHA_PORT = Symbol('CAPTCHA_PORT');
 /** `null` when the captcha is Cloudflare's, which makes its own challenges. */
 export const CAPTCHA_CHALLENGE_PORT = Symbol('CAPTCHA_CHALLENGE_PORT');
 export const NEWSLETTER_PORT = Symbol('NEWSLETTER_PORT');
+/** `null` when the deployment's database is not one the single image runs itself: nothing here can dump it, and the editor offers no export. */
+export const SITE_ARCHIVE = Symbol('SITE_ARCHIVE');
 /** `null` when the deployment has nowhere to keep its secrets key: page generation is off. */
 export const SECRET_CIPHER = Symbol('SECRET_CIPHER');
 export const PAGE_GENERATOR_FACTORY = Symbol('PAGE_GENERATOR_FACTORY');

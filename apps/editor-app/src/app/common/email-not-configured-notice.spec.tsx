@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as deployment from '../../lib/deployment-api-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { EmailNotConfiguredNotice } from './email-not-configured-notice';
+import { deploymentRecord } from '../../test/deployment.test-fixture';
 
 vi.mock('../../lib/deployment-api-client', () => ({ getDeployment: vi.fn() }));
 
@@ -25,9 +26,9 @@ describe('EmailNotConfiguredNotice', () => {
   afterEach(() => vi.resetAllMocks());
 
   it('tells the administrator that email is not being sent, and where it goes', async () => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: false,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: false }),
+    );
 
     renderNotice();
 
@@ -38,9 +39,9 @@ describe('EmailNotConfiguredNotice', () => {
   });
 
   it('says nothing when the deployment can send email', async () => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: true,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: true }),
+    );
 
     renderNotice();
 
