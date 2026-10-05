@@ -1,13 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { turnstileSiteKey } from './turnstile-site-key';
 
-/** Cloudflare's "always passes" test site key. */
-const TEST_KEY = '1x00000000000000000000AA';
-
 /**
- * The key reaches the editor three ways, in this order: what the container
- * wrote when it started, what the build knew, Cloudflare's test key
- * (docs/adr/0076, amended 2026-10-02). An empty value is "unset" at each step.
+ * The key reaches the editor two ways, in this order: what the container wrote
+ * when it started, what the build knew (docs/adr/0076, amended 2026-10-02).
+ * An empty value is "unset" at each step, and without one the captcha is the
+ * one built into Kometio (docs/adr/0103): `null`.
  */
 describe('turnstileSiteKey', () => {
   afterEach(() => {
@@ -38,13 +36,14 @@ describe('turnstileSiteKey', () => {
   it('takes an empty build-time key for unset, as a published image has', () => {
     vi.stubEnv('VITE_TURNSTILE_SITE_KEY', '');
 
-    expect(turnstileSiteKey()).toBe(TEST_KEY);
+    expect(turnstileSiteKey()).toBeNull();
   });
 
-  it('falls back to the test key when nothing was set anywhere', () => {
+  // It used to be Cloudflare's test key, a captcha that passes everybody.
+  it('is null when nothing was set anywhere: the captcha built into Kometio, not one that lets everybody through', () => {
     vi.stubEnv('VITE_TURNSTILE_SITE_KEY', undefined);
 
-    expect(turnstileSiteKey()).toBe(TEST_KEY);
+    expect(turnstileSiteKey()).toBeNull();
   });
 
   it('treats a placeholder the container never replaced as unset', () => {
@@ -54,6 +53,6 @@ describe('turnstileSiteKey', () => {
     const placeholder = '${KOMETIO_TURNSTILE_SITE_KEY}';
     window.__KOMETIO_CONFIG__ = { turnstileSiteKey: placeholder };
 
-    expect(turnstileSiteKey()).toBe(TEST_KEY);
+    expect(turnstileSiteKey()).toBeNull();
   });
 });

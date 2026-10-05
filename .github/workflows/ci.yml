@@ -39,7 +39,11 @@ env:
   # Needed for PublicFormsModule to compile in apps/api's unit tests (see
   # app.module.spec.ts) — Cloudflare's own documented "always passes, no
   # real challenge" test secret (see .env.example), not a real one. No live
-  # siteverify call happens in CI's non-integration unit tests.
+  # siteverify call happens in CI's non-integration unit tests. Its pair, the
+  # site key, is here too: the API refuses to start with one of the two alone
+  # (docs/adr/0103), and the public site's forms (the `e2e` job) need it to
+  # render a widget at all.
+  TURNSTILE_SITE_KEY: 1x00000000000000000000AA
   TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
   # Needed for PagesModule/SiteLayoutSectionsModule/PublicPagesModule/
   # PublicSiteLayoutSectionsModule to compile (requireEnv) — it signs the
@@ -249,10 +253,6 @@ jobs:
       # where playwright.config.ts starts it — the same port as locally
       # (docs/development.md).
       VITE_PUBLIC_SITE_URL: http://localhost:4322
-      # The public site's half of the captcha: without it forms render no
-      # widget and cannot be sent. Cloudflare's "always passes" test key,
-      # the pair of the TURNSTILE_SECRET_KEY above.
-      TURNSTILE_SITE_KEY: 1x00000000000000000000AA
       POSTGRES_HOST: localhost
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

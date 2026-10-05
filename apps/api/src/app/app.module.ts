@@ -3,6 +3,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { CaptchaModule } from './captcha/captcha.module';
 import { DeploymentModule } from './deployment/deployment.module';
 import { DeploymentTenantModule } from './deployment-tenant.module';
 import { FormsModule } from './forms/forms.module';
@@ -33,6 +34,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     AccountModule,
     DashboardModule,
+    CaptchaModule,
     DeploymentModule,
     HealthModule,
     MaintenanceModule,

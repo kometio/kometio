@@ -10,6 +10,7 @@ const REQUIRED: NodeJS.ProcessEnv = {
   SMTP_FROM_ADDRESS: 'noreply@esempio.test',
   MEDIA_UPLOAD_DIR: './uploads',
   API_PUBLIC_URL: 'http://localhost:3000/api',
+  TURNSTILE_SITE_KEY: 'an-invented-turnstile-site-key',
   TURNSTILE_SECRET_KEY: 'an-invented-turnstile-secret',
   THEMES_DIR: './themes',
 };

@@ -65,18 +65,37 @@ its own, found on the way:
   failure goes to the log. This is a security fix, not a convenience, and holds
   for a real mail server that is down as well.
 - **The captcha is Turnstile when the site's keys are given, and a challenge
-  built into Kometio when they are not.** The built-in one is ALTCHA: a
-  proof-of-work, so it needs no account and no network, and its widget is
-  accessible and translated. The server side is `altcha-lib` (challenges signed
-  with an HMAC and expiring), plus what the library does not do, a solution
-  that cannot be used twice. The widget is the library's "external" build
-  (about 83 KB minified) with its worker served from our own origin, which
-  keeps `script-src 'self'` as it is; the default algorithm (`PBKDF2/SHA-256`)
-  uses the browser's own crypto and needs no WebAssembly. The trial then has a
-  real captcha instead of one that passes everything. Chosen over writing our
-  own, and over keeping the captcha switched off with a warning: a server on the
-  internet with the login and the public forms open to bots is not a
-  deployment to hand to somebody who has not seen the product yet.
+  built into Kometio when they are not.** Both of `TURNSTILE_SITE_KEY` and
+  `TURNSTILE_SECRET_KEY`, or neither: one alone is refused at start-up, because
+  the widget and the verifier would be on different captchas. The built-in one
+  is ALTCHA, a proof of work, so it needs no account and no network, and its
+  widget is accessible and translated. Chosen over writing our own, and over
+  keeping the captcha switched off with a warning: a server on the internet with
+  the login and the public forms open to bots is not a deployment to hand to
+  somebody who has not seen the product yet.
+  - **Server side** (`libs/adapters/altcha-captcha`, `altcha-lib`): challenges
+    signed with an HMAC, expiring after ten minutes, PBKDF2/SHA-256 (the
+    browser's own crypto, no WebAssembly), a counter drawn from a range so that
+    checking a solution is one HMAC and finding it is about a second of work. The
+    secret is made from `PREVIEW_TOKEN_SECRET`, which every deployment has: a
+    second secret would be one more thing the first run asks for. A solution is
+    accepted once: the library can be given a store of the ones it accepted, and
+    ours is a bounded map in memory, as the API's rate limiter is. A restart
+    forgets it and two instances would not share it, which is accepted at the
+    scale of one process.
+  - **`GET /api/captcha/challenge`** hands out a challenge to anyone, throttled,
+    never cached; it answers 404 on a deployment that uses Turnstile.
+  - **The widget** is the library's "external" build, which is what a policy of
+    `script-src 'self'` asks for, loaded only when a form that needs it is drawn,
+    with its worker served from the editor's own origin. The editor's policy
+    needed no change: a worker falls back to `script-src`, and the challenge is
+    fetched from the API origin it already allows. It is drawn in the editor's
+    own colours, not the widget's, whose `light-dark()` palette follows the
+    system and not the editor's switch.
+  - **The same rule in the editor and the API.** The editor reads the site key it
+    already received at start-up: with one, Turnstile; without, the built-in
+    widget. It used to fall back to Cloudflare's test key, a captcha that passes
+    everybody, and no longer does.
 
 ## Consequences
 
@@ -94,8 +113,9 @@ its own, found on the way:
 - The editor and the public site have to agree on which captcha is in use. The
   rule is the same for both: Turnstile when its keys are there, the built-in
   one when they are not.
-- **What this change does and what follows it.** The mail half, the reset fix
-  and the notice come first; the server side of the built-in captcha and its
-  widget in the editor come next; the public site's forms and newsletter last.
-  Until the captcha half lands, the production image still asks for Turnstile
-  keys.
+- **What is done and what follows.** The mail half, the reset fix and the
+  notices are in; so are the server side of the built-in captcha and its widget
+  in the editor (the login and the forgotten-password screen). The public site's
+  forms and newsletter come last: until they do, a site that wants to receive
+  form submissions gives both Turnstile keys, and a keyless installation's forms
+  render no widget.

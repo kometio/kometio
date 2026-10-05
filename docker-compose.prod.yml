@@ -234,11 +234,12 @@ services:
       context: .
       dockerfile: apps/editor-app/Dockerfile
       args:
-        # Only the captcha key is a build input now: it has no runtime
-        # half. The two addresses below are read when the container starts
-        # (docs/adr/0076), so changing DOMAIN is a restart, not a rebuild —
-        # and the published image works unchanged.
-        VITE_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:?Set TURNSTILE_SITE_KEY in .env to your site's own Turnstile key, see .env.prod.example}
+        # The captcha key is also a build input, as a fallback for the runtime
+        # one below. Empty is fine: with no Turnstile keys the captcha is the
+        # one built into Kometio (docs/adr/0103). The two addresses below are
+        # read when the container starts (docs/adr/0076), so changing DOMAIN is
+        # a restart, not a rebuild — and the published image works unchanged.
+        VITE_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
     environment:
       KOMETIO_API_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
       KOMETIO_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://${DOMAIN:?Set DOMAIN in .env}}

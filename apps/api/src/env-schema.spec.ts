@@ -10,6 +10,7 @@ const VALID_ENV: NodeJS.ProcessEnv = {
   SMTP_FROM_ADDRESS: 'noreply@kometio.local',
   MEDIA_UPLOAD_DIR: './uploads',
   API_PUBLIC_URL: 'http://localhost:3000/api',
+  TURNSTILE_SITE_KEY: 'turnstile-site-key',
   TURNSTILE_SECRET_KEY: 'turnstile-secret',
   THEMES_DIR: './themes',
 };
@@ -114,7 +115,58 @@ describe('validateApiEnv', () => {
           NODE_ENV: 'production',
           POSTGRES_APP_PASSWORD: 'a-real-database-password',
           PREVIEW_TOKEN_SECRET: 'a'.repeat(64),
+          TURNSTILE_SITE_KEY: '0x4AAAAAAAInventedSiteKey',
           TURNSTILE_SECRET_KEY: '0x4AAAAAAAInventedRealLookingKey',
+        }),
+      ).not.toThrow();
+    });
+  });
+
+  describe('the captcha (docs/adr/0103)', () => {
+    const WITHOUT_TURNSTILE: NodeJS.ProcessEnv = {
+      ...VALID_ENV,
+      TURNSTILE_SITE_KEY: undefined,
+      TURNSTILE_SECRET_KEY: undefined,
+    };
+
+    it('starts with no Turnstile keys: the captcha built into Kometio is used', () => {
+      expect(() => validateApiEnv(WITHOUT_TURNSTILE)).not.toThrow();
+    });
+
+    it('reads empty keys as not set, as .env.prod.example leaves them', () => {
+      expect(() =>
+        validateApiEnv({
+          ...VALID_ENV,
+          TURNSTILE_SITE_KEY: '',
+          TURNSTILE_SECRET_KEY: '',
+        }),
+      ).not.toThrow();
+    });
+
+    it('refuses one key without the other: the widgets and the verifier would be on different captchas', () => {
+      expect(() =>
+        validateApiEnv({
+          ...WITHOUT_TURNSTILE,
+          TURNSTILE_SECRET_KEY: 'secret',
+        }),
+      ).toThrow(
+        /TURNSTILE_SITE_KEY is required when TURNSTILE_SECRET_KEY is set/,
+      );
+      expect(() =>
+        validateApiEnv({ ...WITHOUT_TURNSTILE, TURNSTILE_SITE_KEY: 'site' }),
+      ).toThrow(
+        /TURNSTILE_SECRET_KEY is required when TURNSTILE_SITE_KEY is set/,
+      );
+    });
+
+    it('starts in production with none: no account with Cloudflare is needed', () => {
+      expect(() =>
+        validateApiEnv({
+          ...WITHOUT_TURNSTILE,
+          NODE_ENV: 'production',
+          POSTGRES_APP_PASSWORD: 'a-real-database-password',
+          PREVIEW_TOKEN_SECRET: 'a'.repeat(64),
+          PUBLIC_API_SERVICE_TOKEN: 'b'.repeat(64),
         }),
       ).not.toThrow();
     });
@@ -135,6 +187,7 @@ describe('validateApiEnv', () => {
       POSTGRES_APP_PASSWORD: 'a-real-database-password',
       PREVIEW_TOKEN_SECRET: 'a'.repeat(64),
       PUBLIC_API_SERVICE_TOKEN: 'b'.repeat(64),
+      TURNSTILE_SITE_KEY: '0x4AAAAAAAInventedSiteKey',
       TURNSTILE_SECRET_KEY: '0x4AAAAAAAInventedRealLookingKey',
     };
 

@@ -6,8 +6,7 @@ import { useServerSendsEmail } from '../common/deployment-queries';
 import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { turnstileSiteKey } from '../../lib/turnstile-site-key';
-import { TurnstileWidget } from './turnstile-widget';
+import { CaptchaWidget } from './captcha-widget';
 import { useForgotPasswordRequest } from './use-forgot-password-request';
 
 export interface ForgotPasswordFormProps {
@@ -67,10 +66,7 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
               required
             />
           </div>
-          <TurnstileWidget
-            siteKey={turnstileSiteKey()}
-            onToken={setCaptchaToken}
-          />
+          <CaptchaWidget onToken={setCaptchaToken} />
           <Button
             type="submit"
             disabled={isSubmitting || !captchaToken}

@@ -102,6 +102,7 @@
   },
   "dependencies": {
     "@kometio/aes-secret-cipher": "workspace:*",
+    "@kometio/altcha-captcha": "workspace:*",
     "@kometio/anthropic-page-generator": "workspace:*",
     "@kometio/application": "workspace:*",
     "@kometio/block-registry": "workspace:*",

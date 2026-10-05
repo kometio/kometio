@@ -59,14 +59,19 @@ address arrives without a hard refresh.
      `openssl rand -hex 32` each;
    - `POSTGRES_PASSWORD` and `POSTGRES_APP_PASSWORD`: at least 16
      characters (`openssl rand -hex 24`);
-   - `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`: your site's own, from
-     the Cloudflare dashboard (Turnstile → Add site);
+   - `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`, only if you want
+     Cloudflare's captcha: your site's own, from the Cloudflare dashboard
+     (Turnstile → Add site), both or neither. Left empty, the login uses the
+     captcha built into Kometio, a proof of work the browser solves in the
+     background, which needs no account and no network (docs/adr/0103). The
+     forms of the public site do not have it yet: until they do, a site that
+     wants to receive form submissions gives both keys;
    - the `SMTP_*` values of your mail provider, if you have one (all three of
      `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM_ADDRESS`, or none).
 
-   The API refuses to start with a value left empty or too short, or with
-   Cloudflare's test captcha keys (which let every captcha through), and
-   says which one.
+   The API refuses to start with a value left empty or too short, with
+   Cloudflare's test captcha keys (which let every captcha through), or with
+   one of the two Turnstile keys and not the other, and says which one.
 
    `PUBLIC_API_SERVICE_TOKEN` is the one worth understanding rather than
    pasting. The public site renders pages on the server, so every
