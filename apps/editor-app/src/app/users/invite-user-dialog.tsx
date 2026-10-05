@@ -23,6 +23,7 @@ import type {
   UserRole,
 } from '../../lib/users-api-client';
 import { InlineError } from '../../components/ui/inline-error';
+import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
 import { UI_LANGUAGES } from '../account/interface-languages';
 import { RoleDescriptions } from './role-descriptions';
 
@@ -87,7 +88,9 @@ export function InviteUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      {/* Taller than a phone once the notice is in: it scrolls, rather than
+          lose the buttons below the edge of the screen. */}
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('users.inviteDialog.title')}</DialogTitle>
         </DialogHeader>
@@ -95,6 +98,8 @@ export function InviteUserDialog({
           onSubmit={(event) => void handleSubmit(event)}
           className="flex flex-col gap-4"
         >
+          {/* Read before filling in: the invitation will not arrive by mail. */}
+          <EmailNotConfiguredNotice />
           <div className="flex flex-col gap-2">
             <Label htmlFor="invite-email">
               {t('users.inviteDialog.emailLabel')}

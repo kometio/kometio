@@ -73,6 +73,10 @@
       "toEditor": "Vai al tuo profilo"
     }
   },
+  "emailNotice": {
+    "title": "Questa installazione non può inviare email",
+    "body": "Inviti, reset della password e notifiche dei moduli non vengono spediti: finiscono nel log del server, con i loro link. Imposta SMTP_HOST (e le altre impostazioni SMTP) sul server per inviarli."
+  },
   "setup": {
     "title": "Benvenuto in Kometio",
     "description": "Questa installazione non è ancora configurata. Crea il tuo account amministratore per iniziare.",
@@ -1352,6 +1356,7 @@
       "resendInvite": "Reinvia invito",
       "cancelInvite": "Annulla invito",
       "inviteResent": "Invito reinviato a {{email}}",
+      "inviteResentNoEmail": "Il nuovo invito per {{email}} è pronto, ma nessuna email è partita: il suo link è nel log del server.",
       "inviteCancelled": "Invito a {{email}} annullato",
       "cancelInviteConfirm": {
         "title": "Annullare l’invito?",
@@ -1370,6 +1375,7 @@
       "inviting": "Invio in corso...",
       "emailTaken": "Esiste già un utente con questa email.",
       "sent": "Invito inviato a {{email}}: riceverà un’email per scegliere la password.",
+      "sentNoEmail": "{{email}} è stato invitato, ma nessuna email è partita: il link dell’invito è nel log del server.",
       "languageLabel": "Lingua",
       "languageHint": "L’invito e ogni mail che riceverà dopo saranno scritti in questa lingua, finché non ne sceglie un’altra.",
       "failed": "L’invito non è stato inviato. Riprova."

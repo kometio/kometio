@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getAccountProfile } from './account-api-client';
 import { currentSession } from './auth-api-client';
 import { getDashboardStats } from './dashboard-api-client';
+import { getDeployment } from './deployment-api-client';
 import { previewLegalDocuments } from './legal-documents-api-client';
 import { createTranslationPreviewToken } from './preview-token-api-client';
 import { fetchSetupStatus } from './setup-api-client';
@@ -48,6 +49,7 @@ describe('answers the editor reads', () => {
       { token: 42, expiresAt: 'x' },
     ],
     ['the dashboard', () => getDashboardStats('s1'), { pages: {} }],
+    ['the deployment', () => getDeployment(), { emailConfigured: 'yes' }],
     [
       'a legal preview',
       () =>

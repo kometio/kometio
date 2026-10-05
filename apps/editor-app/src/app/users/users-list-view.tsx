@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/button';
 import { actionErrorMessage } from '../../lib/http-client';
 import type { UserRecord, UserRole } from '../../lib/users-api-client';
 import { ConfirmActionDialog } from '../common/confirm-action-dialog';
+import { useServerSendsEmail } from '../common/deployment-queries';
+import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
 import { InviteUserDialog } from './invite-user-dialog';
 import { useCurrentSession } from '../auth/use-current-session';
 import { RoleDescriptions } from './role-descriptions';
@@ -40,6 +42,9 @@ export function UsersListView({
     cancelInvite,
   } = useUsers();
   const { toast } = useToast();
+  // "Sent" is only true when the server can send: otherwise the link is in
+  // its log, and the confirmation says so rather than promise an email.
+  const sendsEmail = useServerSendsEmail();
 
   const { session } = useCurrentSession();
 
@@ -104,7 +109,15 @@ export function UsersListView({
     setActionError('');
     try {
       await resendInvite(user.id);
-      toast(t('users.list.inviteResent', { email: user.email }), 'success');
+      toast(
+        t(
+          sendsEmail
+            ? 'users.list.inviteResent'
+            : 'users.list.inviteResentNoEmail',
+          { email: user.email },
+        ),
+        'success',
+      );
     } catch (err) {
       setActionError(actionErrorMessage(err, t('users.list.actionFailed')));
     }
@@ -132,6 +145,7 @@ export function UsersListView({
         }
       />
       {actionError && <InlineError>{actionError}</InlineError>}
+      <EmailNotConfiguredNotice />
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('users.list.empty')}</p>
       ) : (
@@ -169,7 +183,12 @@ export function UsersListView({
         onInvite={async (input) => {
           const invited = await inviteUser(input);
           toast(
-            t('users.inviteDialog.sent', { email: input.email }),
+            t(
+              sendsEmail
+                ? 'users.inviteDialog.sent'
+                : 'users.inviteDialog.sentNoEmail',
+              { email: input.email },
+            ),
             'success',
           );
           return invited;

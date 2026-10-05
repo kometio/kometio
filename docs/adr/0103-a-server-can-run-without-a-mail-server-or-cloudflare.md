@@ -38,8 +38,11 @@ its own, found on the way:
   server, with the same trust the first-run setup token already asks for.
 - **It does not throw.** An adapter that fails for lack of a mail server would
   bring back the 500 and the half-made invitation. The editor tells the
-  administrator what is happening (the notice, and the setup checklist), so a
-  quiet log is not mistaken for a working mail server.
+  administrator what is happening, so a quiet log is not mistaken for a
+  working mail server: a notice on the Users screen and in the invite dialog
+  (from `GET /api/deployment`, which says whether the server has a mail
+  server), and confirmations that say "no email was sent" where they would
+  have said "sent".
 - **A password reset never reports the delivery.** Whether or not the email
   could be sent, it answers as it does for an address with no account; the
   failure goes to the log. This is a security fix, not a convenience, and holds

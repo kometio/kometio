@@ -73,6 +73,10 @@
       "toEditor": "Go to your profile"
     }
   },
+  "emailNotice": {
+    "title": "This installation cannot send email",
+    "body": "Invitations, password resets and form notifications are not mailed: they are written to the server's log, with their links. Set SMTP_HOST (and the other SMTP settings) on the server to send them."
+  },
   "setup": {
     "title": "Welcome to Kometio",
     "description": "This installation has not been set up yet. Create your administrator account to get started.",
@@ -1352,6 +1356,7 @@
       "resendInvite": "Resend invite",
       "cancelInvite": "Cancel invite",
       "inviteResent": "Invite sent again to {{email}}",
+      "inviteResentNoEmail": "A new invitation for {{email}} is made, but no email was sent: its link is in the server's log.",
       "inviteCancelled": "Invite to {{email}} cancelled",
       "cancelInviteConfirm": {
         "title": "Cancel this invite?",
@@ -1370,6 +1375,7 @@
       "inviting": "Inviting...",
       "emailTaken": "A user with this email already exists.",
       "sent": "Invitation sent to {{email}}: they will get an email to choose a password.",
+      "sentNoEmail": "{{email}} is invited, but no email was sent: the invitation link is in the server's log.",
       "languageLabel": "Language",
       "languageHint": "The invitation and every email they get afterwards will be written in this language, until they choose another.",
       "failed": "The invitation was not sent. Try again."
