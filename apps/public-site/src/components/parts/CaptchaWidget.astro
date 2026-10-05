@@ -1,0 +1,56 @@
+---
+// The captcha of a form that anybody can send (Form, NewsletterSignup), whichever
+// this deployment has (docs/adr/0103): Cloudflare Turnstile when the site has its
+// key, and the one built into Kometio when it has none. The same rule the API and
+// the editor follow, so the widget and the server that checks it cannot be on
+// different ones; a form does not know which it is.
+//
+// process.env, not import.meta.env/PUBLIC_ (same reasoning as apiUrl() in
+// public-api-client.ts): read server-side per request, then written into the
+// rendered HTML — this app doesn't do per-domain build-time bundling, so a
+// build-time-baked client constant would be wrong here anyway. Empty is unset: an
+// image started with no key passes one as an empty string.
+type Props = {
+  /** The page's language, for the built-in widget's own words. */
+  locale: string;
+};
+
+const { locale } = Astro.props;
+const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
+---
+
+{
+  turnstileSiteKey ? (
+    <div class="cf-turnstile" data-sitekey={turnstileSiteKey} />
+  ) : (
+    // The challenge is fetched from this site's own origin (api/captcha/
+    // challenge.ts), never from the API's: the browser only ever talks to this
+    // app, as it does to submit the form (docs/adr/0015).
+    <div
+      data-kometio-altcha
+      data-challenge="/api/captcha/challenge"
+      data-language={locale}
+    />
+  )
+}
+
+<style is:global>
+  /* The widget in the colours of the page it sits on, not its own palette, whose
+     light-dark() follows the visitor's system and not the theme: a dark theme on a
+     light system had a light box in it. These are the tokens the form itself reads
+     (global.css). */
+  altcha-widget {
+    --altcha-color-base: var(--background);
+    --altcha-color-base-content: var(--foreground);
+    --altcha-color-neutral: var(--border);
+    --altcha-color-neutral-content: var(--muted-foreground);
+    --altcha-color-primary: var(--primary);
+    --altcha-color-primary-content: var(--primary-foreground);
+    --altcha-color-success: var(--kometio-success-text);
+    --altcha-color-success-content: var(--kometio-success-surface);
+    --altcha-color-error: var(--kometio-error-text);
+    --altcha-color-error-content: var(--kometio-error-surface);
+    --altcha-border-radius: var(--radius);
+    --altcha-max-width: 100%;
+  }
+</style>

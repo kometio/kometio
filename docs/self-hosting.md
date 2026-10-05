@@ -63,9 +63,8 @@ address arrives without a hard refresh.
      Cloudflare's captcha: your site's own, from the Cloudflare dashboard
      (Turnstile → Add site), both or neither. Left empty, the login uses the
      captcha built into Kometio, a proof of work the browser solves in the
-     background, which needs no account and no network (docs/adr/0103). The
-     forms of the public site do not have it yet: until they do, a site that
-     wants to receive form submissions gives both keys;
+     background, which needs no account and no network (docs/adr/0103), and so
+     do the forms and the newsletter signup of the public site;
    - the `SMTP_*` values of your mail provider, if you have one (all three of
      `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM_ADDRESS`, or none).
 

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { subscribeNewsletter } from '../../../lib/public-api-client';
 import { backToPage } from '../../../lib/back-to-page';
+import { captchaTokenOf } from '../../../lib/captcha-token';
 
 // Same-origin proxy (docs/adr/0015's pattern, applied here for
 // NewsletterSignup's own decoupled path) — the browser only ever POSTs to
@@ -11,7 +12,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const formData = await request.formData();
   const email = String(formData.get('email') ?? '');
   const honeypot = String(formData.get('_honeypot') ?? '');
-  const captchaToken = String(formData.get('cf-turnstile-response') ?? '');
+  const captchaToken = captchaTokenOf(formData);
   const redirectTo = String(formData.get('_redirectTo') ?? '/');
 
   const result = await subscribeNewsletter({ email, honeypot, captchaToken });

@@ -53,7 +53,8 @@ below).
 - **A real form builder**, not a single hardcoded contact block: forms are
   created and edited as their own entity with arbitrary field definitions, a
   form-picker block embeds any form on any page, and submissions land in
-  their own table. Anti-spam (honeypot + Cloudflare Turnstile), optional
+  their own table. Anti-spam (honeypot + a captcha: Cloudflare Turnstile with
+  your keys, or one built into Kometio that needs no account), optional
   newsletter opt-in (Mailchimp/Brevo), file-upload fields, and multi-step
   forms are built on top of the same base — see
   [ADR-0015](docs/adr/0015-form-builder-architecture.md) and

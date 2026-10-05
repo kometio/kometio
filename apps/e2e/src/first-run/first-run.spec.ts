@@ -1,6 +1,16 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 import { requireEnv } from '@kometio/env-config';
 import { environment } from '../support/environment';
+import { KometioApi } from '../support/kometio-api';
+
+/** What the built-in captcha widget says it is doing: `unverified` until the visitor starts, then `verifying`, then `verified`. */
+function widgetState(widget: Locator): Promise<unknown> {
+  return widget.evaluate((element) =>
+    'getState' in element && typeof element.getState === 'function'
+      ? element.getState()
+      : null,
+  );
+}
 
 /**
  * What a person meets in the first minutes, in a real browser, on an image
@@ -22,11 +32,17 @@ import { environment } from '../support/environment';
  * (docker/kometio/check.sh reads them there, for the address in
  * E2E_INVITEE_EMAIL and the administrator's own).
  *
+ * And it sends a form of the public site with no captcha keys: the visitor's
+ * widget is the one built into Kometio (docs/adr/0103), which asks this site for
+ * its challenge, solves it once they start on the form, and the server has to
+ * accept the solution it signed.
+ *
  * It spends the installation: the setup token is single-use and the account is
  * made here, so it runs once, on its own installation, and never retries.
  */
 test('a person who starts the image reaches a working site, and can sign in again', async ({
   browser,
+  playwright,
 }) => {
   const siteName = 'First Run Site';
   const siteHost = new URL(environment.publicSiteUrl).hostname;
@@ -122,7 +138,56 @@ test('a person who starts the image reaches a working site, and can sign in agai
   await sendLink.click();
   await expect(forgot.getByText(/it is in the server's log/)).toBeVisible();
 
+  // A form on the site, sent by a visitor, with no captcha keys anywhere.
+  const api = new KometioApi(
+    await playwright.request.newContext({
+      baseURL: environment.apiUrl,
+      storageState: await first.storageState(),
+    }),
+  );
+  const formSite = await api.currentSite();
+  const form = await api.createForm(formSite.id, 'First run form');
+  await api.updateForm(form.id, {
+    name: 'First run form',
+    notificationEmails: [],
+    fields: [{ id: 'message', label: 'Message', type: 'text', required: true }],
+  });
+  const { translation } = await api.createPage({
+    siteId: formSite.id,
+    locale: formSite.defaultLocale,
+    slug: 'contact',
+    title: 'Contact',
+    content: [
+      {
+        type: 'Form',
+        props: { form: { formId: form.id, formName: 'First run form' } },
+      },
+    ],
+  });
+  await api.publishTranslation(translation.id);
+
+  const visitor = await browser.newContext();
+  const contact = await visitor.newPage();
+  await contact.goto(
+    `${environment.publicSiteUrl}${formSite.defaultLocale}/contact`,
+  );
+  const widget = contact.locator('.kometio-form altcha-widget');
+  await expect(widget).toBeAttached();
+  // Nothing is asked of the server for a visitor who only reads the page: the
+  // challenge is fetched when they start on the form.
+  expect(await widgetState(widget)).toBe('unverified');
+  await contact.getByLabel('Message').fill('Hello from a visitor');
+  await expect
+    .poll(() => widgetState(widget), { timeout: 30_000 })
+    .toBe('verified');
+  await contact.locator('.kometio-form button[type="submit"]').click();
+  await expect(contact.getByRole('status')).toBeVisible();
+  await expect
+    .poll(async () => (await api.formSubmissions(form.id)).length)
+    .toBe(1);
+
   await first.close();
   await second.close();
   await third.close();
+  await visitor.close();
 });

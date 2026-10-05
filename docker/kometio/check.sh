@@ -39,10 +39,11 @@ EDITOR_URL="http://localhost:${EDITOR_PORT}"
 API_URL="http://localhost:${API_PORT}/api"
 SITE_URL="http://localhost:${SITE_PORT}"
 # Cloudflare's published test keys, which accept every captcha. Only the main
-# installation is given them: it is how the public site's forms get a widget the
-# suite can pass, until they have the built-in captcha too. The first-run
-# installation is given none, as the quickstart has it, and the login there is
-# the captcha built into Kometio (docs/adr/0103).
+# installation is given them: the end-to-end suite logs in through the API with a
+# placeholder token, and its form test waits for Turnstile's field, so both need
+# a captcha that passes. The first-run installation is given none, as the
+# quickstart has it, and its login and its public form go through the captcha
+# built into Kometio (docs/adr/0103).
 TURNSTILE_TEST_SITE_KEY=1x00000000000000000000AA
 TURNSTILE_TEST_SECRET_KEY=1x0000000000000000000000000000000AA
 
