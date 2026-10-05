@@ -1,5 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { SetupWizardForm } from '../app/auth/setup-wizard-form';
+import { domainOfAddress } from '../app/settings/domain-input';
+import { publicSiteUrl } from '../lib/runtime-config';
 import { bootstrapDeployment, fetchSetupStatus } from '../lib/setup-api-client';
 
 /**
@@ -27,6 +29,9 @@ function SetupRoute() {
 
   return (
     <SetupWizardForm
+      // The address this deployment was told to serve the site on: the same
+      // one the editor's "View page" links use, so it is the one that is right.
+      proposedDomain={domainOfAddress(publicSiteUrl())}
       onSubmit={async (input) => {
         // The response sets the session cookie itself — see the endpoint's
         // own comment for why signing in here rather than through /login

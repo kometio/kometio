@@ -5,12 +5,14 @@ import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
 import { testApiEnv } from '../../test/api-env.test-fixture';
 import { SessionCookies } from '../auth/session-cookies';
 import { SetupController } from './setup.controller';
+import type { BootstrapDeploymentBody } from './setup.schemas';
 import type { SetupTokenRegistry } from './setup-token.registry';
 
-const VALID_BODY = {
+const VALID_BODY: BootstrapDeploymentBody = {
   setupToken: 'the-real-token',
   siteName: 'Pasticceria Rossi',
   defaultLocale: 'it',
+  domain: null,
   adminEmail: 'anna@example.test',
   adminPassword: 'a-long-enough-password',
 };
@@ -63,6 +65,22 @@ describe('SetupController (unit)', () => {
     });
     expect(setupToken.verify).toHaveBeenCalledWith('the-real-token');
     expect(response.cookie).toHaveBeenCalled();
+  });
+
+  it('creates the site on the address it was given, so it is reachable at once', async () => {
+    await bootstrap({ ...VALID_BODY, domain: 'pasticceria.test' });
+
+    expect(deploymentBootstrapPort.bootstrap).toHaveBeenCalledWith(
+      expect.objectContaining({ domain: 'pasticceria.test' }),
+    );
+  });
+
+  it('creates the site with no address when the admin chose to set it later', async () => {
+    await bootstrap();
+
+    expect(deploymentBootstrapPort.bootstrap).toHaveBeenCalledWith(
+      expect.objectContaining({ domain: null }),
+    );
   });
 
   it('rejects a wrong token with a 401', async () => {

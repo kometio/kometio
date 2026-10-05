@@ -1,5 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { cleanDomainInput } from './domain-input';
+import { cleanDomainInput, domainOfAddress } from './domain-input';
+
+/*
+ * The first-run wizard proposes the domain of the address the deployment was
+ * told to serve the site on (`KOMETIO_PUBLIC_SITE_URL`): what a person would
+ * otherwise have to work out and type, with no way to know it is the one.
+ */
+describe('domainOfAddress', () => {
+  it('is the hostname of a site address', () => {
+    expect(domainOfAddress('https://www.sito.it')).toBe('www.sito.it');
+  });
+
+  it('leaves the port and the path out: a domain has neither', () => {
+    expect(domainOfAddress('http://localhost:4322')).toBe('localhost');
+    expect(domainOfAddress('https://sito.it/it/chi-siamo')).toBe('sito.it');
+  });
+
+  it('writes it in lowercase, as the address is read', () => {
+    expect(domainOfAddress('https://WWW.Sito.IT')).toBe('www.sito.it');
+  });
+
+  it('is empty for something that is not an address, rather than a guess', () => {
+    expect(domainOfAddress('')).toBe('');
+    expect(domainOfAddress('www.sito.it')).toBe('');
+    expect(domainOfAddress('not an address')).toBe('');
+  });
+
+  it('is empty for an address no site can be found on, such as an IPv6 literal', () => {
+    expect(domainOfAddress('http://[::1]:4322')).toBe('');
+  });
+});
 
 describe('cleanDomainInput', () => {
   it('leaves a domain as it is', () => {

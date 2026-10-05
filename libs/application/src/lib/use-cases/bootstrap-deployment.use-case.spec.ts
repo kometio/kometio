@@ -9,6 +9,7 @@ import {
 const INPUT = {
   siteName: 'Acme',
   defaultLocale: 'it',
+  domain: null,
   adminEmail: 'admin@acme.test',
   adminPassword: 'a-long-enough-password',
 };
@@ -112,6 +113,27 @@ describe('bootstrapDeployment', () => {
     // for — an empty subtitle reads as "fill me in" everywhere, while a
     // placeholder sentence would be wrong in most installations.
     expect(content[0].id).toEqual(expect.any(String));
+  });
+
+  /*
+   * The site is found by the domain it was given, so a site created without
+   * one answers "not found" on every address until someone sets it by hand.
+   * The wizard now proposes one, and what it was given has to reach the row.
+   */
+  it('hands the site its domain, so the site is reachable as soon as it exists', async () => {
+    const { deps: d, bootstrap } = deps(false);
+
+    await bootstrapDeployment(d, { ...INPUT, domain: 'acme.test' });
+
+    expect(bootstrap.mock.calls[0][0].domain).toBe('acme.test');
+  });
+
+  it('leaves the domain empty when the admin chose to set it later', async () => {
+    const { deps: d, bootstrap } = deps(false);
+
+    await bootstrapDeployment(d, { ...INPUT, domain: null });
+
+    expect(bootstrap.mock.calls[0][0].domain).toBeNull();
   });
 
   it('refuses on a deployment that already has a tenant', async () => {

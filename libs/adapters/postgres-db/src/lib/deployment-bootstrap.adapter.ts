@@ -62,12 +62,13 @@ export class DrizzleDeploymentBootstrapAdapter implements DeploymentBootstrapPor
         id: siteId,
         tenantId,
         name: input.siteName,
-        // Left null deliberately: the wizard runs before anyone can know
-        // the public hostname (it may not even resolve yet), and
-        // apps/public-site matches a site by the request's Host header.
-        // The admin sets it in Site settings, which is also where the
-        // consequence — "your site is not reachable yet" — is visible.
-        domain: null,
+        // What the wizard was given: the editor proposes the hostname of
+        // the address the deployment was told to serve the site on, and the
+        // admin may change it or clear it. apps/public-site matches a site
+        // by the request's Host header, so a site without one is found at no
+        // address; null is the admin's own choice to set it later, in Site
+        // settings, which is also where that consequence is visible.
+        domain: input.domain,
         defaultLocale: input.defaultLocale,
         // Must contain defaultLocale (localeSettingsSchema): a site whose
         // default locale is not enabled resolves no pages at all.

@@ -97,8 +97,15 @@ address arrives without a hard refresh.
 6. Once DNS has propagated, open `https://admin.<domain>`. A deployment
    nobody has set up yet opens on the **first-run wizard** rather than a
    login screen: paste the token, then give it your site's name, its
-   default language, and the email and password for your administrator
-   account. You are logged in as soon as it finishes.
+   default language, its domain and the email and password for your
+   administrator account. You are logged in as soon as it finishes.
+
+   The **domain** comes filled in: it is the host of the address you gave the
+   deployment for the public site (`PUBLIC_SITE_URL`, which defaults to
+   `https://<domain>`). Leave it unless the site will be reached under another
+   name. Kometio finds a site by it, so it has to be the name visitors type;
+   empty it only to set it later, in **Site settings**, and until a site has
+   one every URL of the public site answers "not found".
 
 That is the whole setup. There is no seed step, no admin password and no
 site id in your `.env` — the wizard runs once per installation and refuses
@@ -107,12 +114,6 @@ to run again afterwards, so there is nothing to clean up either.
 Your new site comes with one published home page carrying the name you
 typed, so it renders as soon as it is reachable rather than answering 404
 on itself. Edit it, or replace it, from **Pages**.
-
-One thing is still yours to do: the site has no domain attached yet, which
-is deliberate — the wizard runs before anyone can know the public hostname,
-and it may not even resolve at that point. Set it in **Site settings** in
-the editor. Until you do, the public site has no site to match a request
-against and every URL 404s.
 
 ### If you would rather not use the wizard
 

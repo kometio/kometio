@@ -28,6 +28,12 @@ export async function getSetupStatus(deps: {
 export interface BootstrapDeploymentInput {
   siteName: string;
   defaultLocale: string;
+  /**
+   * Where the site will be reached, already a valid hostname (the request
+   * schema checks it, as it does for the password), or null to set it later.
+   * The editor proposes the one the deployment was told to serve.
+   */
+  domain: string | null;
   adminEmail: string;
   /** Plaintext, hashed here and never stored or logged as given. */
   adminPassword: string;
@@ -77,6 +83,7 @@ export async function bootstrapDeployment(
   const created = await deps.deploymentBootstrapPort.bootstrap({
     siteName: input.siteName,
     defaultLocale: input.defaultLocale,
+    domain: input.domain,
     adminEmail: input.adminEmail,
     adminPasswordHash,
     homePage: buildStarterHomePage(input.siteName, input.defaultLocale),
