@@ -22,6 +22,14 @@ import { STORAGE_PROVIDERS } from '@kometio/shared-types';
  * `db:seed`/migration scripts, a different process entirely, never read by
  * this app at runtime).
  */
+/**
+ * `KEY=` with nothing after it is how an example file leaves a variable the
+ * person may fill in, and it has to mean "not set": read as the empty string it
+ * failed `min(1)`, so a copied `.env.example` did not start.
+ */
+const emptyIsUnset = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === '' ? undefined : value), schema);
+
 const apiEnvBaseSchema = z.object({
   POSTGRES_APP_PASSWORD: z.string().min(1),
   // Where the database is: this machine in development, the `postgres`
@@ -42,9 +50,12 @@ const apiEnvBaseSchema = z.object({
   DEFAULT_SITE_ID: z.string().uuid().optional(),
   PREVIEW_TOKEN_SECRET: z.string().min(1),
   EDITOR_APP_URL: z.string().url(),
-  SMTP_HOST: z.string().min(1),
-  SMTP_PORT: z.coerce.number().int().positive(),
-  SMTP_FROM_ADDRESS: z.string().min(1),
+  // Optional as a group: without SMTP_HOST the deployment has no mail server
+  // and writes its emails to its log instead (docs/adr/0103); with it, the
+  // other two are required (the `superRefine` below).
+  SMTP_HOST: emptyIsUnset(z.string().min(1).optional()),
+  SMTP_PORT: emptyIsUnset(z.coerce.number().int().positive().optional()),
+  SMTP_FROM_ADDRESS: emptyIsUnset(z.string().min(1).optional()),
   // Optional: Mailpit in development needs none. Declared so the
   // production check sees an example placeholder left in them.
   SMTP_USER: z.string().optional(),
@@ -77,7 +88,7 @@ const apiEnvBaseSchema = z.object({
   TURNSTILE_SECRET_KEY: z.string().min(1),
   // Optional: unset, the API trusts no visitor address the public site
   // forwards (public-pages-throttler.guard.ts).
-  PUBLIC_API_SERVICE_TOKEN: z.string().min(1).optional(),
+  PUBLIC_API_SERVICE_TOKEN: emptyIsUnset(z.string().min(1).optional()),
   NODE_ENV: z.string().optional(),
   PORT: z.coerce.number().int().positive().default(3000),
   // Both groups below are opt-in (ADR-0013's LocalDisk-by-default, and
@@ -109,6 +120,9 @@ const S3_REQUIRED_KEYS = [
   'S3_MEDIA_SECRET_ACCESS_KEY',
   'S3_MEDIA_PUBLIC_BASE_URL',
 ] as const;
+
+/** What an SMTP host cannot be used without. */
+const SMTP_REQUIRED_KEYS = ['SMTP_PORT', 'SMTP_FROM_ADDRESS'] as const;
 
 const MAILCHIMP_REQUIRED_KEYS = [
   'MAILCHIMP_API_KEY',
@@ -176,6 +190,17 @@ function refuseExampleSecrets(
 
 export const apiEnvSchema = apiEnvBaseSchema.superRefine((env, ctx) => {
   refuseExampleSecrets(env, ctx);
+  if (env.SMTP_HOST !== undefined) {
+    for (const key of SMTP_REQUIRED_KEYS) {
+      if (env[key] === undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [key],
+          message: `${key} is required when SMTP_HOST is set`,
+        });
+      }
+    }
+  }
   if (env.MEDIA_STORAGE_PROVIDER === 's3') {
     for (const key of S3_REQUIRED_KEYS) {
       if (!env[key]) {

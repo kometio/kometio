@@ -149,6 +149,9 @@
     },
     {
       "path": "./libs/adapters/sharp-image-optimizer"
+    },
+    {
+      "path": "./libs/adapters/log-email-adapter"
     }
   ],
   "compilerOptions": {}

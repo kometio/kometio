@@ -245,6 +245,9 @@ importers:
       '@kometio/local-disk-media-storage':
         specifier: workspace:*
         version: link:../../libs/adapters/local-disk-media-storage
+      '@kometio/log-email-adapter':
+        specifier: workspace:*
+        version: link:../../libs/adapters/log-email-adapter
       '@kometio/mailchimp-newsletter':
         specifier: workspace:*
         version: link:../../libs/adapters/mailchimp-newsletter
@@ -710,6 +713,12 @@ importers:
       sharp:
         specifier: ^0.35.5
         version: 0.35.5(@types/node@26.6.3)
+
+  libs/adapters/log-email-adapter:
+    dependencies:
+      '@kometio/ports':
+        specifier: workspace:*
+        version: link:../../ports
 
   libs/adapters/mailchimp-newsletter:
     dependencies:
@@ -22280,7 +22289,7 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minimizer-webpack-plugin@5.11.0(@swc/core@1.16.12(@swc/helpers@0.5.23))(esbuild@0.25.12)(postcss@8.5.26)(webpack@5.111.1(@swc/core@1.16.12(@swc/helpers@0.5.23))(esbuild@0.25.12)(postcss@8.5.26)(webpack-cli@7.2.3)):
+  minimizer-webpack-plugin@5.11.0(@swc/core@1.16.12(@swc/helpers@0.5.23))(esbuild@0.25.12)(postcss@8.5.26)(webpack@5.111.1):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
@@ -25293,7 +25302,7 @@ snapshots:
       events: 3.3.0
       graceful-fs: 4.2.11
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.11.0(@swc/core@1.16.12(@swc/helpers@0.5.23))(esbuild@0.25.12)(postcss@8.5.26)(webpack@5.111.1(@swc/core@1.16.12(@swc/helpers@0.5.23))(esbuild@0.25.12)(postcss@8.5.26)(webpack-cli@7.2.3))
+      minimizer-webpack-plugin: 5.11.0(@swc/core@1.16.12(@swc/helpers@0.5.23))(esbuild@0.25.12)(postcss@8.5.26)(webpack@5.111.1)
       schema-utils: 4.5.0
       tapable: 2.3.3
       watchpack: 2.5.2

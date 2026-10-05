@@ -277,6 +277,7 @@ libs/            see docs/libs.md for the full index (every lib's README,
     verification-token-adapter/ VerificationTokenPort — single-use email
                                 verification/password-reset tokens
     preview-token-adapter/     stateless HMAC-signed draft-preview tokens
+    log-email-adapter/         EmailPort that writes to a log (no mail server)
     smtp-email-adapter/        EmailPort via nodemailer
     local-disk-media-storage/, s3-media-storage/  MediaStoragePort implementations
     sharp-image-optimizer/                        ImageOptimizerPort, given to both of them
