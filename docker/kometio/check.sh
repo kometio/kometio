@@ -516,6 +516,12 @@ else
   done
   check "the server comes back with the site that was in the archive" \
     sh -c "curl -sf '${IMPORTED_API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":true'"
+  # The API is back before the site is: after an import the launcher starts the
+  # API and waits for it, then starts the site and waits for that, and only then
+  # prints the banner again. "Set up" from the API does not say the site is
+  # there; the second banner does (the same lesson as the first start's, where
+  # the health check comes before the editor).
+  wait_for_banners 2 "$IMPORTED" >/dev/null
   LOGIN_CODE=000
   for attempt in 1 2 3; do
     LOGIN_CODE="$(status_code -H 'content-type: application/json' -H "Origin: ${IMPORTED_EDITOR_URL}" \

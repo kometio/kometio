@@ -71,10 +71,22 @@ test('a site from another installation is opened on the first-run screen, and it
   await expect(page).toHaveURL(/\/pages/);
 
   // The site that was in the archive, at the address this installation is
-  // reached at, and a file that was uploaded to it.
+  // reached at, and a file that was uploaded to it. The API is back a moment
+  // before the site is (the launcher starts the one, then the other), and a
+  // login does not wait for the site: so the site is waited for, not asked once.
   const visitor = await playwright.request.newContext();
+  await expect
+    .poll(
+      // A site that is not listening yet is a refused connection, not a status.
+      () =>
+        visitor.get(environment.publicSiteUrl).then(
+          (response) => response.status(),
+          () => 0,
+        ),
+      { timeout: 30_000 },
+    )
+    .toBe(200);
   const site = await visitor.get(environment.publicSiteUrl);
-  expect(site.status()).toBe(200);
   expect(await site.text()).toContain(`<title>${siteName}`);
   const file = await visitor.get(
     new URL(uploadedPath.replace(/^\//, ''), environment.apiUrl).href,
