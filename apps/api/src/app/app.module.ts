@@ -21,6 +21,7 @@ import { ReusableSectionsModule } from './reusable-sections/reusable-sections.mo
 import { CollectionsModule } from './collections/collections.module';
 import { TaxonomiesModule } from './taxonomies/taxonomies.module';
 import { SiteLayoutSectionsModule } from './site-layout-sections/site-layout-sections.module';
+import { SiteArchiveModule } from './site-archive/site-archive.module';
 import { SitesModule } from './sites/sites.module';
 import { PageGenerationModule } from './page-generation/page-generation.module';
 import { ThemesModule } from './themes/themes.module';
@@ -43,6 +44,7 @@ import { UsersModule } from './users/users.module';
     PublicPagesModule,
     MediaModule,
     SitesModule,
+    SiteArchiveModule,
     ThemesModule,
     PageGenerationModule,
     FormsModule,

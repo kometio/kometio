@@ -3,6 +3,9 @@
 //
 //   Postgres  →  migrations  →  API  →  public site  →  editor (nginx)  →  Caddy
 //
+// Beside them, with its own database, the launcher itself answers one thing to the
+// API on a socket: the archive of the site, for Settings → Export (docs/adr/0105).
+//
 // Caddy is there only on a server, when DOMAIN is set (docs/adr/0104): it takes
 // ports 80 and 443, gets the certificates, and sends each name to its half.
 // Without DOMAIN the halves answer on their own ports, as they always did.
@@ -24,6 +27,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { get } from 'node:http';
 import { createInterface } from 'node:readline';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { prepareExport, removeLeftoverExports } from './archive-commands.mjs';
+import { CONTROL_SOCKET, startControlServer } from './control-server.mjs';
 import {
   SOCKET_DIR,
   createRoles,
@@ -194,6 +199,21 @@ function migrate(adminEnv) {
   });
 }
 
+/**
+ * Answers the API on a socket that only its user can open. It makes the archive
+ * of the site from this container's own database, which is what the API is not
+ * given the means to do; with a database elsewhere there is nothing here to dump.
+ */
+async function startControl() {
+  removeLeftoverExports(DATA);
+  await startControlServer({
+    socketPath: CONTROL_SOCKET,
+    owner: ids('kometio'),
+    prepare: () => prepareExport({ dataDir: DATA, say: log }),
+    say: log,
+  });
+}
+
 function apiEnvironment(s) {
   // The user's own variables win over the defaults, so a deployment can set
   // SMTP, S3, its own Turnstile keys, NODE_ENV=production, and so on. The
@@ -226,6 +246,8 @@ function apiEnvironment(s) {
     // These are this launcher's to decide, whatever the environment says.
     POSTGRES_APP_PASSWORD: s.postgresAppPassword,
     ...(OWN_DATABASE ? { POSTGRES_HOST: '127.0.0.1' } : {}),
+    // The editor offers an export only where there is somebody to make it.
+    KOMETIO_CONTROL_SOCKET: OWN_DATABASE ? CONTROL_SOCKET : undefined,
   };
 }
 
@@ -381,6 +403,7 @@ async function main() {
     };
   }
   migrate(adminEnv);
+  if (OWN_DATABASE) await startControl();
 
   let expectingToken = false;
   start('api', 'node', ['main.js'], {

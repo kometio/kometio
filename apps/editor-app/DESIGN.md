@@ -242,6 +242,23 @@ accessibility.spec.tsx` checks it for every block type.
   than none. A confirmation that would say "sent" says what really happened
   instead (`useServerSendsEmail`, and `emailSent` in an invitation's answer):
   no mail server, or a mail server that refused it.
+- **Something the server may not be able to do** (`useServerFeatures`,
+  `app/common/deployment-queries.ts`): the editor offers it only where `GET
+/api/deployment` says the server can — Settings → Export, today (`siteArchive`).
+  The opposite default to the notice above, for the opposite reason: a notice
+  that might be wrong is worse than none, and a menu entry that might lead nowhere
+  is worse than one that is missing, so while the answer is unknown, or could
+  not be fetched, the server is read as unable. A settings section says what it
+  needs with `requires` in `SETTINGS_SECTIONS`, and the menu and the search read
+  it through the one hook (`useVisibleSettingsSections`), so they cannot
+  disagree; its route sends an address typed by hand back to the settings.
+- **A download is a link, not a request** (`app/settings/site-archive-section.tsx`,
+  and the forms' CSV): a `Button asChild` around an `<a href download>` to the API,
+  so that a large file goes to disk as it arrives and the session cookie goes with
+  it. In a new tab (`target="_blank" rel="noopener noreferrer"`): across two origins
+  `download` is ignored, and a refusal would otherwise take the editor's place.
+  What the file holds, and that it is a secret when it is one, is said beside the
+  button, before the click.
 - **A dialog taller than the screen scrolls**: `max-h-[calc(100dvh-2rem)]`
   and `overflow-y-auto` on its `DialogContent`, as the invitation's has. The
   `Dialog` primitive is centred and does not limit itself, so a long form

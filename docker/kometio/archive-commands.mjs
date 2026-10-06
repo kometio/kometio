@@ -7,6 +7,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import {
   createWriteStream,
   existsSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -21,6 +22,7 @@ import { ensureDir, minimalEnv, once } from './processes.mjs';
 import {
   TRANSIENT_TABLES,
   appliedMigrationTags,
+  archiveFileName,
   buildManifest,
   checkCompatible,
   checkEntries,
@@ -94,13 +96,66 @@ const ended = (child) =>
     );
   });
 
+/** pg_dump of this installation's database, gzipped, into `file`. */
+async function dumpDatabaseTo(file) {
+  const dump = spawn(
+    'pg_dump',
+    [
+      '-h',
+      SOCKET_DIR,
+      '-U',
+      'kometio',
+      '-d',
+      'kometio',
+      // The owner is whoever restores it, and the grants to the application
+      // role stay: they are what makes row level security apply to it.
+      '--no-owner',
+      ...TRANSIENT_TABLES.map(
+        (table) => `--exclude-table-data=public.${table}`,
+      ),
+    ],
+    { stdio: ['ignore', 'pipe', 'pipe'], env: minimalEnv },
+  );
+  const done = ended(dump);
+  await pipeline(dump.stdout, createGzip(), createWriteStream(file));
+  const dumped = await done;
+  if (!dumped.ok) throw new Error(`pg_dump failed: ${dumped.said}`);
+}
+
+/** The folder `stage`, as a .tar.gz, to `out` (a writable stream that the caller ends). Links are followed: that is how the uploads are read where they are. */
+async function tarTo(stage, out) {
+  const tar = spawn('tar', ['czhf', '-', '-C', stage, '.'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const archived = ended(tar);
+  try {
+    // `end: false`: what is written to is the caller's, and it ends it.
+    await pipeline(tar.stdout, out, { end: false });
+  } catch (error) {
+    // Whoever was reading has gone: no more archive to make.
+    tar.kill();
+    throw error;
+  }
+  const tarred = await archived;
+  if (!tarred.ok) throw new Error(`tar failed: ${tarred.said}`);
+}
+
 /**
- * Writes the archive of this installation to `out`, where tar's stdout goes (a stdio option): the database
- * as pg_dump gives it, without what only describes a moment, the uploads as
- * they are, and a manifest that says what it is. Safe to run while the server is
- * up: pg_dump reads one consistent snapshot.
+ * Gets the archive of this installation ready to be written, and refuses now what
+ * can be refused: there has to be a site to export. What it returns is the name
+ * the file should have, `write(out)`, which makes the archive and writes it to a
+ * writable stream, and `discard()`, which removes what `write` left on the disk
+ * and has to be called whether it worked or not.
+ *
+ * The archive is: the database as pg_dump gives it, without what only describes a
+ * moment; the uploads as they are; and a manifest that says what it is. Safe to
+ * make while the server is up, because pg_dump reads one consistent snapshot.
+ * Nothing is dumped before `write`, so a caller that answers somebody can answer
+ * a refusal as one, and start the answer before the dump, which takes the time
+ * the database takes.
  */
-export async function exportArchive({ dataDir, out, say }) {
+export async function prepareExport({ dataDir, say }) {
+  const createdAt = new Date();
   const site = queryJson(
     'kometio',
     `select row_to_json(s) from (select name, domain, default_locale as "defaultLocale", enabled_locales as "enabledLocales" from sites order by name limit 1) s`,
@@ -118,42 +173,24 @@ export async function exportArchive({ dataDir, out, say }) {
   const uploadsDir = `${dataDir}/uploads`;
   const uploads = filesIn(uploadsDir);
 
-  const stage = `${dataDir}/state/export-${process.pid}`;
-  ensureDir(stage, 'root', 0o700);
-  try {
+  let stage = null;
+  let written = false;
+
+  async function write(out) {
+    if (written) throw new Error('an archive is written once');
+    written = true;
+    ensureDir(`${dataDir}/state`, 'root', 0o700);
+    // Its own name each time: a leftover of a crash is never in the way.
+    stage = mkdtempSync(`${dataDir}/state/export-`);
+
     say(
       `dumping the database (${TRANSIENT_TABLES.length} tables keep their structure and lose their rows)`,
     );
-    const dump = spawn(
-      'pg_dump',
-      [
-        '-h',
-        SOCKET_DIR,
-        '-U',
-        'kometio',
-        '-d',
-        'kometio',
-        // The owner is whoever restores it, and the grants to the application
-        // role stay: they are what makes row level security apply to it.
-        '--no-owner',
-        ...TRANSIENT_TABLES.map(
-          (table) => `--exclude-table-data=public.${table}`,
-        ),
-      ],
-      { stdio: ['ignore', 'pipe', 'pipe'], env: minimalEnv },
-    );
-    const done = ended(dump);
-    await pipeline(
-      dump.stdout,
-      createGzip(),
-      createWriteStream(`${stage}/database.sql.gz`),
-    );
-    const dumped = await done;
-    if (!dumped.ok) throw new Error(`pg_dump failed: ${dumped.said}`);
+    await dumpDatabaseTo(`${stage}/database.sql.gz`);
 
     writeFileSync(
       `${stage}/manifest.json`,
-      `${JSON.stringify(buildManifest({ createdAt: new Date(), site, migrations, uploads }), null, 2)}\n`,
+      `${JSON.stringify(buildManifest({ createdAt, site, migrations, uploads }), null, 2)}\n`,
     );
     // The uploads are not copied: tar follows this link (`-h`) and reads them where they are.
     ensureDir(uploadsDir, 'kometio', 0o755);
@@ -162,16 +199,37 @@ export async function exportArchive({ dataDir, out, say }) {
     say(
       `writing the archive: ${uploads.files} uploaded files (${mebibytes(uploads.bytes)})`,
     );
-    const tar = spawn('tar', ['czhf', '-', '-C', stage, '.'], {
-      stdio: ['ignore', out, 'pipe'],
-    });
-    const archived = await ended(tar);
-    if (!archived.ok) throw new Error(`tar failed: ${archived.said}`);
+    await tarTo(stage, out);
     say(
       `done: the site "${site.name}" (${site.domain ?? 'no domain'}), ${migrations.length} migrations, treat the file as a password: it holds the accounts' password hashes`,
     );
+  }
+
+  const discard = () => {
+    if (stage !== null) rmSync(stage, { recursive: true, force: true });
+  };
+
+  return { fileName: archiveFileName(createdAt), write, discard };
+}
+
+/** `prepareExport`, written to `out` (a writable stream) and cleaned up: what a command does. */
+export async function exportArchive({ dataDir, out, say }) {
+  const archive = await prepareExport({ dataDir, say });
+  try {
+    await archive.write(out);
   } finally {
-    rmSync(stage, { recursive: true, force: true });
+    archive.discard();
+  }
+}
+
+/** Removes what exports left when their process died: the dump of a database is not to be found lying in `state/` a month later. Only for the server's own start, when no other export can be running. */
+export function removeLeftoverExports(dataDir) {
+  const state = `${dataDir}/state`;
+  if (!existsSync(state)) return;
+  for (const name of readdirSync(state)) {
+    if (name.startsWith('export-')) {
+      rmSync(`${state}/${name}`, { recursive: true, force: true });
+    }
   }
 }
 

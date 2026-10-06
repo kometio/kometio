@@ -15,7 +15,7 @@ import type { CommandItem } from '../common/command-menu';
 import { useCurrentSession } from '../auth/use-current-session';
 import { UI_LANGUAGES } from '../account/interface-languages';
 import { CollectionIcon } from '../collections/collection-icons';
-import { SETTINGS_SECTIONS } from '../settings/settings-sections';
+import { useVisibleSettingsSections } from '../settings/use-visible-settings-sections';
 import { NAV_ENTRIES } from './nav-entries';
 
 /*
@@ -32,6 +32,7 @@ export function useGoEntries(
 ): CommandItem[] {
   const { t } = useTranslation();
   const { can } = useCurrentSession();
+  const settingsSections = useVisibleSettingsSections();
   const items: CommandItem[] = [];
 
   for (const entry of NAV_ENTRIES) {
@@ -55,8 +56,7 @@ export function useGoEntries(
       });
     }
   }
-  for (const section of SETTINGS_SECTIONS) {
-    if (!can(section.permission)) continue;
+  for (const section of settingsSections) {
     const Icon = section.icon;
     items.push({
       id: `go:${section.to}`,

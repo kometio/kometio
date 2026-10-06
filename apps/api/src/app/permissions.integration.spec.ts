@@ -7,6 +7,7 @@ import { MediaModule } from './media/media.module';
 import { PagesModule } from './pages/pages.module';
 import { ReusableSectionsModule } from './reusable-sections/reusable-sections.module';
 import { SiteLayoutSectionsModule } from './site-layout-sections/site-layout-sections.module';
+import { SiteArchiveModule } from './site-archive/site-archive.module';
 import { SitesModule } from './sites/sites.module';
 import { TaxonomiesModule } from './taxonomies/taxonomies.module';
 import { UsersModule } from './users/users.module';
@@ -34,6 +35,7 @@ describe('Who may do what (integration)', () => {
         PagesModule,
         ReusableSectionsModule,
         SiteLayoutSectionsModule,
+        SiteArchiveModule,
         SitesModule,
         TaxonomiesModule,
         UsersModule,
@@ -86,6 +88,7 @@ describe('Who may do what (integration)', () => {
     ['patch', `/sites/${id}/theme-tokens`],
     ['patch', `/sites/${id}/locale-settings`],
     ['get', '/users'],
+    ['get', '/site-archive'],
     ['get', `/sites/${id}/form-submissions/count?olderThanDays=30`],
     ['delete', `/users/${id}/invite`],
   ];

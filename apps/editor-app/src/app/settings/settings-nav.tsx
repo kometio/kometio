@@ -1,20 +1,10 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { useTranslation } from '../../lib/use-translation';
 import { OptionsSelect } from '../../components/ui/select';
-import { useCurrentSession } from '../auth/use-current-session';
 import { useIsNarrow } from '../common/use-is-narrow';
 import { NavLink } from '../shell/nav-link';
-import {
-  SETTINGS_GROUPS,
-  SETTINGS_SECTIONS,
-  type SettingsSection,
-} from './settings-sections';
-
-/** The sections a role is offered, in the menu's order. */
-export function useVisibleSettingsSections(): SettingsSection[] {
-  const { can } = useCurrentSession();
-  return SETTINGS_SECTIONS.filter((section) => can(section.permission));
-}
+import { SETTINGS_GROUPS } from './settings-sections';
+import { useVisibleSettingsSections } from './use-visible-settings-sections';
 
 /**
  * The menu of the settings area: every section by name, in groups, each an

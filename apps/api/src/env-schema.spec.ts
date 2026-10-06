@@ -172,6 +172,25 @@ describe('validateApiEnv', () => {
     });
   });
 
+  describe('the export of the site (docs/adr/0105)', () => {
+    it('is off unless the launcher of the single image says where its socket is', () => {
+      expect(validateApiEnv(VALID_ENV).KOMETIO_CONTROL_SOCKET).toBeUndefined();
+      expect(
+        validateApiEnv({
+          ...VALID_ENV,
+          KOMETIO_CONTROL_SOCKET: '/run/kometio/control.sock',
+        }).KOMETIO_CONTROL_SOCKET,
+      ).toBe('/run/kometio/control.sock');
+    });
+
+    it('reads an empty socket as not set, as an example file leaves it', () => {
+      expect(
+        validateApiEnv({ ...VALID_ENV, KOMETIO_CONTROL_SOCKET: '' })
+          .KOMETIO_CONTROL_SOCKET,
+      ).toBeUndefined();
+    });
+  });
+
   it('reads an empty PUBLIC_API_SERVICE_TOKEN as not set, as .env.example leaves it', () => {
     // It said "left empty, nothing changes", and the schema refused the empty
     // string: a copied example did not start.

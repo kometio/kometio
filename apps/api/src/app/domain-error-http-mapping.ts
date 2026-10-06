@@ -16,6 +16,8 @@ import {
   ThemeUploadNotFoundError,
   SiteAiSettingsRejectedError,
   PageGenerationDisabledError,
+  SiteArchiveRefusedError,
+  SiteArchiveUnavailableError,
   PageGenerationFailedError,
   SecretUnreadableError,
   ThemeUploadRejectedError,
@@ -182,6 +184,10 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   // the editor says in words exactly as it does one from the stream.
   [PageGenerationFailedError, (m) => new ConflictException(m)],
   [SecretUnreadableError, (m) => new ConflictException(m)],
+  // 404: this deployment has no archive to give, the same answer as a route that is not there.
+  [SiteArchiveUnavailableError, (m) => new NotFoundException(m)],
+  // 409: the server is able, and not now — one is being made, or there is no site yet.
+  [SiteArchiveRefusedError, (m) => new ConflictException(m)],
   [TaxonomyNotFoundError, (m) => new NotFoundException(m)],
   [TermNotFoundError, (m) => new NotFoundException(m)],
   // 409 for all four address conflicts: the request is well formed and
