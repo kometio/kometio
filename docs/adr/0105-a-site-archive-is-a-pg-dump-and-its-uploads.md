@@ -63,9 +63,27 @@ The choices, with the reasons they went as they did:
   administrator's credentials (ADR-0101), `kometio_app` is under row level security,
   and a restore needs a superuser. The commands run as the container's root, the
   way the launcher does, and share the launcher's own helpers
-  (`processes.mjs`, `embedded-postgres.mjs`). The editor's menu (export) and the
-  first-run screen's import come next, on a helper in the launcher that the API
-  reaches through a socket only its user can open; they are the same two operations.
+  (`processes.mjs`, `embedded-postgres.mjs`). The first-run screen's import is the
+  same operation, done by the launcher while it runs (ADR-0106).
+- **Export from the editor** (Settings → Export, an administrator's) is the same code
+  reached through the launcher, which listens on a Unix socket
+  (`/run/kometio/control.sock`, in a folder only the API's user can open: the user a
+  theme's code runs as cannot reach it, and `check.sh` tries) and answers one thing,
+  `GET /export`. The API asks it (`GET /api/site-archive`, `SiteArchivePort` and
+  `libs/adapters/launcher-site-archive`) and streams the answer to the browser, which
+  follows a plain link so that the file goes to disk as it arrives and is never held
+  in memory. What can be refused is refused before the answer starts (a site has to
+  exist; one archive at a time, 409), and then the answer starts — status and headers
+  — before the dump, so the download shows in the browser at once and a dump that
+  takes a while is not a silence in which a second click looks like the thing to do.
+  An archive that fails on its way cuts the connection, so that it can never look
+  whole; a reader that leaves releases the launcher and what was staged is removed.
+  The route is throttled (ten a minute) and refuses a link followed from another
+  site (`Sec-Fetch-Site: cross-site`): the session cookie is `SameSite=Lax`, so it
+  goes with a top-level navigation, and nothing the administrator did asked for a
+  file that size. Where the database is not the image's own (`POSTGRES_HOST`) there
+  is no socket and no export: `GET /api/deployment` says `siteArchive: false`, and the
+  editor does not offer the section.
 - **A volume another container has open is refused.** `postmaster.pid` is how a
   second `docker run` on the same volume can tell: a pid file written by a process
   in another container names a process this one cannot see, so Postgres takes it for
@@ -86,4 +104,11 @@ The choices, with the reasons they went as they did:
   gigabytes. A plain-SQL dump has no architecture, and `check.sh` runs the whole move
   on the image CI publishes, on both.
 - A site archive carries the whole site, drafts included: it is as sensitive as the
-  database.
+  database. The editor says so beside the download.
+- A link cannot show a sentence. A download that the server refuses after the link
+  was followed (a session that has ended, an export already in progress, ten in a
+  minute) opens in the new tab the link makes, as the API's own message, not in the
+  editor; one that fails on its way is a failed download in the browser's own list.
+  The alternatives were to hold the whole archive in the browser's memory (a site with
+  gigabytes of uploads would not fit) or to ask the API for a one-use address first,
+  which is a store of tickets for a case this rare. Revisit if it bites.

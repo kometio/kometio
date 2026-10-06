@@ -24,6 +24,7 @@ import * as collectionsApi from '../lib/collections-api-client';
 import * as previewTokenApi from '../lib/preview-token-api-client';
 import * as sectionsListApi from '../lib/reusable-sections-api-client';
 import * as dashboardApi from '../lib/dashboard-api-client';
+import * as deploymentApi from '../lib/deployment-api-client';
 import * as setupApi from '../lib/setup-api-client';
 import * as formsApi from '../lib/forms-api-client';
 import * as mediaApi from '../lib/media-api-client';
@@ -44,6 +45,7 @@ import {
   buildUserRecord,
 } from '@kometio/testing/records';
 import { routeTree } from '../routeTree.gen';
+import { deploymentRecord } from '../test/deployment.test-fixture';
 import { createTestQueryClient } from '../test/query-client.test-fixture';
 import { ToastProvider } from './shell/toast-provider';
 
@@ -60,6 +62,9 @@ vi.mock('../lib/setup-api-client', async (importOriginal) => {
     bootstrapDeployment: vi.fn(),
   };
 });
+
+// What the server can do: the wizard offers to open an archive only where it can.
+vi.mock('../lib/deployment-api-client', () => ({ getDeployment: vi.fn() }));
 
 vi.mock('../lib/auth-api-client', async (importOriginal) => {
   const actual =
@@ -270,7 +275,11 @@ describe('router', () => {
     // looking at a wizard instead of a login form.
     vi.mocked(setupApi.fetchSetupStatus).mockResolvedValue({
       hasBeenSetUp: true,
+      importFailure: null,
     });
+    vi.mocked(deploymentApi.getDeployment).mockResolvedValue(
+      deploymentRecord(),
+    );
   });
 
   afterEach(() => {
@@ -292,6 +301,7 @@ describe('router', () => {
     // there is no account, so the login form would be a door with no key.
     vi.mocked(setupApi.fetchSetupStatus).mockResolvedValue({
       hasBeenSetUp: false,
+      importFailure: null,
     });
     vi.mocked(dashboardApi.getDashboardStats).mockRejectedValue(
       new ApiError(401, { message: 'Unauthorized' }),
@@ -302,6 +312,83 @@ describe('router', () => {
     expect(
       await screen.findByRole('heading', { name: 'Benvenuto in Kometio' }),
     ).toBeTruthy();
+  });
+
+  describe('the wizard, on a server that can open a site archive (docs/adr/0106)', () => {
+    beforeEach(() => {
+      vi.mocked(setupApi.fetchSetupStatus).mockResolvedValue({
+        hasBeenSetUp: false,
+        importFailure: null,
+      });
+    });
+
+    it('offers a site from another installation, and only on a server that can open one', async () => {
+      vi.mocked(deploymentApi.getDeployment).mockResolvedValue(
+        deploymentRecord({ siteArchive: true }),
+      );
+
+      renderApp('/setup');
+
+      expect(
+        await screen.findByRole('button', {
+          name: 'Ho già un sito di un’altra installazione',
+        }),
+      ).toBeTruthy();
+    });
+
+    it('does not offer it where the server cannot', async () => {
+      renderApp('/setup');
+
+      await screen.findByRole('heading', { name: 'Benvenuto in Kometio' });
+      await waitFor(() =>
+        expect(deploymentApi.getDeployment).toHaveBeenCalled(),
+      );
+      expect(
+        screen.queryByRole('button', {
+          name: 'Ho già un sito di un’altra installazione',
+        }),
+      ).toBeNull();
+    });
+
+    it('goes to the file and the token, and back to a new site', async () => {
+      vi.mocked(deploymentApi.getDeployment).mockResolvedValue(
+        deploymentRecord({ siteArchive: true }),
+      );
+      renderApp('/setup');
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Ho già un sito di un’altra installazione',
+        }),
+      );
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Apri un sito di un’altra installazione',
+        }),
+      ).toBeTruthy();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Crea invece un sito nuovo' }),
+      );
+
+      expect(
+        await screen.findByRole('heading', { name: 'Benvenuto in Kometio' }),
+      ).toBeTruthy();
+    });
+  });
+
+  it('says on the login that the site came from an archive, when the wizard has just opened one', async () => {
+    renderApp('/login?imported=true');
+
+    expect(
+      await screen.findByText(/Il sito è qui\. Accedi con l’account che avevi/),
+    ).toBeTruthy();
+  });
+
+  it('says nothing of it on an ordinary login', async () => {
+    renderApp('/login');
+
+    await screen.findByRole('heading', { name: 'Accedi' });
+    expect(screen.queryByText(/Il sito è qui/)).toBeNull();
   });
 
   it('sends a visitor away from the wizard once setup has happened', async () => {

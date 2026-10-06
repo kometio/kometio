@@ -12,12 +12,14 @@ import {
 } from '@kometio/testing/records';
 import i18n from '../../i18n';
 import * as collectionsApi from '../../lib/collections-api-client';
+import * as deploymentApi from '../../lib/deployment-api-client';
 import * as formsApi from '../../lib/forms-api-client';
 import * as mediaApi from '../../lib/media-api-client';
 import * as pagesApi from '../../lib/page-groups-api-client';
 import * as sitesApi from '../../lib/sites-api-client';
 import { PUBLIC_SITE_URL } from '../../lib/public-site-url';
 import { sessionAs } from '../../test/current-session.test-fixture';
+import { deploymentRecord } from '../../test/deployment.test-fixture';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { useCurrentSession } from '../auth/use-current-session';
 import { GlobalSearch } from './global-search';
@@ -34,6 +36,7 @@ vi.mock('../../lib/sites-api-client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/sites-api-client')>()),
   getCurrentSite: vi.fn(),
 }));
+vi.mock('../../lib/deployment-api-client', () => ({ getDeployment: vi.fn() }));
 vi.mock('../../lib/collections-api-client', async (importOriginal) => ({
   ...(await importOriginal<
     typeof import('../../lib/collections-api-client')
@@ -95,6 +98,9 @@ describe('GlobalSearch', () => {
     vi.mocked(sitesApi.getCurrentSite).mockResolvedValue(
       buildSiteRecord({ defaultLocale: 'it' }),
     );
+    vi.mocked(deploymentApi.getDeployment).mockResolvedValue(
+      deploymentRecord(),
+    );
     vi.mocked(collectionsApi.listCollections).mockResolvedValue([
       buildCollectionRecord({ id: 'news', name: 'Notizie' }),
     ]);
@@ -145,6 +151,26 @@ describe('GlobalSearch', () => {
 
     expect(push).toHaveBeenCalledWith('/settings/seo');
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  // The export is the one section that depends on the server and not on the
+  // role: the menu and the search read the same list, so they cannot disagree.
+  it('offers the export only where the server can make it', async () => {
+    renderSearch();
+    await screen.findByRole('option', { name: /SEO/ });
+    expect(optionNames().some((name) => name.startsWith('Esporta'))).toBe(
+      false,
+    );
+  });
+
+  it('offers the export on a server that says it can', async () => {
+    vi.mocked(deploymentApi.getDeployment).mockResolvedValue(
+      deploymentRecord({ siteArchive: true }),
+    );
+
+    renderSearch();
+
+    expect(await screen.findByRole('option', { name: /Esporta/ })).toBeTruthy();
   });
 
   it('asks the server for pages once two characters are typed and the typing pauses, and opens one in the canvas', async () => {

@@ -1,4 +1,5 @@
 import {
+  Archive,
   Building2,
   Clock,
   Cookie,
@@ -12,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { Permission } from '@kometio/shared-types';
+import type { ServerFeature } from '../common/deployment-queries';
 
 export type SettingsGroup = 'site' | 'connections' | 'privacy';
 
@@ -22,6 +24,8 @@ export interface SettingsSectionDefinition {
   group: SettingsGroup;
   /** Who is offered the section — the same permission its route asks for. */
   permission: Permission;
+  /** What the server must be able to do for the section to be offered at all (`GET /api/deployment`): most need nothing of it. */
+  requires?: ServerFeature;
 }
 
 /**
@@ -107,10 +111,26 @@ export const SETTINGS_SECTIONS = [
     group: 'privacy',
     permission: 'configureSite',
   },
+  {
+    id: 'export',
+    to: '/settings/export',
+    icon: Archive,
+    group: 'privacy',
+    permission: 'configureSite',
+    requires: 'siteArchive',
+  },
 ] as const satisfies readonly SettingsSectionDefinition[];
 
 /** One entry of the list, with its own literal `id` and `to`: the words and the routes are keyed by them. */
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
+
+/** Whether the server can do what a section needs of it (`requires`), which is nothing for most. */
+export function isOfferedBy(
+  section: SettingsSectionDefinition,
+  server: Readonly<Record<ServerFeature, boolean>>,
+): boolean {
+  return section.requires === undefined || server[section.requires];
+}
 
 export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   'site',

@@ -8,6 +8,8 @@ import { CaptchaWidget } from './captcha-widget';
 import { InlineError } from '../../components/ui/inline-error';
 
 export interface LoginFormProps {
+  /** The site was just opened from an archive: say that the accounts came with it. */
+  imported?: boolean;
   onLogin: (
     email: string,
     password: string,
@@ -16,7 +18,11 @@ export interface LoginFormProps {
   onForgotPassword: () => void;
 }
 
-export function LoginForm({ onLogin, onForgotPassword }: LoginFormProps) {
+export function LoginForm({
+  imported = false,
+  onLogin,
+  onForgotPassword,
+}: LoginFormProps) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,6 +59,11 @@ export function LoginForm({ onLogin, onForgotPassword }: LoginFormProps) {
       description={t('auth.login.description')}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {imported && (
+          <p role="status" className="text-sm">
+            {t('auth.login.imported')}
+          </p>
+        )}
         <div className="flex flex-col gap-2">
           <Label htmlFor="login-email">{t('auth.login.emailLabel')}</Label>
           <Input

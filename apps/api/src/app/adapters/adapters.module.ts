@@ -7,6 +7,7 @@ import {
   type KometioDb,
 } from '@kometio/postgres-db';
 import { FilesystemThemeUploadAdapter } from '@kometio/filesystem-theme-catalog';
+import { LauncherSiteArchiveAdapter } from '@kometio/launcher-site-archive';
 import {
   DrizzleFormRepository,
   DrizzleFormSubmissionRepository,
@@ -218,6 +219,21 @@ const PROVIDERS = [
     inject: [port.DEPLOYMENT_CAPTCHA],
   },
   configured(port.NEWSLETTER_PORT, createNewsletterPort),
+  // Only the single image makes one, through the socket its launcher listens
+  // on (docs/adr/0105): the API is not given the means to dump the database.
+  configured(port.SITE_ARCHIVE, (env) =>
+    env.KOMETIO_CONTROL_SOCKET
+      ? new LauncherSiteArchiveAdapter({
+          socketPath: env.KOMETIO_CONTROL_SOCKET,
+        })
+      : null,
+  ),
+  // The same adapter, for the first-run screen, which only ever opens an archive.
+  {
+    provide: port.SITE_IMPORT,
+    useFactory: (archive: LauncherSiteArchiveAdapter | null) => archive,
+    inject: [port.SITE_ARCHIVE],
+  },
   configured(port.SECRET_CIPHER, createSecretCipher),
   // Whether a site's model server may be inside the network (a model on
   // the same machine, say) is the operator's call, read once.

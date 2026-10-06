@@ -5,6 +5,7 @@ import * as api from '../../lib/auth-api-client';
 import * as deployment from '../../lib/deployment-api-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { ForgotPasswordForm } from './forgot-password-form';
+import { deploymentRecord } from '../../test/deployment.test-fixture';
 
 vi.mock('../../lib/auth-api-client', async (importOriginal) => {
   const actual =
@@ -12,9 +13,11 @@ vi.mock('../../lib/auth-api-client', async (importOriginal) => {
   return { ...actual, requestPasswordReset: vi.fn() };
 });
 
-vi.mock('../../lib/deployment-api-client', () => ({
-  getDeployment: vi.fn().mockResolvedValue({ emailConfigured: true }),
-}));
+vi.mock('../../lib/deployment-api-client', async () => {
+  const { deploymentRecord } =
+    await import('../../test/deployment.test-fixture');
+  return { getDeployment: vi.fn().mockResolvedValue(deploymentRecord()) };
+});
 
 function renderForm(onBackToLogin = vi.fn()) {
   return render(
@@ -26,9 +29,9 @@ function renderForm(onBackToLogin = vi.fn()) {
 
 describe('ForgotPasswordForm', () => {
   beforeEach(() => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: true,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: true }),
+    );
   });
 
   afterEach(() => {
@@ -42,9 +45,9 @@ describe('ForgotPasswordForm', () => {
    */
   describe('on a server with no mail server', () => {
     beforeEach(() => {
-      vi.mocked(deployment.getDeployment).mockResolvedValue({
-        emailConfigured: false,
-      });
+      vi.mocked(deployment.getDeployment).mockResolvedValue(
+        deploymentRecord({ emailConfigured: false }),
+      );
     });
 
     it('says before the request that no email will come, and where the link is', async () => {

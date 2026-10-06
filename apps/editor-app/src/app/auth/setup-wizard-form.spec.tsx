@@ -199,4 +199,47 @@ describe('SetupWizardForm', () => {
       true,
     );
   });
+
+  describe('opening a site from another installation (docs/adr/0106)', () => {
+    it('offers it only when the screen is told it can be done', () => {
+      const { rerender } = render(
+        <SetupWizardForm onSubmit={vi.fn().mockResolvedValue(undefined)} />,
+      );
+      expect(
+        screen.queryByRole('button', {
+          name: /ho già un sito di un’altra installazione/i,
+        }),
+      ).toBeNull();
+
+      rerender(
+        <SetupWizardForm
+          onSubmit={vi.fn().mockResolvedValue(undefined)}
+          onChooseImport={vi.fn()}
+        />,
+      );
+
+      expect(
+        screen.getByRole('button', {
+          name: /ho già un sito di un’altra installazione/i,
+        }),
+      ).toBeTruthy();
+    });
+
+    it('goes there when it is chosen, without sending the form', () => {
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+      const onChooseImport = vi.fn();
+      render(
+        <SetupWizardForm onSubmit={onSubmit} onChooseImport={onChooseImport} />,
+      );
+
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: /ho già un sito di un’altra installazione/i,
+        }),
+      );
+
+      expect(onChooseImport).toHaveBeenCalledTimes(1);
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+  });
 });

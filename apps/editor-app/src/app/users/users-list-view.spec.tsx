@@ -17,6 +17,7 @@ import type { UserRecord } from '../../lib/users-api-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { buildUserRecord } from '@kometio/testing/records';
 import { UsersListView } from './users-list-view';
+import { deploymentRecord } from '../../test/deployment.test-fixture';
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual =
@@ -30,9 +31,11 @@ vi.mock('../../lib/auth-api-client', async (importOriginal) => {
   return { ...actual, currentSession: vi.fn() };
 });
 
-vi.mock('../../lib/deployment-api-client', () => ({
-  getDeployment: vi.fn().mockResolvedValue({ emailConfigured: true }),
-}));
+vi.mock('../../lib/deployment-api-client', async () => {
+  const { deploymentRecord } =
+    await import('../../test/deployment.test-fixture');
+  return { getDeployment: vi.fn().mockResolvedValue(deploymentRecord()) };
+});
 
 vi.mock('../../lib/users-api-client', async (importOriginal) => {
   const actual =
@@ -73,9 +76,9 @@ function renderView(
 
 describe('UsersListView', () => {
   beforeEach(() => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: true,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: true }),
+    );
   });
 
   afterEach(() => {
@@ -85,9 +88,9 @@ describe('UsersListView', () => {
   // An invitation on a server with no mail server is written to its log: the
   // person who invites has to know, or "invited" reads as "will arrive".
   it('tells the administrator that invitations will not be mailed when the server has no mail server', async () => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: false,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: false }),
+    );
 
     renderView([userOne]);
 
@@ -301,9 +304,9 @@ describe('UsersListView', () => {
     });
 
     it('does not say an email was sent when the server has no mail server', async () => {
-      vi.mocked(deployment.getDeployment).mockResolvedValue({
-        emailConfigured: false,
-      });
+      vi.mocked(deployment.getDeployment).mockResolvedValue(
+        deploymentRecord({ emailConfigured: false }),
+      );
       vi.mocked(api.resendInvite).mockResolvedValue({ emailSent: true });
       renderView([invitee]);
       await screen.findByText(/non può inviare email/i);
@@ -420,9 +423,9 @@ describe('UsersListView', () => {
   });
 
   it('does not say an email was sent when the server has no mail server', async () => {
-    vi.mocked(deployment.getDeployment).mockResolvedValue({
-      emailConfigured: false,
-    });
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ emailConfigured: false }),
+    );
     vi.mocked(api.inviteUser).mockResolvedValue({
       user: { ...userOne, email: 'nuova@example.com' },
       emailSent: true,

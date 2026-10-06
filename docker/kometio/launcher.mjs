@@ -3,6 +3,11 @@
 //
 //   Postgres  →  migrations  →  API  →  public site  →  editor (nginx)  →  Caddy
 //
+// Beside them, with its own database, the launcher itself answers the API on a
+// socket: the archive of the site, for Settings → Export (docs/adr/0105), and the
+// opening of one into an installation with no site yet, from the first-run screen
+// (docs/adr/0106), which stops the API and the site, restores, and starts them again.
+//
 // Caddy is there only on a server, when DOMAIN is set (docs/adr/0104): it takes
 // ports 80 and 443, gets the certificates, and sends each name to its half.
 // Without DOMAIN the halves answer on their own ports, as they always did.
@@ -21,9 +26,18 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { get } from 'node:http';
 import { createInterface } from 'node:readline';
 import { setTimeout as sleep } from 'node:timers/promises';
+import {
+  installationHasSite,
+  prepareExport,
+  readArchive,
+  removeLeftoverExports,
+  restoreArchive,
+} from './archive-commands.mjs';
+import { CONTROL_SOCKET, startControlServer } from './control-server.mjs';
 import {
   SOCKET_DIR,
   createRoles,
@@ -41,6 +55,7 @@ import {
   waitFor as waitForProcess,
 } from './processes.mjs';
 import { resolveAddresses } from './server-mode.mjs';
+import { IMPORT_RESULT_FILE, createSiteImport } from './site-import.mjs';
 
 const env = process.env;
 const DATA = env.KOMETIO_DATA_DIR ?? '/data';
@@ -81,7 +96,7 @@ const EDITOR_PORT = domain ? 8080 : 80;
 // secrets and the test captcha keys, which is what it is for. A trial is not.
 const NODE_ENV = env.NODE_ENV ?? (domain ? 'production' : 'development');
 
-/** @type {Array<{ name: string, child: import('node:child_process').ChildProcess, stop: NodeJS.Signals }>} */
+/** @type {Array<{ name: string, child: import('node:child_process').ChildProcess, stop: NodeJS.Signals, expectedToStop: boolean }>} */
 const running = [];
 let stopping = false;
 let setupToken = null;
@@ -106,17 +121,39 @@ function start(
     stdio: ['ignore', 'pipe', 'pipe'],
     ...(user ? ids(user) : {}),
   });
+  const entry = { name, child, stop, expectedToStop: false };
   prefixed(child.stdout, name, onLine);
   prefixed(child.stderr, name, onLine);
   child.on('exit', (code, signal) => {
-    if (stopping) return;
+    // Stopped on purpose (the import stops the API and the site and starts
+    // them again): not a reason to stop the others.
+    if (stopping || entry.expectedToStop) return;
     log(
       `${name} stopped on its own (${signal ?? `exit ${code}`}): stopping everything`,
     );
     void shutdown(1);
   });
-  running.push({ name, child, stop });
+  running.push(entry);
   return child;
+}
+
+/** Stops one process on purpose, and takes it off the list of what is running. */
+async function stopOne(name) {
+  const entry = running.find((candidate) => candidate.name === name);
+  if (!entry) return;
+  entry.expectedToStop = true;
+  const { child } = entry;
+  if (child.exitCode === null && child.signalCode === null) {
+    child.kill(entry.stop);
+    const exited = new Promise((resolve) => child.once('exit', resolve));
+    const gaveUp = sleep(30_000).then(() => 'timeout');
+    if ((await Promise.race([exited, gaveUp])) === 'timeout') {
+      log(`${name} did not stop in time: killing it`);
+      child.kill('SIGKILL');
+      await new Promise((resolve) => child.once('exit', resolve));
+    }
+  }
+  running.splice(running.indexOf(entry), 1);
 }
 
 /** Waits for something to come up, and stops waiting when the launcher is stopping. */
@@ -194,6 +231,55 @@ function migrate(adminEnv) {
   });
 }
 
+/**
+ * Answers the API on a socket that only its user can open. It makes the archive
+ * of the site from this container's own database, and opens one into it, which
+ * is what the API is not given the means to do; with a database elsewhere there
+ * is nothing here to dump or to restore.
+ *
+ * Opening an archive stops the site and the API, which hold the database and
+ * remember that there is no site, restores, and starts them again (the
+ * migrations first: a restore that failed has left an empty database, and an
+ * empty database has no tables). How it went is written next to the socket, where
+ * the API, once it is back, tells the browser that is waiting.
+ */
+async function startControl(s, adminEnv) {
+  removeLeftoverExports(DATA);
+  const owner = ids('kometio');
+  await startControlServer({
+    socketPath: CONTROL_SOCKET,
+    owner,
+    prepare: () => prepareExport({ dataDir: DATA, say: log }),
+    openArchive: createSiteImport({
+      dataDir: DATA,
+      siteUrl: SITE_URL,
+      resultPath: `${dirname(CONTROL_SOCKET)}/${IMPORT_RESULT_FILE}`,
+      owner,
+      say: log,
+      installationHasSite,
+      readArchive,
+      restoreArchive,
+      stopServers: async () => {
+        await stopOne('site');
+        await stopOne('api');
+      },
+      startServers: async () => {
+        if (stopping) return;
+        // The token the first start showed belongs to an API that is gone: a new
+        // one is shown, if this one makes one (it does when the import failed).
+        setupToken = null;
+        migrate(adminEnv);
+        await startApi(s);
+        await startSite(s);
+        // The same banner as at the start, since what a person needs next is the
+        // same: where things are, and the new setup token after a failure.
+        announce();
+      },
+    }),
+    say: log,
+  });
+}
+
 function apiEnvironment(s) {
   // The user's own variables win over the defaults, so a deployment can set
   // SMTP, S3, its own Turnstile keys, NODE_ENV=production, and so on. The
@@ -226,6 +312,8 @@ function apiEnvironment(s) {
     // These are this launcher's to decide, whatever the environment says.
     POSTGRES_APP_PASSWORD: s.postgresAppPassword,
     ...(OWN_DATABASE ? { POSTGRES_HOST: '127.0.0.1' } : {}),
+    // The editor offers an export only where there is somebody to make it.
+    KOMETIO_CONTROL_SOCKET: OWN_DATABASE ? CONTROL_SOCKET : undefined,
   };
 }
 
@@ -345,6 +433,48 @@ function announce() {
   console.log(`${line}\n`);
 }
 
+/** The API, and the wait until it answers. It is also what prints the setup token. */
+async function startApi(s) {
+  let expectingToken = false;
+  start('api', 'node', ['main.js'], {
+    user: 'kometio',
+    cwd: '/opt/api',
+    childEnv: apiEnvironment(s),
+    onLine: (line) => {
+      // The API prints the first-run token once, in a box, and keeps it in
+      // memory only: this is the one place it can be picked up and shown plainly.
+      if (line.includes('enter this setup token')) {
+        expectingToken = true;
+        return;
+      }
+      const token =
+        expectingToken && line.match(/^\s{4,}([A-Za-z0-9_-]{20,})\s*$/);
+      if (token) {
+        setupToken = token[1];
+        expectingToken = false;
+      }
+    },
+  });
+  await waitFor(
+    'the API',
+    () => answers(`http://127.0.0.1:${API_PORT}/api/health`),
+    120,
+  );
+}
+
+async function startSite(s) {
+  start('site', 'node', ['server.mjs'], {
+    user: 'kometio-site',
+    cwd: '/opt/site',
+    childEnv: siteEnvironment(s),
+  });
+  await waitFor(
+    'the public site',
+    () => answers(`http://127.0.0.1:${SITE_PORT}/api/health`),
+    60,
+  );
+}
+
 async function main() {
   log(
     `starting (${NODE_ENV}${OWN_DATABASE ? ', with its own database' : `, database at ${env.POSTGRES_HOST}`})`,
@@ -381,43 +511,10 @@ async function main() {
     };
   }
   migrate(adminEnv);
+  if (OWN_DATABASE) await startControl(s, adminEnv);
 
-  let expectingToken = false;
-  start('api', 'node', ['main.js'], {
-    user: 'kometio',
-    cwd: '/opt/api',
-    childEnv: apiEnvironment(s),
-    onLine: (line) => {
-      // The API prints the first-run token once, in a box, and keeps it in
-      // memory only: this is the one place it can be picked up and shown plainly.
-      if (line.includes('enter this setup token')) {
-        expectingToken = true;
-        return;
-      }
-      const token =
-        expectingToken && line.match(/^\s{4,}([A-Za-z0-9_-]{20,})\s*$/);
-      if (token) {
-        setupToken = token[1];
-        expectingToken = false;
-      }
-    },
-  });
-  await waitFor(
-    'the API',
-    () => answers(`http://127.0.0.1:${API_PORT}/api/health`),
-    120,
-  );
-
-  start('site', 'node', ['server.mjs'], {
-    user: 'kometio-site',
-    cwd: '/opt/site',
-    childEnv: siteEnvironment(s),
-  });
-  await waitFor(
-    'the public site',
-    () => answers(`http://127.0.0.1:${SITE_PORT}/api/health`),
-    60,
-  );
+  await startApi(s);
+  await startSite(s);
 
   configureEditor();
   start('editor', 'nginx', ['-c', '/opt/kometio/nginx.conf']);

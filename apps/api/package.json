@@ -110,6 +110,7 @@
     "@kometio/domain-core": "workspace:*",
     "@kometio/env-config": "workspace:*",
     "@kometio/filesystem-theme-catalog": "workspace:*",
+    "@kometio/launcher-site-archive": "workspace:*",
     "@kometio/local-disk-attachment-storage": "workspace:*",
     "@kometio/local-disk-media-storage": "workspace:*",
     "@kometio/mailchimp-newsletter": "workspace:*",

@@ -23,6 +23,7 @@ export * from './lib/reusable-section-repository.port';
 export * from './lib/reusable-section-version-repository.port';
 export * from './lib/site-layout-section-repository.port';
 export * from './lib/site-layout-section-version-repository.port';
+export * from './lib/site-archive.port';
 export * from './lib/site-repository.port';
 export * from './lib/collection-repository.port';
 export * from './lib/taxonomy-repository.port';

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import { expect, test, type Locator } from '@playwright/test';
 import { requireEnv } from '@kometio/env-config';
 import { environment } from '../support/environment';
@@ -31,6 +33,11 @@ function widgetState(widget: Locator): Promise<unknown> {
  * went out, and the link of each has to be in the installation's log
  * (docker/kometio/check.sh reads them there, for the address in
  * E2E_INVITEE_EMAIL and the administrator's own).
+ *
+ * And it downloads the site from Settings → Export (docs/adr/0105), which only
+ * this image offers: the file has to arrive as a real download through the
+ * browser, over plain ports and over HTTPS with the editor and the API on two
+ * names, and be an archive.
  *
  * And it sends a form of the public site with no captcha keys: the visitor's
  * widget is the one built into Kometio (docs/adr/0103), which asks this site for
@@ -111,6 +118,28 @@ test('a person who starts the image reaches a working site, and can sign in agai
     (cookie) => cookie.name === 'kometio_session',
   );
   expect(session?.secure).toBe(secure);
+
+  // The whole site in one file, from Settings → Export: offered because this is
+  // the single image, and downloaded by the browser itself (a link, so that a
+  // large archive goes to disk as it arrives). The session cookie has to go with
+  // it from the editor's name to the API's, which on a server are two.
+  await login.goto(`${environment.editorUrl}settings`);
+  await login.getByRole('link', { name: 'Export', exact: true }).click();
+  await expect(
+    login.getByRole('heading', { name: 'Export', level: 2 }),
+  ).toBeVisible();
+  const downloading = login.waitForEvent('download');
+  await login.getByRole('link', { name: 'Download the site' }).click();
+  const download = await downloading;
+  expect(download.suggestedFilename()).toMatch(
+    /^kometio-site-\d{8}-\d{4}\.tar\.gz$/,
+  );
+  // What was saved is the archive and it is whole: a gzip of a tar that holds
+  // its manifest, the database, and (here, nothing was uploaded) the uploads.
+  expect(await download.failure()).toBeNull();
+  const tarball = gunzipSync(readFileSync(await download.path()));
+  expect(tarball.includes('manifest.json')).toBe(true);
+  expect(tarball.includes('database.sql.gz')).toBe(true);
 
   // Invite somebody, on an installation with no mail server. It used to answer
   // 500 after the person was already made; now the invitation is made, and the

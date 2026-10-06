@@ -2,15 +2,22 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
+  HttpCode,
   Inject,
   Post,
+  Req,
   Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import type { Response } from 'express';
-import { bootstrapDeployment, getSetupStatus } from '@kometio/application';
+import {
+  bootstrapDeployment,
+  getSetupStatus,
+  openSiteArchive,
+} from '@kometio/application';
 import { SessionCookies } from '../auth/session-cookies';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
@@ -20,6 +27,12 @@ import {
 import { SetupTokenRegistry } from './setup-token.registry';
 import type { SetupDeps } from './setup.deps';
 import { SETUP_DEPS } from './setup.tokens';
+
+const SETUP_TOKEN_REFUSED =
+  'Invalid setup token. It is printed in the API log — ' +
+  '`docker logs kometio` for the one-image install, ' +
+  '`docker compose logs api` for the compose stack — and changes ' +
+  'each time the API restarts, so use the most recent one.';
 
 /**
  * The first-run wizard's backend. Unauthenticated by necessity: it runs
@@ -46,12 +59,19 @@ export class SetupController {
   /**
    * What the editor loads before showing anything: the wizard when this is
    * false, the login page when it is true. Deliberately says nothing else
-   * — no version, no hostname, no counts. It is reachable by anyone on the
-   * internet, and "is this installation still unclaimed?" is already the
-   * most useful thing it could tell an attacker.
+   * — no version, no hostname, no counts — but one sentence about a failed
+   * import, below. It is reachable by anyone on the internet, and "is this
+   * installation still unclaimed?" is already the most useful thing it could
+   * tell an attacker.
    */
   @Get('status')
-  async status(): Promise<{ hasBeenSetUp: boolean }> {
+  async status(): Promise<{
+    hasBeenSetUp: boolean;
+    importFailure: string | null;
+  }> {
+    // Besides that, and only while there is no site, why the import the screen
+    // was waiting for did not come through (docs/adr/0106): a sentence the launcher
+    // chose to be read by anybody, never a path or what Postgres said.
     return getSetupStatus(this.deps);
   }
 
@@ -85,12 +105,7 @@ export class SetupController {
     // asking has to prove they can read this server's logs. See
     // SetupTokenRegistry for why that is the bar.
     if (!this.setupToken.verify(body.setupToken)) {
-      throw new UnauthorizedException(
-        'Invalid setup token. It is printed in the API log — ' +
-          '`docker logs kometio` for the one-image install, ' +
-          '`docker compose logs api` for the compose stack — and changes ' +
-          'each time the API restarts, so use the most recent one.',
-      );
+      throw new UnauthorizedException(SETUP_TOKEN_REFUSED);
     }
 
     const { session, ...result } = await bootstrapDeployment(this.deps, body);
@@ -106,5 +121,32 @@ export class SetupController {
     this.cookies.set(response, session);
 
     return result;
+  }
+
+  /**
+   * Opens a site archive (a site from another installation) instead of making a
+   * new one, from the same first-run screen and behind the same gate: the setup
+   * token, here in a header, because the body is the archive itself. The gate is
+   * checked before one byte of it is read, since an unauthenticated upload of
+   * gigabytes is what it keeps out.
+   *
+   * The archive is handed to the launcher as it arrives and nothing is kept
+   * here. The answer is 202, which is *accepted*, not done: opening it stops
+   * this very process and starts it again, and the screen waits for that by
+   * asking `GET /setup/status` (docs/adr/0106).
+   */
+  @UseGuards(ThrottlerGuard)
+  @Post('import')
+  @HttpCode(202)
+  async importSite(
+    @Headers('x-setup-token') candidate: string | undefined,
+    // The request, which is the archive as it arrives: all that is asked of it is to be read.
+    @Req() archive: AsyncIterable<Uint8Array>,
+  ): Promise<{ accepted: true }> {
+    if (!this.setupToken.verify(candidate ?? '')) {
+      throw new UnauthorizedException(SETUP_TOKEN_REFUSED);
+    }
+    await openSiteArchive(this.deps, archive);
+    return { accepted: true };
   }
 }

@@ -47,6 +47,13 @@ MOVED_VOLUME=kometio-check-moved-data
 MOVED_EDITOR_PORT=19200
 MOVED_API_PORT=19000
 MOVED_SITE_PORT=19322
+# The fifth, a new installation that is given that site on its first-run screen
+# instead of making one (docs/adr/0106), in a browser.
+IMPORTED=kometio-check-imported
+IMPORTED_VOLUME=kometio-check-imported-data
+IMPORTED_EDITOR_PORT=20200
+IMPORTED_API_PORT=20000
+IMPORTED_SITE_PORT=20322
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -86,16 +93,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    for other in "$FIRST" "$HTTPS" "$MOVED"; do
+    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED"; do
       if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
         printf '\n== the last lines of the log of %s\n' "$other"
         docker logs --tail 40 "$other" 2>&1 || true
       fi
     done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -104,13 +111,13 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -157,6 +164,8 @@ check "DOMAIN is read as documented, and a mistake in it says what to write" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/server-mode.test.mjs"
 check "an archive is trusted as documented: its manifest, its migrations, what it may hold" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive.test.mjs"
+check "the launcher's control socket answers as documented: one archive at a time, a refusal before it starts, a cut when it fails on its way" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/control-server.test.mjs"
 
 # --- the first run, in a browser ------------------------------------------------
 #
@@ -351,6 +360,50 @@ check "the server exports its site while it runs" \
   sh -c "docker exec '$NAME' node /opt/kometio/cli.mjs export > '${WORK}/site.tar.gz'"
 check "the archive is a .tar.gz with its manifest, its database and its uploads" \
   sh -c "tar tzf '${WORK}/site.tar.gz' | grep -q 'manifest.json' && tar tzf '${WORK}/site.tar.gz' | grep -q 'database.sql.gz' && tar tzf '${WORK}/site.tar.gz' | grep -q 'uploads/'"
+
+# The same archive through the editor's door (Settings → Export, docs/adr/0105):
+# the API asks the launcher on a socket and streams what comes back. It is the one
+# that is opened below, since it is the one a person has.
+check "the server says its site can be exported (the single image makes the archive)" \
+  sh -c "curl -s '${API_URL}/deployment' | grep -q '\"siteArchive\":true'"
+check "nobody signed in is refused the archive (401)" \
+  test "$(status_code "${API_URL}/site-archive")" = 401
+check "a link followed from another site is refused (403)" \
+  test "$(status_code -b "$COOKIES" -H 'Sec-Fetch-Site: cross-site' "${API_URL}/site-archive")" = 403
+check "an administrator downloads the archive while the server runs" \
+  sh -c "curl -sf -b '$COOKIES' -D '${WORK}/export.headers' -o '${WORK}/site-from-editor.tar.gz' '${API_URL}/site-archive'"
+check "it is sent as a file to keep, named, and never from a cache" \
+  sh -c "grep -qi '^content-type: application/gzip' '${WORK}/export.headers' && grep -qi '^content-disposition: attachment; filename=\"kometio-site-[0-9]*-[0-9]*.tar.gz\"' '${WORK}/export.headers' && grep -qi '^cache-control: no-store' '${WORK}/export.headers'"
+check "it is not compressed a second time on its way" \
+  sh -c "! grep -qi '^content-encoding:' '${WORK}/export.headers'"
+check "it is an archive of the same shape as the command's: manifest, database and uploads" \
+  sh -c "tar tzf '${WORK}/site-from-editor.tar.gz' | grep -q 'manifest.json' && tar tzf '${WORK}/site-from-editor.tar.gz' | grep -q 'database.sql.gz' && tar tzf '${WORK}/site-from-editor.tar.gz' | grep -q 'uploads/'"
+# One at a time, and a reader who leaves must not leave the next one waiting: the
+# first is read slowly, so that it is still being made; the second is refused; and
+# once the first reader is gone the launcher lets go and the next one is made. A
+# site this small is archived faster than anything can be read slowly (a few
+# megabytes of it sit in the sockets' buffers), so it is given 40 MB of bytes that
+# do not compress, where the uploads are; they are taken away again below.
+docker exec "$NAME" sh -c "head -c 40000000 /dev/urandom > /data/uploads/ballast.bin && chown kometio:kometio /data/uploads/ballast.bin"
+curl -s -b "$COOKIES" --limit-rate 1k -o /dev/null "${API_URL}/site-archive" &
+SLOW_READER=$!
+sleep 3
+check "a second export while one is being made is refused (409)" \
+  test "$(status_code -b "$COOKIES" "${API_URL}/site-archive")" = 409
+kill "$SLOW_READER" 2>/dev/null || true
+wait "$SLOW_READER" 2>/dev/null || true
+sleep 3
+check "when the reader leaves, the next export is made" \
+  test "$(status_code -b "$COOKIES" "${API_URL}/site-archive")" = 200
+check "and nothing of the unfinished one is left on the volume" \
+  sh -c "test \"\$(docker exec '$NAME' sh -c 'ls /data/state | grep -c ^export- || true')\" = 0"
+docker exec "$NAME" rm -f /data/uploads/ballast.bin
+# The socket is the launcher's door, and only the API's user can open it: the user
+# a theme's code runs as cannot even reach the folder it is in.
+check "the API's own user can open the control socket (the control of the next check)" \
+  docker exec -u kometio "$NAME" node -e "require('net').connect('/run/kometio/control.sock').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"
+check "the user a theme's code runs as cannot open it" \
+  sh -c "! docker exec -u kometio-site '$NAME' node -e \"require('net').connect('/run/kometio/control.sock').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\""
 check "a file that is not an archive is refused, and nothing is started for it" \
   sh -c "! echo 'not an archive' | docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import 2>/dev/null"
 # The one thing that must never happen: a second container starting Postgres on
@@ -361,10 +414,10 @@ check "an import onto a volume that a running server uses is refused" \
   sh -c "! docker run --rm -i -v '${VOLUME}:/data' '$IMAGE' import < '${WORK}/site.tar.gz' 2>/dev/null"
 check "and that server's database was not touched: its pid file is still there" \
   docker exec "$NAME" test -f /data/postgres/postmaster.pid
-check "the archive is opened into a new volume, under another address" \
-  sh -c "docker run --rm -i -v '${MOVED_VOLUME}:/data' -e 'PUBLIC_SITE_URL=http://moved.localhost:${MOVED_SITE_PORT}' '$IMAGE' import < '${WORK}/site.tar.gz'"
+check "the archive the editor gave is opened into a new volume, under another address" \
+  sh -c "docker run --rm -i -v '${MOVED_VOLUME}:/data' -e 'PUBLIC_SITE_URL=http://moved.localhost:${MOVED_SITE_PORT}' '$IMAGE' import < '${WORK}/site-from-editor.tar.gz'"
 check "it is not opened a second time over what is there" \
-  sh -c "! docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import < '${WORK}/site.tar.gz' 2>/dev/null"
+  sh -c "! docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import < '${WORK}/site-from-editor.tar.gz' 2>/dev/null"
 docker run -d --name "$MOVED" \
   -p "${MOVED_EDITOR_PORT}:80" -p "${MOVED_API_PORT}:3000" -p "${MOVED_SITE_PORT}:4322" \
   -e "EDITOR_APP_URL=http://localhost:${MOVED_EDITOR_PORT}" \
@@ -399,6 +452,96 @@ check "and it answers at the new address only: its old name finds nothing" \
 check "the uploaded file came with it" test "$(status_code "${MOVED_API_URL}${UPLOADED}")" = 200
 docker rm -fv "$MOVED" >/dev/null
 docker volume rm "$MOVED_VOLUME" >/dev/null 2>&1 || true
+
+# --- opening the site from the first-run screen -----------------------------------
+#
+# docs/adr/0106. The archive the editor gave (above) is handed to a NEW installation
+# on its first-run screen, in a browser: the API that takes it is stopped to open it,
+# and started again, and so is the site, while the container keeps running. It has to
+# come out the same site, with its account and its file, and nothing about what was
+# refused on the way may have touched the installation.
+step "opening the site from the first-run screen, in a browser"
+IMPORTED_EDITOR_URL="http://localhost:${IMPORTED_EDITOR_PORT}"
+IMPORTED_API_URL="http://localhost:${IMPORTED_API_PORT}/api"
+IMPORTED_SITE_URL="http://localhost:${IMPORTED_SITE_PORT}"
+# The browser run uses the captcha built into Kometio, as a new installation has it.
+# Without a browser (the published image's smoke) the account is signed in through the
+# API, which needs a captcha that accepts a placeholder: Cloudflare's test keys.
+IMPORTED_CAPTCHA=()
+if [ "$SMOKE_ONLY" = true ]; then
+  IMPORTED_CAPTCHA=(-e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}")
+fi
+docker run -d --name "$IMPORTED" \
+  -p "${IMPORTED_EDITOR_PORT}:80" -p "${IMPORTED_API_PORT}:3000" -p "${IMPORTED_SITE_PORT}:4322" \
+  -e "EDITOR_APP_URL=${IMPORTED_EDITOR_URL}" \
+  -e "API_PUBLIC_URL=${IMPORTED_API_URL}" \
+  -e "PUBLIC_SITE_URL=${IMPORTED_SITE_URL}" \
+  ${IMPORTED_CAPTCHA[@]+"${IMPORTED_CAPTCHA[@]}"} \
+  -v "${IMPORTED_VOLUME}:/data" \
+  "$IMAGE" >/dev/null
+wait_for_banners 1 "$IMPORTED" >/dev/null
+IMPORTED_TOKEN="$(setup_token "$IMPORTED")"
+IMPORTED_STARTED="$(docker inspect -f '{{.State.StartedAt}}' "$IMPORTED")"
+check "the server says it can open an archive" \
+  sh -c "curl -s '${IMPORTED_API_URL}/deployment' | grep -q '\"siteArchive\":true'"
+check "a file that is not an archive is refused with its reason (400), before anything is stopped" \
+  sh -c "test \"\$(curl -s -o '${WORK}/refusal.json' -w '%{http_code}' -H 'content-type: application/gzip' -H 'X-Setup-Token: ${IMPORTED_TOKEN}' --data-binary 'not an archive' '${IMPORTED_API_URL}/setup/import')\" = 400 && grep -q 'not a Kometio site archive' '${WORK}/refusal.json'"
+check "a wrong setup token is refused (401), and no token either" \
+  sh -c "test \"\$(curl -s -o /dev/null -w '%{http_code}' -H 'content-type: application/gzip' -H 'X-Setup-Token: a-guess' --data-binary 'x' '${IMPORTED_API_URL}/setup/import')\" = 401"
+check "the installation is as it was: still new, its API still the one that was started" \
+  sh -c "curl -s '${IMPORTED_API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":false'"
+if [ "$SMOKE_ONLY" = false ]; then
+  if (
+    cd "$(git rev-parse --show-toplevel)"
+    E2E_SETUP_TOKEN="$IMPORTED_TOKEN" E2E_ARCHIVE="${WORK}/site-from-editor.tar.gz" \
+      E2E_SITE_NAME="Check Site" E2E_UPLOADED_PATH="$UPLOADED" \
+      VITE_API_URL="$IMPORTED_API_URL" EDITOR_APP_URL="$IMPORTED_EDITOR_URL" VITE_PUBLIC_SITE_URL="$IMPORTED_SITE_URL" \
+      DEFAULT_USER_EMAIL="$ADMIN_EMAIL" DEFAULT_USER_PASSWORD="$ADMIN_PASSWORD" \
+      pnpm exec nx run @kometio/e2e:import
+  ); then
+    pass "a site from another installation is opened on the first-run screen, and its account signs in"
+  else
+    fail "opening a site from the first-run screen in a browser failed"
+  fi
+else
+  # The same, with no browser: what the page does is a POST and then a wait.
+  CODE="$(status_code -H 'content-type: application/gzip' -H "X-Setup-Token: ${IMPORTED_TOKEN}" \
+    --data-binary "@${WORK}/site-from-editor.tar.gz" "${IMPORTED_API_URL}/setup/import")"
+  if [ "$CODE" = 202 ]; then pass "the archive is accepted (202)"; else fail "the archive was answered ${CODE}, not 202"; fi
+  waited=0
+  until curl -sf "${IMPORTED_API_URL}/setup/status" 2>/dev/null | grep -q '"hasBeenSetUp":true'; do
+    waited=$((waited + 2))
+    if [ "$waited" -gt 180 ]; then break; fi
+    sleep 2
+  done
+  check "the server comes back with the site that was in the archive" \
+    sh -c "curl -sf '${IMPORTED_API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":true'"
+  LOGIN_CODE=000
+  for attempt in 1 2 3; do
+    LOGIN_CODE="$(status_code -H 'content-type: application/json' -H "Origin: ${IMPORTED_EDITOR_URL}" \
+      -d "{\"email\":\"${ADMIN_EMAIL}\",\"password\":\"${ADMIN_PASSWORD}\",\"captchaToken\":\"x\"}" "${IMPORTED_API_URL}/auth/login")"
+    [ "$LOGIN_CODE" = 200 ] && break
+    [ "$attempt" -lt 3 ] && sleep 3
+  done
+  if [ "$LOGIN_CODE" = 200 ]; then
+    pass "the account that was in the archive signs in"
+  else
+    fail "the account that was in the archive signs in (the login answered ${LOGIN_CODE})"
+  fi
+  check "the site that was in it is served at this installation's address" \
+    sh -c "curl -sL '${IMPORTED_SITE_URL}/' | grep -q '<title>Check Site'"
+  check "its uploaded file came with it" test "$(status_code "${IMPORTED_API_URL}${UPLOADED}")" = 200
+fi
+check "the container was not restarted: it is the same one, started once" \
+  test "$(docker inspect -f '{{.State.StartedAt}} {{.RestartCount}}' "$IMPORTED")" = "${IMPORTED_STARTED} 0"
+check "the server says it opened the site, in its log" \
+  sh -c "docker logs '$IMPORTED' 2>&1 | grep -q 'the site \"Check Site\" is here'"
+check "an installation with a site opens no other: the setup token is spent (401)" \
+  test "$(status_code -H 'content-type: application/gzip' -H "X-Setup-Token: ${IMPORTED_TOKEN}" --data-binary 'x' "${IMPORTED_API_URL}/setup/import")" = 401
+check "and the control socket's result file says nothing of a failure" \
+  sh -c "! docker exec '$IMPORTED' grep -q '\"ok\":false' /run/kometio/import-result.json"
+docker rm -fv "$IMPORTED" >/dev/null
+docker volume rm "$IMPORTED_VOLUME" >/dev/null 2>&1 || true
 
 # --- the browser suite ----------------------------------------------------------
 

@@ -106,6 +106,7 @@ export * from './lib/use-cases/get-dashboard-stats.use-case';
 export * from './lib/use-cases/update-site-form-submission-retention.use-case';
 export * from './lib/use-cases/update-site-cookie-banner-settings.use-case';
 export * from './lib/use-cases/bootstrap-deployment.use-case';
+export * from './lib/use-cases/open-site-archive.use-case';
 export * from './lib/wordpress-import/acf-conversion';
 export * from './lib/wordpress-import/convert-acf-fields';
 export * from './lib/wordpress-import/recover-acf-values';
