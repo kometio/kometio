@@ -26,7 +26,7 @@ docker run -d --name kometio --restart unless-stopped \
   ghcr.io/kometio/kometio:main
 ```
 
-The first run downloads the image (about 185 MB). After that it is ready about
+The first run downloads the image (about 200 MB). After that it is ready about
 ten seconds after you press Enter.
 
 Prefer a file? [`compose.yaml`](compose.yaml) in this folder is the same thing:
