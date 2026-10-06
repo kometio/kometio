@@ -23,8 +23,11 @@ overrides:
   # hono and devalue came back clean once their parents moved (NestJS 11.2.6
   # ships multer 2.4.0, express 4.22.3 ships qs 6.16), so they are gone.
   # Drop an entry once the parent ships a fixed range of its own.
-  # nx 23.2.1, the latest, pins smol-toml 1.6.1.
-  smol-toml: ^1.8.0
+  # nx 23.2.1, the latest, pins smol-toml 1.6.1. GHSA-r4xh-jqrq-34v2
+  # (published 2026-10-05): parsing a long document takes quadratic time,
+  # fixed in 1.9.0. Reached through nx (`.>nx>smol-toml`), the build tool,
+  # on files of our own; the copy astro asks for, in the site, is 1.9.0.
+  smol-toml: ^1.9.0
   # sockjs 0.3.24, the latest, asks for uuid ^8.3.2; it is reached only
   # through @nx/webpack's own webpack-dev-server. No target in this
   # workspace runs that dev server (the API serves with @nx/js:node and
@@ -60,12 +63,36 @@ overrides:
   # for ^4.3.1, which already allows the fix, so this only stops the lockfile
   # from keeping 4.9.3. Drop it once the lockfile would resolve 4.9.4 anyway.
   piscina: ^4.9.4
+  # GHSA-p6vx-979v-rg4c (critical) and GHSA-jp82-f5mq-hwhp (high), both
+  # published 2026-10-05: fromJSON() runs callables that a plugin produced,
+  # and a crafted typed-array length exhausts memory; fixed in 1.6.2 and 1.6.3.
+  # The vulnerable copy was 1.5.6, reached only through solid-js
+  # (`@tanstack/react-query-devtools>@tanstack/query-devtools>solid-js`, a
+  # devDependency of apps/editor-app that no source imports) and in no image.
+  # solid-js 1.9.15, the latest, asks for seroval ~1.5.4; the copy the
+  # editor's router uses is 1.6.8. Drop it once solid-js asks for a fixed range.
+  seroval: ^1.6.3
+  # GHSA-68fv-2mgg-jv7q (high, published 2026-09-18): a crafted source map
+  # with indexed sections stalls the event loop; fixed in 1.2.2. Reached
+  # through postcss and css-tree (tailwind, svgo, astro), and present in the
+  # API's and the site's images, so it is lifted, not argued. Every parent
+  # already asks for ^1.x, so this only stops the lockfile from keeping 1.2.1.
+  # Drop it once the lockfile would resolve 1.2.2 anyway.
+  source-map-js: ^1.2.2
+  # GHSA-rj75-hqrm-r3gf (moderate, published 2026-10-05): a flat selector list
+  # takes quadratic time to parse; fixed in 7.1.6. Reached through cssnano and
+  # css-loader (`@nx/webpack`) and through shadcn's CLI, of which the editor
+  # imports only a stylesheet; no image contains it. Every parent already asks
+  # for ^7, so this only stops the lockfile from keeping 7.1.5. Drop it once
+  # the lockfile would resolve 7.1.6 anyway.
+  postcss-selector-parser: ^7.1.6
 
 # Advisories with NO fixed version anywhere (`first_patched_version` is null on
 # GitHub, and npm's latest release of each package is inside the vulnerable
-# range), so there is nothing an override could pin to. Each one was checked on
-# 2026-10-03 against what this workspace ships, not only against where it sits
-# in the lockfile; the audit stays blocking for everything else.
+# range), so there is nothing an override could pin to. Each one was checked
+# (braces and http-cache-semantics on 2026-10-03, sprintf-js on 2026-10-06)
+# against what this workspace ships, not only against where it sits in the
+# lockfile; the audit stays blocking for everything else.
 #
 # Take an entry out as soon as `npm view <package> version` is newer than the
 # range below: a fix would not reach this file by itself, since Dependabot does
@@ -88,6 +115,13 @@ auditConfig:
     # `storable()` and `timeToLive()`, so no visitor's headers reach it and no
     # cache is shared. Nothing in the running site imports it.
     - GHSA-ch52-4w7c-c8xp
+    # sprintf-js <= 1.1.3: a format string with an unbounded precision makes it
+    # spin (published 2026-09-24; 1.1.3 is the latest release). Reached only
+    # through the test tooling (`@nx/jest>@jest/reporters>@jest/transform>
+    # babel-plugin-istanbul>@istanbuljs/load-nyc-config>js-yaml>argparse`),
+    # where argparse formats its own usage and error messages. No image
+    # contains it (checked in the single image).
+    - GHSA-hp3w-g68c-fv3c
 
 # sharp is astro:assets' default image service (apps/public-site) — its
 # install script wires up the prebuilt native binary for the current
