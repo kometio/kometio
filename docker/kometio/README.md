@@ -23,11 +23,17 @@ for the version with a database of its own.
 docker run -d --name kometio --restart unless-stopped \
   -p 4200:80 -p 3000:3000 -p 4322:4322 \
   -v kometio-data:/data \
-  ghcr.io/kometio/kometio:main
+  ghcr.io/kometio/kometio:0.1.0-beta.1
 ```
 
 The first run downloads the image (about 200 MB). After that it is ready about
 ten seconds after you press Enter.
+
+`0.1.0-beta.1` is the first beta, the one this page was tried on. Every version
+has its own tag, listed [with the other tags](https://github.com/kometio/kometio/tags),
+and a version's image is made once, when it is released. `:main` is different: it
+moves with every change that is merged, newer and tried only by our own tests. Use
+it to follow the work, not for a site you care about.
 
 Prefer a file? [`compose.yaml`](compose.yaml) in this folder is the same thing:
 `docker compose -f docker/kometio/compose.yaml up -d`.
@@ -88,13 +94,13 @@ already published.
 
 ## Everyday commands
 
-| To…                     | Run                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------ |
-| Stop it                 | `docker stop kometio`                                                                      |
-| Start it again          | `docker start kometio` (ready in a few seconds; nothing is lost)                           |
-| Read its log            | `docker logs kometio`                                                                      |
-| Update to a newer image | `docker pull ghcr.io/kometio/kometio:main`, then `docker rm -f kometio`, then step 1 again |
-| Delete everything, anew | `docker rm -f kometio && docker volume rm kometio-data`                                    |
+| To…                       | Run                                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Stop it                   | `docker stop kometio`                                                                                                     |
+| Start it again            | `docker start kometio` (ready in a few seconds; nothing is lost)                                                          |
+| Read its log              | `docker logs kometio`                                                                                                     |
+| Update to a newer version | `docker pull ghcr.io/kometio/kometio:<the new version>`, then `docker rm -f kometio`, then step 1 again with that version |
+| Delete everything, anew   | `docker rm -f kometio && docker volume rm kometio-data`                                                                   |
 
 Removing the container (`docker rm`) keeps your site: it lives in the volume
 `kometio-data`. **Removing the volume deletes the site, its pages, its
@@ -114,7 +120,7 @@ docker run -d --name kometio --restart unless-stopped \
   -e API_PUBLIC_URL=http://localhost:8000/api \
   -e PUBLIC_SITE_URL=http://localhost:8322 \
   -v kometio-data:/data \
-  ghcr.io/kometio/kometio:main
+  ghcr.io/kometio/kometio:0.1.0-beta.1
 ```
 
 Changing them later is a restart of the container, not a new image.
@@ -130,7 +136,7 @@ docker run -d --name kometio --restart unless-stopped \
   -e DOMAIN=example.com \
   -e ACME_EMAIL=you@example.com \
   -v kometio-data:/data \
-  ghcr.io/kometio/kometio:main
+  ghcr.io/kometio/kometio:0.1.0-beta.1
 ```
 
 Before you run it, the DNS of the name has to point at the server — the
@@ -195,7 +201,7 @@ for `localhost`:
 ```sh
 docker run --rm -i -v kometio-data:/data \
   -e DOMAIN=example.com \
-  ghcr.io/kometio/kometio:main import < kometio-site.tar.gz
+  ghcr.io/kometio/kometio:0.1.0-beta.1 import < kometio-site.tar.gz
 ```
 
 Then start Kometio on that volume as in step 1. There is no setup token and no
@@ -243,7 +249,7 @@ docker run -d --name kometio --restart unless-stopped \
   -e POSTGRES_DB=kometio \
   -e POSTGRES_APP_PASSWORD=the-password-of-kometio_app \
   -v kometio-data:/data \
-  ghcr.io/kometio/kometio:main
+  ghcr.io/kometio/kometio:0.1.0-beta.1
 ```
 
 - **`POSTGRES_USER` and `POSTGRES_PASSWORD`** are the database's owner, used only to
