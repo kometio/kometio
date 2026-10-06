@@ -13,7 +13,17 @@
  * import needs. The reader asked for something that cannot be done and is told
  * why; it is not a failure of the program, and so it comes without the logs.
  */
-export class Refusal extends Error {}
+export class Refusal extends Error {
+  /**
+   * `conflict` when what is asked is fine and the installation is not in a state
+   * to do it (it already has a site), as opposed to an archive that cannot be
+   * opened at all: whoever answers somebody says one as 409 and the other as 400.
+   */
+  constructor(message, { conflict = false } = {}) {
+    super(message);
+    this.conflict = conflict;
+  }
+}
 
 export const ARCHIVE_FORMAT = 'kometio-site-archive';
 export const ARCHIVE_FORMAT_VERSION = 1;

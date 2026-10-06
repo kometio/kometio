@@ -175,9 +175,21 @@ terminal:
 docker exec kometio node /opt/kometio/cli.mjs export > kometio-site.tar.gz
 ```
 
-**Import**, into a volume that has never been used, with the container _stopped_
-(there is none yet, on a new machine). The address it will be reached at is the
-same you would give to `docker run`: `DOMAIN`, or the three addresses, or nothing
+**Import, on the first-run screen.** Start a new installation as in step 1, read
+the setup token from its log, and open the editor: under the form there is **I
+already have a site from another installation**. Give it the token and the file, and
+the server opens the site — it stops its API and its site, restores, and starts them
+again, which takes a minute or more while the page waits — and sends you to the
+login, where the account you had signs in. The container is not restarted. If it
+cannot (not enough room on the volume, an archive of a newer Kometio), the page says
+so and the installation is as it was; the API prints a new token when it starts again.
+A proxy of your own in front of the server that limits the size of a request
+(Cloudflare's free plan: 100 MB) limits the archive too: for a bigger one, use the
+command below.
+
+**Import, with a command**, into a volume that has never been used, with the container
+_stopped_ (there is none yet, on a new machine). The address it will be reached at is
+the same you would give to `docker run`: `DOMAIN`, or the three addresses, or nothing
 for `localhost`:
 
 ```sh
@@ -236,8 +248,8 @@ Said plainly, so that you do not find out by failing:
   [On a server](#on-a-server-with-your-own-domain).
 - **You cannot upload a theme from the editor.** That needs a separate
   builder, which is not in this image. The built-in theme is available.
-- **Import is a command for now.** Export is in the editor (Settings → Export); the
-  import on the first-run screen is not there yet, and until it is, see
+- **A site is opened only into a new installation.** Export and import are in the
+  editor (Settings → Export, and the first-run screen), and also commands; see
   [Move a site](#move-a-site-to-another-installation).
 
 ## Build the image from this repository

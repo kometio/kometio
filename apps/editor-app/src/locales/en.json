@@ -28,7 +28,8 @@
       "submitIdle": "Log in",
       "submitPending": "Logging in...",
       "invalidCredentials": "Incorrect email or password.",
-      "forgotPassword": "Forgot your password?"
+      "forgotPassword": "Forgot your password?",
+      "imported": "The site is here. Sign in with the account you had in the other installation."
     },
     "forgotPassword": {
       "title": "Forgot password",
@@ -94,7 +95,24 @@
     "passwordHint": "At least {{count}} characters. This is the account nobody can unlock for you, so make it a good one.",
     "submitIdle": "Create my account",
     "submitPending": "Setting things up...",
-    "genericError": "Something went wrong. Reload the page and try again — if this installation was already set up, you'll be sent to the login page."
+    "genericError": "Something went wrong. Reload the page and try again — if this installation was already set up, you'll be sent to the login page.",
+    "import": {
+      "choose": "I already have a site from another installation",
+      "title": "Open a site from another installation",
+      "description": "Bring the site you exported from another Kometio: its pages, accounts and files come with it, so there is no account to create here.",
+      "fileLabel": "Site archive",
+      "fileHint": "The .tar.gz file made by Settings → Export, or by `export` on the command line. It is read on this server and never leaves it.",
+      "fileMissing": "Choose the archive file first.",
+      "submit": "Open the site",
+      "submitPending": "Opening the site...",
+      "back": "Set up a new site instead",
+      "uploading": "Uploading the archive",
+      "progress": "{{sent}} of {{total}}",
+      "opening": "The server is opening the site. It stops and starts again while it does, so this page may not answer for a minute or more: leave it open, it continues by itself.",
+      "uploadFailed": "The archive could not be sent. Check the connection and try again.",
+      "notFinished": "The site could not be opened, and the server did not say why. Its log (`docker logs kometio`) has the reason; the installation is as it was, and you can try again or set up a new site.",
+      "newToken": "The server starts again after an attempt that failed, and prints a new setup token: read the most recent one from its log (`docker logs kometio`) before you try again."
+    }
   },
   "shell": {
     "nav": {
@@ -3525,9 +3543,9 @@
     "downloadHint": "The download starts at once and is whole when your browser says it is done: a large site takes a little while. If it fails, try again in a minute; only one export runs at a time.",
     "open": {
       "title": "Open it in another installation",
-      "body": "On a server that has never been used, with the container stopped, run this with the address it will be reached at (see “Move a site to another installation” in the image’s README):",
+      "body": "In a new installation, choose “I already have a site from another installation” on its first-run screen and give it this file. Or, on a server that has never been used, with the container stopped, run this command with the address it will be reached at (see “Move a site to another installation” in the image’s README):",
       "command": "docker run --rm -i -v kometio-data:/data -e DOMAIN=example.com ghcr.io/kometio/kometio:main import < kometio-site.tar.gz",
-      "after": "Then start Kometio on that volume. There is no setup token and no wizard: the site is there, and you sign in with the account you had."
+      "after": "Either way there is no account to create: the site is there, and you sign in with the account you had."
     }
   },
   "settings": {

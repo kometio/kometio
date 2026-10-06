@@ -698,3 +698,15 @@ export class SiteArchiveRefusedError extends Error {
     this.name = 'SiteArchiveRefusedError';
   }
 }
+
+/**
+ * An archive that cannot be opened at all: not a Kometio site archive, damaged,
+ * or of a newer Kometio than this one. The message is the reason, in words for
+ * the person who sent it.
+ */
+export class InvalidSiteArchiveError extends Error {
+  constructor(reason: string) {
+    super(reason);
+    this.name = 'InvalidSiteArchiveError';
+  }
+}

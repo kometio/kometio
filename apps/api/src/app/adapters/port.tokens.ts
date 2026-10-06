@@ -82,6 +82,8 @@ export const CAPTCHA_CHALLENGE_PORT = Symbol('CAPTCHA_CHALLENGE_PORT');
 export const NEWSLETTER_PORT = Symbol('NEWSLETTER_PORT');
 /** `null` when the deployment's database is not one the single image runs itself: nothing here can dump it, and the editor offers no export. */
 export const SITE_ARCHIVE = Symbol('SITE_ARCHIVE');
+/** The same object as SITE_ARCHIVE seen from the first-run screen (docs/adr/0106), and `null` for the same reason. */
+export const SITE_IMPORT = Symbol('SITE_IMPORT');
 /** `null` when the deployment has nowhere to keep its secrets key: page generation is off. */
 export const SECRET_CIPHER = Symbol('SECRET_CIPHER');
 export const PAGE_GENERATOR_FACTORY = Symbol('PAGE_GENERATOR_FACTORY');

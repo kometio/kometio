@@ -28,7 +28,8 @@
       "submitIdle": "Accedi",
       "submitPending": "Accesso in corso...",
       "invalidCredentials": "Email o password non corretti.",
-      "forgotPassword": "Password dimenticata?"
+      "forgotPassword": "Password dimenticata?",
+      "imported": "Il sito è qui. Accedi con l’account che avevi nell’altra installazione."
     },
     "forgotPassword": {
       "title": "Password dimenticata",
@@ -94,7 +95,24 @@
     "passwordHint": "Almeno {{count}} caratteri. Questo è l'account che nessuno può sbloccare al posto tuo: scegli bene.",
     "submitIdle": "Crea il mio account",
     "submitPending": "Configurazione in corso...",
-    "genericError": "Qualcosa è andato storto. Ricarica la pagina e riprova — se questa installazione era già configurata verrai portato alla pagina di accesso."
+    "genericError": "Qualcosa è andato storto. Ricarica la pagina e riprova — se questa installazione era già configurata verrai portato alla pagina di accesso.",
+    "import": {
+      "choose": "Ho già un sito di un’altra installazione",
+      "title": "Apri un sito di un’altra installazione",
+      "description": "Porta qui il sito esportato da un altro Kometio: pagine, account e file arrivano con lui, quindi qui non c’è nessun account da creare.",
+      "fileLabel": "Archivio del sito",
+      "fileHint": "Il file .tar.gz creato da Impostazioni → Esporta, o da `export` da riga di comando. Viene letto da questo server e non esce da qui.",
+      "fileMissing": "Scegli prima il file dell’archivio.",
+      "submit": "Apri il sito",
+      "submitPending": "Apro il sito...",
+      "back": "Crea invece un sito nuovo",
+      "uploading": "Invio dell’archivio",
+      "progress": "{{sent}} di {{total}}",
+      "opening": "Il server sta aprendo il sito. Si ferma e riparte mentre lo fa, quindi questa pagina può non rispondere per un minuto o più: lasciala aperta, prosegue da sola.",
+      "uploadFailed": "Non è stato possibile inviare l’archivio. Controlla la connessione e riprova.",
+      "notFinished": "Non è stato possibile aprire il sito e il server non ha detto perché. Il suo log (`docker logs kometio`) ha il motivo; l’installazione è com’era, e puoi riprovare o creare un sito nuovo.",
+      "newToken": "Dopo un tentativo non riuscito il server riparte e stampa un nuovo token di installazione: leggi il più recente dal suo log (`docker logs kometio`) prima di riprovare."
+    }
   },
   "shell": {
     "nav": {
@@ -3525,9 +3543,9 @@
     "downloadHint": "Il download parte subito e il file è completo quando il browser dice che ha finito: un sito grande richiede un po’ di tempo. Se fallisce, riprova tra un minuto; si può fare una sola esportazione alla volta.",
     "open": {
       "title": "Aprilo in un’altra installazione",
-      "body": "Su un server mai usato, con il container fermo, esegui questo con l’indirizzo a cui sarà raggiungibile (vedi «Move a site to another installation» nel README dell’immagine):",
+      "body": "In una nuova installazione, scegli «Ho già un sito di un’altra installazione» nella sua schermata di primo avvio e dagli questo file. Oppure, su un server mai usato, con il container fermo, esegui questo comando con l’indirizzo a cui sarà raggiungibile (vedi «Move a site to another installation» nel README dell’immagine):",
       "command": "docker run --rm -i -v kometio-data:/data -e DOMAIN=example.com ghcr.io/kometio/kometio:main import < kometio-site.tar.gz",
-      "after": "Poi avvia Kometio su quel volume. Non c’è né un token di setup né la procedura guidata: il sito è già lì e accedi con l’account che avevi."
+      "after": "In entrambi i casi non c’è nessun account da creare: il sito è già lì e accedi con l’account che avevi."
     }
   },
   "settings": {

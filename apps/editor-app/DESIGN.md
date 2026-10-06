@@ -259,6 +259,15 @@ accessibility.spec.tsx` checks it for every block type.
   `download` is ignored, and a refusal would otherwise take the editor's place.
   What the file holds, and that it is a secret when it is one, is said beside the
   button, before the click.
+- **A screen that waits for the server to come back** (`SetupImportForm`,
+  `useSiteImport`): opening a site archive on the first-run screen stops the API
+  that took the file, so the page says in words that the server is away and will be
+  back, and asks it every second and a half until it answers. The server's absence
+  is expected, not an error: an answer of "no site" is a failure only once the server
+  has been seen to go away, and then it carries the server's own sentence for why.
+  The upload shows how much has gone (`role="progressbar"`, with its text beside it),
+  the form holds still while it works (the file is not sent twice), and a refusal is
+  said in place with what was typed kept.
 - **A dialog taller than the screen scrolls**: `max-h-[calc(100dvh-2rem)]`
   and `overflow-y-auto` on its `DialogContent`, as the invitation's has. The
   `Dialog` primitive is centred and does not limit itself, so a long form

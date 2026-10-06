@@ -16,6 +16,7 @@ import {
   ThemeUploadNotFoundError,
   SiteAiSettingsRejectedError,
   PageGenerationDisabledError,
+  InvalidSiteArchiveError,
   SiteArchiveRefusedError,
   SiteArchiveUnavailableError,
   PageGenerationFailedError,
@@ -188,6 +189,8 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   [SiteArchiveUnavailableError, (m) => new NotFoundException(m)],
   // 409: the server is able, and not now — one is being made, or there is no site yet.
   [SiteArchiveRefusedError, (m) => new ConflictException(m)],
+  // 400: the file that was sent is what is wrong, and the message says how.
+  [InvalidSiteArchiveError, (m) => new BadRequestException(m)],
   [TaxonomyNotFoundError, (m) => new NotFoundException(m)],
   [TermNotFoundError, (m) => new NotFoundException(m)],
   // 409 for all four address conflicts: the request is well formed and

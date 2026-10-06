@@ -161,6 +161,45 @@ describe('getSetupStatus', () => {
       await getSetupStatus({
         deploymentBootstrapPort: { hasBeenSetUp: async () => set },
       }),
-    ).toEqual({ hasBeenSetUp: set });
+    ).toEqual({ hasBeenSetUp: set, importFailure: null });
+  });
+
+  describe('when a site can be opened from an archive (docs/adr/0106)', () => {
+    const failed = {
+      lastImportFailure: async () => 'there is not enough room on the volume',
+    };
+
+    it('says why the last import did not come through, while there is no site', async () => {
+      expect(
+        await getSetupStatus({
+          deploymentBootstrapPort: { hasBeenSetUp: async () => false },
+          siteImport: failed,
+        }),
+      ).toEqual({
+        hasBeenSetUp: false,
+        importFailure: 'there is not enough room on the volume',
+      });
+    });
+
+    it('says nothing of it once there is a site, and does not even ask', async () => {
+      const lastImportFailure = vi.fn().mockResolvedValue('old news');
+
+      expect(
+        await getSetupStatus({
+          deploymentBootstrapPort: { hasBeenSetUp: async () => true },
+          siteImport: { lastImportFailure },
+        }),
+      ).toEqual({ hasBeenSetUp: true, importFailure: null });
+      expect(lastImportFailure).not.toHaveBeenCalled();
+    });
+
+    it('says nothing where no archive can be opened', async () => {
+      expect(
+        await getSetupStatus({
+          deploymentBootstrapPort: { hasBeenSetUp: async () => false },
+          siteImport: null,
+        }),
+      ).toEqual({ hasBeenSetUp: false, importFailure: null });
+    });
   });
 });

@@ -1,7 +1,15 @@
 import { z } from 'zod';
-import { request, send } from './http-client';
+import { API_BASE_URL, ApiError, request, send } from './http-client';
 
-const setupStatusSchema = z.object({ hasBeenSetUp: z.boolean() });
+const setupStatusSchema = z.object({
+  hasBeenSetUp: z.boolean(),
+  /**
+   * Why the import the screen was waiting for did not come through, when it
+   * did not (docs/adr/0106): a sentence the server chose to be read by anybody.
+   * Only ever set while there is no site.
+   */
+  importFailure: z.string().nullable(),
+});
 
 export type SetupStatus = z.infer<typeof setupStatusSchema>;
 
@@ -31,4 +39,56 @@ export function bootstrapDeployment(
   body: BootstrapDeploymentRequest,
 ): Promise<void> {
   return send('/setup', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export interface ImportSiteArchiveRequest {
+  file: File;
+  /** The same token as the wizard's: printed in the API's log. */
+  setupToken: string;
+  /** What has been sent so far, and the whole. */
+  onProgress: (sent: number, total: number) => void;
+}
+
+/**
+ * Sends a site archive to be opened instead of making a new site
+ * (docs/adr/0106). Resolves when the server has *accepted* it, which is before
+ * it is opened: opening stops and starts the API, so the caller then waits for
+ * it with `fetchSetupStatus`.
+ *
+ * Not through `request()`: the file is the body itself (a `File` is read from
+ * the disk as it goes, not held in memory, which matters for an archive as big as
+ * a site), it has no timeout of its own (it takes as long as the connection
+ * does), and the only way a browser reports how much has been sent is
+ * `XMLHttpRequest`. The token goes in a header, because the body is taken.
+ */
+export function importSiteArchive({
+  file,
+  setupToken,
+  onProgress,
+}: ImportSiteArchiveRequest): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const upload = new XMLHttpRequest();
+    upload.open('POST', `${API_BASE_URL}/setup/import`);
+    upload.setRequestHeader('Content-Type', 'application/gzip');
+    upload.setRequestHeader('X-Setup-Token', setupToken);
+    upload.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress(event.loaded, event.total);
+    };
+    upload.onload = () => {
+      if (upload.status >= 200 && upload.status < 300) {
+        resolve();
+        return;
+      }
+      let body: unknown = null;
+      try {
+        body = JSON.parse(upload.responseText);
+      } catch {
+        // Not JSON: the status is what there is.
+      }
+      reject(new ApiError(upload.status, body));
+    };
+    upload.onerror = () => reject(new Error('The upload could not be made'));
+    upload.onabort = () => reject(new Error('The upload was cancelled'));
+    upload.send(file);
+  });
 }
