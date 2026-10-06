@@ -8,7 +8,7 @@ name: kometio-trial
 
 services:
   kometio:
-    image: ghcr.io/kometio/kometio:main
+    image: ghcr.io/kometio/kometio:0.1.0-beta.1
     ports:
       - '4200:80' # the editor
       - '3000:3000' # the API
