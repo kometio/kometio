@@ -26,8 +26,8 @@ docker run -d --name kometio --restart unless-stopped \
   ghcr.io/kometio/kometio:main
 ```
 
-The first run downloads the image. After that it is ready about ten seconds
-after you press Enter.
+The first run downloads the image (about 185 MB). After that it is ready about
+ten seconds after you press Enter.
 
 Prefer a file? [`compose.yaml`](compose.yaml) in this folder is the same thing:
 `docker compose -f docker/kometio/compose.yaml up -d`.
@@ -212,6 +212,38 @@ What you should know:
   nothing but its manifest, its database and its uploads, as plain files.
 - It needs room for the archive, unpacked, next to the data.
 
+## With a database of your own
+
+Give the image a `POSTGRES_HOST` and it runs no Postgres of its own: it uses that
+one, and everything else is as above. The database has to hold, before the image
+starts, a role called `kometio_app` — a login role that is not a superuser, so
+that row level security applies to it — made the way
+[`db/init/000_roles.sh`](../../db/init/000_roles.sh) makes it. Postgres 16 is what
+it is tried with.
+
+```sh
+docker run -d --name kometio --restart unless-stopped \
+  -p 4200:80 -p 3000:3000 -p 4322:4322 \
+  -e POSTGRES_HOST=db.example.com \
+  -e POSTGRES_USER=kometio -e POSTGRES_PASSWORD=the-owners-password \
+  -e POSTGRES_DB=kometio \
+  -e POSTGRES_APP_PASSWORD=the-password-of-kometio_app \
+  -v kometio-data:/data \
+  ghcr.io/kometio/kometio:main
+```
+
+- **`POSTGRES_USER` and `POSTGRES_PASSWORD`** are the database's owner, used only to
+  run the migrations at every start; the API and the site never see them. The API
+  connects as `kometio_app`, with **`POSTGRES_APP_PASSWORD`**, which has to be the
+  one that role was made with. `POSTGRES_PORT` is 5432 unless you say otherwise.
+- **The site lives in that database**; `/data` keeps the uploaded files and the keys
+  the launcher generated. A new container on the same database and the same volume
+  is the same site, with its accounts signed in.
+- **The editor offers no export, and the first-run screen no import**, and the
+  `export` and `import` commands do not apply: they make and open archives with the
+  tools of the image's own database. Back up a database of your own the way you
+  back up any database (`pg_dump`), and copy `/data/uploads` with it.
+
 ## What this image does not do yet
 
 Said plainly, so that you do not find out by failing:
@@ -270,6 +302,7 @@ uploaded files, the keys the launcher generated and, on a server, Caddy's
 certificates.
 
 A database inside the container is right for a trial and for a small site you
-back up. For anything you cannot afford to lose, use the compose stack in
+back up. For anything you cannot afford to lose, give it
+[a database of your own](#with-a-database-of-your-own), or use the compose stack in
 [docs/self-hosting.md](../../docs/self-hosting.md), which keeps Postgres in a
 container of its own.
