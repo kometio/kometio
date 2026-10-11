@@ -282,7 +282,21 @@ jobs:
       - name: Make the names of the HTTPS check resolve
         run: echo '127.0.0.1 kometio-check.localhost admin.kometio-check.localhost api.kometio-check.localhost www.kometio-check.localhost moved.localhost' | sudo tee -a /etc/hosts
 
-      - run: docker/kometio/check.sh kometio:ci
+      # A site made by the version people have, opened by this image the way
+      # "Update to a newer version" says. That version is the one the README of
+      # the branch this pull request is aimed at tells them to install: its
+      # image exists, and a pull request that changes the README to name the
+      # next version (before it is published) is not asked to pull it.
+      - name: Read the released version from the base branch's README
+        id: released
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --quiet --depth=1 origin "$BASE_REF"
+          image="$(git show FETCH_HEAD:docker/kometio/README.md | grep -o -m1 'ghcr.io/kometio/kometio:[0-9][0-9A-Za-z.+-]*')"
+          test -n "$image"
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+      - run: docker/kometio/check.sh kometio:ci --upgrade-from "${{ steps.released.outputs.image }}"
 
       # As in the `e2e` job: a trace of every failed test. The stack here is
       # thrown away with the job, and its password is generated for the run.

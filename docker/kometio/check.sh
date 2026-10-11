@@ -3,13 +3,15 @@
 # Starts a Kometio image the way docker/kometio/README.md says, proves that it
 # works, and runs the end-to-end suite against it.
 #
-#   docker/kometio/check.sh IMAGE                run everything
-#   docker/kometio/check.sh IMAGE --smoke-only   skip the browser suite
+#   docker/kometio/check.sh IMAGE                          run everything
+#   docker/kometio/check.sh IMAGE --smoke-only             skip the browser suite
+#   docker/kometio/check.sh IMAGE --upgrade-from OLD       also open a site made by OLD
 #
 # CI runs this on every pull request (against an image built from the
-# branch) and, with --smoke-only, on the image it is about to publish. You can
-# run it the same way on your machine: it needs Docker, curl, node and openssl,
-# and, for the full run, `pnpm install` done and Playwright's Chromium.
+# branch, with --upgrade-from the version the README tells people to install)
+# and, with --smoke-only, on the image it is about to publish. You can run it
+# the same way on your machine: it needs Docker, curl, node and openssl, and,
+# for the full run, `pnpm install` done and Playwright's Chromium.
 #
 # It uses names and ports of its own (`kometio-check*`, 15200/15000/15322, the
 # server with a name on 18080/18443, and Mailpit on 11025/18025), so it can run
@@ -18,9 +20,25 @@
 # is only what it created.
 set -euo pipefail
 
-IMAGE="${1:?usage: docker/kometio/check.sh IMAGE [--smoke-only]}"
+USAGE="usage: docker/kometio/check.sh IMAGE [--smoke-only] [--upgrade-from OLD_IMAGE]"
+IMAGE="${1:?$USAGE}"
+shift
 SMOKE_ONLY=false
-[ "${2:-}" = "--smoke-only" ] && SMOKE_ONLY=true
+UPGRADE_FROM=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --smoke-only) SMOKE_ONLY=true ;;
+    --upgrade-from)
+      UPGRADE_FROM="${2:?$USAGE}"
+      shift
+      ;;
+    *)
+      echo "$USAGE" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 NAME=kometio-check
 MAILPIT=kometio-check-mailpit
@@ -57,6 +75,13 @@ LINKED_VOLUME=kometio-check-linked-data
 IMPORTED_EDITOR_PORT=20200
 IMPORTED_API_PORT=20000
 IMPORTED_SITE_PORT=20322
+# The sixth, a site made by the previous release and opened by this image, the way
+# the README's "Update to a newer version" does (only with --upgrade-from).
+UPGRADE=kometio-check-upgrade
+UPGRADE_VOLUME=kometio-check-upgrade-data
+UPGRADE_EDITOR_PORT=21200
+UPGRADE_API_PORT=21000
+UPGRADE_SITE_PORT=21322
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -96,16 +121,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED"; do
+    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE"; do
       if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
         printf '\n== the last lines of the log of %s\n' "$other"
         docker logs --tail 40 "$other" 2>&1 || true
       fi
     done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$UPGRADE_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -114,13 +139,13 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$UPGRADE_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -130,6 +155,9 @@ done
 WORK="$(mktemp -d)"
 COOKIES="${WORK}/cookies.txt"
 trap cleanup EXIT
+# The smallest file an upload takes: a one-pixel PNG, for the scenarios that put a
+# file in a site.
+node -e "require('fs').writeFileSync(process.argv[1], Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'))" "${WORK}/pixel.png"
 
 # Each helper takes the container as an optional last argument: the main one by default.
 banners() { docker logs "${1:-$NAME}" 2>&1 | grep -c 'Kometio is ready' || true; }
@@ -173,6 +201,8 @@ check "a site opened from an archive is stopped, restored and started again as d
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/site-import.test.mjs"
 check "every table of the schema is a site's or a moment's, so that no new one is carried by accident" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive-tables.test.mjs"
+check "the healthcheck looks at the three parts, on the ports the launcher gives them" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/healthcheck.test.mjs"
 check "every page that tells a person which version of the image to run says the same one" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/image-tag.test.mjs"
 
@@ -370,6 +400,97 @@ check "no new setup token is asked for" test "$tokens_after" = "$tokens_before"
 check "the same session is still valid" test "$(status_code -b "$COOKIES" "${API_URL}/auth/session")" = 200
 check "the site is still served" sh -c "curl -sL '${SITE_URL}/' | grep -q '<title>Check Site'"
 
+# --- a site made by the previous release ----------------------------------------
+#
+# Every scenario here starts from an empty volume, so none of them can see what a
+# change does to a site that already exists: a migration that fails on real rows,
+# a folder the old image made with another owner, a secret the new launcher reads
+# differently. This one makes a site with the version people have, and does what
+# the README's "Update to a newer version" says: export, stop with thirty seconds,
+# start this image on the same volume. Asked for with --upgrade-from.
+if [ -n "$UPGRADE_FROM" ]; then
+  step "an upgrade: a site made by ${UPGRADE_FROM}, opened by this image"
+  UPGRADE_EDITOR_URL="http://localhost:${UPGRADE_EDITOR_PORT}"
+  UPGRADE_API_URL="http://localhost:${UPGRADE_API_PORT}/api"
+  UPGRADE_SITE_URL="http://localhost:${UPGRADE_SITE_PORT}"
+  UPGRADE_COOKIES="${WORK}/upgrade.cookies"
+  UPGRADE_PASSWORD="$(openssl rand -hex 16)"
+
+  # The same flags for both versions, as the README's step 3 has it.
+  start_upgrade() {
+    docker run -d --name "$UPGRADE" --stop-timeout 30 \
+      -p "${UPGRADE_EDITOR_PORT}:80" -p "${UPGRADE_API_PORT}:3000" -p "${UPGRADE_SITE_PORT}:4322" \
+      -e "EDITOR_APP_URL=${UPGRADE_EDITOR_URL}" \
+      -e "API_PUBLIC_URL=${UPGRADE_API_URL}" \
+      -e "PUBLIC_SITE_URL=${UPGRADE_SITE_URL}" \
+      -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}" \
+      -v "${UPGRADE_VOLUME}:/data" \
+      "$1" >/dev/null
+  }
+  # The first "id" in a JSON answer; nothing when there is none, so that the check
+  # after it says what failed instead of the script stopping here.
+  json_id() { { grep -o '"id":"[^"]*"' || true; } | head -1 | cut -d'"' -f4; }
+
+  docker pull -q "$UPGRADE_FROM" >/dev/null
+  start_upgrade "$UPGRADE_FROM"
+  wait_for_banners 1 "$UPGRADE" >/dev/null
+  # Bodies are made in a variable, not inside the command substitution that
+  # sends them: bash expands a brace pair there (`{"a":"b","c":"d"}`) into words
+  # when a $(...) is nested in the string.
+  UPGRADE_SETUP_BODY="{\"setupToken\":\"$(setup_token "$UPGRADE")\",\"siteName\":\"Upgrade Site\",\"defaultLocale\":\"en\",\"domain\":\"localhost\",\"adminEmail\":\"${ADMIN_EMAIL}\",\"adminPassword\":\"${UPGRADE_PASSWORD}\"}"
+  UPGRADE_LOGIN_BODY="{\"email\":\"${ADMIN_EMAIL}\",\"password\":\"${UPGRADE_PASSWORD}\",\"captchaToken\":\"x\"}"
+  check "the previous release is set up, as it asks" \
+    test "$(status_code -c "$UPGRADE_COOKIES" -H 'content-type: application/json' \
+      -d "$UPGRADE_SETUP_BODY" "${UPGRADE_API_URL}/setup")" = 201
+  UPGRADE_SITE_ID="$(curl -s -b "$UPGRADE_COOKIES" "${UPGRADE_API_URL}/sites/current" | json_id)"
+  UPGRADE_PAGE_BODY="{\"siteId\":\"${UPGRADE_SITE_ID}\",\"content\":[],\"translation\":{\"locale\":\"en\",\"slug\":\"made-before-the-upgrade\",\"seoMeta\":{\"title\":\"Made before the upgrade\",\"description\":\"\"}}}"
+  UPGRADE_PAGE_ID="$(curl -s -b "$UPGRADE_COOKIES" -H "Origin: ${UPGRADE_EDITOR_URL}" -H 'content-type: application/json' \
+    -d "$UPGRADE_PAGE_BODY" "${UPGRADE_API_URL}/page-groups" | json_id)"
+  UPGRADE_TRANSLATION_ID="$(curl -s -b "$UPGRADE_COOKIES" "${UPGRADE_API_URL}/page-groups/${UPGRADE_PAGE_ID}/translations" | json_id)"
+  check "a page is made and published on it" \
+    test "$(status_code -b "$UPGRADE_COOKIES" -H "Origin: ${UPGRADE_EDITOR_URL}" -X POST \
+      "${UPGRADE_API_URL}/page-groups/translations/${UPGRADE_TRANSLATION_ID}/publish")" = 201
+  UPGRADE_UPLOADED="$(curl -s -b "$UPGRADE_COOKIES" -H "Origin: ${UPGRADE_EDITOR_URL}" -F "siteId=${UPGRADE_SITE_ID}" -F "file=@${WORK}/pixel.png;type=image/png" "${UPGRADE_API_URL}/media" | grep -o '/uploads/[^"]*' | head -1)"
+  check "a file is uploaded to it" test -n "$UPGRADE_UPLOADED"
+  check "and it serves the page it was given" \
+    sh -c "curl -sfL '${UPGRADE_SITE_URL}/en/made-before-the-upgrade' | grep -q 'Made before the upgrade'"
+  MIGRATIONS_BEFORE="$(docker exec "$UPGRADE" psql -h /run/postgresql -U kometio -d kometio -Atc 'select count(*) from drizzle.__drizzle_migrations')"
+
+  # What the README's step 1 asks for, made by the version that is being left.
+  check "the old version exports its site first, as the README says" \
+    sh -c "docker exec '$UPGRADE' node /opt/kometio/cli.mjs export | tar tzf - | grep -q manifest.json"
+  docker stop -t 30 "$UPGRADE" >/dev/null
+  docker rm "$UPGRADE" >/dev/null
+  start_upgrade "$IMAGE"
+  seconds="$(wait_for_banners 1 "$UPGRADE")"
+  pass "this image is ready on that volume after ${seconds}s"
+
+  check "it is still set up" \
+    sh -c "curl -s '${UPGRADE_API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":true'"
+  check "no setup token is asked for" \
+    test "$(docker logs "$UPGRADE" 2>&1 | grep -c 'enter this setup token' || true)" = 0
+  check "the session made before is still valid" \
+    test "$(status_code -b "$UPGRADE_COOKIES" "${UPGRADE_API_URL}/auth/session")" = 200
+  check "the same password signs in" \
+    test "$(status_code -H 'content-type: application/json' \
+      -d "$UPGRADE_LOGIN_BODY" "${UPGRADE_API_URL}/auth/login")" = 200
+  check "the page is served as it was" \
+    sh -c "curl -sfL '${UPGRADE_SITE_URL}/en/made-before-the-upgrade' | grep -q 'Made before the upgrade'"
+  check "the file is served as it was" \
+    test "$(status_code "http://localhost:${UPGRADE_API_PORT}/api${UPGRADE_UPLOADED}")" = 200
+  MIGRATIONS_AFTER="$(docker exec "$UPGRADE" psql -h /run/postgresql -U kometio -d kometio -Atc 'select count(*) from drizzle.__drizzle_migrations')"
+  check "the migrations of the old version are kept (${MIGRATIONS_BEFORE}), and this one's added to them (${MIGRATIONS_AFTER})" \
+    test "$MIGRATIONS_AFTER" -ge "$MIGRATIONS_BEFORE"
+  check "it exports the site, so the next update can start from one too" \
+    sh -c "docker exec '$UPGRADE' node /opt/kometio/cli.mjs export | tar tzf - | grep -q manifest.json"
+  # An installation made before the socket was closed (docs/adr/0107) is the one
+  # that most needs it to be: nobody starts those again from scratch.
+  check "the database's socket is closed to the user a theme's code runs as, on the old volume too" \
+    sh -c "docker exec -u kometio-site '$UPGRADE' psql -h /run/postgresql -U kometio -d postgres -Atc 'select 1' 2>&1 | grep -qi 'permission denied'"
+  docker rm -fv "$UPGRADE" >/dev/null
+  docker volume rm "$UPGRADE_VOLUME" >/dev/null 2>&1 || true
+fi
+
 # --- moving the site ------------------------------------------------------------
 #
 # docs/adr/0105. The site above, with an uploaded file in it, is exported while
@@ -379,7 +500,6 @@ check "the site is still served" sh -c "curl -sL '${SITE_URL}/' | grep -q '<titl
 # nothing to set up, and it must not be a way to keep what was only a moment.
 step "moving the site: export, import into a new volume, start it elsewhere"
 SITE_ID="$(curl -s -b "$COOKIES" "${API_URL}/sites/current" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)"
-node -e "require('fs').writeFileSync(process.argv[1], Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'))" "${WORK}/pixel.png"
 UPLOADED="$(curl -s -b "$COOKIES" -H "Origin: ${EDITOR_URL}" -F "siteId=${SITE_ID}" -F "file=@${WORK}/pixel.png;type=image/png" "${API_URL}/media" | grep -o '/uploads/[^"]*' | head -1)"
 check "a file is uploaded to the site that will be exported" test -n "$UPLOADED"
 check "the server exports its site while it runs" \
@@ -460,6 +580,20 @@ check "and the administrator's role has no way in over TCP without a password" \
   sh -c "! docker exec -u kometio-site '$NAME' psql -h 127.0.0.1 -U kometio -d postgres -w -Atc 'select 1'"
 check "a file that is not an archive is refused, and nothing is started for it" \
   sh -c "! echo 'not an archive' | docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import 2>/dev/null"
+# The healthcheck used to ask the API only. A part that hangs (stopped here, as a
+# process that is not answering is) must make the container unhealthy, and it must
+# be well again when the part is.
+step "the healthcheck sees a part that hangs"
+check "all three parts answer, and the healthcheck says so" \
+  docker exec "$NAME" node /opt/kometio/healthcheck.mjs
+docker exec "$NAME" pkill -STOP nginx
+check "with the editor's server stopped, it fails" \
+  sh -c "! docker exec '$NAME' node /opt/kometio/healthcheck.mjs >/dev/null 2>&1"
+check "and says which part: the editor" \
+  sh -c "docker exec '$NAME' node /opt/kometio/healthcheck.mjs 2>&1 | grep -q 'not answering: the editor'"
+docker exec "$NAME" pkill -CONT nginx
+check "and with it running again, it says all is well" \
+  docker exec "$NAME" node /opt/kometio/healthcheck.mjs
 # An archive is somebody else's file. It must not get a shell as root through the
 # SQL in it (psql's `\!` is run by whoever runs psql), nor a copy of a file of
 # this machine through a hard link (docs/adr/0108). Both are made from the

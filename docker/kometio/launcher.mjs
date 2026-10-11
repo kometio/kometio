@@ -56,6 +56,7 @@ import {
   waitFor as waitForProcess,
 } from './processes.mjs';
 import {
+  innerPorts,
   proxyAdvice,
   proxyDefaults,
   resolveAddresses,
@@ -91,11 +92,12 @@ const {
   siteUrl: SITE_URL,
 } = addresses;
 
-const API_PORT = 3000;
-const SITE_PORT = 4322;
+const PORTS = innerPorts(domain);
+const API_PORT = PORTS.api;
+const SITE_PORT = PORTS.site;
 // The editor answers on 80 where nothing else does. On a server Caddy has 80,
 // and the editor moves to a port only this container can reach.
-const EDITOR_PORT = domain ? 8080 : 80;
+const EDITOR_PORT = PORTS.editor;
 
 // A server is production: cookies are `Secure`, and the API refuses the example
 // secrets and the test captcha keys, which is what it is for. A trial is not.
