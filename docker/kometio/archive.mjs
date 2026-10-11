@@ -151,19 +151,32 @@ export function checkCompatible(manifest, knownMigrations) {
  * own names. A link inside `uploads/` could point anywhere on this machine and
  * be served as a file of the site; a name with `..` would write outside the
  * place the archive is opened into. The file is the owner's own, but an archive
- * travels, and opening one must not be an act of trust.
+ * travels: what it may hold is decided here, before anything is touched. What
+ * the SQL in it says is not, and cannot be, decided from outside: it is run as
+ * the database's administrator, which is why opening an archive is an act of
+ * trust of the kind that installing a program is (docs/adr/0108).
+ *
+ * A hard link is the one that does not show in the type: busybox, whose `tar`
+ * this is, lists it as a plain file (`-`) followed by ` -> ` and its target, and
+ * extracts it as a link to that target, an absolute path included. Anything with
+ * an arrow is refused, and `checkExtractedTree` looks again at what came out.
  */
 export function checkEntries(listing) {
   const lines = listing.split('\n').filter((line) => line.trim() !== '');
   const names = [];
   for (const line of lines) {
     const type = line[0];
-    const name = line
-      .replace(/^\S+\s+\S+\s+\d+\s+\S+\s+\S+\s+/, '')
-      .split(' -> ')[0];
+    const rest = line.replace(/^\S+\s+\S+\s+\d+\s+\S+\s+\S+\s+/, '');
+    const arrow = rest.indexOf(' -> ');
+    const name = arrow === -1 ? rest : rest.slice(0, arrow);
     if (type !== '-' && type !== 'd') {
       throw new Refusal(
         `this archive holds something that is not a file or a folder (${name}): it is refused`,
+      );
+    }
+    if (arrow !== -1) {
+      throw new Refusal(
+        `this archive holds a link (${name}): links are refused, since one could make a copy of any file on this machine`,
       );
     }
     const clean = name.replace(/^\.\//, '').replace(/\/$/, '');
@@ -192,6 +205,28 @@ export function checkEntries(listing) {
     if (!names.includes(required)) {
       throw new Refusal(
         `this site archive is incomplete: it has no ${required}`,
+      );
+    }
+  }
+}
+
+/**
+ * What came out of the archive, looked at again once it is on disk, since a
+ * listing is text and a parser of it can be wrong in a way an archive can use:
+ * only files that are their own and folders. `entries` are
+ * `{ name, kind: 'file' | 'directory' | 'other', links }`, one per path, from
+ * `lstat` (so a symbolic link is `other`, and a hard link has `links > 1`).
+ */
+export function checkExtractedTree(entries) {
+  for (const { name, kind, links } of entries) {
+    if (kind === 'other') {
+      throw new Refusal(
+        `this archive holds something that is not a file or a folder (${name}): it is refused`,
+      );
+    }
+    if (kind === 'file' && links > 1) {
+      throw new Refusal(
+        `this archive holds a hard link (${name}): it shares its content with another file, and is refused`,
       );
     }
   }

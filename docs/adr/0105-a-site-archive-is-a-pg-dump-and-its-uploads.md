@@ -1,6 +1,10 @@
 # 0105 — A site archive is a pg_dump and its uploads
 
-**Status**: Accepted — 2026-10-05
+**Status**: Accepted — 2026-10-05. **Amended by ADR-0108** (2026-10-11): what
+"trust is decided before anything is touched" covers is the listing and the
+unpacked files; the SQL of the dump is run as the database's own user and, being
+SQL run by an administrator, is still an act of trust. Links are refused whatever
+the listing says.
 
 ## Context
 
