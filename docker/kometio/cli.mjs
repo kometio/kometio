@@ -2,7 +2,7 @@
 //
 //   docker exec kometio node /opt/kometio/cli.mjs export > site.tar.gz
 //   docker stop kometio
-//   docker run --rm -i -v kometio-data:/data [-e DOMAIN=…] ghcr.io/kometio/kometio:main import < site.tar.gz
+//   docker run --rm -i -v kometio-data:/data [-e DOMAIN=…] ghcr.io/kometio/kometio:0.1.0-beta.1 import < site.tar.gz
 //
 // An export works on a running server (or on a volume nobody uses, with
 // `docker run … export`); an import only on a volume nobody is using, because the

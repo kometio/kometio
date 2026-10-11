@@ -3544,7 +3544,7 @@
     "open": {
       "title": "Aprilo in un’altra installazione",
       "body": "In una nuova installazione, scegli «Ho già un sito di un’altra installazione» nella sua schermata di primo avvio e dagli questo file. Oppure, su un server mai usato, con il container fermo, esegui questo comando con l’indirizzo a cui sarà raggiungibile (vedi «Move a site to another installation» nel README dell’immagine):",
-      "command": "docker run --rm -i -v kometio-data:/data -e DOMAIN=example.com ghcr.io/kometio/kometio:main import < kometio-site.tar.gz",
+      "command": "docker run --rm -i -v kometio-data:/data -e DOMAIN=example.com ghcr.io/kometio/kometio:0.1.0-beta.1 import < kometio-site.tar.gz",
       "after": "In entrambi i casi non c’è nessun account da creare: il sito è già lì e accedi con l’account che avevi."
     }
   },
