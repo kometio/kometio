@@ -60,7 +60,7 @@ export function TemplatePicker({
               // style set on one would land on both.
               copySectionBlocks(template.publishedContent, () =>
                 crypto.randomUUID(),
-              ) as (Block & { id: string })[],
+              ),
             )
           }
         >

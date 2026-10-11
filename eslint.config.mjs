@@ -139,6 +139,38 @@ export default [
     },
   },
   {
+    // `any` and `!` are warnings in the preset this file starts from, and a
+    // warning that nothing counts is a rule that nobody holds: the production
+    // code of this workspace has none of either (counted on 2026-10-11, by the
+    // compiler's own AST: 0 and 0), which is what these two lines keep true.
+    // A cast that hides a hole is still the review's to find; there is no
+    // rule that says "this `as` could have been a type guard".
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+  {
+    // `!` is a claim that the compiler cannot check, and in production code it
+    // is the one that fails in front of a person. Specs keep it as a warning:
+    // a test that has just built the thing it asserts on is not the same.
+    files: ['**/*.ts', '**/*.tsx'],
+    ignores: [
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/*.test-fixture.ts',
+      '**/*.test-fixture.tsx',
+      '**/test-setup.ts',
+      '**/src/test/**',
+      '**/*.e2e.ts',
+      'apps/e2e/**',
+      'libs/testing/**',
+    ],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'error',
+    },
+  },
+  {
     files: [
       '**/*.ts',
       '**/*.tsx',
