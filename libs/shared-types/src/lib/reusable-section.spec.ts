@@ -193,4 +193,24 @@ describe('copySectionBlocks', () => {
     // give itself away.
     expect(published[0].id).toBe('b1');
   });
+
+  // The copy is handed to code that needs an id on every block it receives (the
+  // canvas puts them in the page by id), and the function said "every copied
+  // block" while it left a block without an id as it was.
+  it('gives one to a block that had none, at any depth', () => {
+    let next = 0;
+    const copied = copySectionBlocks(
+      [
+        {
+          type: 'Container',
+          props: {},
+          children: [{ type: 'Text', props: { text: 'Body' } }],
+        },
+      ],
+      () => `new-${next++}`,
+    );
+
+    expect(copied[0]?.id).toBe('new-0');
+    expect(copied[0]?.children?.[0]?.id).toBe('new-1');
+  });
 });

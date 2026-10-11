@@ -199,6 +199,33 @@ describe('validateApiEnv', () => {
     ).not.toThrow();
   });
 
+  describe('POSTGRES_POOL_MAX', () => {
+    it('is ten when it is not set, or left empty as .env.prod.example leaves it', () => {
+      expect(validateApiEnv(VALID_ENV).POSTGRES_POOL_MAX).toBe(10);
+      expect(
+        validateApiEnv({ ...VALID_ENV, POSTGRES_POOL_MAX: '' })
+          .POSTGRES_POOL_MAX,
+      ).toBe(10);
+    });
+
+    it('is the number it is given', () => {
+      expect(
+        validateApiEnv({ ...VALID_ENV, POSTGRES_POOL_MAX: '25' })
+          .POSTGRES_POOL_MAX,
+      ).toBe(25);
+    });
+
+    // It used to fall back to ten without saying so: somebody who wrote
+    // "25 " or "twenty" was running on ten and never knew.
+    it('is refused, and says so, when it is not a positive integer', () => {
+      for (const value of ['twenty', '0', '-5', '2.5']) {
+        expect(() =>
+          validateApiEnv({ ...VALID_ENV, POSTGRES_POOL_MAX: value }),
+        ).toThrow(/POSTGRES_POOL_MAX/);
+      }
+    });
+  });
+
   describe('in the production image', () => {
     const PRODUCTION: NodeJS.ProcessEnv = {
       ...VALID_ENV,

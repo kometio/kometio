@@ -262,15 +262,17 @@ export function resolveSectionBlocks(
  * kind. New ids and not the section's own: the copy is a separate thing
  * from that moment on, and sharing ids with the section (or with a second
  * copy of the same template on the same page) would make the per-instance
- * style rules of one apply to the other.
+ * style rules of one apply to the other. Every block of the copy has one,
+ * including one that had none, which is why the type says so: whoever takes
+ * the copy and puts it in a page by id does not have to ask.
  */
 export function copySectionBlocks(
   blocks: PageContent,
   newId: () => string,
-): PageContent {
-  return blocks.map((block): Block => ({
+): (Block & { id: string })[] {
+  return blocks.map((block): Block & { id: string } => ({
     ...block,
-    ...(block.id ? { id: newId() } : {}),
+    id: newId(),
     ...(block.children
       ? { children: copySectionBlocks(block.children, newId) }
       : {}),

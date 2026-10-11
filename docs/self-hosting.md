@@ -204,14 +204,21 @@ A backup nobody has practiced restoring from isn't a real safety net —
 this is the actual procedure, not just "run pg_restore":
 
 1. Stop the app (keep Postgres running): `docker compose -f docker-compose.prod.yml stop api public-site editor-app caddy`
-2. Copy the backup file out of the volume if needed, then restore:
+2. Make the database empty, then restore into it. Not over the existing one: a
+   dump creates its tables and then adds its rows, and onto a database that has
+   them it reports "already exists" and goes on, so every row that is there is
+   there twice (measured: two rows became four, and nothing said so).
+   ```sh
+   docker compose -f docker-compose.prod.yml exec -T postgres sh -c \
+     'psql -U "$POSTGRES_USER" -d postgres -c "drop database \"$POSTGRES_DB\"" -c "create database \"$POSTGRES_DB\" owner \"$POSTGRES_USER\""'
+   ```
+   Then, with the file copied out of the volume if it is not already where you are:
    ```sh
    docker compose -f docker-compose.prod.yml exec -T postgres \
-     sh -c 'gunzip -c | psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+     sh -c 'gunzip -c | psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
      < /path/to/kometio-YYYYMMDDTHHMMSSZ.sql.gz
    ```
-   This restores into the _existing_ database — if you need a clean
-   slate first, drop and recreate it before this step.
+   `ON_ERROR_STOP` makes it stop at the first error instead of going on.
 3. Restart everything: `docker compose -f docker-compose.prod.yml up -d`
 
 ## Upgrading
@@ -222,7 +229,7 @@ The scheduled one can be a day old; take a fresh one first:
 
 ```sh
 docker compose -f docker-compose.prod.yml exec postgres-backup sh -c \
-  'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+  'set -o pipefail; PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
    | gzip > "/backups/kometio-before-upgrade-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"'
 ```
 

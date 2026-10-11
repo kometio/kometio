@@ -169,6 +169,10 @@ check "an archive is trusted as documented: its manifest, its migrations, what i
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive.test.mjs"
 check "the launcher's control socket answers as documented: one archive at a time, a refusal before it starts, a cut when it fails on its way" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/control-server.test.mjs"
+check "a site opened from an archive is stopped, restored and started again as documented" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/site-import.test.mjs"
+check "every table of the schema is a site's or a moment's, so that no new one is carried by accident" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive-tables.test.mjs"
 check "the healthcheck looks at the three parts, on the ports the launcher gives them" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/healthcheck.test.mjs"
 

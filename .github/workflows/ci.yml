@@ -99,6 +99,8 @@ jobs:
   # alongside typecheck/lint rather than waiting on them.
   typecheck:
     runs-on: ubuntu-latest
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -121,6 +123,8 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 15
     steps:
       # fetch-depth: 0 — only this job needs full history, for
       # `format:check --base=origin/main`'s diff against main.
@@ -143,6 +147,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -157,6 +163,8 @@ jobs:
   test:
     needs: [typecheck, lint]
     runs-on: ubuntu-latest
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -248,6 +256,8 @@ jobs:
   e2e:
     needs: [typecheck, lint]
     runs-on: ubuntu-latest
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 30
     env:
       # Where the suite and the editor's canvas find the public site, and
       # where playwright.config.ts starts it — the same port as locally
@@ -303,6 +313,8 @@ jobs:
 
   audit:
     runs-on: ubuntu-latest
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0

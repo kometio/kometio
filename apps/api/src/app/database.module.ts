@@ -22,6 +22,7 @@ export const DATABASE = Symbol('DATABASE');
           port: env.POSTGRES_PORT,
           database: env.POSTGRES_DB,
           password: env.POSTGRES_APP_PASSWORD,
+          poolMax: env.POSTGRES_POOL_MAX,
         }),
       inject: [API_ENV],
     },
