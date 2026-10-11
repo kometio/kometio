@@ -28,6 +28,12 @@ overrides:
   # fixed in 1.9.0. Reached through nx (`.>nx>smol-toml`), the build tool,
   # on files of our own; the copy astro asks for, in the site, is 1.9.0.
   smol-toml: ^1.9.0
+  # nx 23.3.0 asks for undici 7.x below 7.29.1: GHSA-rfgv-xxqx-mfg5 and
+  # GHSA-w293-vg96-wgc3 (high), GHSA-3wwx-pv8p-q78v (moderate), fixed in
+  # 7.29.1. Reached through nx (`.>nx>undici`), the build tool, which talks to
+  # servers of our own choosing. The range selects only the vulnerable 7.x, so
+  # the 8.x that jsdom asks for is untouched.
+  'undici@>=7.0.0 <7.29.1': ^7.29.1
   # sockjs 0.3.24, the latest, asks for uuid ^8.3.2; it is reached only
   # through @nx/webpack's own webpack-dev-server. No target in this
   # workspace runs that dev server (the API serves with @nx/js:node and
