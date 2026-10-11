@@ -13,7 +13,7 @@ one volume:
 ```sh
 docker run -d --name kometio --restart unless-stopped \
   -p 80:80 -p 443:443 -e DOMAIN=example.com -e ACME_EMAIL=you@example.com \
-  -v kometio-data:/data ghcr.io/kometio/kometio:main
+  -v kometio-data:/data ghcr.io/kometio/kometio:0.1.0-beta.1
 ```
 
 It is the right size for a small site you back up. This guide is the other way:
