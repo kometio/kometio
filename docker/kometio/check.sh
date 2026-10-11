@@ -51,6 +51,9 @@ MOVED_SITE_PORT=19322
 # instead of making one (docs/adr/0106), in a browser.
 IMPORTED=kometio-check-imported
 IMPORTED_VOLUME=kometio-check-imported-data
+# Two volumes for archives that are hostile (docs/adr/0108), each used once.
+HOSTILE_VOLUME=kometio-check-hostile-data
+LINKED_VOLUME=kometio-check-linked-data
 IMPORTED_EDITOR_PORT=20200
 IMPORTED_API_PORT=20000
 IMPORTED_SITE_PORT=20322
@@ -102,7 +105,7 @@ cleanup() {
   fi
   docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -117,7 +120,7 @@ for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED"; do
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -418,6 +421,42 @@ check "and the administrator's role has no way in over TCP without a password" \
   sh -c "! docker exec -u kometio-site '$NAME' psql -h 127.0.0.1 -U kometio -d postgres -w -Atc 'select 1'"
 check "a file that is not an archive is refused, and nothing is started for it" \
   sh -c "! echo 'not an archive' | docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import 2>/dev/null"
+# An archive is somebody else's file. It must not get a shell as root through the
+# SQL in it (psql's `\!` is run by whoever runs psql), nor a copy of a file of
+# this machine through a hard link (docs/adr/0108). Both are made from the
+# archive the server just exported, so that all else in them is as it should be.
+step "an archive that somebody else made"
+mkdir "${WORK}/hostile"
+tar xzf "${WORK}/site.tar.gz" -C "${WORK}/hostile"
+{
+  printf '%s\n' '\! id -u > /data/postgres/who-ran-this'
+  gunzip -c "${WORK}/hostile/database.sql.gz"
+} | gzip >"${WORK}/hostile/database.sql.gz.new"
+mv "${WORK}/hostile/database.sql.gz.new" "${WORK}/hostile/database.sql.gz"
+tar czf "${WORK}/hostile.tar.gz" -C "${WORK}/hostile" .
+check "an archive whose SQL runs a command is opened (the SQL is the site's, and is run)" \
+  sh -c "docker run --rm -i -v '${HOSTILE_VOLUME}:/data' '$IMAGE' import < '${WORK}/hostile.tar.gz'"
+check "and the command ran as the database's own user, not as root" \
+  sh -c "test \"\$(docker run --rm -v '${HOSTILE_VOLUME}:/data' --entrypoint cat '$IMAGE' /data/postgres/who-ran-this)\" = 70"
+python3 - "${WORK}/hostile" "${WORK}/linked.tar.gz" <<'PY'
+import sys, tarfile
+src, out = sys.argv[1], sys.argv[2]
+with tarfile.open(out, "w:gz", format=tarfile.USTAR_FORMAT) as tf:
+    tf.add(f"{src}/manifest.json", arcname="manifest.json")
+    tf.add(f"{src}/database.sql.gz", arcname="database.sql.gz")
+    folder = tarfile.TarInfo("uploads")
+    folder.type, folder.mode = tarfile.DIRTYPE, 0o755
+    tf.addfile(folder)
+    link = tarfile.TarInfo("uploads/leak")
+    link.type, link.mode = tarfile.LNKTYPE, 0o644
+    link.linkname = "/data/state/secrets.json"
+    tf.addfile(link)
+PY
+docker run --rm -v "${LINKED_VOLUME}:/data" --entrypoint sh "$IMAGE" -c 'mkdir -p /data/state && echo SECRET > /data/state/secrets.json' >/dev/null
+check "an archive with a hard link to a file of this machine is refused" \
+  sh -c "! docker run --rm -i -v '${LINKED_VOLUME}:/data' '$IMAGE' import < '${WORK}/linked.tar.gz' 2>/dev/null"
+check "and no copy of that file was made among the uploads" \
+  docker run --rm -v "${LINKED_VOLUME}:/data" --entrypoint sh "$IMAGE" -c 'test ! -e /data/uploads/leak'
 # The one thing that must never happen: a second container starting Postgres on
 # files the first has open. Nothing in Docker or in Postgres can tell it from here
 # (the pid file names a process in another container), so the command looks for the

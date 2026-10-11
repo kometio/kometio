@@ -229,7 +229,13 @@ What you should know:
 - **A file from an older Kometio opens in a newer one** (the migrations it lacks run
   after it is restored); **one from a newer Kometio does not open in an older one**,
   and says so. An archive is also checked before anything is started: it must hold
-  nothing but its manifest, its database and its uploads, as plain files.
+  nothing but its manifest, its database and its uploads, as plain files (a link is
+  refused).
+- **Open only archives you trust, as you would an installer.** The database in an
+  archive is SQL, and it is run as the database's administrator: it can put an
+  account in the site with a password it chose, change every page, and run commands
+  as the database's own user. What it cannot do is run anything as root, or publish
+  a file that is not its own.
 - It needs room for the archive, unpacked, next to the data.
 
 ## With a database of your own

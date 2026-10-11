@@ -7,6 +7,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import {
   createWriteStream,
   existsSync,
+  lstatSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
@@ -18,7 +19,7 @@ import {
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import { DATABASE_USER, SOCKET_DIR } from './embedded-postgres.mjs';
-import { ensureDir, minimalEnv, once } from './processes.mjs';
+import { ensureDir, ids, minimalEnv, once } from './processes.mjs';
 import {
   TRANSIENT_TABLES,
   appliedMigrationTags,
@@ -26,6 +27,7 @@ import {
   buildManifest,
   checkCompatible,
   checkEntries,
+  checkExtractedTree,
   domainOfAddress,
   Refusal,
   parseManifest,
@@ -44,6 +46,8 @@ function psql(database, args, input) {
   const result = spawnSync(
     'psql',
     [
+      // No `.psqlrc`: this one runs as root, with statements of our own.
+      '-X',
       '-h',
       SOCKET_DIR,
       '-U',
@@ -233,6 +237,26 @@ export function removeLeftoverExports(dataDir) {
   }
 }
 
+/** Every path under `root`, as `lstat` sees it (links are not followed): `{ name, kind, links }`. */
+function describeTree(root, relative = '') {
+  const entries = [];
+  for (const name of readdirSync(`${root}/${relative}`)) {
+    const path = relative === '' ? name : `${relative}/${name}`;
+    const stat = lstatSync(`${root}/${path}`);
+    if (stat.isDirectory()) {
+      entries.push({ name: path, kind: 'directory', links: stat.nlink });
+      entries.push(...describeTree(root, path));
+    } else {
+      entries.push({
+        name: path,
+        kind: stat.isFile() ? 'file' : 'other',
+        links: stat.nlink,
+      });
+    }
+  }
+  return entries;
+}
+
 /**
  * Reads an archive from `input`, a stream, and decides whether it can be opened
  * here, before anything is touched: that it is an archive at all and holds
@@ -248,8 +272,11 @@ export async function readArchive({ dataDir, input, say }) {
     say('reading the archive');
     await pipeline(input, createWriteStream(`${stage}/incoming.tar.gz`));
 
+    // `maxBuffer`: the default, 1 MiB, is a listing of some eight thousand
+    // files, and a site with more would be told that it is not a .tar.gz.
     const listing = spawnSync('tar', ['tvzf', `${stage}/incoming.tar.gz`], {
       encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
     });
     if (listing.status !== 0) {
       throw new Refusal(
@@ -274,6 +301,8 @@ export async function readArchive({ dataDir, input, say }) {
     if (unpacked.status !== 0)
       throw new Error(`tar failed: ${unpacked.stderr.trim()}`);
     const content = `${stage}/content`;
+    // The listing said what the archive holds; this says what came out of it.
+    checkExtractedTree(describeTree(content));
 
     const manifest = parseManifest(
       readFileSync(`${content}/manifest.json`, 'utf8'),
@@ -384,9 +413,17 @@ async function restoreInto({
   const gunzip = spawn('gunzip', ['-c', `${content}/database.sql.gz`], {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
+  // The dump is SQL that someone else wrote, and psql runs more than SQL: `\!`
+  // is a shell, as whoever runs psql. This is the database's own user, which
+  // already is what `COPY … PROGRAM` is run as, and not root, who has the keys
+  // and the secrets of this installation. `-X` leaves out a `.psqlrc`. What the
+  // dump says is still run as the database's administrator: an archive is as
+  // trusted as an installer is (docs/adr/0108).
+  const { uid, gid } = ids(DATABASE_USER);
   const restore = spawn(
     'psql',
     [
+      '-X',
       '-h',
       SOCKET_DIR,
       '-U',
@@ -400,7 +437,7 @@ async function restoreInto({
       '-o',
       '/dev/null',
     ],
-    { stdio: ['pipe', 'ignore', 'pipe'], env: minimalEnv },
+    { stdio: ['pipe', 'ignore', 'pipe'], env: minimalEnv, uid, gid },
   );
   const gunzipped = ended(gunzip);
   const restored = ended(restore);

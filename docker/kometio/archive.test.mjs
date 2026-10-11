@@ -9,6 +9,7 @@ import {
   buildManifest,
   checkCompatible,
   checkEntries,
+  checkExtractedTree,
   domainOfAddress,
   parseManifest,
 } from './archive.mjs';
@@ -157,6 +158,18 @@ describe('what an archive may hold', () => {
     );
   });
 
+  // Busybox, which is the `tar` of this image, lists a hard link as a plain file
+  // (type `-`) followed by an arrow and its target, and extracts it as a link to
+  // that target, an absolute path included, as root: the copy the import then
+  // makes of `uploads/` would be a copy of the target, served to anyone.
+  for (const target of ['/data/state/secrets.json', './uploads/photo.webp']) {
+    it(`refuses a hard link, which busybox lists as a file with an arrow: -> ${target}`, () => {
+      const listing = `${ok}\n-rw-r--r-- 0/0 0 2026-10-05 10:20 ./uploads/leak -> ${target}`;
+
+      assert.throws(() => checkEntries(listing), /a link.*uploads\/leak/);
+    });
+  }
+
   for (const name of [
     './uploads/../../etc/x',
     '/etc/cron.d/x',
@@ -187,6 +200,34 @@ describe('what an archive may hold', () => {
 
     assert.throws(() => checkEntries(noManifest), /no manifest\.json/);
     assert.throws(() => checkEntries(noDatabase), /no database\.sql\.gz/);
+  });
+});
+
+describe('what the unpacked archive is made of', () => {
+  const tree = [
+    { name: 'manifest.json', kind: 'file', links: 1 },
+    { name: 'database.sql.gz', kind: 'file', links: 1 },
+    { name: 'uploads', kind: 'directory', links: 2 },
+    { name: 'uploads/2026/photo.webp', kind: 'file', links: 1 },
+  ];
+
+  it('accepts files that are their own, and folders', () => {
+    assert.doesNotThrow(() => checkExtractedTree(tree));
+  });
+
+  it('refuses a file that shares its content with another: that is a hard link, whatever the listing said', () => {
+    const linked = [...tree, { name: 'uploads/leak', kind: 'file', links: 2 }];
+
+    assert.throws(() => checkExtractedTree(linked), /hard link.*uploads\/leak/);
+  });
+
+  it('refuses what is neither a file nor a folder', () => {
+    const odd = [...tree, { name: 'uploads/pipe', kind: 'other', links: 1 }];
+
+    assert.throws(
+      () => checkExtractedTree(odd),
+      /not a file or a folder.*uploads\/pipe/,
+    );
   });
 });
 
