@@ -8,13 +8,13 @@ import {
   readFile,
   readdir,
   realpath,
-  rename,
   rm,
   symlink,
   writeFile,
 } from 'node:fs/promises';
 import { basename, join, relative } from 'node:path';
 import { z } from 'zod';
+import { writeAtomically } from './atomic-write';
 import type { BuildRequest } from './theme-builder';
 
 /*
@@ -48,12 +48,6 @@ function jobPaths(exchange: string) {
     dist: join(job, 'dist'),
     result: join(job, 'result.json'),
   };
-}
-
-async function writeAtomically(path: string, content: string) {
-  const temporary = `${path}.tmp`;
-  await writeFile(temporary, content);
-  await rename(temporary, path);
 }
 
 async function readJson(path: string): Promise<unknown> {
