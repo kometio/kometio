@@ -45,6 +45,12 @@ It holds between 75 and 200 MiB of memory when it is idle (measured; more while
 it resizes an image or makes an archive) and about 700 MB of disk for the image, plus the volume with
 your site. A machine with 1 GB of memory is where we would start.
 
+This is a trial, for the machine it runs on: the three ports are published on
+every address of the machine, and the server runs as `development`, with the
+example secrets it generates for itself. On a machine that other people can
+reach, publish them on `127.0.0.1` only (`-p 127.0.0.1:4200:80` and so on), or
+make it a server with a name, [below](#on-a-server-with-your-own-domain).
+
 `0.1.0-beta.1` is the first beta, the one this page was tried on. Every version
 has its own tag, listed [with the other tags](https://github.com/kometio/kometio/tags),
 and a version's image is made once, when it is released. `:main` is different: it
@@ -213,7 +219,16 @@ setup token from `docker logs kometio`, open the editor, create your account.
 - A server runs as `production`: the login cookie is `Secure`, and the container
   refuses to start on example secrets or on Cloudflare's test captcha keys. Behind
   a proxy of your own instead, leave `DOMAIN` out and set the three addresses as
-  in [Use other ports](#use-other-ports).
+  in [Use other ports](#use-other-ports), with `https://` in them: an address that
+  is `https` makes it run as `production` too. It does **not** make it trust your
+  proxy's `X-Forwarded-For`, because that is right only when nothing but your
+  proxy can reach the three ports, and the container cannot know that. If that is
+  so (publish the ports on `127.0.0.1` or an internal network only), add
+  `-e TRUSTED_PROXY_HOPS=1`, or `2` with a CDN in front of your proxy: without it
+  every visitor looks like your proxy, and one person can use up the login's five
+  tries a minute for everybody. If the ports can be reached directly, leave it
+  unset: anyone could then write the header themselves, and every try would count
+  as another visitor. The log says so at the start.
 - If a browser warns about the certificate, the name's DNS does not point at this
   machine yet. `docker logs kometio` shows Caddy's attempts, and it keeps trying.
 

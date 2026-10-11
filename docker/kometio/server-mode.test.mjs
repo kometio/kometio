@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   parseDomain,
+  proxyAdvice,
+  proxyDefaults,
   resolveAddresses,
   serverAddresses,
 } from './server-mode.mjs';
@@ -90,6 +92,94 @@ describe('resolveAddresses', () => {
     assert.throws(
       () => resolveAddresses({ DOMAIN: 'https://example.com' }),
       /like example\.com/,
+    );
+  });
+});
+
+describe('proxyDefaults', () => {
+  const at = (
+    editorUrl,
+    siteUrl = 'http://localhost:4322',
+    apiPublicUrl = 'http://localhost:3000/api',
+  ) => ({ editorUrl, siteUrl, apiPublicUrl });
+
+  it('is a trial on this machine when every address is plain HTTP: development, and nobody in front', () => {
+    assert.deepEqual(
+      proxyDefaults({ domain: null, ...at('http://localhost:4200') }),
+      { nodeEnv: 'development', trustedProxyHops: undefined },
+    );
+  });
+
+  it('is a server with a name: production, and one proxy, which is Caddy inside the container', () => {
+    assert.deepEqual(
+      proxyDefaults({
+        domain: 'example.com',
+        ...at('https://admin.example.com'),
+      }),
+      { nodeEnv: 'production', trustedProxyHops: '1' },
+    );
+  });
+
+  // Behind a proxy of one's own that ends the TLS: the browser is on https and
+  // this container is on plain HTTP. The cookie has to be `Secure`. The proxy's
+  // header is not trusted by that: nothing here knows that the proxy is the only
+  // way in, and where it is not, whoever connects writes the header.
+  it('is production, and trusts nobody, when the addresses are https and there is no name', () => {
+    for (const addresses of [
+      at('https://admin.example.com'),
+      at('http://localhost:4200', 'https://example.com'),
+      at(
+        'http://localhost:4200',
+        'http://localhost:4322',
+        'https://api.example.com/api',
+      ),
+    ]) {
+      assert.deepEqual(proxyDefaults({ domain: null, ...addresses }), {
+        nodeEnv: 'production',
+        trustedProxyHops: undefined,
+      });
+    }
+  });
+});
+
+describe('proxyAdvice', () => {
+  const https = {
+    domain: null,
+    editorUrl: 'https://admin.example.com',
+    siteUrl: 'https://example.com',
+    apiPublicUrl: 'https://api.example.com/api',
+  };
+
+  it('says what to set when the addresses are https, there is no name, and nobody said how many proxies', () => {
+    assert.match(
+      proxyAdvice({ ...https, trustedProxyHops: undefined }),
+      /TRUSTED_PROXY_HOPS=1/,
+    );
+    assert.match(
+      proxyAdvice({ ...https, trustedProxyHops: '  ' }),
+      /five tries/,
+    );
+  });
+
+  it('says nothing when it was said, when there is a name, or on a trial', () => {
+    assert.equal(proxyAdvice({ ...https, trustedProxyHops: '2' }), null);
+    assert.equal(
+      proxyAdvice({
+        ...https,
+        domain: 'example.com',
+        trustedProxyHops: undefined,
+      }),
+      null,
+    );
+    assert.equal(
+      proxyAdvice({
+        domain: null,
+        editorUrl: 'http://localhost:4200',
+        siteUrl: 'http://localhost:4322',
+        apiPublicUrl: 'http://localhost:3000/api',
+        trustedProxyHops: undefined,
+      }),
+      null,
     );
   });
 });
