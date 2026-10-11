@@ -1,4 +1,3 @@
-import { Server } from 'node:http';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
@@ -8,6 +7,9 @@ import { AppModule } from './app/app.module';
 import { HttpExceptionFilter } from './app/http-exception.filter';
 import { mountMediaStatic } from './app/media-static';
 import { requestIdMiddleware } from './app/request-id.middleware';
+import { RequestTimeoutPolicy } from './app/setup/request-timeout.policy';
+import type { SetupDeps } from './app/setup/setup.deps';
+import { SETUP_DEPS } from './app/setup/setup.tokens';
 import { trustProxyHops } from './app/trusted-proxy';
 import { validateApiEnv } from './env-schema';
 import { rejectCrossSiteWrites } from './app/cross-site-writes.middleware';
@@ -47,9 +49,16 @@ async function bootstrap() {
   // uncaughtException handlers above.
   // Node gives a request five minutes to arrive, whole. The one that can take
   // longer is a site archive uploaded on the first-run screen (docs/adr/0106): it
-  // is as big as the site and arrives at the speed of somebody's connection.
-  const server: unknown = app.getHttpServer();
-  if (server instanceof Server) server.requestTimeout = 2 * 60 * 60 * 1000;
+  // is as big as the site and arrives at the speed of somebody's connection. So
+  // the wait is long only while there is no site to receive it into, and the
+  // wizard takes it back (RequestTimeoutPolicy).
+  app
+    .get(RequestTimeoutPolicy)
+    .forInstallation(
+      await app
+        .get<SetupDeps>(SETUP_DEPS)
+        .deploymentBootstrapPort.hasBeenSetUp(),
+    );
   app.enableShutdownHooks();
   for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     process.on(signal, () => {
