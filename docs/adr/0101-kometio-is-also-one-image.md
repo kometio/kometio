@@ -64,6 +64,15 @@ minutes, and later one object to put on a server.
   never retries. It was shown to fail on each of the two defects it is there
   for, reintroduced one at a time: the left-over cookie (the form never
   appears), and an empty captcha key (the login button stays disabled).
+- **An upgrade is tried, not only a first install** (amended 2026-10-11;
+  `check.sh --upgrade-from`). Every other scenario starts from an empty volume,
+  so none of them could see what a change does to a site that already exists.
+  On a pull request CI makes a site with the version the base branch's README
+  tells people to install (a page, an upload, an account), does what the README's
+  "Update to a newer version" says, and opens it with the image of the branch:
+  still set up, the same session and password, the page and the file as they
+  were, the migrations carried forward, the database's socket still closed to a
+  theme's code, and an export that works.
 
 ## Consequences
 
