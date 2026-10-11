@@ -184,6 +184,15 @@ needs a restart, not a rebuild:
 docker compose -f docker-compose.prod.yml up -d public-site
 ```
 
+## Logs
+
+Every container keeps its last 50 MB of log (five files of 10 MB, in
+`docker-compose.prod.yml`) and nothing more; Docker's default is to keep all of
+it. Read them with `docker compose -f docker-compose.prod.yml logs --tail 100 api`
+(or any other service). Where the API says what it was doing when it failed:
+every failed request is logged with its request id, which the error answer
+carries too, so what a person saw can be found.
+
 ## Backups
 
 The `postgres-backup` service dumps the whole database on a schedule
