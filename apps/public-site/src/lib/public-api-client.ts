@@ -26,6 +26,20 @@ export interface UntranslatedPageFallbackTargetDto {
   segments: string[];
 }
 
+/**
+ * What a 404 from the by-slug lookup may carry: a place to send the visitor,
+ * or the address this content moved to. Each is read on its own and a
+ * missing or malformed one is `null`, so that a body that is not what is
+ * expected is still a 404 and not an error page.
+ */
+const notFoundBodySchema = z.object({
+  fallback: z
+    .object({ locale: z.string(), segments: z.array(z.string()) })
+    .nullable()
+    .catch(null),
+  movedTo: z.string().nullable().catch(null),
+});
+
 export type PublishedPageLookupResult =
   | { found: true; page: PublishedPage }
   | {
@@ -133,17 +147,11 @@ export async function getPublishedPageBySlug(
 
   if (res.status === 404) {
     const body: unknown = await res.json().catch(() => null);
-    const parsed =
-      body && typeof body === 'object'
-        ? (body as {
-            fallback?: UntranslatedPageFallbackTargetDto | null;
-            movedTo?: string | null;
-          })
-        : {};
+    const parsed = notFoundBodySchema.safeParse(body);
     return {
       found: false,
-      fallback: parsed.fallback ?? null,
-      movedTo: parsed.movedTo ?? null,
+      fallback: parsed.success ? parsed.data.fallback : null,
+      movedTo: parsed.success ? parsed.data.movedTo : null,
     };
   }
   if (!res.ok) {

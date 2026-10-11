@@ -137,6 +137,33 @@ describe('public-api-client', () => {
     });
   });
 
+  it('drops a fallback that is not a place, and keeps the move beside it', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse(
+        { fallback: 'it/chi-siamo', movedTo: '/it/categoria/espresso' },
+        404,
+      ),
+    );
+
+    const result = await getPublishedPageBySlug('example.com', 'it', [
+      'espresso',
+    ]);
+
+    expect(result).toEqual({
+      found: false,
+      fallback: null,
+      movedTo: '/it/categoria/espresso',
+    });
+  });
+
+  it('is still a 404 when the body is not an object at all', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse('Not Found', 404));
+
+    const result = await getPublishedPageBySlug('example.com', 'it', ['x']);
+
+    expect(result).toEqual({ found: false, fallback: null, movedTo: null });
+  });
+
   /*
    * A different answer from `fallback`, and the route treats it
    * differently: a term claimed this page, so the content lives at the

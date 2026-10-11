@@ -41,7 +41,7 @@ function wireHamburgerMenu(root: HTMLElement): void {
   document.addEventListener('click', (event) => {
     if (
       root.classList.contains('kometio-hamburger-menu--open') &&
-      !root.contains(event.target as Node)
+      !(event.target instanceof Node && root.contains(event.target))
     ) {
       setOpen(false);
     }
