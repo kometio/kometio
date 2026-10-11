@@ -14,7 +14,7 @@ const formEditorSearchSchema = z.object({
   page: z.coerce.number().int().min(1).default(1).catch(1),
 });
 
-// Unlike pages.$pageId (fullscreen Puck canvas, outside the shell), the form
+// Unlike pages.$pageId (the fullscreen canvas editor, outside the shell), the form
 // editor is just a settings-style form (name, fields, notification email) —
 // small enough that keeping the sidebar visible makes more sense than going
 // fullscreen for it.

@@ -7,8 +7,8 @@ import { visibilityField } from '../fields/visibility-field';
 // `position`/`visibility` instead of HamburgerMenuProps directly: at the
 // domain level this block combines navItemPositionSchema (its position
 // within the Nav) with its own visibility, exactly like
-// hamburgerMenuPropsSchema in content-model.ts. No extra Puck-only type
-// is needed here: Block.children is already real.
+// hamburgerMenuPropsSchema in content-model.ts. Block.children is real, so
+// no extra type is needed for it here.
 export const hamburgerMenuBlock: BlockDescriptor<{
   position: 'left' | 'right';
   visibility: 'always' | 'desktop-only' | 'mobile-only';

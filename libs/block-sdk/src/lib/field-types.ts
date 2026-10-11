@@ -251,7 +251,7 @@ export interface BlockDescriptor<Props = Record<string, unknown>> {
   icon?: string;
   defaultProps: Props;
   fields: FieldDescriptor[];
-  /** `Block.children` is real (no Puck-style "slot" mapper needed) — present only on blocks that can contain other blocks. */
+  /** `Block.children` is real, not mapped from slots — present only on blocks that can contain other blocks. */
   isContainer?: boolean;
   /** No list = any registered block can go inside (e.g. Column/Container). */
   allowedChildTypes?: string[];

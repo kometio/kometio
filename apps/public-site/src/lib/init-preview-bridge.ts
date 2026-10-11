@@ -135,9 +135,9 @@ export function initPreviewBridge(): void {
   }
 
   // Mounts TipTap "in place" on the `data-kometio-field` node — it takes
-  // ownership of that node's reconciliation, a structural fix for Puck's
-  // caret bug (Day 3/4 of the plan): no React re-render drives that node any
-  // more. Constrained to Document/Paragraph/Text (a single paragraph, no
+  // ownership of that node's reconciliation, so no React re-render drives
+  // that node and the caret is never moved under the author. Constrained to
+  // Document/Paragraph/Text (a single paragraph, no
   // marks): every inlineEditable field is a plain `z.string()` at the domain
   // level, never HTML — see PreviewTextChangedMessage.
   function enterTextEdit(

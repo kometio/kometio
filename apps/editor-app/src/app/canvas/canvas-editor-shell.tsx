@@ -143,7 +143,7 @@ export interface CanvasEditorShellProps {
     exposedFields: ExposedFields;
     onToggleField: (blockId: string, field: string) => void;
   };
-  /** Bumped only on an explicit rollback — the same mechanism block-editor-shell.tsx (Puck) used to reset local state. */
+  /** Bumped only on an explicit rollback: it is part of the canvas's `key`, so the editor is mounted again over the restored content. */
   restoredAt?: number;
   /**
    * Filled with the shell's own flush: it sends at once any change still

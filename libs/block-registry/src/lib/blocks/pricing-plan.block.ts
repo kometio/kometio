@@ -47,8 +47,7 @@ export const pricingPlanBlock: BlockDescriptor<PricingPlanProps> = {
       'blocks.pricingPlan.fields.features.fieldLabel',
       'feature-list',
     ),
-    // Replaces Puck's boolean-valued radio (options with
-    // value: true/false) — a toggle fits a binary flag better.
+    // A toggle, not a radio with two options: it fits a binary flag better.
     {
       kind: 'boolean',
       key: 'highlighted',

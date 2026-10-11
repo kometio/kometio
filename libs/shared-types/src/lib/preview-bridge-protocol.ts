@@ -167,9 +167,8 @@ export type EditorPatchBlockMessage = PreviewBridgeEnvelope<
 /**
  * Mounts TipTap "in place" (Day 4) on the `[data-kometio-field=field]` node
  * inside block `blockId` — TipTap takes ownership of the existing node and
- * handles its own reconciliation, which is a structural fix for Puck's
- * caret bug (no React re-render drives that node any more), not a
- * workaround.
+ * handles its own reconciliation: no React re-render drives that node, so
+ * the caret is never moved under the author.
  */
 export type EditorEnterTextEditMessage = PreviewBridgeEnvelope<
   'editor:enter-text-edit',

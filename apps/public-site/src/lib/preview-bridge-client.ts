@@ -139,8 +139,8 @@ export function collectBlockElements(root: ParentNode): Element[] {
 /**
  * The nearest genuinely interactive element (link/button/form/details), if
  * there is one — without intercepting it, the first click on one of these
- * would navigate the iframe away and kill the editing session (Puck did not
- * have this problem: a React portal-rendered canvas, never real anchors).
+ * would navigate the iframe away and kill the editing session: the canvas
+ * is the real page, with real anchors.
  */
 export function findRealInteractiveAncestor(target: Element): Element | null {
   return target.closest('a, button, details');
