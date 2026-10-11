@@ -173,6 +173,8 @@ check "a site opened from an archive is stopped, restored and started again as d
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/site-import.test.mjs"
 check "every table of the schema is a site's or a moment's, so that no new one is carried by accident" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive-tables.test.mjs"
+check "the healthcheck looks at the three parts, on the ports the launcher gives them" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/healthcheck.test.mjs"
 
 # --- the first run, in a browser ------------------------------------------------
 #
@@ -458,6 +460,20 @@ check "and the administrator's role has no way in over TCP without a password" \
   sh -c "! docker exec -u kometio-site '$NAME' psql -h 127.0.0.1 -U kometio -d postgres -w -Atc 'select 1'"
 check "a file that is not an archive is refused, and nothing is started for it" \
   sh -c "! echo 'not an archive' | docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import 2>/dev/null"
+# The healthcheck used to ask the API only. A part that hangs (stopped here, as a
+# process that is not answering is) must make the container unhealthy, and it must
+# be well again when the part is.
+step "the healthcheck sees a part that hangs"
+check "all three parts answer, and the healthcheck says so" \
+  docker exec "$NAME" node /opt/kometio/healthcheck.mjs
+docker exec "$NAME" pkill -STOP nginx
+check "with the editor's server stopped, it fails" \
+  sh -c "! docker exec '$NAME' node /opt/kometio/healthcheck.mjs >/dev/null 2>&1"
+check "and says which part: the editor" \
+  sh -c "docker exec '$NAME' node /opt/kometio/healthcheck.mjs 2>&1 | grep -q 'not answering: the editor'"
+docker exec "$NAME" pkill -CONT nginx
+check "and with it running again, it says all is well" \
+  docker exec "$NAME" node /opt/kometio/healthcheck.mjs
 # An archive is somebody else's file. It must not get a shell as root through the
 # SQL in it (psql's `\!` is run by whoever runs psql), nor a copy of a file of
 # this machine through a hard link (docs/adr/0108). Both are made from the

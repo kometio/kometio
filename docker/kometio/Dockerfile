@@ -50,7 +50,7 @@ COPY --from=editor /docker-entrypoint.d/10-kometio-runtime-config.envsh /opt/kom
 
 # The migrations are not copied here: they are already inside the API
 # artefact, so they are always those of the version of the code that starts.
-COPY docker/kometio/launcher.mjs docker/kometio/server-mode.mjs docker/kometio/processes.mjs docker/kometio/embedded-postgres.mjs docker/kometio/migrate.mjs docker/kometio/nginx.conf /opt/kometio/
+COPY docker/kometio/launcher.mjs docker/kometio/server-mode.mjs docker/kometio/healthcheck.mjs docker/kometio/processes.mjs docker/kometio/embedded-postgres.mjs docker/kometio/migrate.mjs docker/kometio/nginx.conf /opt/kometio/
 # `export` and `import` (docs/adr/0105): the image's two commands besides running.
 COPY docker/kometio/cli.mjs docker/kometio/archive.mjs docker/kometio/archive-commands.mjs docker/kometio/control-server.mjs docker/kometio/site-import.mjs /opt/kometio/
 # The compose stack's own Caddyfile, so that the security headers and the
@@ -62,10 +62,12 @@ VOLUME /data
 # (DOMAIN set): 80 and 443 only, which is Caddy; the three above are then inside.
 EXPOSE 3000 4322 80 443
 
-# `127.0.0.1`, not `localhost`: the latter resolves ::1 first here, and the
-# API's own server only answers on IPv4.
+# The three parts, each on its own port inside the container, and Caddy on a
+# server (healthcheck.mjs): it used to ask the API only, which is the half that
+# is up when the others are not. `127.0.0.1`, not `localhost`: the latter
+# resolves ::1 first here, and the API's own server only answers on IPv4.
 HEALTHCHECK --interval=10s --timeout=5s --start-period=90s --retries=6 \
-  CMD wget -qO- http://127.0.0.1:3000/api/health >/dev/null || exit 1
+  CMD node /opt/kometio/healthcheck.mjs
 
 # tini is PID 1 (reaps what the launcher's children leave behind); the
 # launcher decides what runs, in which order, and stops it all in reverse.
