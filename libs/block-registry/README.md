@@ -1,7 +1,8 @@
 # block-registry
 
-The editor's block catalog: for every one of the ~48 block types a site can
-be built from (Hero, Text, Image, Container, Nav, Button, Testimonial, ...),
+The editor's block catalog: for every one of the block types a site can be
+built from (Hero, Text, Image, Container, Nav, Button, Testimonial, ...; over
+a hundred, and `BLOCK_TYPES` in `@kometio/shared-types` is the list),
 a plain-data `BlockDescriptor` — label, category, default props, the field
 form the Inspector panel renders, container/nesting rules, and which style
 properties can be overridden — plus the handful of React field components
@@ -61,13 +62,13 @@ at every call site instead of once here. Every block below is still defined
 as a plain `BlockDescriptor` object literal, unchanged — `defineBlock()`
 (`@kometio/block-sdk`) is a validated-factory alternative available to new
 blocks (see `blocks/callout.block.ts` for this package's own one example),
-not a rewrite requirement for the existing ~49.
+not a rewrite requirement for the existing ones.
 
 `stylableProperties` + `defaultStyle` are this block's opt-in to the
 component/instance style-override system
 ([ADR-0022](../../docs/adr/0022-component-and-instance-style-overrides.md))
 — absent or empty means no "Style" button/override popover for that type at
-all; the rollout across all 48+ blocks is intentionally incremental, not
+all; the rollout across all the blocks is intentionally incremental, not
 mechanical. `BlockStyleRegistry.STANDARD` (`block-style-registry.ts`) is a
 shared preset (`backgroundColor`, `textColor`, `borderRadius`, `paddingX`,
 `paddingY`) most blocks reuse verbatim, added after one block was found to

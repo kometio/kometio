@@ -6,10 +6,16 @@ Kometio is a self-hosted visual CMS for brochure/showcase websites:
 restaurants, professionals, small businesses, agencies building a
 client site — content that's mostly pages and blocks, not a full
 application. It's built for a developer or agency to deploy per client
-(Docker image, own Postgres database), not a hosted SaaS: each deployment is
-a single tenant/site today, with the underlying multi-tenancy plumbing
-already in place for later (see [Architecture](#architecture-at-a-glance)
-below).
+(one Docker image, or the three services with your own Postgres database),
+not a hosted SaaS: **a deployment is one site for one client.** Every table
+carries a tenant id and the database enforces it with row level security,
+but the product serves one tenant per deployment and fails loudly when it
+finds two and is not told which one ([ADR-0010](docs/adr/0010-session-based-auth-foundations.md); see
+[Architecture](#architecture-at-a-glance) below).
+
+It is **source-available, not open source**: see [License](#license).
+
+**To try it,** one command and a minute: [Try it](#try-it).
 
 ## What you actually get
 
@@ -23,9 +29,10 @@ below).
   the canvas, not only through a sidebar form — see
   [ADR-0028](docs/adr/0028-canvas-inline-text-editing-via-tiptap-in-preview-iframe.md).
   Every save keeps the editable draft separate from the snapshot the
-  public site serves, with full version history and rollback — a new
-  version row per save, never a destructive overwrite. Publishing is per
-  language: one can go live today and another when it is ready.
+  public site serves, with version history and rollback — a new version
+  row per save, never a destructive overwrite, and the last ten versions
+  of each page are kept. Publishing is per language: one can go live
+  today and another when it is ready.
 - **A real, from-scratch canvas editor — no third-party page-builder
   library.** The editor doesn't embed a drag-and-drop library; it renders
   the actual page in an iframe (the same Astro output `apps/public-site`
@@ -38,6 +45,12 @@ below).
   fallback for a locale/slug combination with no published translation, and
   an in-editor language switcher — see
   [ADR-0017](docs/adr/0017-multilingua-locale-prefixed-urls-and-page-translations.md).
+  A site can enable any language for its content, but what Kometio itself
+  says is in **Italian and English**: the editor, its emails, and the
+  public site's own words (the 404 page, search, "skip to content"). In any
+  other language those fall back to Italian, then English; a theme can
+  bring its own wording for them
+  ([docs/creating-a-theme.md](docs/creating-a-theme.md)).
 - **Theming, at two levels.** A site-level style panel (colors, font,
   custom CSS/scripts, favicon) editable live with no rebuild, layered under
   filesystem theme packages (`themes/<name>/`) that an agency can write from
@@ -65,7 +78,7 @@ below).
 
 ## Architecture at a glance
 
-Three apps, one shared backend:
+Three apps and a build service, one shared backend:
 
 - **`apps/api`** — NestJS backend, the only thing that talks to Postgres.
   Ports & Adapters (hexagonal): `libs/domain-core` (pure entities) ←
@@ -80,6 +93,14 @@ Three apps, one shared backend:
   endpoint that only ever serves published content — never a direct
   Postgres read, and never the authenticated CRUD API `apps/editor-app`
   uses. See [ADR-0012](docs/adr/0012-public-site-rendering-via-dedicated-api-endpoint.md).
+- **`apps/theme-builder`** — in the multi-container deployment, builds the
+  public site with a theme uploaded from the editor and publishes the result
+  ([ADR-0091](docs/adr/0091-a-theme-can-be-uploaded-from-the-editor.md)).
+  The single image does not run it, so it takes only the themes it ships.
+
+The single image (`docker/kometio`) is the three apps, Postgres and Caddy in
+one container with one volume; [docker/kometio/README.md](docker/kometio/README.md)
+is its guide.
 
 Postgres with Row Level Security enforces tenant isolation at the database
 level (`tenant_id = current_tenant()` on every per-tenant table, enforced
@@ -92,7 +113,25 @@ non-superuser role.
 
 Nx monorepo, pnpm package manager.
 
-## Quickstart
+## Try it
+
+You need Docker and ports 4200, 3000 and 4322 free:
+
+```sh
+docker run -d --name kometio --restart unless-stopped \
+  --stop-timeout 30 --log-opt max-size=10m --log-opt max-file=5 \
+  -p 4200:80 -p 3000:3000 -p 4322:4322 \
+  -v kometio-data:/data \
+  ghcr.io/kometio/kometio:0.1.0-beta.1
+docker logs kometio    # the setup token is in the banner
+```
+
+Then open <http://localhost:4200>, paste the token, and name your site. That
+is a trial for your own machine: to put it on a server with a domain and
+HTTPS, to move a site, to update, and what each option is for, read
+[docker/kometio/README.md](docker/kometio/README.md).
+
+## Quickstart (development)
 
 ```sh
 cp .env.example .env
@@ -111,6 +150,8 @@ built and published end to end.
 
 ## Documentation
 
+- [docker/kometio/README.md](docker/kometio/README.md) — the single image:
+  trial, a server with a domain, moving a site, updating
 - [docs/architecture.md](docs/architecture.md) — Ports & Adapters, monorepo
   structure, multi-tenant/RLS, content model
 - [docs/development.md](docs/development.md) — local setup, commands, DB
@@ -122,3 +163,16 @@ built and published end to end.
 - [docs/git-workflow.md](docs/git-workflow.md) — branches, PRs, what requires
   sign-off before implementing
 - [docs/adr/](docs/adr/) — Architecture Decision Records
+
+## License
+
+Kometio is under the [Functional Source License 1.1, Apache 2.0 future
+license](LICENSE) (FSL-1.1-ALv2): you may use, copy, modify and redistribute it
+for any purpose except a **Competing Use** (making it available to others in a
+commercial product or service that substitutes for it or offers substantially
+the same functionality), and each version becomes Apache 2.0 two years after
+it is released. Internal use, non-commercial education and research, and
+professional services you provide to a licensee are named as permitted. That
+makes it source-available; it is **not** an OSI-approved open-source license.
+Read [LICENSE](LICENSE) for the terms themselves: this paragraph is not legal
+advice.

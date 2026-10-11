@@ -12,9 +12,15 @@ one volume:
 
 ```sh
 docker run -d --name kometio --restart unless-stopped \
+  --stop-timeout 30 --log-opt max-size=10m --log-opt max-file=5 \
   -p 80:80 -p 443:443 -e DOMAIN=example.com -e ACME_EMAIL=you@example.com \
   -v kometio-data:/data ghcr.io/kometio/kometio:0.1.0-beta.1
 ```
+
+The two options on the second line matter: the database is given thirty seconds
+to stop cleanly instead of ten, and the container's log is kept to the last
+50 MB instead of growing for as long as it runs.
+[Its README](../docker/kometio/README.md) says why, and how to update it.
 
 It is the right size for a small site you back up. This guide is the other way:
 a Postgres in a container of its own, every part separate, and your own

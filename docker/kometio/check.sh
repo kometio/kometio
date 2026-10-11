@@ -203,6 +203,8 @@ check "every table of the schema is a site's or a moment's, so that no new one i
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive-tables.test.mjs"
 check "the healthcheck looks at the three parts, on the ports the launcher gives them" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/healthcheck.test.mjs"
+check "every page that tells a person which version of the image to run says the same one" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/image-tag.test.mjs"
 
 # --- the first run, in a browser ------------------------------------------------
 #

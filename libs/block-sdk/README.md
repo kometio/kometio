@@ -2,7 +2,7 @@
 
 The public surface for authoring a Kometio block — first-party or third-party.
 `defineBlock()` is a validated factory for a `BlockDescriptor`, the same
-plain-data shape every one of `libs/block-registry`'s ~50 blocks already
+plain-data shape every one of `libs/block-registry`'s blocks already
 returns (see that package's own README). This package exists so a block
 author only needs `@kometio/block-sdk` — not `@kometio/block-registry`, which
 also happens to contain the implementation of every core block.
@@ -17,7 +17,7 @@ author 2026-09-01 (see
 
 The dependency direction follows from that choice: `block-registry` depends
 on `block-sdk` for the `BlockDescriptor`/`FieldDescriptor` type contract
-(re-exported from its own `field-types.ts` so none of its ~50 existing
+(re-exported from its own `field-types.ts` so none of its existing
 `*.block.ts` files needed to change), not the other way around — `block-sdk`
 (the public surface) can't depend on `block-registry` (built against that
 surface) without a circular dependency.
