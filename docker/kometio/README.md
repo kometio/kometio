@@ -168,11 +168,15 @@ setup token from `docker logs kometio`, open the editor, create your account.
   refuses to start on example secrets or on Cloudflare's test captcha keys. Behind
   a proxy of your own instead, leave `DOMAIN` out and set the three addresses as
   in [Use other ports](#use-other-ports), with `https://` in them: an address that
-  is `https` makes it run as `production` too, and trust **one** proxy in front,
-  so that each visitor is who your proxy says they are (otherwise every visitor
-  is your proxy, and one person can use up the login's five tries a minute for
-  everybody). Your proxy has to send `X-Forwarded-For`; with two in front (a CDN,
-  then yours) set `-e TRUSTED_PROXY_HOPS=2`.
+  is `https` makes it run as `production` too. It does **not** make it trust your
+  proxy's `X-Forwarded-For`, because that is right only when nothing but your
+  proxy can reach the three ports, and the container cannot know that. If that is
+  so (publish the ports on `127.0.0.1` or an internal network only), add
+  `-e TRUSTED_PROXY_HOPS=1`, or `2` with a CDN in front of your proxy: without it
+  every visitor looks like your proxy, and one person can use up the login's five
+  tries a minute for everybody. If the ports can be reached directly, leave it
+  unset: anyone could then write the header themselves, and every try would count
+  as another visitor. The log says so at the start.
 - If a browser warns about the certificate, the name's DNS does not point at this
   machine yet. `docker logs kometio` shows Caddy's attempts, and it keeps trying.
 
