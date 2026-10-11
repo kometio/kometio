@@ -21,6 +21,7 @@ for the version with a database of its own.
 
 ```sh
 docker run -d --name kometio --restart unless-stopped \
+  --stop-timeout 30 --log-opt max-size=10m --log-opt max-file=5 \
   -p 4200:80 -p 3000:3000 -p 4322:4322 \
   -v kometio-data:/data \
   ghcr.io/kometio/kometio:0.1.0-beta.1
@@ -28,6 +29,21 @@ docker run -d --name kometio --restart unless-stopped \
 
 The first run downloads the image (about 200 MB). After that it is ready about
 ten seconds after you press Enter.
+
+The two options on the second line are not decoration:
+
+- **`--stop-timeout 30`**: `docker stop` waits ten seconds by default and then
+  kills the container. The database needs a few seconds to stop cleanly, and a kill
+  is a crash that it recovers from at the next start. Thirty is what Kometio itself
+  allows each of its parts.
+- **`--log-opt max-size=10m --log-opt max-file=5`**: Docker keeps the log of a
+  container without limit unless told, and this one writes to it for as long as it
+  runs (and, with no mail server, the links of invitations and password resets go
+  there). This keeps the last 50 MB and nothing more.
+
+It holds between 75 and 200 MiB of memory when it is idle (measured; more while
+it resizes an image or makes an archive) and about 700 MB of disk for the image, plus the volume with
+your site. A machine with 1 GB of memory is where we would start.
 
 This is a trial, for the machine it runs on: the three ports are published on
 every address of the machine, and the server runs as `development`, with the
@@ -100,17 +116,51 @@ already published.
 
 ## Everyday commands
 
-| To…                       | Run                                                                                                                       |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Stop it                   | `docker stop kometio`                                                                                                     |
-| Start it again            | `docker start kometio` (ready in a few seconds; nothing is lost)                                                          |
-| Read its log              | `docker logs kometio`                                                                                                     |
-| Update to a newer version | `docker pull ghcr.io/kometio/kometio:<the new version>`, then `docker rm -f kometio`, then step 1 again with that version |
-| Delete everything, anew   | `docker rm -f kometio && docker volume rm kometio-data`                                                                   |
+| To…                       | Run                                                              |
+| ------------------------- | ---------------------------------------------------------------- |
+| Stop it                   | `docker stop kometio`                                            |
+| Start it again            | `docker start kometio` (ready in a few seconds; nothing is lost) |
+| Read its log              | `docker logs kometio`                                            |
+| Update to a newer version | [below](#update-to-a-newer-version)                              |
+| Delete everything, anew   | `docker rm -f kometio && docker volume rm kometio-data`          |
 
 Removing the container (`docker rm`) keeps your site: it lives in the volume
 `kometio-data`. **Removing the volume deletes the site, its pages, its
 uploaded files and its accounts, for good.** There is no undo.
+
+### Update to a newer version
+
+A new version opens the volume of the old one and brings its database up to date
+at the start; there is no going back from that (the migrations only go forward).
+So, in this order:
+
+```sh
+# 1. a copy of the site first, which any version can be started from
+docker exec kometio node /opt/kometio/cli.mjs export > before-the-update.tar.gz
+
+# 2. the new image, then stop the old container (it is given thirty seconds)
+docker pull ghcr.io/kometio/kometio:<the new version>
+docker stop -t 30 kometio && docker rm kometio
+
+# 3. step 1 again, with the new version's tag and the same volume
+```
+
+Do not use `docker rm -f` for this: it kills the database instead of stopping it.
+
+## If it does not start
+
+```sh
+docker logs --tail 50 kometio
+```
+
+The launcher says what it was doing and why it stopped. Two things are common:
+
+- **A port is taken** (`address already in use`, from Docker, when you start it):
+  change the left side of each `-p` as in [Use other ports](#use-other-ports).
+- **It starts, stops and starts again** (`docker ps` shows it restarting, with
+  `--restart unless-stopped`): read the last lines of the log above, and do not
+  remove the volume. Everything is in it. Give the log to whoever helps you, and
+  use the file from `export` to start a new installation if you need one.
 
 ## Use other ports
 
@@ -121,6 +171,7 @@ editor loads and every call fails without saying why:
 
 ```sh
 docker run -d --name kometio --restart unless-stopped \
+  --stop-timeout 30 --log-opt max-size=10m --log-opt max-file=5 \
   -p 8200:80 -p 8000:3000 -p 8322:4322 \
   -e EDITOR_APP_URL=http://localhost:8200 \
   -e API_PUBLIC_URL=http://localhost:8000/api \
@@ -138,6 +189,7 @@ gets and renews by itself (Let's Encrypt, through Caddy, which is in the image):
 
 ```sh
 docker run -d --name kometio --restart unless-stopped \
+  --stop-timeout 30 --log-opt max-size=10m --log-opt max-file=5 \
   -p 80:80 -p 443:443 -p 443:443/udp \
   -e DOMAIN=example.com \
   -e ACME_EMAIL=you@example.com \
@@ -264,6 +316,7 @@ it is tried with.
 
 ```sh
 docker run -d --name kometio --restart unless-stopped \
+  --stop-timeout 30 --log-opt max-size=10m --log-opt max-file=5 \
   -p 4200:80 -p 3000:3000 -p 4322:4322 \
   -e POSTGRES_HOST=db.example.com \
   -e POSTGRES_USER=kometio -e POSTGRES_PASSWORD=the-owners-password \

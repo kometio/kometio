@@ -11,6 +11,7 @@ import { ApiEnvModule } from '../api-env.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
 import { moduleDeps } from '../module-deps';
 import { SessionCookies } from '../auth/session-cookies';
+import { RequestTimeoutPolicy } from './request-timeout.policy';
 import { SetupTokenRegistry } from './setup-token.registry';
 import { SetupController } from './setup.controller';
 import type { SetupDeps } from './setup.deps';
@@ -34,6 +35,7 @@ import { SETUP_DEPS } from './setup.tokens';
       siteImport: SITE_IMPORT,
     }),
     SetupTokenRegistry,
+    RequestTimeoutPolicy,
     SessionCookies,
   ],
 })
