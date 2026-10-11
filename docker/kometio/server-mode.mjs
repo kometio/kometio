@@ -75,3 +75,31 @@ export function resolveAddresses(env) {
     siteUrl: env.PUBLIC_SITE_URL ?? served?.siteUrl ?? 'http://localhost:4322',
   };
 }
+
+/**
+ * What the API is told about whoever stands in front of it, when nobody said.
+ *
+ * A server with a name has Caddy in front, one hop. So has an installation
+ * behind a proxy of one's own that ends the TLS, which shows as an address that
+ * is `https` while this container answers plain HTTP. In both the API is
+ * `production` (the login cookie is `Secure`, example secrets are refused) and
+ * trusts one hop, so that a visitor is who the proxy says it is. Without that,
+ * every visitor is the proxy: one person could use up the login's five tries a
+ * minute and lock everybody out, and the cookie would not be `Secure` on a page
+ * that is on HTTPS. A trial on this machine, plain HTTP in every address, is
+ * `development` with nobody in front, as it always was.
+ *
+ * Both are only defaults: `NODE_ENV` and `TRUSTED_PROXY_HOPS` set by hand win
+ * (two proxies in front is `TRUSTED_PROXY_HOPS=2`).
+ */
+export function proxyDefaults({ domain, editorUrl, siteUrl, apiPublicUrl }) {
+  const behindTls =
+    domain !== null ||
+    [editorUrl, siteUrl, apiPublicUrl].some((address) =>
+      /^https:\/\//i.test(address),
+    );
+  return {
+    nodeEnv: behindTls ? 'production' : 'development',
+    trustedProxyHops: behindTls ? '1' : undefined,
+  };
+}

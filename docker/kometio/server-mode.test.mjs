@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   parseDomain,
+  proxyDefaults,
   resolveAddresses,
   serverAddresses,
 } from './server-mode.mjs';
@@ -91,5 +92,58 @@ describe('resolveAddresses', () => {
       () => resolveAddresses({ DOMAIN: 'https://example.com' }),
       /like example\.com/,
     );
+  });
+});
+
+describe('proxyDefaults', () => {
+  const at = (
+    editorUrl,
+    siteUrl = 'http://localhost:4322',
+    apiPublicUrl = 'http://localhost:3000/api',
+  ) => ({
+    editorUrl,
+    siteUrl,
+    apiPublicUrl,
+  });
+
+  it('is a trial on this machine when every address is plain HTTP: development, and nobody in front', () => {
+    assert.deepEqual(
+      proxyDefaults({ domain: null, ...at('http://localhost:4200') }),
+      {
+        nodeEnv: 'development',
+        trustedProxyHops: undefined,
+      },
+    );
+  });
+
+  it('is a server with a name: production, one proxy (Caddy) in front', () => {
+    assert.deepEqual(
+      proxyDefaults({
+        domain: 'example.com',
+        ...at('https://admin.example.com'),
+      }),
+      { nodeEnv: 'production', trustedProxyHops: '1' },
+    );
+  });
+
+  // Behind a proxy of one's own, which ends the TLS: the browser is on https
+  // and this container is on plain HTTP. Left as a trial, the login cookie is
+  // not `Secure` and every visitor is the proxy, so one person can lock the
+  // administrator out of the login for everybody.
+  it('is production with one proxy in front when the addresses are https and there is no name', () => {
+    for (const addresses of [
+      at('https://admin.example.com'),
+      at('http://localhost:4200', 'https://example.com'),
+      at(
+        'http://localhost:4200',
+        'http://localhost:4322',
+        'https://api.example.com/api',
+      ),
+    ]) {
+      assert.deepEqual(proxyDefaults({ domain: null, ...addresses }), {
+        nodeEnv: 'production',
+        trustedProxyHops: '1',
+      });
+    }
   });
 });

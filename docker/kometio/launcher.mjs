@@ -55,7 +55,7 @@ import {
   once,
   waitFor as waitForProcess,
 } from './processes.mjs';
-import { resolveAddresses } from './server-mode.mjs';
+import { proxyDefaults, resolveAddresses } from './server-mode.mjs';
 import { IMPORT_RESULT_FILE, createSiteImport } from './site-import.mjs';
 
 const env = process.env;
@@ -95,7 +95,11 @@ const EDITOR_PORT = domain ? 8080 : 80;
 
 // A server is production: cookies are `Secure`, and the API refuses the example
 // secrets and the test captcha keys, which is what it is for. A trial is not.
-const NODE_ENV = env.NODE_ENV ?? (domain ? 'production' : 'development');
+// An installation behind a proxy of its own that ends the TLS is a server too,
+// whatever it was started with: what shows it is an address that is https, and
+// it has one proxy in front (docs/adr/0110).
+const PROXY = proxyDefaults(addresses);
+const NODE_ENV = env.NODE_ENV ?? PROXY.nodeEnv;
 
 /** @type {Array<{ name: string, child: import('node:child_process').ChildProcess, stop: NodeJS.Signals, expectedToStop: boolean }>} */
 const running = [];
@@ -297,7 +301,9 @@ function apiEnvironment(s) {
     // Caddy is one hop in front of the API on a server, and every limit per
     // visitor (five logins a minute, the forms) keys on who the visitor is: with
     // none, every visitor would be Caddy, and one could lock everybody out.
-    ...(domain ? { TRUSTED_PROXY_HOPS: '1' } : {}),
+    ...(PROXY.trustedProxyHops
+      ? { TRUSTED_PROXY_HOPS: PROXY.trustedProxyHops }
+      : {}),
     PREVIEW_TOKEN_SECRET: s.previewTokenSecret,
     PUBLIC_API_SERVICE_TOKEN: s.publicApiServiceToken,
     EDITOR_APP_URL: EDITOR_URL,

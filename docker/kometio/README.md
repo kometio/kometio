@@ -29,6 +29,12 @@ docker run -d --name kometio --restart unless-stopped \
 The first run downloads the image (about 200 MB). After that it is ready about
 ten seconds after you press Enter.
 
+This is a trial, for the machine it runs on: the three ports are published on
+every address of the machine, and the server runs as `development`, with the
+example secrets it generates for itself. On a machine that other people can
+reach, publish them on `127.0.0.1` only (`-p 127.0.0.1:4200:80` and so on), or
+make it a server with a name, [below](#on-a-server-with-your-own-domain).
+
 `0.1.0-beta.1` is the first beta, the one this page was tried on. Every version
 has its own tag, listed [with the other tags](https://github.com/kometio/kometio/tags),
 and a version's image is made once, when it is released. `:main` is different: it
@@ -161,7 +167,12 @@ setup token from `docker logs kometio`, open the editor, create your account.
 - A server runs as `production`: the login cookie is `Secure`, and the container
   refuses to start on example secrets or on Cloudflare's test captcha keys. Behind
   a proxy of your own instead, leave `DOMAIN` out and set the three addresses as
-  in [Use other ports](#use-other-ports).
+  in [Use other ports](#use-other-ports), with `https://` in them: an address that
+  is `https` makes it run as `production` too, and trust **one** proxy in front,
+  so that each visitor is who your proxy says they are (otherwise every visitor
+  is your proxy, and one person can use up the login's five tries a minute for
+  everybody). Your proxy has to send `X-Forwarded-For`; with two in front (a CDN,
+  then yours) set `-e TRUSTED_PROXY_HOPS=2`.
 - If a browser warns about the certificate, the name's DNS does not point at this
   machine yet. `docker logs kometio` shows Caddy's attempts, and it keeps trying.
 
