@@ -44,8 +44,8 @@ export interface CreateSiteLayoutSectionProps {
 }
 
 /**
- * A pure entity, with no dependency on Postgres, Express or Puck. Unlike
- * Page it has no `groupId`/`slug`/`seoMeta`: the header and footer have no
+ * A pure entity, with no dependency on Postgres, Express or an editor
+ * library. Unlike Page it has no `groupId`/`slug`/`seoMeta`: the header and footer have no
  * public URL of their own, living at the level of (tenant, site, locale,
  * kind) rather than as visitable pages (docs/adr/0018).
  */

@@ -6,22 +6,19 @@ import {
 } from './site-theme-tokens';
 
 /**
- * The generic format of a content block (the Puck editor's output, phase
- * 2). Each concrete block type (Hero, Text, ...) will define its own schema
- * for `props` — this stays the shared structural shape until then.
+ * The generic format of a content block. Each concrete block type (Hero,
+ * Text, ...) defines its own schema for `props`; this is the structural
+ * shape they share.
  *
- * `children` is our own nesting scheme, independent of Puck's native format
- * (root/content/zones) — see docs/adr/0007. The mapping layer in editor-app
- * converts Puck's drop zones to and from `children`, so we stay able to
- * support "container" blocks without coupling the domain and the DB to a
- * third-party library's internal format.
+ * `children` is our own nesting scheme, independent of any editor
+ * library's native format — see docs/adr/0007. Containers are ours to
+ * define, and the domain and the database are not coupled to a third
+ * party's internal format.
  *
- * `id` is deliberately optional here, in a transitional window: the one-off
- * backfill (see @kometio/shared-types' backfill-block-ids.ts) assigns a
- * stable id to every existing block before any new editor requires one. It
- * becomes mandatory only in the deploy *after* the backfill — never before,
- * or a save from the still-live Puck editor (which does not write ids)
- * would fail validation halfway through the rollout.
+ * `id` is optional in the type because content can arrive without one;
+ * `backfillBlockIds` (backfill-block-ids.ts) assigns a stable id to every
+ * block that lacks one, never changing one that has it. Selection, dragging
+ * and fragment patching use it as the block's identity.
  */
 /**
  * The three widths a root-level block can claim (ADR-0049).
@@ -379,7 +376,7 @@ export type Visibility = z.infer<typeof visibilitySchema>;
  * 2026-08-19): defaults to `'always'` because that was its behavior
  * before this field existed (a horizontal row that just wraps on narrow
  * screens) — existing content keeps rendering identically. Its content
- * lives entirely in `Block.children` via a Puck slot field.
+ * lives entirely in `Block.children`.
  *
  * There is no Header/Footer block anymore (docs/adr/0018 follow-up,
  * 2026-08-19): a site_layout_section's `content` for kind='header'/'footer'
@@ -753,9 +750,9 @@ export const quotePropsSchema = z.object({
 export type QuoteProps = z.infer<typeof quotePropsSchema>;
 
 /**
- * `rating` is a plain 1-5 number, not a wrapper object — the Puck `number`
- * field enforces the range in the editor UI (min/max/step in
- * rating.block.tsx), so the schema only needs to describe the shape.
+ * `rating` is a plain 1-5 number, not a wrapper object — the editor's
+ * number field enforces the range (min/max/step in rating.block.ts), so
+ * the schema only needs to describe the shape.
  */
 export const ratingPropsSchema = z.object({
   rating: z.number().min(1).max(5),
@@ -777,7 +774,7 @@ export const STAR_ICON_PATH =
 /**
  * `targetDate` is a free-form string (an ISO-ish datetime, e.g.
  * "2026-12-31T23:59"), not a branded/refined type — same trade-off as
- * NavLink's `url`: Puck has no native date-picker field, so this is a
+ * NavLink's `url`: the editor has no date-picker field kind, so this is a
  * plain text field in the editor and the public-site countdown
  * (Countdown.astro) parses it with `new Date(...)` at render time.
  */
@@ -794,9 +791,7 @@ export type CountdownProps = z.infer<typeof countdownPropsSchema>;
  * through sanitize-html with a permissive policy (script/iframe kept,
  * since that's the whole point of a free-embed block — YouTube/Calendly/
  * chat widgets are all script- or iframe-based — but any `on*` inline
- * event-handler attribute is stripped). The Puck editor canvas
- * (embed-html.block.tsx) never executes this HTML at all, even
- * sanitized — it only shows the raw code as escaped preview text.
+ * event-handler attribute is stripped).
  */
 export const embedHtmlPropsSchema = z.object({
   html: z.string(),
@@ -1297,8 +1292,8 @@ export type TeamProps = z.infer<typeof teamPropsSchema>;
  * `backgroundColor`, and a plain number can't represent "Gratis" or "Su
  * richiesta" anyway. `features` is a plain string list, one line per
  * feature — edited via FeatureListField (a textarea split on `\n`), the
- * same problem table-data-field.tsx solved for a 2D matrix, since Puck has
- * no native list-of-strings field. Reuses NavLink/Banner's
+ * same problem table-data-field.tsx solved for a 2D matrix, since the
+ * editor has no list-of-strings field kind. Reuses NavLink/Banner's
  * `linkType`/`page`/`url` shape for the CTA button's destination.
  */
 export const pricingPlanPropsSchema = z.object({

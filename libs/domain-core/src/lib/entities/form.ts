@@ -41,8 +41,8 @@ function uniqueAddresses(addresses: string[]): string[] {
 }
 
 /**
- * A pure entity: no dependency on Postgres, Express or Puck (see
- * docs/adr/0015). `fields` is the single source of truth both for how the
+ * A pure entity: no dependency on Postgres, Express or an editor library
+ * (see docs/adr/0015). `fields` is the single source of truth both for how the
  * module renders publicly and for how a submission is validated — there is
  * no separate format for the editor, the rendering and the validation.
  */

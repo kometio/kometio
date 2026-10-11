@@ -2,11 +2,9 @@ import type { BlockDescriptor } from '../field-types';
 import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
 import { BlockStyleRegistry } from '../block-style-registry';
 
-// `label` is not part of `TabProps` in the domain (content-model.ts) —
-// actually it is: TabProps = { label: string }. No extra Puck-only type
-// is needed here, unlike Nav/Column/etc: Tab has no `children` prop
-// separate from the real Block.children, so no extra interface like
-// Puck's *PuckProps is needed.
+// `label` is the whole of `TabProps` in the domain (content-model.ts):
+// TabProps = { label: string }. Tab has no `children` prop separate from
+// the real Block.children, so it needs no type of its own here.
 export const tabBlock: BlockDescriptor<{ label: string }> = {
   type: 'Tab',
   label: 'blocks.tab.label',

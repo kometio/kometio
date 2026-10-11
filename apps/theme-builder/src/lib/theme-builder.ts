@@ -4,7 +4,6 @@ import {
   mkdir,
   readFile,
   readdir,
-  rename,
   rm,
   symlink,
   writeFile,
@@ -21,6 +20,7 @@ import {
   themeDataPaths,
   type PublishedBuild,
 } from '@kometio/theme-archive';
+import { writeAtomically } from './atomic-write';
 
 /*
  * Turns an uploaded theme into a site the public site can run
@@ -285,14 +285,6 @@ async function replaceDirectory(source: string, target: string) {
   await rm(target, { recursive: true, force: true });
   await mkdir(dirname(target), { recursive: true });
   await cp(source, target, { recursive: true });
-}
-
-/** Written beside and renamed over: a reader sees the old file or the new one, never half of one. */
-async function writeAtomically(path: string, content: string) {
-  await mkdir(dirname(path), { recursive: true });
-  const temporary = `${path}.${process.pid}.tmp`;
-  await writeFile(temporary, content);
-  await rename(temporary, path);
 }
 
 /**

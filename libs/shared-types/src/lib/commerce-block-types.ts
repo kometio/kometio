@@ -50,8 +50,3 @@ export const COMMERCE_BLOCK_TYPES: readonly string[] = [
   'PromoCode',
   'ShippingReturns',
 ];
-
-/** Whether the free core hides this type from the picker — see `COMMERCE_BLOCK_TYPES`. */
-export function isCommerceBlockType(type: string): boolean {
-  return COMMERCE_BLOCK_TYPES.includes(type);
-}
