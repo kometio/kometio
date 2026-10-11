@@ -86,7 +86,7 @@ Rules:
   0.8 rem is the one that belongs to the system.
 - **Weights:** 400 for text, `font-medium` (500) for labels, buttons and
   navigation, `font-semibold` (600) for titles and group headings. Bold
-  (700) only on the logo mark.
+  (700) is not used: its one place was the logo mark, which is a picture.
 - **Numbers that line up** (sizes, counts, dates in lists) use
   `tabular-nums`.
 - **Case:** sentence case everywhere, in both languages. Uppercase for two
@@ -449,7 +449,11 @@ text-destructive`, announced with `role="alert"`, nothing drawn when
 - **The admin shell:** a 208 px sidebar (`w-52`, `bg-sidebar`) on the
   left from `md` up; below it, a 48 px top bar with the mark, the name of
   the screen, a written Search button and the menu. Content scrolls on its
-  own; the shell is `h-dvh`. The sidebar holds only the daily work, top
+  own; the shell is `h-dvh`. **The mark** (`shell/kometio-mark.tsx`) is the
+  pixel comet, the same file as the tab icon (`public/favicon.svg`), with
+  the word beside it: drawn 20 px square (its grid is 20 cells wide, so a
+  multiple of 20 keeps every pixel the same size) in a 24 px box, with no
+  coloured tile behind it. The sidebar holds only the daily work, top
   to bottom: the mark; the **site block** (its name, its domain or "Domain
   to be set", and a link to open it); the **search field** (a
   `SearchTrigger`, mod+K); the dashboard; **Content** (pages and the

@@ -33,8 +33,8 @@ export function AdminShell({ children }: AdminShellProps) {
         window, holding the single word "Kometio" at 14px — thirty-seven
         pixels of every screen spent on it, and the canvas editor already
         did without it. It sits at the top of the sidebar instead, where a
-        product's name goes, and the "K" wears the accent so the app has a
-        mark rather than a word.
+        product's name goes, with the comet beside it so the app has a mark
+        rather than a word.
 
         From `md` up only. Below that the sidebar was a fixed 208px column
         that took more than half of a 390px phone on every screen of the
