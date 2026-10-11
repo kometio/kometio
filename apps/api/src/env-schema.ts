@@ -37,6 +37,11 @@ const apiEnvBaseSchema = z.object({
   POSTGRES_HOST: z.string().min(1).default('localhost'),
   POSTGRES_PORT: z.coerce.number().int().positive().default(5432),
   POSTGRES_DB: z.string().min(1).default('kometio'),
+  // How many connections the pool keeps. Refused when it is not a positive
+  // integer: it used to fall back to ten without a word.
+  POSTGRES_POOL_MAX: emptyIsUnset(
+    z.coerce.number().int().positive().default(10),
+  ),
   // Optional since the first-run wizard: a self-hosted deployment that has
   // never been set up has no tenant to name here, and DeploymentTenantResolver
   // falls back to the single row in `tenants`. Still honoured when present —

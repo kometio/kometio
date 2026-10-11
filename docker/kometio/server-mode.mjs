@@ -75,3 +75,58 @@ export function resolveAddresses(env) {
     siteUrl: env.PUBLIC_SITE_URL ?? served?.siteUrl ?? 'http://localhost:4322',
   };
 }
+
+/** Whether an address says that the TLS is ended somewhere in front of this container. */
+const isHttps = (address) => /^https:\/\//i.test(address);
+
+/**
+ * What the API is told about whoever stands in front of it, when nobody said.
+ *
+ * A server with a name has Caddy in front, inside this container, which is the
+ * only way in: the API is `production` (the login cookie is `Secure`, example
+ * secrets are refused) and trusts one hop, so that a visitor is who Caddy says.
+ *
+ * An installation behind a proxy of one's own that ends the TLS shows as an
+ * address that is `https` while this container answers plain HTTP. It is
+ * `production` too: a cookie that is not `Secure` on a page on HTTPS is wrong
+ * whoever is in front. But the hop is **not** trusted for it. Trusting the
+ * proxy's `X-Forwarded-For` is right only when nobody can reach the three ports
+ * but that proxy, and the ports are published on every address by default: from
+ * outside, this cannot tell. Where the proxy is not the only way in, whoever
+ * connects directly writes the header, and every try at the login counts as
+ * another visitor. So it is the owner's to say, with `TRUSTED_PROXY_HOPS`
+ * (`proxyAdvice` says so in the log).
+ *
+ * A trial on this machine, plain HTTP in every address, is `development` with
+ * nobody in front, as it always was. `NODE_ENV` set by hand wins.
+ */
+export function proxyDefaults({ domain, editorUrl, siteUrl, apiPublicUrl }) {
+  const behindTls =
+    domain !== null || [editorUrl, siteUrl, apiPublicUrl].some(isHttps);
+  return {
+    nodeEnv: behindTls ? 'production' : 'development',
+    trustedProxyHops: domain !== null ? '1' : undefined,
+  };
+}
+
+/**
+ * What to say in the log when the addresses are https, with no name, and nobody
+ * said how many proxies there are: every visitor is then the proxy, and one
+ * person can use up the login's five tries a minute for everybody. Null when
+ * there is nothing to say.
+ */
+export function proxyAdvice({
+  domain,
+  editorUrl,
+  siteUrl,
+  apiPublicUrl,
+  trustedProxyHops,
+}) {
+  const behindTls =
+    domain === null &&
+    [editorUrl, siteUrl, apiPublicUrl].some(isHttps) &&
+    !trustedProxyHops?.trim();
+  return behindTls
+    ? 'the addresses are https and TRUSTED_PROXY_HOPS is not set: every visitor looks like your proxy, and the login allows five tries a minute for all of them together. If your proxy is the only way to reach the three ports, set -e TRUSTED_PROXY_HOPS=1 (2 with a CDN in front of it); if they can be reached directly, leave it unset, since anyone could then write the header themselves'
+    : null;
+}
