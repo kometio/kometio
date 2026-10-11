@@ -50,9 +50,29 @@ export function refusedImageSource(
     : new Response('Forbidden', { status: 403 });
 }
 
-/** A scheme, or `//host`: anything the browser would not read as a path here. */
+/**
+ * A scheme, or `//host`: anything the browser would not read as a path here.
+ *
+ * Read the way the code that fetches reads it, and not by a pattern of ours
+ * over the raw text: the URL parser drops tabs and newlines wherever they are,
+ * and whitespace and control characters before the address, so `ht\ttps://…`
+ * and ` https://…` are remote addresses to it, and "a path" to `^scheme:`.
+ * That difference let a request reach whatever the server could reach.
+ */
 function isRemote(href: string): boolean {
-  return /^[a-z][a-z0-9+.-]*:/i.test(href) || /^[\\/]{2}/.test(href);
+  const seen = withoutLeadingControls(href.replace(/[\t\n\r]/g, ''));
+  return (
+    URL.canParse(seen) ||
+    /^[a-z][a-z0-9+.-]*:/i.test(seen) ||
+    /^[\\/]{2}/.test(seen)
+  );
+}
+
+/** What the URL parser drops from the start: spaces and control characters (U+0000 to U+0020). */
+function withoutLeadingControls(text: string): string {
+  let start = 0;
+  while (start < text.length && text.charCodeAt(start) <= 0x20) start += 1;
+  return text.slice(start);
 }
 
 function withoutTrailingSlash(url: string): string {
