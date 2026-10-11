@@ -12,14 +12,13 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
-  statSync,
-  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import { DATABASE_USER, SOCKET_DIR } from './embedded-postgres.mjs';
 import { ensureDir, ids, minimalEnv, once } from './processes.mjs';
+import { linkTree } from './uploads-tree.mjs';
 import {
   TRANSIENT_TABLES,
   appliedMigrationTags,
@@ -72,21 +71,6 @@ function psql(database, args, input) {
 const queryJson = (database, sql) =>
   JSON.parse(psql(database, ['-At', '-c', sql]).trim() || 'null');
 
-function filesIn(directory) {
-  if (!existsSync(directory)) return { files: 0, bytes: 0 };
-  let files = 0;
-  let bytes = 0;
-  for (const entry of readdirSync(directory, {
-    recursive: true,
-    withFileTypes: true,
-  })) {
-    if (!entry.isFile()) continue;
-    files += 1;
-    bytes += statSync(`${entry.parentPath}/${entry.name}`).size;
-  }
-  return { files, bytes };
-}
-
 const mebibytes = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 /** Waits for a child to end; false when it ended badly, with what it said. */
@@ -126,9 +110,9 @@ async function dumpDatabaseTo(file) {
   if (!dumped.ok) throw new Error(`pg_dump failed: ${dumped.said}`);
 }
 
-/** The folder `stage`, as a .tar.gz, to `out` (a writable stream that the caller ends). Links are followed: that is how the uploads are read where they are. */
+/** The folder `stage`, as a .tar.gz, to `out` (a writable stream that the caller ends). Links are not followed: there is none in `stage` that is not the archive's own, and one that is not is not to be read (docs/adr/0109). */
 async function tarTo(stage, out) {
-  const tar = spawn('tar', ['czhf', '-', '-C', stage, '.'], {
+  const tar = spawn('tar', ['czf', '-', '-C', stage, '.'], {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   const archived = ended(tar);
@@ -175,7 +159,6 @@ export async function prepareExport({ dataDir, say }) {
   );
   const migrations = appliedMigrationTags(readJournal(), appliedWhen);
   const uploadsDir = `${dataDir}/uploads`;
-  const uploads = filesIn(uploadsDir);
 
   let stage = null;
   let written = false;
@@ -192,13 +175,32 @@ export async function prepareExport({ dataDir, say }) {
     );
     await dumpDatabaseTo(`${stage}/database.sql.gz`);
 
+    // The uploads are not copied and not followed: `stage/uploads` is a folder of
+    // hard links to the regular files of the uploads folder, looked at once. The
+    // API's user owns that folder and could leave a link in it to any file of the
+    // machine, which root, making the archive, would read and publish
+    // (docs/adr/0109).
+    ensureDir(uploadsDir, 'kometio', 0o755);
+    const uploads = linkTree(uploadsDir, `${stage}/uploads`);
+    if (uploads.skipped.length > 0) {
+      say(
+        `${uploads.skipped.length} entries of the uploads folder are not files (${uploads.skipped.slice(0, 3).join(', ')}${uploads.skipped.length > 3 ? ', …' : ''}) and are not in the archive`,
+      );
+    }
+
     writeFileSync(
       `${stage}/manifest.json`,
-      `${JSON.stringify(buildManifest({ createdAt, site, migrations, uploads }), null, 2)}\n`,
+      `${JSON.stringify(
+        buildManifest({
+          createdAt,
+          site,
+          migrations,
+          uploads: { files: uploads.files, bytes: uploads.bytes },
+        }),
+        null,
+        2,
+      )}\n`,
     );
-    // The uploads are not copied: tar follows this link (`-h`) and reads them where they are.
-    ensureDir(uploadsDir, 'kometio', 0o755);
-    symlinkSync(uploadsDir, `${stage}/uploads`);
 
     say(
       `writing the archive: ${uploads.files} uploaded files (${mebibytes(uploads.bytes)})`,

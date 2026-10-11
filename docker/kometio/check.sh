@@ -169,6 +169,8 @@ check "an archive is trusted as documented: its manifest, its migrations, what i
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive.test.mjs"
 check "the launcher's control socket answers as documented: one archive at a time, a refusal before it starts, a cut when it fails on its way" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/control-server.test.mjs"
+check "the copy of the uploads an archive is made from holds files and nothing that links elsewhere" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/uploads-tree.test.mjs"
 
 # --- the first run, in a browser ------------------------------------------------
 #
@@ -401,6 +403,15 @@ check "when the reader leaves, the next export is made" \
 check "and nothing of the unfinished one is left on the volume" \
   sh -c "test \"\$(docker exec '$NAME' sh -c 'ls /data/state | grep -c ^export- || true')\" = 0"
 docker exec "$NAME" rm -f /data/uploads/ballast.bin
+# The API's user owns the uploads folder, so it can leave a link in it to a file
+# that only root reads; root, making the archive, must not follow it (docs/adr/0109).
+docker exec -u kometio "$NAME" ln -s /data/state/secrets.json /data/uploads/leak-link
+docker exec "$NAME" node /opt/kometio/cli.mjs export >"${WORK}/with-a-link.tar.gz" 2>/dev/null
+check "an export made with a link in the uploads folder succeeds" \
+  tar tzf "${WORK}/with-a-link.tar.gz"
+check "and the link, and what it pointed at, are not in the archive" \
+  sh -c "! tar tzf '${WORK}/with-a-link.tar.gz' | grep -q leak-link"
+docker exec "$NAME" rm -f /data/uploads/leak-link
 # The socket is the launcher's door, and only the API's user can open it: the user
 # a theme's code runs as cannot even reach the folder it is in.
 check "the API's own user can open the control socket (the control of the next check)" \
