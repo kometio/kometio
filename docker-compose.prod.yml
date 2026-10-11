@@ -148,6 +148,7 @@ services:
       EDITOR_APP_URL: ${EDITOR_APP_URL:-https://admin.${DOMAIN:?Set DOMAIN in .env}}
       TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       PUBLIC_API_SERVICE_TOKEN: ${PUBLIC_API_SERVICE_TOKEN:-}
+      POSTGRES_POOL_MAX: ${POSTGRES_POOL_MAX:-}
       KOMETIO_THEME: ${KOMETIO_THEME:-}
       # Where this site's media is served from, as the API builds its URLs:
       # the only images the site resizes on the server (/_image refuses

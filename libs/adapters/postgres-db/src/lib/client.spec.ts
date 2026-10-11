@@ -41,6 +41,23 @@ describe('createDb', () => {
     expect(db.$client.options.max).toBe(25);
   });
 
+  it('uses the pool size it is given, whatever the environment says', () => {
+    process.env['POSTGRES_POOL_MAX'] = '25';
+
+    expect(
+      createDb('postgres://user:pass@localhost:5432/db', 3).$client.options.max,
+    ).toBe(3);
+    expect(
+      createAppDb({
+        host: 'localhost',
+        port: 5432,
+        database: 'db',
+        password: 'pw',
+        poolMax: 4,
+      }).$client.options.max,
+    ).toBe(4);
+  });
+
   it('falls back to 10 for a non-numeric or non-positive POSTGRES_POOL_MAX', () => {
     process.env['POSTGRES_POOL_MAX'] = 'not-a-number';
     expect(
