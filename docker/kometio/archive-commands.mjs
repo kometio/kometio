@@ -17,7 +17,7 @@ import {
 } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
-import { SOCKET_DIR } from './embedded-postgres.mjs';
+import { DATABASE_USER, SOCKET_DIR } from './embedded-postgres.mjs';
 import { ensureDir, minimalEnv, once } from './processes.mjs';
 import {
   TRANSIENT_TABLES,
@@ -422,7 +422,8 @@ async function restoreInto({
       : 'the database is at this version',
   );
   once('migrate', 'node', ['/opt/kometio/migrate.mjs'], {
-    user: 'kometio',
+    // Over the socket, which only root and the database's own user may open.
+    user: DATABASE_USER,
     childEnv: {
       ...minimalEnv,
       POSTGRES_HOST: SOCKET_DIR,

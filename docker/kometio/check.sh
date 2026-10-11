@@ -404,6 +404,18 @@ check "the API's own user can open the control socket (the control of the next c
   docker exec -u kometio "$NAME" node -e "require('net').connect('/run/kometio/control.sock').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"
 check "the user a theme's code runs as cannot open it" \
   sh -c "! docker exec -u kometio-site '$NAME' node -e \"require('net').connect('/run/kometio/control.sock').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\""
+# The database's own socket trusts whoever opens it (there is no password to ask
+# on a Unix socket in this cluster), so who may open it is what stands between a
+# theme's code and the database's superuser, and the API and the site have the
+# application role's password for TCP and need nothing more (docs/adr/0107).
+check "root, which the launcher is, can open the database's socket (the control of the next checks)" \
+  docker exec "$NAME" psql -h /run/postgresql -U postgres -d postgres -Atc 'select 1'
+check "the user a theme's code runs as cannot: the socket is refused to it" \
+  sh -c "docker exec -u kometio-site '$NAME' psql -h /run/postgresql -U kometio -d postgres -Atc 'select 1' 2>&1 | grep -qi 'permission denied'"
+check "nor can the API's own user, whose database role is the application's and subject to row level security" \
+  sh -c "docker exec -u kometio '$NAME' psql -h /run/postgresql -U kometio -d postgres -Atc 'select 1' 2>&1 | grep -qi 'permission denied'"
+check "and the administrator's role has no way in over TCP without a password" \
+  sh -c "! docker exec -u kometio-site '$NAME' psql -h 127.0.0.1 -U kometio -d postgres -w -Atc 'select 1'"
 check "a file that is not an archive is refused, and nothing is started for it" \
   sh -c "! echo 'not an archive' | docker run --rm -i -v '${MOVED_VOLUME}:/data' '$IMAGE' import 2>/dev/null"
 # The one thing that must never happen: a second container starting Postgres on

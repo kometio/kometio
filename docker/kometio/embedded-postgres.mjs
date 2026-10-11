@@ -8,9 +8,27 @@ import { ensureDir, once, waitFor } from './processes.mjs';
 
 export const SOCKET_DIR = '/run/postgresql';
 
+/**
+ * The operating-system user the database runs as, and the only one besides root
+ * (which the launcher is) that may open its socket. A process that has to reach
+ * the database as its administrator over the socket runs as this user.
+ */
+export const DATABASE_USER = 'postgres';
+
 export const pgData = (dataDir) => `${dataDir}/postgres`;
 
-/** What the server is started with: only this container can reach it, by TCP on loopback and by the socket. */
+/**
+ * What the server is started with: only this container can reach it, by TCP on
+ * loopback and by the socket.
+ *
+ * The socket is opened to its owner (`postgres`) and to root, and to nobody else
+ * (docs/adr/0107). It trusts whoever opens it, and what it trusts them to be is
+ * the administrator of the database, so letting the API's user or the site's
+ * (the code of a theme runs as the second) open it would be giving them the
+ * administrator: the API reaches the database over TCP as its own role, with
+ * that role's password, and the site does not reach it at all. Set when the
+ * server starts, so it holds for a volume that was made before it was.
+ */
 export const postgresArguments = (dataDir) => [
   '-D',
   pgData(dataDir),
@@ -18,6 +36,8 @@ export const postgresArguments = (dataDir) => [
   'listen_addresses=127.0.0.1',
   '-c',
   `unix_socket_directories=${SOCKET_DIR}`,
+  '-c',
+  'unix_socket_permissions=0700',
 ];
 
 /**
@@ -39,8 +59,9 @@ export function prepareCluster(dataDir, log) {
 
   if (!existsSync(`${pgData(dataDir)}/PG_VERSION`)) {
     log('creating the database (first start)');
-    // `local` trusts the socket (reachable only from inside this container);
-    // TCP, which the API uses, wants the application role's password.
+    // `local` trusts the socket, which is why `postgresArguments` closes it to
+    // everyone but root and `postgres`; TCP, which the API uses, wants the
+    // application role's password.
     once(
       'initdb',
       'initdb',

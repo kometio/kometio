@@ -39,6 +39,7 @@ import {
 } from './archive-commands.mjs';
 import { CONTROL_SOCKET, startControlServer } from './control-server.mjs';
 import {
+  DATABASE_USER,
   SOCKET_DIR,
   createRoles,
   postgresArguments,
@@ -226,7 +227,10 @@ function startEmbeddedDatabase(appPassword) {
 
 function migrate(adminEnv) {
   once('migrate', 'node', ['/opt/kometio/migrate.mjs'], {
-    user: 'kometio',
+    // The embedded database's socket is closed to the API's user (docs/adr/0107):
+    // the migrator, which is its administrator, runs as the database's own.
+    // With a database elsewhere it goes over the network, as it always has.
+    user: OWN_DATABASE ? DATABASE_USER : 'kometio',
     childEnv: { ...minimalEnv, ...adminEnv },
   });
 }
