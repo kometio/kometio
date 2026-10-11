@@ -9,14 +9,26 @@ import * as schema from './schema';
 // un-tunable without a code change. Irrelevant at today's scale, but a
 // fixed number will eventually need adjusting for real multi-tenant load
 // without a redeploy — an env var gets there without a schema change.
-function poolMax(): number {
+export const DEFAULT_POOL_MAX = 10;
+
+/**
+ * The pool size the environment asks for, for a process that reads its own
+ * (a script, a spec). The API does not come here: it validates
+ * `POSTGRES_POOL_MAX` with the rest of its environment (`ApiEnv`), which refuses
+ * a value that is not a positive integer instead of using ten without saying
+ * so, and passes the number it got.
+ */
+export function poolMaxFromEnv(): number {
   const raw = process.env['POSTGRES_POOL_MAX'];
   const parsed = raw ? Number(raw) : NaN;
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : 10;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_POOL_MAX;
 }
 
-export function createDb(connectionString: string) {
-  const client = postgres(connectionString, { max: poolMax() });
+export function createDb(
+  connectionString: string,
+  poolMax: number = poolMaxFromEnv(),
+) {
+  const client = postgres(connectionString, { max: poolMax });
   return drizzle(client, { schema });
 }
 
@@ -51,6 +63,8 @@ export interface AppDbSettings {
   port: number;
   database: string;
   password: string;
+  /** How many connections the pool keeps; the environment's `POSTGRES_POOL_MAX`, or ten, when it is not given. */
+  poolMax?: number;
 }
 
 /**
@@ -61,9 +75,10 @@ export interface AppDbSettings {
 export function createAppDb(
   settings: AppDbSettings = appDbSettingsFromEnv(),
 ): KometioDb {
-  const { host, port, database, password } = settings;
+  const { host, port, database, password, poolMax } = settings;
   return createDb(
     `postgres://kometio_app:${password}@${host}:${port}/${database}`,
+    poolMax,
   );
 }
 
