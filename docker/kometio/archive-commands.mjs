@@ -5,6 +5,8 @@
 // writing an archive there (everything it has to say goes to stderr).
 import { spawn, spawnSync } from 'node:child_process';
 import {
+  chmodSync,
+  chownSync,
   createWriteStream,
   existsSync,
   lstatSync,
@@ -12,13 +14,14 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import { DATABASE_USER, SOCKET_DIR } from './embedded-postgres.mjs';
 import { ensureDir, ids, minimalEnv, once } from './processes.mjs';
-import { linkTree } from './uploads-tree.mjs';
 import {
   TRANSIENT_TABLES,
   appliedMigrationTags,
@@ -71,6 +74,21 @@ function psql(database, args, input) {
 const queryJson = (database, sql) =>
   JSON.parse(psql(database, ['-At', '-c', sql]).trim() || 'null');
 
+function filesIn(directory) {
+  if (!existsSync(directory)) return { files: 0, bytes: 0 };
+  let files = 0;
+  let bytes = 0;
+  for (const entry of readdirSync(directory, {
+    recursive: true,
+    withFileTypes: true,
+  })) {
+    if (!entry.isFile()) continue;
+    files += 1;
+    bytes += statSync(`${entry.parentPath}/${entry.name}`).size;
+  }
+  return { files, bytes };
+}
+
 const mebibytes = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 /** Waits for a child to end; false when it ended badly, with what it said. */
@@ -110,10 +128,18 @@ async function dumpDatabaseTo(file) {
   if (!dumped.ok) throw new Error(`pg_dump failed: ${dumped.said}`);
 }
 
-/** The folder `stage`, as a .tar.gz, to `out` (a writable stream that the caller ends). Links are not followed: there is none in `stage` that is not the archive's own, and one that is not is not to be read (docs/adr/0109). */
+/** The folder `stage`, as a .tar.gz, to `out` (a writable stream that the caller ends). Links are followed: that is how the uploads are read where they are. */
 async function tarTo(stage, out) {
-  const tar = spawn('tar', ['czf', '-', '-C', stage, '.'], {
+  // Run as the API's user: the uploads folder is its own, and a link in it can
+  // point at any file of the machine, which tar follows (`-h`). Read as root it
+  // would write into the archive a file that only root can read; read as this
+  // user it can read what this user could read anyway, and a link to anything
+  // else is a refusal (docs/adr/0109).
+  const { uid, gid } = ids('kometio');
+  const tar = spawn('tar', ['czhf', '-', '-C', stage, '.'], {
     stdio: ['ignore', 'pipe', 'pipe'],
+    uid,
+    gid,
   });
   const archived = ended(tar);
   try {
@@ -159,6 +185,7 @@ export async function prepareExport({ dataDir, say }) {
   );
   const migrations = appliedMigrationTags(readJournal(), appliedWhen);
   const uploadsDir = `${dataDir}/uploads`;
+  const uploads = filesIn(uploadsDir);
 
   let stage = null;
   let written = false;
@@ -166,41 +193,29 @@ export async function prepareExport({ dataDir, say }) {
   async function write(out) {
     if (written) throw new Error('an archive is written once');
     written = true;
-    ensureDir(`${dataDir}/state`, 'root', 0o700);
+    // Where the API's user can reach it: tar is run as that user, and `state/`
+    // is root's. The folder stays root's own and is readable by that user's
+    // group and by nobody else, so the user cannot put anything in it for root
+    // to write over or to remove, and the site's user cannot read the dump.
+    const exports = `${dataDir}/exports`;
+    ensureDir(exports, 'root', 0o755);
     // Its own name each time: a leftover of a crash is never in the way.
-    stage = mkdtempSync(`${dataDir}/state/export-`);
+    stage = mkdtempSync(`${exports}/export-`);
+    chownSync(stage, 0, ids('kometio').gid);
+    chmodSync(stage, 0o750);
 
     say(
       `dumping the database (${TRANSIENT_TABLES.length} tables keep their structure and lose their rows)`,
     );
     await dumpDatabaseTo(`${stage}/database.sql.gz`);
 
-    // The uploads are not copied and not followed: `stage/uploads` is a folder of
-    // hard links to the regular files of the uploads folder, looked at once. The
-    // API's user owns that folder and could leave a link in it to any file of the
-    // machine, which root, making the archive, would read and publish
-    // (docs/adr/0109).
-    ensureDir(uploadsDir, 'kometio', 0o755);
-    const uploads = linkTree(uploadsDir, `${stage}/uploads`);
-    if (uploads.skipped.length > 0) {
-      say(
-        `${uploads.skipped.length} entries of the uploads folder are not files (${uploads.skipped.slice(0, 3).join(', ')}${uploads.skipped.length > 3 ? ', …' : ''}) and are not in the archive`,
-      );
-    }
-
     writeFileSync(
       `${stage}/manifest.json`,
-      `${JSON.stringify(
-        buildManifest({
-          createdAt,
-          site,
-          migrations,
-          uploads: { files: uploads.files, bytes: uploads.bytes },
-        }),
-        null,
-        2,
-      )}\n`,
+      `${JSON.stringify(buildManifest({ createdAt, site, migrations, uploads }), null, 2)}\n`,
     );
+    // The uploads are not copied: tar follows this link (`-h`) and reads them where they are.
+    ensureDir(uploadsDir, 'kometio', 0o755);
+    symlinkSync(uploadsDir, `${stage}/uploads`);
 
     say(
       `writing the archive: ${uploads.files} uploaded files (${mebibytes(uploads.bytes)})`,
@@ -228,13 +243,14 @@ export async function exportArchive({ dataDir, out, say }) {
   }
 }
 
-/** Removes what exports left when their process died: the dump of a database is not to be found lying in `state/` a month later. Only for the server's own start, when no other export can be running. */
+/** Removes what exports left when their process died: the dump of a database is not to be found lying there a month later. Only for the server's own start, when no other export can be running. (`state/` is where earlier versions made them.) */
 export function removeLeftoverExports(dataDir) {
-  const state = `${dataDir}/state`;
-  if (!existsSync(state)) return;
-  for (const name of readdirSync(state)) {
-    if (name.startsWith('export-')) {
-      rmSync(`${state}/${name}`, { recursive: true, force: true });
+  for (const folder of [`${dataDir}/exports`, `${dataDir}/state`]) {
+    if (!existsSync(folder)) continue;
+    for (const name of readdirSync(folder)) {
+      if (name.startsWith('export-')) {
+        rmSync(`${folder}/${name}`, { recursive: true, force: true });
+      }
     }
   }
 }
