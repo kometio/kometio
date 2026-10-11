@@ -24,6 +24,7 @@ import {
   bootstrapDeploymentBodySchema,
   type BootstrapDeploymentBody,
 } from './setup.schemas';
+import { RequestTimeoutPolicy } from './request-timeout.policy';
 import { SetupTokenRegistry } from './setup-token.registry';
 import type { SetupDeps } from './setup.deps';
 import { SETUP_DEPS } from './setup.tokens';
@@ -54,6 +55,7 @@ export class SetupController {
     @Inject(SETUP_DEPS) private readonly deps: SetupDeps,
     private readonly setupToken: SetupTokenRegistry,
     private readonly cookies: SessionCookies,
+    private readonly requestTimeout: RequestTimeoutPolicy,
   ) {}
 
   /**
@@ -117,6 +119,8 @@ export class SetupController {
     // Spent: nothing can use it again, and there is no reason to keep a
     // live credential in memory for the rest of the process's life.
     this.setupToken.clear();
+    // The long wait that an archive is given on this screen ends with it.
+    this.requestTimeout.forInstallation(true);
 
     this.cookies.set(response, session);
 

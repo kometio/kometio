@@ -13,6 +13,7 @@ import { Readable } from 'node:stream';
 import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
 import { testApiEnv } from '../../test/api-env.test-fixture';
 import { SessionCookies } from '../auth/session-cookies';
+import type { RequestTimeoutPolicy } from './request-timeout.policy';
 import { SetupController } from './setup.controller';
 import type { BootstrapDeploymentBody } from './setup.schemas';
 import type { SetupTokenRegistry } from './setup-token.registry';
@@ -32,6 +33,9 @@ describe('SetupController (unit)', () => {
   let tenant: jest.Mocked<Pick<DeploymentTenantResolver, 'refresh'>>;
   let setupToken: jest.Mocked<Pick<SetupTokenRegistry, 'verify' | 'clear'>>;
   let response: jest.Mocked<Pick<Response, 'cookie'>>;
+  let requestTimeout: jest.Mocked<
+    Pick<RequestTimeoutPolicy, 'forInstallation'>
+  >;
   let controller: SetupController;
 
   beforeEach(() => {
@@ -50,6 +54,7 @@ describe('SetupController (unit)', () => {
     tenant = { refresh: jest.fn() };
     setupToken = { verify: jest.fn().mockReturnValue(true), clear: jest.fn() };
     response = { cookie: jest.fn() };
+    requestTimeout = { forInstallation: jest.fn() };
 
     controller = new SetupController(
       {
@@ -60,12 +65,27 @@ describe('SetupController (unit)', () => {
       },
       setupToken as unknown as SetupTokenRegistry,
       new SessionCookies(testApiEnv()),
+      requestTimeout as unknown as RequestTimeoutPolicy,
     );
   });
 
   function bootstrap(body = VALID_BODY) {
     return controller.bootstrap(body, response as unknown as Response);
   }
+
+  it('takes back the long wait for an archive once the deployment exists', async () => {
+    await bootstrap();
+
+    expect(requestTimeout.forInstallation).toHaveBeenCalledWith(true);
+  });
+
+  it('keeps the long wait when the deployment was not made', async () => {
+    setupToken.verify.mockReturnValue(false);
+
+    await expect(bootstrap()).rejects.toThrow(UnauthorizedException);
+
+    expect(requestTimeout.forInstallation).not.toHaveBeenCalled();
+  });
 
   it('creates the deployment and issues a session when the token is right', async () => {
     expect(await bootstrap()).toEqual({
@@ -165,6 +185,7 @@ describe('SetupController (unit)', () => {
         },
         setupToken as unknown as SetupTokenRegistry,
         new SessionCookies(testApiEnv()),
+        requestTimeout as unknown as RequestTimeoutPolicy,
       );
     });
 
@@ -212,6 +233,7 @@ describe('SetupController (unit)', () => {
         },
         setupToken as unknown as SetupTokenRegistry,
         new SessionCookies(testApiEnv()),
+        requestTimeout as unknown as RequestTimeoutPolicy,
       );
 
       await expect(
