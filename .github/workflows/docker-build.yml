@@ -78,6 +78,8 @@ jobs:
             runner: ubuntu-24.04-arm
             arch: arm64
     runs-on: ${{ matrix.runner }}
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       # in it is refused.
@@ -131,7 +133,10 @@ jobs:
           name: digests-${{ matrix.image }}.${{ matrix.arch }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
-          retention-days: 1
+          # A job that was cancelled for want of a runner is run again later, and
+          # `merge` needs the digests of every architecture: one day was not a
+          # night and a morning.
+          retention-days: 7
 
   merge:
     if: github.event_name != 'pull_request'
@@ -141,6 +146,8 @@ jobs:
       matrix:
         image: [api, public-site, editor-app, public-site-builder]
     runs-on: ubuntu-24.04
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 15
     steps:
       - name: Image name
         run: echo "IMAGE=ghcr.io/${OWNER,,}/kometio-${{ matrix.image }}" >> "$GITHUB_ENV"
@@ -362,12 +369,17 @@ jobs:
           name: digests-single-image.${{ matrix.arch }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
-          retention-days: 1
+          # A job that was cancelled for want of a runner is run again later, and
+          # `merge` needs the digests of every architecture: one day was not a
+          # night and a morning.
+          retention-days: 7
 
   single-image-merge:
     if: github.event_name != 'pull_request'
     needs: single-image
     runs-on: ubuntu-24.04
+    # A step that hangs (an apt mirror, a runner that is gone) must end the job: the default is six hours, and a pull request waits for it.
+    timeout-minutes: 15
     steps:
       - name: Image name
         run: echo "IMAGE=ghcr.io/${OWNER,,}/kometio" >> "$GITHUB_ENV"

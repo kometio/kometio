@@ -50,7 +50,7 @@ runs:
     - name: Start Mailpit
       shell: bash
       run: |
-        docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit
+        docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit:v1.30.7
         until curl -sf http://localhost:8025/api/v1/info > /dev/null; do
           sleep 1
         done
