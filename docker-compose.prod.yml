@@ -24,10 +24,23 @@
 # that must be container-network-internal (POSTGRES_HOST, service-to-
 # service URLs) rather than whatever a self-hoster's own .env says.
 
+# A container's log has no limit unless one is given, and these write to it for
+# as long as they run: the last 50 MB of each, and nothing more.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
+
 services:
   postgres:
+    logging: *logging
     image: postgres:16-alpine
     restart: unless-stopped
+    # Docker kills a container ten seconds after asking it to stop, and the
+    # database needs a few more than that to stop cleanly when it has work to
+    # finish (a kill is a crash it recovers from at the next start).
+    stop_grace_period: 30s
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-kometio}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env, see .env.prod.example}
@@ -50,6 +63,7 @@ services:
   # as the one-off admin command runner for the seed step
   # (docs/self-hosting.md, `docker compose run --rm migrate <command>`).
   migrate:
+    logging: *logging
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -72,6 +86,7 @@ services:
         condition: service_healthy
 
   api:
+    logging: *logging
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -128,6 +143,7 @@ services:
         condition: service_completed_successfully
 
   public-site:
+    logging: *logging
     build:
       context: .
       dockerfile: apps/public-site/Dockerfile
@@ -177,6 +193,7 @@ services:
   # hands each build to the runner through theme-exchange, and publishes
   # what comes back. It runs no theme code.
   theme-builder:
+    logging: *logging
     build:
       context: .
       dockerfile: apps/public-site/Dockerfile
@@ -206,6 +223,7 @@ services:
   # exchange directory. Unprivileged, no network, nothing writable but its
   # scratch space; it exits after every build and starts again clean.
   theme-runner:
+    logging: *logging
     build:
       context: .
       dockerfile: apps/public-site/Dockerfile
@@ -231,6 +249,7 @@ services:
     pids_limit: 512
 
   editor-app:
+    logging: *logging
     build:
       context: .
       dockerfile: apps/editor-app/Dockerfile
@@ -250,6 +269,7 @@ services:
     restart: unless-stopped
 
   caddy:
+    logging: *logging
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
@@ -268,6 +288,7 @@ services:
       - editor-app
 
   postgres-backup:
+    logging: *logging
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
