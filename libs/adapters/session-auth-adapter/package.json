@@ -23,10 +23,10 @@
     "@kometio/opaque-token": "workspace:*",
     "@kometio/ports": "workspace:*",
     "@kometio/postgres-db": "workspace:*",
-    "@node-rs/argon2": "^2.2.1",
-    "drizzle-orm": "^0.45.3"
+    "@node-rs/argon2": "^2.2.2",
+    "drizzle-orm": "^0.45.4"
   },
   "devDependencies": {
-    "dotenv": "^18.0.4"
+    "dotenv": "^18.0.6"
   }
 }

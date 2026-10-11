@@ -23,6 +23,6 @@
     "@kometio/theme-runtime": "workspace:*"
   },
   "devDependencies": {
-    "astro": "^7.3.5"
+    "astro": "^7.3.8"
   }
 }
