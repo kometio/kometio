@@ -75,3 +75,18 @@ export function resolveAddresses(env) {
     siteUrl: env.PUBLIC_SITE_URL ?? served?.siteUrl ?? 'http://localhost:4322',
   };
 }
+
+/**
+ * The ports the parts of the image answer on, inside it: the API and the site
+ * always on the same, the editor on 80 where nothing else has it, and, on a
+ * server with a name, on 8080 because Caddy has 80. One place, for the launcher
+ * that starts them and the healthcheck that looks at them.
+ */
+export function innerPorts(domain) {
+  return {
+    api: 3000,
+    site: 4322,
+    editor: domain ? 8080 : 80,
+    proxy: domain ? 80 : null,
+  };
+}
