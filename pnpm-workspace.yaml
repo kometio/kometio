@@ -86,6 +86,22 @@ overrides:
   # for ^7, so this only stops the lockfile from keeping 7.1.5. Drop it once
   # the lockfile would resolve 7.1.6 anyway.
   postcss-selector-parser: ^7.1.6
+  # GHSA-8r5x-fm3f-whwj and GHSA-p8wg-vrv2-v86f (critical) and
+  # GHSA-xw65-4hp5-5hc7 (moderate), all published 2026-10-08: a crafted template
+  # or a precompiled one can inject JavaScript into what Handlebars compiles;
+  # fixed in 4.7.10. Reached only through ts-jest (`.>ts-jest>handlebars`),
+  # which the test runs use to compile our own TypeScript, never on input from
+  # outside, and in no image. ts-jest asks for ^4, so this only stops the
+  # lockfile from keeping 4.7.9. Drop it once the lockfile would resolve 4.7.10
+  # anyway.
+  handlebars: ^4.7.10
+  # GHSA-6qxp-vccf-f47h (high, published 2026-10-06): the SDK's OAuth client
+  # could send credentials to an authorization server that the MCP server it
+  # talks to chose; fixed in 1.31.0. Reached only through shadcn's CLI
+  # (`apps__editor-app>shadcn>@modelcontextprotocol/sdk`), of which the editor
+  # imports only a stylesheet; it talks to no MCP server and is in no image.
+  # Drop it once shadcn asks for a fixed range.
+  '@modelcontextprotocol/sdk': ^1.31.0
 
 # Advisories with NO fixed version anywhere (`first_patched_version` is null on
 # GitHub, and npm's latest release of each package is inside the vulnerable
