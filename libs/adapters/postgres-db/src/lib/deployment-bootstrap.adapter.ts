@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { sql } from 'drizzle-orm';
+import { DeploymentAlreadySetUpError } from '@kometio/domain-core';
 import type {
   BootstrapDeploymentInput,
   BootstrapDeploymentResult,
@@ -48,6 +49,23 @@ export class DrizzleDeploymentBootstrapAdapter implements DeploymentBootstrapPor
     const userId = randomUUID();
 
     await this.db.transaction(async (tx) => {
+      // One setup at a time, and the check made again where it counts. The
+      // use case looks before it hashes the password and then writes, and
+      // two requests that carry the same setup token (a double click, a
+      // retry) both look before either has written: both pass, and the
+      // installation ends up with two tenants, which the deployment's tenant
+      // resolver refuses to serve — every request after that is a 500, for
+      // good. The lock is released at the end of the transaction, so the
+      // second one waits for the first to commit and then sees its tenant.
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended('kometio:bootstrap', 0))`,
+      );
+      const existing = await tx
+        .select({ id: tenants.id })
+        .from(tenants)
+        .limit(1);
+      if (existing.length > 0) throw new DeploymentAlreadySetUpError();
+
       await tx.insert(tenants).values({ id: tenantId, name: input.siteName });
 
       // From here on the transaction is scoped to the tenant just created,

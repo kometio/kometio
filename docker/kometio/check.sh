@@ -323,10 +323,27 @@ step "the first account, with the site's address"
 # hand afterwards for the site to answer.
 SITE_DOMAIN=localhost
 TOKEN="$(setup_token)"
-CODE="$(curl -s -o /dev/null -c "$COOKIES" -w '%{http_code}' -H 'content-type: application/json' \
-  -d "{\"setupToken\":\"${TOKEN}\",\"siteName\":\"Check Site\",\"defaultLocale\":\"en\",\"domain\":\"${SITE_DOMAIN}\",\"adminEmail\":\"${ADMIN_EMAIL}\",\"adminPassword\":\"${ADMIN_PASSWORD}\"}" \
-  "${API_URL}/setup")"
-if [ "$CODE" = 201 ]; then pass "the wizard's request creates the administrator (201)"; else fail "the wizard's request answers ${CODE}, not 201"; fi
+# Three times, at once, as a double click or a retry sends it: the token is the
+# same in all of them, and it is spent only when the first has finished. One of
+# them makes the installation; the others are refused. If two went through, the
+# installation would have two tenants, which it refuses to serve (a 500 on every
+# request after that, for good).
+SETUP_BODY="{\"setupToken\":\"${TOKEN}\",\"siteName\":\"Check Site\",\"defaultLocale\":\"en\",\"domain\":\"${SITE_DOMAIN}\",\"adminEmail\":\"${ADMIN_EMAIL}\",\"adminPassword\":\"${ADMIN_PASSWORD}\"}"
+for attempt in 1 2 3; do
+  curl -s -o /dev/null -c "${WORK}/setup-${attempt}.cookies" -w '%{http_code}' -H 'content-type: application/json' \
+    -d "$SETUP_BODY" "${API_URL}/setup" >"${WORK}/setup-${attempt}.code" &
+done
+wait
+CREATED=0
+for attempt in 1 2 3; do
+  if [ "$(cat "${WORK}/setup-${attempt}.code")" = 201 ]; then
+    CREATED=$((CREATED + 1))
+    cp "${WORK}/setup-${attempt}.cookies" "$COOKIES"
+  fi
+done
+if [ "$CREATED" = 1 ]; then pass "of three setup requests at once, one creates the administrator (201)"; else fail "of three setup requests at once, ${CREATED} answered 201: $(cat "${WORK}"/setup-*.code | tr '\n' ' ')"; fi
+check "and the installation has one tenant, so it can be served" \
+  test "$(docker exec "$NAME" psql -h /run/postgresql -U kometio -d kometio -Atc 'select count(*) from tenants')" = 1
 check "the site holds the address it was given" sh -c "curl -s -b '$COOKIES' '${API_URL}/sites/current' | grep -q '\"domain\":\"${SITE_DOMAIN}\"'"
 check "the site answers at its address at once, with its name" sh -c "curl -sL '${SITE_URL}/' | grep -q '<title>Check Site'"
 # A setup form that sends a name nothing would match is refused, not stored.
