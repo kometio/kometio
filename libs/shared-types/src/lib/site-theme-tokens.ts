@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isRecord } from './is-record';
 
 /**
  * A raw CSS length value ("6px", "0.5rem", "9999px" for a pill) — with no
@@ -447,10 +448,6 @@ export function normalizeResponsiveBlockStyle(
 
 /** Every field a `cssValueSchema` would refuse, removed — one bucket deep, which is as deep as this shape goes. */
 function dropUnusableValues(value: unknown): unknown {
-  const isRecord = (candidate: unknown): candidate is Record<string, unknown> =>
-    typeof candidate === 'object' &&
-    candidate !== null &&
-    !Array.isArray(candidate);
   if (!isRecord(value)) {
     return {};
   }

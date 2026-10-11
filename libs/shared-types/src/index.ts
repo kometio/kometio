@@ -6,6 +6,7 @@ export * from './lib/business-info';
 export * from './lib/country-codes';
 export * from './lib/wordpress-import';
 export * from './lib/media-kind';
+export * from './lib/is-record';
 export * from './lib/content-model';
 export * from './lib/block-tree';
 export * from './lib/content-and-navigation-blocks';

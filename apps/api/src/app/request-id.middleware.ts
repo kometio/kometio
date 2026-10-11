@@ -24,7 +24,7 @@ export function requestIdMiddleware(
     typeof incoming === 'string' && incoming.trim() !== ''
       ? incoming
       : randomUUID();
-  (req as RequestWithId).requestId = requestId;
+  Object.assign<Request, Pick<RequestWithId, 'requestId'>>(req, { requestId });
   res.setHeader('X-Request-Id', requestId);
   next();
 }

@@ -37,6 +37,11 @@ import {
   toBlockRects,
 } from './preview-bridge-client';
 
+/** The element an event was aimed at; null when it was aimed at the document or the window, which have no `closest`. */
+function elementOf(event: Event): Element | null {
+  return event.target instanceof Element ? event.target : null;
+}
+
 function postToParent(
   targetOrigin: string,
   message: Omit<PreviewToParentMessage, 'source' | 'v'>,
@@ -246,7 +251,7 @@ export function initPreviewBridge(): void {
   document.addEventListener(
     'mouseover',
     (event) => {
-      const target = event.target as Element | null;
+      const target = elementOf(event);
       const blockEl = target?.closest?.('[data-kometio-block-id]') ?? null;
       const id =
         blockEl && isBlockInteractive(blockEl, editingSection)
@@ -273,7 +278,7 @@ export function initPreviewBridge(): void {
   document.addEventListener(
     'click',
     (event) => {
-      const target = event.target as Element | null;
+      const target = elementOf(event);
       if (target && findRealInteractiveAncestor(target)) {
         event.preventDefault();
       }
@@ -296,7 +301,7 @@ export function initPreviewBridge(): void {
   document.addEventListener(
     'dblclick',
     (event) => {
-      const target = event.target as Element | null;
+      const target = elementOf(event);
       const blockEl = target?.closest?.('[data-kometio-block-id]') ?? null;
       const id = blockEl ? blockIdOf(blockEl) : null;
       if (
@@ -328,7 +333,7 @@ export function initPreviewBridge(): void {
       if (event.button !== 0) {
         return;
       }
-      const target = event.target as Element | null;
+      const target = elementOf(event);
       const blockEl = target?.closest?.('[data-kometio-block-id]') ?? null;
       const id = blockEl ? blockIdOf(blockEl) : null;
       // No root-level gate any more (Fase 7). Reordering by dragging on

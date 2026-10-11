@@ -7,6 +7,7 @@ import {
   type StyleBreakpoint,
 } from './site-theme-tokens';
 import { eachBlock } from './block-tree';
+import { isRecord } from './is-record';
 
 /**
  * One custom-property name per field, shared by every block type
@@ -230,8 +231,6 @@ function safeBlockTypeClassName(blockType: string): string | null {
 function responsiveBuckets(
   style: unknown,
 ): Record<StyleBreakpoint, Record<string, unknown>> {
-  const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === 'object' && value !== null && !Array.isArray(value);
   if (!isRecord(style)) {
     return { base: {}, tablet: {}, mobile: {} };
   }

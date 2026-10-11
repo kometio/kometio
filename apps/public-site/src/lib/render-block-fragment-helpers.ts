@@ -1,5 +1,6 @@
 import {
   collectResolvedPageRefs,
+  isRecord,
   isServerFilledBlockType,
   resolvePageReferences,
   resolveSectionBlocks,
@@ -53,28 +54,24 @@ export interface RenderBlockFragmentBody {
 export function isValidRenderBlockFragmentBody(
   body: unknown,
 ): body is RenderBlockFragmentBody {
-  if (typeof body !== 'object' || body === null) {
+  if (!isRecord(body)) {
     return false;
   }
-  const candidate = body as Record<string, unknown>;
   return (
-    typeof candidate['pageId'] === 'string' &&
-    (candidate['sectionId'] === undefined ||
-      typeof candidate['sectionId'] === 'string') &&
-    (candidate['locale'] === undefined ||
-      typeof candidate['locale'] === 'string') &&
-    typeof candidate['token'] === 'string' &&
-    typeof candidate['blockId'] === 'string' &&
-    typeof candidate['blockType'] === 'string' &&
-    typeof candidate['props'] === 'object' &&
-    candidate['props'] !== null &&
-    (candidate['children'] === undefined ||
-      Array.isArray(candidate['children'])) &&
-    (candidate['styleOverride'] === undefined ||
-      (typeof candidate['styleOverride'] === 'object' &&
-        candidate['styleOverride'] !== null)) &&
-    (candidate['variant'] === undefined ||
-      typeof candidate['variant'] === 'string')
+    typeof body['pageId'] === 'string' &&
+    (body['sectionId'] === undefined ||
+      typeof body['sectionId'] === 'string') &&
+    (body['locale'] === undefined || typeof body['locale'] === 'string') &&
+    typeof body['token'] === 'string' &&
+    typeof body['blockId'] === 'string' &&
+    typeof body['blockType'] === 'string' &&
+    typeof body['props'] === 'object' &&
+    body['props'] !== null &&
+    (body['children'] === undefined || Array.isArray(body['children'])) &&
+    (body['styleOverride'] === undefined ||
+      (typeof body['styleOverride'] === 'object' &&
+        body['styleOverride'] !== null)) &&
+    (body['variant'] === undefined || typeof body['variant'] === 'string')
   );
 }
 

@@ -51,9 +51,11 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement,
-);
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('index.html has no #root element for the editor to mount in');
+}
+const root = ReactDOM.createRoot(container);
 
 root.render(
   <StrictMode>
