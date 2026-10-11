@@ -45,6 +45,7 @@ import {
   type FieldValueOverlay,
   type MediaKind,
   type PageContent,
+  type PageListState,
   type ResponsiveBlockStyle,
 } from '@kometio/shared-types';
 import type {
@@ -158,6 +159,48 @@ export class InMemoryCollectionRepository implements CollectionRepositoryPort {
     const found = this.collections.get(id);
     if (found && found.tenantId === tenantId) this.collections.delete(id);
   }
+}
+
+function hasChangesWaiting(
+  translation: PageTranslation,
+  group: PageGroup,
+): boolean {
+  return hasUnpublishedChanges({
+    status: translation.status,
+    isDiverged: translation.isDiverged,
+    contentUpdatedAt: translation.contentUpdatedAt,
+    publishedAt: translation.publishedAt,
+    groupContentUpdatedAt: group.contentUpdatedAt,
+  });
+}
+
+/** The order a row's languages come back in, as the adapter's `order by locale`: the first is the one a state filter falls back on. */
+function byLocaleCode(a: PageTranslation, b: PageTranslation): number {
+  return a.locale < b.locale ? -1 : a.locale > b.locale ? 1 : 0;
+}
+
+/**
+ * The language a row shows, and so the one a state filter judges: the
+ * site's default when the page has it, else the first by code
+ * (`PageGroupStatusFilter` in the port says why). `translations` is
+ * already in the order of their codes.
+ */
+function shownTranslation(
+  translations: readonly PageTranslation[],
+  defaultLocale: string,
+): PageTranslation | undefined {
+  return (
+    translations.find((translation) => translation.locale === defaultLocale) ??
+    translations[0]
+  );
+}
+
+function listStateOf(
+  translation: PageTranslation,
+  group: PageGroup,
+): PageListState {
+  if (translation.status !== 'published') return 'draft';
+  return hasChangesWaiting(translation, group) ? 'pending' : 'published';
 }
 
 export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
@@ -379,7 +422,9 @@ export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
       translationsByGroup.set(
         group.id,
         this.translationRepository
-          ? await this.translationRepository.listByGroup(tenantId, group.id)
+          ? (
+              await this.translationRepository.listByGroup(tenantId, group.id)
+            ).sort(byLocaleCode)
           : [],
       );
     }
@@ -398,6 +443,18 @@ export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
           (translation) => translation.locale === filters.locale,
         ),
       );
+    }
+    if (filters.status) {
+      const { state, defaultLocale } = filters.status;
+      matching = matching.filter((group) => {
+        // As the adapter's `exists`: a page with no language has no state
+        // to be in, not even a draft.
+        const shown = shownTranslation(
+          translationsByGroup.get(group.id) ?? [],
+          defaultLocale,
+        );
+        return shown !== undefined && listStateOf(shown, group) === state;
+      });
     }
 
     const start = (pagination.page - 1) * pagination.pageSize;
@@ -423,13 +480,7 @@ export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
             title: translation.seoMeta.title,
             status: translation.status,
             isDiverged: translation.isDiverged,
-            hasUnpublishedChanges: hasUnpublishedChanges({
-              status: translation.status,
-              isDiverged: translation.isDiverged,
-              contentUpdatedAt: translation.contentUpdatedAt,
-              publishedAt: translation.publishedAt,
-              groupContentUpdatedAt: group.contentUpdatedAt,
-            }),
+            hasUnpublishedChanges: hasChangesWaiting(translation, group),
           })),
         };
       }),
