@@ -48,6 +48,10 @@ updates:
       - '/apps/api'
       - '/apps/editor-app'
       - '/apps/public-site'
+      # The image that is published as `ghcr.io/kometio/kometio`: the base it
+      # runs on (node, and what it installs) is the one that ships, and it is a
+      # Dockerfile of its own that the three above never see.
+      - '/docker/kometio'
     schedule:
       interval: 'weekly'
     groups:
