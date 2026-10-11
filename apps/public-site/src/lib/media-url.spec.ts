@@ -60,6 +60,35 @@ describe('refusedImageSource', () => {
     }
   });
 
+  // The URL parser drops tabs and newlines anywhere in an address and
+  // whitespace and control characters before it, so `ht\ttps://…` is a remote
+  // address to the code that fetches it, and a plain path to a pattern that
+  // looks for `scheme:` at the start of the text. The guard has to read the
+  // address the way the fetch does.
+  it('reads an address as the fetch does: whitespace and control characters do not make a remote one local', () => {
+    for (const href of [
+      ' https://127.0.0.1:3000/api/pages',
+      'ht\ttps://127.0.0.1:3000/api/pages',
+      'https://127.0.0.1:3000/\napi/pages',
+      '\u0000https://169.254.169.254/latest/meta-data/',
+      '\thttp://169.254.169.254/latest/meta-data/',
+      '\n//evil.test/x.png',
+      '/\\evil.test/x.png',
+      'java\nscript:alert(1)',
+    ]) {
+      expect(
+        refusedImageSource(at(href), bases)?.status,
+        JSON.stringify(href),
+      ).toBe(403);
+    }
+  });
+
+  it('still lets a local path through, a space in it or not', () => {
+    for (const href of ['/_astro/logo.png', '/images/my photo.jpg']) {
+      expect(refusedImageSource(at(href), bases), href).toBeNull();
+    }
+  });
+
   it('lets media, and the site’s own local files, through to Astro', () => {
     expect(
       refusedImageSource(
