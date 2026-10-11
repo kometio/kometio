@@ -5,6 +5,8 @@
 // writing an archive there (everything it has to say goes to stderr).
 import { spawn, spawnSync } from 'node:child_process';
 import {
+  chmodSync,
+  chownSync,
   createWriteStream,
   existsSync,
   lstatSync,
@@ -128,8 +130,16 @@ async function dumpDatabaseTo(file) {
 
 /** The folder `stage`, as a .tar.gz, to `out` (a writable stream that the caller ends). Links are followed: that is how the uploads are read where they are. */
 async function tarTo(stage, out) {
+  // Run as the API's user: the uploads folder is its own, and a link in it can
+  // point at any file of the machine, which tar follows (`-h`). Read as root it
+  // would write into the archive a file that only root can read; read as this
+  // user it can read what this user could read anyway, and a link to anything
+  // else is a refusal (docs/adr/0109).
+  const { uid, gid } = ids('kometio');
   const tar = spawn('tar', ['czhf', '-', '-C', stage, '.'], {
     stdio: ['ignore', 'pipe', 'pipe'],
+    uid,
+    gid,
   });
   const archived = ended(tar);
   try {
@@ -183,9 +193,16 @@ export async function prepareExport({ dataDir, say }) {
   async function write(out) {
     if (written) throw new Error('an archive is written once');
     written = true;
-    ensureDir(`${dataDir}/state`, 'root', 0o700);
+    // Where the API's user can reach it: tar is run as that user, and `state/`
+    // is root's. The folder stays root's own and is readable by that user's
+    // group and by nobody else, so the user cannot put anything in it for root
+    // to write over or to remove, and the site's user cannot read the dump.
+    const exports = `${dataDir}/exports`;
+    ensureDir(exports, 'root', 0o755);
     // Its own name each time: a leftover of a crash is never in the way.
-    stage = mkdtempSync(`${dataDir}/state/export-`);
+    stage = mkdtempSync(`${exports}/export-`);
+    chownSync(stage, 0, ids('kometio').gid);
+    chmodSync(stage, 0o750);
 
     say(
       `dumping the database (${TRANSIENT_TABLES.length} tables keep their structure and lose their rows)`,
@@ -226,13 +243,14 @@ export async function exportArchive({ dataDir, out, say }) {
   }
 }
 
-/** Removes what exports left when their process died: the dump of a database is not to be found lying in `state/` a month later. Only for the server's own start, when no other export can be running. */
+/** Removes what exports left when their process died: the dump of a database is not to be found lying there a month later. Only for the server's own start, when no other export can be running. (`state/` is where earlier versions made them.) */
 export function removeLeftoverExports(dataDir) {
-  const state = `${dataDir}/state`;
-  if (!existsSync(state)) return;
-  for (const name of readdirSync(state)) {
-    if (name.startsWith('export-')) {
-      rmSync(`${state}/${name}`, { recursive: true, force: true });
+  for (const folder of [`${dataDir}/exports`, `${dataDir}/state`]) {
+    if (!existsSync(folder)) continue;
+    for (const name of readdirSync(folder)) {
+      if (name.startsWith('export-')) {
+        rmSync(`${folder}/${name}`, { recursive: true, force: true });
+      }
     }
   }
 }

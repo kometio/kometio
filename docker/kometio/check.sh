@@ -416,8 +416,24 @@ sleep 3
 check "when the reader leaves, the next export is made" \
   test "$(status_code -b "$COOKIES" "${API_URL}/site-archive")" = 200
 check "and nothing of the unfinished one is left on the volume" \
-  sh -c "test \"\$(docker exec '$NAME' sh -c 'ls /data/state | grep -c ^export- || true')\" = 0"
+  sh -c "test \"\$(docker exec '$NAME' sh -c 'ls /data/exports | grep -c ^export- || true')\" = 0"
 docker exec "$NAME" rm -f /data/uploads/ballast.bin
+# The API's user owns the uploads folder, so it can leave a link in it to a file
+# that only root reads. The archive is read as that user (docs/adr/0109), who
+# cannot read it either: the export is refused, and writes nothing of the file.
+docker exec -u kometio "$NAME" ln -s /data/state/secrets.json /data/uploads/leak-link
+if docker exec "$NAME" node /opt/kometio/cli.mjs export >"${WORK}/with-a-link.tar.gz" 2>/dev/null; then
+  LINKED_EXPORT=made
+else
+  LINKED_EXPORT=refused
+fi
+check "an export with a link in the uploads folder to a file only root reads is refused" \
+  test "$LINKED_EXPORT" = refused
+check "and nothing of that file was written" \
+  sh -c "! gzip -dc '${WORK}/with-a-link.tar.gz' 2>/dev/null | grep -aq postgresAppPassword"
+docker exec "$NAME" rm -f /data/uploads/leak-link
+check "with the link gone, the export is made again" \
+  sh -c "docker exec '$NAME' node /opt/kometio/cli.mjs export 2>/dev/null | tar tzf - >/dev/null"
 # The socket is the launcher's door, and only the API's user can open it: the user
 # a theme's code runs as cannot even reach the folder it is in.
 check "the API's own user can open the control socket (the control of the next check)" \
