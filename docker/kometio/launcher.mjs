@@ -23,13 +23,11 @@
 //   secrets/    the key that seals each site's AI provider key (the API's own)
 //   state/      what this launcher generated (root only)
 //   caddy/      the certificates and the account with the certificate authority
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { get } from 'node:http';
-import { createInterface } from 'node:readline';
-import { setTimeout as sleep } from 'node:timers/promises';
 import {
   installationHasSite,
   prepareExport,
@@ -46,8 +44,8 @@ import {
   prepareCluster,
   waitUntilReady,
 } from './embedded-postgres.mjs';
+import { ProcessSupervisor } from './process-supervisor.mjs';
 import {
-  defined,
   ensureDir,
   ids,
   log,
@@ -61,6 +59,14 @@ import {
   proxyDefaults,
   resolveAddresses,
 } from './server-mode.mjs';
+import {
+  apiEnvironment,
+  caddyEnvironment,
+  databaseAdministrator,
+  renderEditorConfig,
+  resolveSecrets,
+  siteEnvironment,
+} from './service-environments.mjs';
 import { IMPORT_RESULT_FILE, createSiteImport } from './site-import.mjs';
 
 const env = process.env;
@@ -107,69 +113,13 @@ const EDITOR_PORT = PORTS.editor;
 const PROXY = proxyDefaults(addresses);
 const NODE_ENV = env.NODE_ENV ?? PROXY.nodeEnv;
 
-/** @type {Array<{ name: string, child: import('node:child_process').ChildProcess, stop: NodeJS.Signals, expectedToStop: boolean }>} */
-const running = [];
-let stopping = false;
+/** The long-running processes: one that stops on its own takes the others down (process-supervisor.mjs). */
+const supervisor = new ProcessSupervisor();
 let setupToken = null;
-
-function prefixed(stream, name, onLine) {
-  createInterface({ input: stream }).on('line', (line) => {
-    console.log(`[${name}] ${line}`);
-    onLine?.(line);
-  });
-}
-
-/** A long-running process: stopping it, or its dying, takes the others down. */
-function start(
-  name,
-  command,
-  args,
-  { user, childEnv = minimalEnv, cwd, stop = 'SIGTERM', onLine } = {},
-) {
-  const child = spawn(command, args, {
-    cwd,
-    env: defined(childEnv),
-    stdio: ['ignore', 'pipe', 'pipe'],
-    ...(user ? ids(user) : {}),
-  });
-  const entry = { name, child, stop, expectedToStop: false };
-  prefixed(child.stdout, name, onLine);
-  prefixed(child.stderr, name, onLine);
-  child.on('exit', (code, signal) => {
-    // Stopped on purpose (the import stops the API and the site and starts
-    // them again): not a reason to stop the others.
-    if (stopping || entry.expectedToStop) return;
-    log(
-      `${name} stopped on its own (${signal ?? `exit ${code}`}): stopping everything`,
-    );
-    void shutdown(1);
-  });
-  running.push(entry);
-  return child;
-}
-
-/** Stops one process on purpose, and takes it off the list of what is running. */
-async function stopOne(name) {
-  const entry = running.find((candidate) => candidate.name === name);
-  if (!entry) return;
-  entry.expectedToStop = true;
-  const { child } = entry;
-  if (child.exitCode === null && child.signalCode === null) {
-    child.kill(entry.stop);
-    const exited = new Promise((resolve) => child.once('exit', resolve));
-    const gaveUp = sleep(30_000).then(() => 'timeout');
-    if ((await Promise.race([exited, gaveUp])) === 'timeout') {
-      log(`${name} did not stop in time: killing it`);
-      child.kill('SIGKILL');
-      await new Promise((resolve) => child.once('exit', resolve));
-    }
-  }
-  running.splice(running.indexOf(entry), 1);
-}
 
 /** Waits for something to come up, and stops waiting when the launcher is stopping. */
 const waitFor = (label, probe, seconds) =>
-  waitForProcess(label, probe, seconds, () => stopping);
+  waitForProcess(label, probe, seconds, () => supervisor.stopping);
 
 const answers = (url) =>
   new Promise((resolve) => {
@@ -179,44 +129,20 @@ const answers = (url) =>
     }).on('error', () => resolve(false));
   });
 
-async function shutdown(code) {
-  if (stopping) return;
-  stopping = true;
-  log('stopping');
-  for (const { name, child, stop } of [...running].reverse()) {
-    if (child.exitCode !== null || child.signalCode !== null) continue;
-    child.kill(stop);
-    const exited = new Promise((resolve) => child.once('exit', resolve));
-    const gaveUp = sleep(30_000).then(() => 'timeout');
-    if ((await Promise.race([exited, gaveUp])) === 'timeout') {
-      log(`${name} did not stop in time: killing it`);
-      child.kill('SIGKILL');
-    }
-  }
-  process.exit(code);
-}
-
 /**
- * The three secrets the stack shares. What the user set wins; what is missing
- * is generated once and kept in /data/state, so it is the same on every
- * start. Only generated values are written down: one the user supplied stays theirs.
+ * The three secrets the stack shares, from the environment and from what an
+ * earlier start generated and kept in /data/state (service-environments.mjs
+ * says which wins).
  */
 function secrets() {
   const path = `${DATA}/state/secrets.json`;
-  const generated = existsSync(path)
-    ? JSON.parse(readFileSync(path, 'utf8'))
-    : {};
-  const fromEnv = {
-    postgresAppPassword: env.POSTGRES_APP_PASSWORD,
-    previewTokenSecret: env.PREVIEW_TOKEN_SECRET,
-    publicApiServiceToken: env.PUBLIC_API_SERVICE_TOKEN,
-  };
-  const values = {};
-  for (const [key, supplied] of Object.entries(fromEnv)) {
-    values[key] =
-      supplied ?? (generated[key] ??= randomBytes(32).toString('hex'));
-  }
-  writeFileSync(path, JSON.stringify(generated, null, 2), { mode: 0o600 });
+  const stored = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
+  const { values, kept } = resolveSecrets({
+    env,
+    stored,
+    generate: () => randomBytes(32).toString('hex'),
+  });
+  writeFileSync(path, JSON.stringify(kept, null, 2), { mode: 0o600 });
   return values;
 }
 
@@ -224,13 +150,13 @@ function secrets() {
 function startEmbeddedDatabase(appPassword) {
   prepareCluster(DATA, log);
 
-  start('postgres', 'postgres', postgresArguments(DATA), {
+  supervisor.start('postgres', 'postgres', postgresArguments(DATA), {
     user: 'postgres',
     stop: 'SIGINT',
   }); // SIGINT is Postgres's "fast" shutdown
 
   return async () => {
-    await waitUntilReady(() => stopping);
+    await waitUntilReady(() => supervisor.stopping);
     createRoles(appPassword);
   };
 }
@@ -274,11 +200,11 @@ async function startControl(s, adminEnv) {
       readArchive,
       restoreArchive,
       stopServers: async () => {
-        await stopOne('site');
-        await stopOne('api');
+        await supervisor.stopOne('site');
+        await supervisor.stopOne('api');
       },
       startServers: async () => {
-        if (stopping) return;
+        if (supervisor.stopping) return;
         // The token the first start showed belongs to an API that is gone: a new
         // one is shown, if this one makes one (it does when the import failed).
         setupToken = null;
@@ -292,62 +218,6 @@ async function startControl(s, adminEnv) {
     }),
     say: log,
   });
-}
-
-function apiEnvironment(s) {
-  // The user's own variables win over the defaults, so a deployment can set
-  // SMTP, S3, its own Turnstile keys, NODE_ENV=production, and so on. The
-  // database administrator's credentials stay out of the API's reach.
-  const { POSTGRES_USER, POSTGRES_PASSWORD, ...userEnv } = env;
-  void POSTGRES_USER;
-  void POSTGRES_PASSWORD;
-  return {
-    NODE_ENV,
-    PORT: String(API_PORT),
-    // Caddy is one hop in front of the API on a server, and every limit per
-    // visitor (five logins a minute, the forms) keys on who the visitor is: with
-    // none, every visitor would be Caddy, and one could lock everybody out.
-    ...(PROXY.trustedProxyHops
-      ? { TRUSTED_PROXY_HOPS: PROXY.trustedProxyHops }
-      : {}),
-    PREVIEW_TOKEN_SECRET: s.previewTokenSecret,
-    PUBLIC_API_SERVICE_TOKEN: s.publicApiServiceToken,
-    EDITOR_APP_URL: EDITOR_URL,
-    API_PUBLIC_URL,
-    // No SMTP_* here: without a mail server the API writes each email (an
-    // invitation, a password reset) to its log, link included. Set SMTP_* to
-    // a real server to send them (docs/adr/0103).
-    MEDIA_UPLOAD_DIR: `${DATA}/uploads`,
-    THEMES_DIR: '/opt/api/themes',
-    KOMETIO_SECRETS_DIR: `${DATA}/secrets`,
-    // No TURNSTILE_* either: with neither key the captcha is the one built into
-    // Kometio, which needs no account and no network. Both of a site's own keys
-    // switch to Cloudflare's (docs/adr/0103), through `userEnv` below.
-    ...userEnv,
-    HOME: '/tmp',
-    // These are this launcher's to decide, whatever the environment says.
-    POSTGRES_APP_PASSWORD: s.postgresAppPassword,
-    ...(OWN_DATABASE ? { POSTGRES_HOST: '127.0.0.1' } : {}),
-    // The editor offers an export only where there is somebody to make it.
-    KOMETIO_CONTROL_SOCKET: OWN_DATABASE ? CONTROL_SOCKET : undefined,
-  };
-}
-
-function siteEnvironment(s) {
-  // Not the whole environment: this server runs the code of a theme, so it
-  // gets exactly what it reads, as in the compose stack. An empty value is
-  // "not set" to each optional one.
-  return {
-    ...minimalEnv,
-    PORT: String(SITE_PORT),
-    API_URL: `http://127.0.0.1:${API_PORT}/api`,
-    EDITOR_APP_URL: EDITOR_URL,
-    API_PUBLIC_URL,
-    PUBLIC_API_SERVICE_TOKEN: s.publicApiServiceToken,
-    TURNSTILE_SITE_KEY: env.TURNSTILE_SITE_KEY ?? '',
-    KOMETIO_THEME: env.KOMETIO_THEME ?? '',
-    S3_MEDIA_PUBLIC_BASE_URL: env.S3_MEDIA_PUBLIC_BASE_URL ?? '',
-  };
 }
 
 /** The editor's two addresses and its policy header, from the editor image's own files. */
@@ -372,29 +242,11 @@ function configureEditor() {
   if (script.status !== 0)
     throw new Error(`editor configuration failed: ${script.stderr}`);
   const values = { ...editorEnv, KOMETIO_API_ORIGIN: script.stdout };
-  const rendered = readFileSync(
-    '/opt/kometio/editor.conf.template',
-    'utf8',
-  ).replace(/\$\{(KOMETIO_[A-Z_]+)\}/g, (_, name) => {
-    if (!(name in values)) throw new Error(`the editor template needs ${name}`);
-    return values[name];
+  const listening = renderEditorConfig({
+    template: readFileSync('/opt/kometio/editor.conf.template', 'utf8'),
+    values,
+    editorPort: EDITOR_PORT,
   });
-  // The template is the editor image's own and listens on 80, which is right for
-  // a trial. On a server the editor listens on a loopback port instead, for
-  // Caddy; the line is changed here rather than the template forked, and a
-  // template that no longer has it is an error, not a silent 80.
-  let listening = rendered;
-  if (EDITOR_PORT !== 80) {
-    listening = rendered.replace(
-      /^(\s*)listen 80;/m,
-      `$1listen 127.0.0.1:${EDITOR_PORT};`,
-    );
-    if (listening === rendered) {
-      throw new Error(
-        "the editor's template no longer has a `listen 80;` to move",
-      );
-    }
-  }
   writeFileSync('/etc/nginx/http.d/default.conf', listening);
   mkdirSync('/run/nginx', { recursive: true });
 }
@@ -407,24 +259,20 @@ function configureEditor() {
  */
 async function startCaddy() {
   ensureDir(`${DATA}/caddy`, 'caddy', 0o700);
-  start('caddy', 'caddy', ['run', '--config', '/opt/kometio/Caddyfile'], {
-    user: 'caddy',
-    childEnv: {
-      PATH: env.PATH,
-      HOME: '/tmp',
-      // Where Caddy keeps its certificates and its account: the volume, so that
-      // a restart does not ask the certificate authority again (it limits how
-      // often it will issue for a name).
-      XDG_DATA_HOME: `${DATA}/caddy`,
-      XDG_CONFIG_HOME: '/tmp/caddy',
-      DOMAIN: domain,
-      SITE_UPSTREAM: `127.0.0.1:${SITE_PORT}`,
-      EDITOR_UPSTREAM: `127.0.0.1:${EDITOR_PORT}`,
-      API_UPSTREAM: `127.0.0.1:${API_PORT}`,
-      KOMETIO_CADDY_OPTIONS: 'admin off\nskip_install_trust',
-      KOMETIO_ACME_EMAIL_LINE: env.ACME_EMAIL ? `email ${env.ACME_EMAIL}` : '',
+  supervisor.start(
+    'caddy',
+    'caddy',
+    ['run', '--config', '/opt/kometio/Caddyfile'],
+    {
+      user: 'caddy',
+      childEnv: caddyEnvironment({
+        env,
+        dataDir: DATA,
+        domain,
+        ports: { api: API_PORT, site: SITE_PORT, editor: EDITOR_PORT },
+      }),
     },
-  });
+  );
   // Up when it answers on 80, which is before it has every certificate: the
   // first visit to a name waits for its own if it has to.
   await waitFor('Caddy', () => answers('http://127.0.0.1:80/'), 30);
@@ -452,10 +300,21 @@ function announce() {
 /** The API, and the wait until it answers. It is also what prints the setup token. */
 async function startApi(s) {
   let expectingToken = false;
-  start('api', 'node', ['main.js'], {
+  supervisor.start('api', 'node', ['main.js'], {
     user: 'kometio',
     cwd: '/opt/api',
-    childEnv: apiEnvironment(s),
+    childEnv: apiEnvironment({
+      env,
+      secrets: s,
+      nodeEnv: NODE_ENV,
+      port: API_PORT,
+      trustedProxyHops: PROXY.trustedProxyHops,
+      editorUrl: EDITOR_URL,
+      apiPublicUrl: API_PUBLIC_URL,
+      dataDir: DATA,
+      ownDatabase: OWN_DATABASE,
+      controlSocket: CONTROL_SOCKET,
+    }),
     onLine: (line) => {
       // The API prints the first-run token once, in a box, and keeps it in
       // memory only: this is the one place it can be picked up and shown plainly.
@@ -479,10 +338,17 @@ async function startApi(s) {
 }
 
 async function startSite(s) {
-  start('site', 'node', ['server.mjs'], {
+  supervisor.start('site', 'node', ['server.mjs'], {
     user: 'kometio-site',
     cwd: '/opt/site',
-    childEnv: siteEnvironment(s),
+    childEnv: siteEnvironment({
+      env,
+      secrets: s,
+      port: SITE_PORT,
+      apiPort: API_PORT,
+      editorUrl: EDITOR_URL,
+      apiPublicUrl: API_PUBLIC_URL,
+    }),
   });
   await waitFor(
     'the public site',
@@ -512,25 +378,15 @@ async function main() {
   ensureDir(`${DATA}/secrets`, 'kometio', 0o700);
   const s = secrets();
 
-  let adminEnv;
   if (OWN_DATABASE) {
     const ready = startEmbeddedDatabase(s.postgresAppPassword);
     await ready();
-    adminEnv = {
-      POSTGRES_HOST: SOCKET_DIR,
-      POSTGRES_PORT: '5432',
-      POSTGRES_USER: 'kometio',
-      POSTGRES_DB: 'kometio',
-    };
-  } else {
-    adminEnv = {
-      POSTGRES_HOST: env.POSTGRES_HOST,
-      POSTGRES_PORT: env.POSTGRES_PORT ?? '5432',
-      POSTGRES_USER: env.POSTGRES_USER,
-      POSTGRES_PASSWORD: env.POSTGRES_PASSWORD,
-      POSTGRES_DB: env.POSTGRES_DB ?? 'kometio',
-    };
   }
+  const adminEnv = databaseAdministrator({
+    env,
+    ownDatabase: OWN_DATABASE,
+    socketDir: SOCKET_DIR,
+  });
   migrate(adminEnv);
   if (OWN_DATABASE) await startControl(s, adminEnv);
 
@@ -538,7 +394,7 @@ async function main() {
   await startSite(s);
 
   configureEditor();
-  start('editor', 'nginx', ['-c', '/opt/kometio/nginx.conf']);
+  supervisor.start('editor', 'nginx', ['-c', '/opt/kometio/nginx.conf']);
   await waitFor(
     'the editor',
     () => answers(`http://127.0.0.1:${EDITOR_PORT}/`),
@@ -559,11 +415,11 @@ if (process.argv[2] !== undefined) {
   await run(process.argv[2]);
 } else {
   for (const signal of ['SIGTERM', 'SIGINT']) {
-    process.on(signal, () => void shutdown(0));
+    process.on(signal, () => void supervisor.shutdown(0));
   }
 
   main().catch((error) => {
     console.error(`[kometio] ${error.message}`);
-    void shutdown(1);
+    void supervisor.shutdown(1);
   });
 }
