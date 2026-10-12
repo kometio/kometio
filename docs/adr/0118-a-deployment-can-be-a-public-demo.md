@@ -32,10 +32,17 @@ hosted editor. The first was chosen. This is that mode.
   a visitor still cannot invite, export, change the theme or the AI key.
 - **The few things a publisher may do that are not the demo's to give are
   refused by name**, in one table (`REFUSED_IN_DEMO`): uploading a file
-  (`POST /media`, the avatar, a form's attachments), and any write to the
-  account but its language — its password, its address, its profile. The
-  table is read by the same guard, so a route added next month falls under
-  the admin-only rule without anybody remembering.
+  (`POST /media`, the avatar, a form's attachments), any write to the account
+  but its language — its password, its address, its profile — and reading the
+  submissions of a form, which in a demo are what strangers typed and the
+  next stranger would read. The table is read by the same guard, so a route
+  added next month falls under the admin-only rule without anybody
+  remembering.
+- **The table names routes, not addresses.** Express matches an address
+  without regard to case and with or without a final slash (`/MEDIA`,
+  `/media/`): the guard reads the route the request matched
+  (`request.route.path`), which is one string for every spelling. A request
+  that somehow has none is refused if it writes.
 - **The public site keeps search engines out** (`robots.txt` and the page's
   `noindex`, whatever the site's own setting) **and does not run an embed**:
   `EmbedHtml` shows a line saying so. Settings that put scripts on every page

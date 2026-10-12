@@ -323,6 +323,8 @@ minus the few things that are not the demo's to give:
 - **Nothing is uploaded and the account is not changed**: no file reaches the
   disk, and the password, the address and the profile of the shared account stay
   as they are.
+- **What visitors typed into the site's forms cannot be read** from the editor:
+  the next person to sign in would otherwise read it.
 - **No embed runs.** An `EmbedHtml` block shows a line saying so, instead of the
   pasted HTML.
 - **Search engines are kept out**, whatever the site's own setting says.

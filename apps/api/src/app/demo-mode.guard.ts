@@ -41,10 +41,19 @@ export class DemoModeGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     if (
       isForAdminsOnly(roles) ||
-      isRefusedInDemo(request.method, request.path)
+      isRefusedInDemo(request.method, registeredRoute(request))
     ) {
       throw new ForbiddenException(NOT_IN_DEMO_MESSAGE);
     }
     return true;
   }
+}
+
+/** The route a request matched, as it was registered; Express keeps it on the request. */
+function registeredRoute(request: Request): string | undefined {
+  const route: unknown = request.route;
+  if (typeof route === 'object' && route !== null && 'path' in route) {
+    return typeof route.path === 'string' ? route.path : undefined;
+  }
+  return undefined;
 }

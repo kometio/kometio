@@ -35,47 +35,70 @@ export function isForAdminsOnly(
 
 interface Refusal {
   readonly methods: readonly string[];
-  readonly path: RegExp;
+  /**
+   * The route as it was registered (`/api/forms/:id/submissions`), not the
+   * address that was asked for. Express matches an address without regard to
+   * case and with or without a final slash, so a pattern over the address
+   * would have to guess every spelling that reaches a handler; the route is
+   * one.
+   */
+  readonly route: RegExp;
   /** Why, for the people who read the code, not for the response. */
   readonly because: string;
 }
 
 /**
- * The writes a publisher may make and a demo does not take. Paths are as the
- * API serves them, under its `/api` prefix (which the integration specs, that
+ * What a publisher may do and a demo does not take. Routes are as the API
+ * registers them, under its `/api` prefix (which the integration specs, that
  * start the controllers without the prefix, do not have: it is optional).
  */
 export const REFUSED_IN_DEMO: readonly Refusal[] = [
   {
     methods: ['POST'],
-    path: /^(?:\/api)?\/media\/?$/,
+    route: /^(?:\/api)?\/media$/,
     because:
       'a file from anybody lands on the demo’s disk, under its owner’s name, at an address on the API’s domain',
   },
   {
     methods: ['POST', 'DELETE'],
-    path: /^(?:\/api)?\/account\/avatar\/?$/,
+    route: /^(?:\/api)?\/account\/avatar$/,
     because: 'an upload by another name',
   },
   {
     methods: ['POST'],
-    path: /^(?:\/api)?\/public\/forms\/[^/]+\/attachments\/?$/,
+    route: /^(?:\/api)?\/public\/forms\/:[A-Za-z]+\/attachments$/,
     because: 'the same, from a visitor of the demo site with no account at all',
   },
   {
     methods: ['POST', 'PATCH', 'PUT', 'DELETE'],
-    path: /^(?:\/api)?\/account\/(?!language\/?$)/,
+    route: /^(?:\/api)?\/account\/(?!language$)/,
     because:
       'the account is everybody’s: its password, its address and its profile are not one person’s to change (its language is a browser’s setting, and stays)',
+  },
+  {
+    methods: ['GET'],
+    route: /^(?:\/api)?\/forms\/:[A-Za-z]+\/submissions(?:\.csv)?$/,
+    because:
+      'what other visitors of the demo typed into its forms — a name, an address — would be read by whoever signs in next',
   },
 ];
 
 export const NOT_IN_DEMO_MESSAGE = 'Not available in the demo';
 
-/** Whether a request is one the demo refuses outright. */
-export function isRefusedInDemo(method: string, path: string): boolean {
+const READ_ONLY_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+/**
+ * Whether a request is one the demo refuses outright. `route` is the
+ * registered route that the request matched; a request that somehow arrives
+ * without one is refused if it writes, and not otherwise.
+ */
+export function isRefusedInDemo(
+  method: string,
+  route: string | undefined,
+): boolean {
   const upper = method.toUpperCase();
+  if (route === undefined) return !READ_ONLY_METHODS.has(upper);
   return REFUSED_IN_DEMO.some(
-    (refusal) => refusal.methods.includes(upper) && refusal.path.test(path),
+    (refusal) => refusal.methods.includes(upper) && refusal.route.test(route),
   );
 }

@@ -6,6 +6,7 @@ import { ApiEnvModule } from './api-env.module';
 import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { DemoModeGuard } from './demo-mode.guard';
+import { FormsModule } from './forms/forms.module';
 import { MediaModule } from './media/media.module';
 import { SitesModule } from './sites/sites.module';
 import { IntegrationApp } from '../test/integration-app.test-fixture';
@@ -35,6 +36,7 @@ describe('A demo deployment (integration)', () => {
         DemoGuardModule,
         AuthModule,
         AccountModule,
+        FormsModule,
         MediaModule,
         SitesModule,
       ],
@@ -71,6 +73,20 @@ describe('A demo deployment (integration)', () => {
       .post('/account/password')
       .send({ currentPassword: 'x', newPassword: 'y' })
       .expect(403);
+  });
+
+  // Express matches an address without regard to case and with or without a
+  // final slash. The guard reads the route that matched, not the address, so
+  // every spelling that reaches the handler is the same refusal.
+  it('refuses an upload by whatever spelling reaches the handler', async () => {
+    await admin.post('/MEDIA').expect(403);
+    await admin.post('/Media/').expect(403);
+    await admin.post('/account/AVATAR').expect(403);
+  });
+
+  it('does not let the next person read what visitors wrote in the demo’s forms', async () => {
+    await admin.get(`/forms/${id}/submissions`).expect(403);
+    await admin.get(`/forms/${id}/submissions.csv`).expect(403);
   });
 
   it('leaves the account’s language, which is a browser’s setting', async () => {

@@ -27,36 +27,42 @@ describe('isForAdminsOnly', () => {
 describe('isRefusedInDemo', () => {
   it.each([
     ['POST', '/api/media'],
-    ['POST', '/api/media/'],
     ['POST', '/api/account/avatar'],
     ['DELETE', '/api/account/avatar'],
     ['POST', '/api/account/password'],
     ['POST', '/api/account/email-change'],
     ['PATCH', '/api/account/profile'],
-    [
-      'POST',
-      '/api/public/forms/0f6c1e7e-0000-4000-8000-000000000000/attachments',
-    ],
-  ])('refuses %s %s', (method, path) => {
-    expect(isRefusedInDemo(method, path)).toBe(true);
+    ['POST', '/api/public/forms/:id/attachments'],
+    ['GET', '/api/forms/:id/submissions'],
+    ['GET', '/api/forms/:id/submissions.csv'],
+  ])('refuses %s %s', (method, route) => {
+    expect(isRefusedInDemo(method, route)).toBe(true);
   });
 
   it.each([
     ['GET', '/api/media'],
-    ['PATCH', '/api/media/abc'],
+    ['PATCH', '/api/media/:id'],
     ['PATCH', '/api/account/language'],
     ['GET', '/api/account/profile'],
     ['POST', '/api/page-groups'],
-    ['PATCH', '/api/page-groups/abc/content'],
-    ['POST', '/api/public/forms/abc/submissions'],
+    ['PATCH', '/api/page-groups/:id/content'],
+    ['POST', '/api/public/forms/:id/submissions'],
     ['POST', '/api/auth/login'],
+    ['GET', '/api/forms'],
+    ['DELETE', '/api/forms/:id/submissions/:submissionId'],
     ['POST', '/api/mediafoo'],
-  ])('leaves %s %s alone', (method, path) => {
-    expect(isRefusedInDemo(method, path)).toBe(false);
+  ])('leaves %s %s alone', (method, route) => {
+    expect(isRefusedInDemo(method, route)).toBe(false);
   });
 
   it('reads the method in either case', () => {
     expect(isRefusedInDemo('post', '/api/media')).toBe(true);
+  });
+
+  it('refuses a write that arrives with no route, and reads on', () => {
+    expect(isRefusedInDemo('POST', undefined)).toBe(true);
+    expect(isRefusedInDemo('DELETE', undefined)).toBe(true);
+    expect(isRefusedInDemo('GET', undefined)).toBe(false);
   });
 
   it('says why each refusal is there', () => {
