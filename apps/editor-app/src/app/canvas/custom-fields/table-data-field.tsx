@@ -19,7 +19,7 @@ function isTableData(value: unknown): value is string[][] {
   );
 }
 
-/** Every cell is an always-visible <input>, no collapsed row to discover. The first row is always the header (content-model.ts's own comment). */
+/** Every cell is an always-visible <input>, no collapsed row to discover. The first row is always the header (embed-and-data-blocks.ts's own comment). */
 export function TableDataField({
   value: stored,
   onChange,
