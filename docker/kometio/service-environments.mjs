@@ -110,6 +110,7 @@ export function siteEnvironment({
     SENTRY_RELEASE: env.SENTRY_RELEASE ?? '',
     KOMETIO_THEME: env.KOMETIO_THEME ?? '',
     S3_MEDIA_PUBLIC_BASE_URL: env.S3_MEDIA_PUBLIC_BASE_URL ?? '',
+    IMAGE_CACHE_MAX_MB: env.IMAGE_CACHE_MAX_MB ?? '',
   };
 }
 
