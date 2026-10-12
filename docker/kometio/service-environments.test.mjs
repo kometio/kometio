@@ -152,6 +152,9 @@ describe('what the public site is told', () => {
         POSTGRES_APP_PASSWORD: 'app-password',
         PREVIEW_TOKEN_SECRET: 'preview-secret',
         TURNSTILE_SITE_KEY: 'site-key',
+        SENTRY_DSN: 'https://key@o1.ingest.de.sentry.io/1',
+        SENTRY_ENVIRONMENT: 'trial',
+        SENTRY_RELEASE: 'v0.1.0',
       },
       secrets,
       port: 4322,
@@ -172,11 +175,21 @@ describe('what the public site is told', () => {
       'PORT',
       'PUBLIC_API_SERVICE_TOKEN',
       'S3_MEDIA_PUBLIC_BASE_URL',
+      'SENTRY_DSN',
+      'SENTRY_ENVIRONMENT',
+      'SENTRY_RELEASE',
       'TURNSTILE_SITE_KEY',
     ]);
     assert.equal(environment.API_URL, 'http://127.0.0.1:3000/api');
     assert.equal(environment.PUBLIC_API_SERVICE_TOKEN, 'service-token');
     assert.equal(environment.TURNSTILE_SITE_KEY, 'site-key');
+    // Where it reports its errors: the same three the API reads (docs/adr/0114).
+    assert.equal(
+      environment.SENTRY_DSN,
+      'https://key@o1.ingest.de.sentry.io/1',
+    );
+    assert.equal(environment.SENTRY_ENVIRONMENT, 'trial');
+    assert.equal(environment.SENTRY_RELEASE, 'v0.1.0');
   });
 
   it('has an empty value, not an undefined one, for each optional setting it was not given', () => {
@@ -190,6 +203,7 @@ describe('what the public site is told', () => {
     });
 
     assert.equal(environment.TURNSTILE_SITE_KEY, '');
+    assert.equal(environment.SENTRY_DSN, '');
     assert.equal(environment.KOMETIO_THEME, '');
     assert.equal(environment.S3_MEDIA_PUBLIC_BASE_URL, '');
     assert.equal(environment.IMAGE_CACHE_MAX_MB, '');

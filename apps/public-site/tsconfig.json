@@ -29,10 +29,16 @@
       "path": "../../libs/shared-types"
     },
     {
+      "path": "../../libs/adapters/sentry-error-reporter"
+    },
+    {
       "path": "../../libs/rich-text-editor"
     },
     {
       "path": "../../libs/rich-text"
+    },
+    {
+      "path": "../../libs/ports"
     },
     {
       "path": "../../libs/env-config"
