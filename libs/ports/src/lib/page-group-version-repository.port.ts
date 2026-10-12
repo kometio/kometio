@@ -1,13 +1,6 @@
 import type { PageGroupVersion } from '@kometio/domain-core';
+import type { VersionRepositoryPort } from './version-repository.port';
 
-export interface PageGroupVersionRepositoryPort {
-  save(version: PageGroupVersion): Promise<void>;
-  findById(
-    tenantId: string,
-    versionId: string,
-  ): Promise<PageGroupVersion | null>;
-  listByGroup(
-    tenantId: string,
-    pageGroupId: string,
-  ): Promise<PageGroupVersion[]>;
-}
+/** The history of one page: `listByOwner` takes its id. */
+export type PageGroupVersionRepositoryPort =
+  VersionRepositoryPort<PageGroupVersion>;

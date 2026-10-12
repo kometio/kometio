@@ -44,7 +44,7 @@ export function setUpPages() {
     {
       save: jest.fn(),
       findById: jest.fn(),
-      listByGroup: jest.fn(),
+      listByOwner: jest.fn(),
     };
   const pageTranslationRepository: jest.Mocked<PageTranslationRepositoryPort> =
     {
@@ -66,7 +66,7 @@ export function setUpPages() {
     {
       save: jest.fn(),
       findById: jest.fn(),
-      listByTranslation: jest.fn(),
+      listByOwner: jest.fn(),
     };
   const previewTokenPort: jest.Mocked<PreviewTokenPort> = {
     createToken: jest.fn(),
@@ -120,7 +120,7 @@ export function setUpPages() {
     {
       save: jest.fn(),
       findById: jest.fn(),
-      listBySection: jest.fn(),
+      listByOwner: jest.fn(),
     };
   const deps = {
     pageGroupRepository,

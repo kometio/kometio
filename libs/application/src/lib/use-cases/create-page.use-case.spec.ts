@@ -102,7 +102,7 @@ describe('createPage', () => {
       status: 'draft',
     });
     expect(translation.seoMeta.title).toBe('Chi siamo');
-    const versions = await deps.pageGroupVersionRepository.listByGroup(
+    const versions = await deps.pageGroupVersionRepository.listByOwner(
       tenantId,
       group.id,
     );

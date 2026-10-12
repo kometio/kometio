@@ -37,6 +37,7 @@ import {
   User,
   hasUnpublishedChanges,
   safeDownloadName,
+  VERSION_HISTORY_LIMIT,
 } from '@kometio/domain-core';
 import {
   fileUrlsOf,
@@ -73,13 +74,12 @@ import type {
   PreviewToken,
   PreviewTokenPort,
   ReusableSectionRepositoryPort,
-  ReusableSectionVersionRepositoryPort,
   SearchPort,
   SiteLayoutSectionRepositoryPort,
-  SiteLayoutSectionVersionRepositoryPort,
   SecretCipherPort,
   SiteAiSettingsRepositoryPort,
   SiteRepositoryPort,
+  VersionRepositoryPort,
   SiteThemeBlockStylesPort,
   StoredSiteAiSettings,
   AvailableTheme,
@@ -522,31 +522,58 @@ export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
   }
 }
 
-export class InMemoryPageGroupVersionRepository implements PageGroupVersionRepositoryPort {
-  private versions: PageGroupVersion[] = [];
+/**
+ * The history of one kind of thing, in memory: what `DrizzleVersionRepository`
+ * does in the database. Oldest first, and only the last `VERSION_HISTORY_LIMIT`
+ * of one owner kept, as the database's retention keeps them, so that a spec
+ * that saves a twelfth version sees what production would.
+ */
+export class InMemoryVersionRepository<
+  TVersion extends { id: string; tenantId: string },
+> implements VersionRepositoryPort<TVersion> {
+  /** Every version saved, in the order they were. */
+  versions: TVersion[] = [];
 
-  async save(version: PageGroupVersion): Promise<void> {
+  constructor(private readonly ownerIdOf: (version: TVersion) => string) {}
+
+  async save(version: TVersion): Promise<void> {
     this.versions.push(version);
+    const owner = this.ownerIdOf(version);
+    const ofOwner = this.versions.filter(
+      (candidate) =>
+        candidate.tenantId === version.tenantId &&
+        this.ownerIdOf(candidate) === owner,
+    );
+    const dropped = new Set(ofOwner.slice(0, -VERSION_HISTORY_LIMIT));
+    if (dropped.size > 0) {
+      this.versions = this.versions.filter(
+        (candidate) => !dropped.has(candidate),
+      );
+    }
   }
 
   async findById(
     tenantId: string,
     versionId: string,
-  ): Promise<PageGroupVersion | null> {
+  ): Promise<TVersion | null> {
     return (
       this.versions.find(
-        (v) => v.tenantId === tenantId && v.id === versionId,
+        (version) => version.tenantId === tenantId && version.id === versionId,
       ) ?? null
     );
   }
 
-  async listByGroup(
-    tenantId: string,
-    pageGroupId: string,
-  ): Promise<PageGroupVersion[]> {
+  async listByOwner(tenantId: string, ownerId: string): Promise<TVersion[]> {
     return this.versions.filter(
-      (v) => v.tenantId === tenantId && v.pageGroupId === pageGroupId,
+      (version) =>
+        version.tenantId === tenantId && this.ownerIdOf(version) === ownerId,
     );
+  }
+}
+
+export class InMemoryPageGroupVersionRepository extends InMemoryVersionRepository<PageGroupVersion> {
+  constructor() {
+    super((version) => version.pageGroupId);
   }
 }
 
@@ -736,32 +763,9 @@ export class InMemoryPageTranslationRepository implements PageTranslationReposit
   }
 }
 
-export class InMemoryPageTranslationVersionRepository implements PageTranslationVersionRepositoryPort {
-  private versions: PageTranslationVersion[] = [];
-
-  async save(version: PageTranslationVersion): Promise<void> {
-    this.versions.push(version);
-  }
-
-  async findById(
-    tenantId: string,
-    versionId: string,
-  ): Promise<PageTranslationVersion | null> {
-    return (
-      this.versions.find(
-        (v) => v.tenantId === tenantId && v.id === versionId,
-      ) ?? null
-    );
-  }
-
-  async listByTranslation(
-    tenantId: string,
-    pageTranslationId: string,
-  ): Promise<PageTranslationVersion[]> {
-    return this.versions.filter(
-      (v) =>
-        v.tenantId === tenantId && v.pageTranslationId === pageTranslationId,
-    );
+export class InMemoryPageTranslationVersionRepository extends InMemoryVersionRepository<PageTranslationVersion> {
+  constructor() {
+    super((version) => version.pageTranslationId);
   }
 }
 
@@ -1178,33 +1182,9 @@ export class InMemorySiteLayoutSectionRepository implements SiteLayoutSectionRep
   }
 }
 
-export class InMemorySiteLayoutSectionVersionRepository implements SiteLayoutSectionVersionRepositoryPort {
-  private versions: SiteLayoutSectionVersion[] = [];
-
-  async save(version: SiteLayoutSectionVersion): Promise<void> {
-    this.versions.push(version);
-  }
-
-  async findById(
-    tenantId: string,
-    versionId: string,
-  ): Promise<SiteLayoutSectionVersion | null> {
-    return (
-      this.versions.find(
-        (v) => v.tenantId === tenantId && v.id === versionId,
-      ) ?? null
-    );
-  }
-
-  async listBySection(
-    tenantId: string,
-    siteLayoutSectionId: string,
-  ): Promise<SiteLayoutSectionVersion[]> {
-    return this.versions.filter(
-      (v) =>
-        v.tenantId === tenantId &&
-        v.siteLayoutSectionId === siteLayoutSectionId,
-    );
+export class InMemorySiteLayoutSectionVersionRepository extends InMemoryVersionRepository<SiteLayoutSectionVersion> {
+  constructor() {
+    super((version) => version.siteLayoutSectionId);
   }
 }
 
@@ -1529,33 +1509,9 @@ export class InMemoryReusableSectionRepository implements ReusableSectionReposit
   }
 }
 
-export class InMemoryReusableSectionVersionRepository implements ReusableSectionVersionRepositoryPort {
-  versions: ReusableSectionVersion[] = [];
-
-  async save(version: ReusableSectionVersion): Promise<void> {
-    this.versions.push(version);
-  }
-
-  async findById(
-    tenantId: string,
-    versionId: string,
-  ): Promise<ReusableSectionVersion | null> {
-    return (
-      this.versions.find(
-        (version) => version.tenantId === tenantId && version.id === versionId,
-      ) ?? null
-    );
-  }
-
-  async listBySection(
-    tenantId: string,
-    reusableSectionId: string,
-  ): Promise<ReusableSectionVersion[]> {
-    return this.versions.filter(
-      (version) =>
-        version.tenantId === tenantId &&
-        version.reusableSectionId === reusableSectionId,
-    );
+export class InMemoryReusableSectionVersionRepository extends InMemoryVersionRepository<ReusableSectionVersion> {
+  constructor() {
+    super((version) => version.reusableSectionId);
   }
 }
 

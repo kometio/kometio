@@ -14,7 +14,7 @@ export function listPageTranslationVersions(
   deps: ListPageTranslationVersionsDeps,
   input: ListPageTranslationVersionsInput,
 ): Promise<PageTranslationVersion[]> {
-  return deps.pageTranslationVersionRepository.listByTranslation(
+  return deps.pageTranslationVersionRepository.listByOwner(
     input.tenantId,
     input.pageTranslationId,
   );

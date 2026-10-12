@@ -2,6 +2,7 @@ export * from './lib/entities/collection';
 export * from './lib/entities/edit-context';
 export * from './lib/entities/page-group';
 export * from './lib/entities/page-group-version';
+export * from './lib/entities/version-history';
 export * from './lib/entities/page-translation';
 export * from './lib/entities/page-translation-version';
 export * from './lib/entities/unpublished-changes';

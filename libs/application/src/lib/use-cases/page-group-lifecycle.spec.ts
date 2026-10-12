@@ -113,7 +113,7 @@ describe('page group i18n lifecycle', () => {
       expect(group.content).toEqual([
         { type: 'Text', props: { body: 'ciao' } },
       ]);
-      const versions = await deps.pageGroupVersionRepository.listByGroup(
+      const versions = await deps.pageGroupVersionRepository.listByOwner(
         tenantId,
         group.id,
       );
@@ -261,7 +261,7 @@ describe('page group i18n lifecycle', () => {
       expect(updated.content).toEqual([
         { type: 'Text', props: { body: 'nuovo blocco' } },
       ]);
-      const versions = await deps.pageGroupVersionRepository.listByGroup(
+      const versions = await deps.pageGroupVersionRepository.listByOwner(
         tenantId,
         group.id,
       );
@@ -297,11 +297,10 @@ describe('page group i18n lifecycle', () => {
       });
 
       expect(updated.fieldValues).toEqual(fieldValues);
-      const versions =
-        await deps.pageTranslationVersionRepository.listByTranslation(
-          tenantId,
-          translation.id,
-        );
+      const versions = await deps.pageTranslationVersionRepository.listByOwner(
+        tenantId,
+        translation.id,
+      );
       expect(versions).toHaveLength(1);
     });
 
@@ -373,11 +372,10 @@ describe('page group i18n lifecycle', () => {
         title: 'New title',
         description: 'New description',
       });
-      const versions =
-        await deps.pageTranslationVersionRepository.listByTranslation(
-          tenantId,
-          translation.id,
-        );
+      const versions = await deps.pageTranslationVersionRepository.listByOwner(
+        tenantId,
+        translation.id,
+      );
       expect(versions).toHaveLength(0);
     });
   });
@@ -958,7 +956,7 @@ describe('page group i18n lifecycle', () => {
       const deps = setup();
       const { group } = await createGroupWithEnTranslation(deps);
       const [initialVersion] =
-        await deps.pageGroupVersionRepository.listByGroup(tenantId, group.id);
+        await deps.pageGroupVersionRepository.listByOwner(tenantId, group.id);
       await savePageGroupContent(deps, {
         tenantId,
         pageGroupId: group.id,
@@ -976,7 +974,7 @@ describe('page group i18n lifecycle', () => {
       expect(restored.content).toEqual([
         { id: 'block-1', type: 'Hero', props: { title: 'Hello' } },
       ]);
-      const versions = await deps.pageGroupVersionRepository.listByGroup(
+      const versions = await deps.pageGroupVersionRepository.listByOwner(
         tenantId,
         group.id,
       );
@@ -1020,7 +1018,7 @@ describe('page group i18n lifecycle', () => {
         siteId,
         createdBy: 'user-1',
       });
-      const [versionOfB] = await deps.pageGroupVersionRepository.listByGroup(
+      const [versionOfB] = await deps.pageGroupVersionRepository.listByOwner(
         tenantId,
         groupB.id,
       );

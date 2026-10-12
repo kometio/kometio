@@ -186,13 +186,10 @@ describe('DrizzleSiteLayoutSectionRepository (integration)', () => {
       createdAt: new Date(),
     });
 
-    const versions = await versionRepository.listBySection(
-      tenantAId,
-      section.id,
-    );
+    const versions = await versionRepository.listByOwner(tenantAId, section.id);
     expect(versions.map((v) => v.id)).toEqual([versionOneId, versionTwoId]);
 
-    const versionsFromOtherTenant = await versionRepository.listBySection(
+    const versionsFromOtherTenant = await versionRepository.listByOwner(
       tenantBId,
       section.id,
     );
@@ -217,10 +214,7 @@ describe('DrizzleSiteLayoutSectionRepository (integration)', () => {
       });
     }
 
-    const versions = await versionRepository.listBySection(
-      tenantAId,
-      section.id,
-    );
+    const versions = await versionRepository.listByOwner(tenantAId, section.id);
     expect(versions).toHaveLength(10);
     // The very first save (oldest createdAt) is the one pruned.
     expect(versions.map((v) => v.id)).toEqual(versionIds.slice(1));

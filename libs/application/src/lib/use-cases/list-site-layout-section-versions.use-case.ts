@@ -14,7 +14,7 @@ export function listSiteLayoutSectionVersions(
   deps: ListSiteLayoutSectionVersionsDeps,
   input: ListSiteLayoutSectionVersionsInput,
 ): Promise<SiteLayoutSectionVersion[]> {
-  return deps.siteLayoutSectionVersionRepository.listBySection(
+  return deps.siteLayoutSectionVersionRepository.listByOwner(
     input.tenantId,
     input.id,
   );
