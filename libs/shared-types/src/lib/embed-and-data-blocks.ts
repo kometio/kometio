@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { defineBlockContract } from './block-contract';
+import { asString } from './search-prose';
 
 /**
  * `formName` is denormalized purely as the editor canvas label (docs/adr/0015)
@@ -16,6 +18,20 @@ export const formBlockPropsSchema = z.object({
   form: pickedFormSchema.nullable(),
 });
 export type FormBlockProps = z.infer<typeof formBlockPropsSchema>;
+export const formBlockContract = defineBlockContract({
+  type: 'Form',
+  props: formBlockPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: "its fields are configuration, and the words of a form are not the page's",
+  },
+});
 
 /**
  * `html` is sanitized before it ever reaches the DOM — confirmed with the
@@ -30,12 +46,38 @@ export const embedHtmlPropsSchema = z.object({
   html: z.string(),
 });
 export type EmbedHtmlProps = z.infer<typeof embedHtmlPropsSchema>;
+export const embedHtmlBlockContract = defineBlockContract({
+  type: 'EmbedHtml',
+  props: embedHtmlPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: 'raw markup, which would pollute the index rather than read as prose',
+  },
+});
 
 export const codePropsSchema = z.object({
   code: z.string(),
   language: z.string(),
 });
 export type CodeProps = z.infer<typeof codePropsSchema>;
+export const codeBlockContract = defineBlockContract({
+  type: 'Code',
+  props: codePropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    borderRadius: 'var(--radius)',
+    paddingX: '1.25rem',
+    paddingY: '1rem',
+  },
+  // The snippet itself: on a documentation site, the name of a function
+  // someone read here is exactly what they come back searching for.
+  search: (props) => [asString(props['code'])],
+});
 
 /**
  * `rows` is a plain matrix, first row always treated as the header
@@ -51,3 +93,31 @@ export const tablePropsSchema = z.object({
   rows: z.array(z.array(z.string())),
 });
 export type TableProps = z.infer<typeof tablePropsSchema>;
+export const tableBlockContract = defineBlockContract({
+  type: 'Table',
+  props: tablePropsSchema,
+  style: {
+    // These land on the cells rather than the scroll wrapper: padding and
+    // borders are what "styling a table" means (see Table.astro).
+    backgroundColor: 'var(--muted)',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0.75rem',
+    paddingY: '0.5rem',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+  },
+  search: (props) => {
+    const rows = Array.isArray(props['rows']) ? props['rows'] : [];
+    return rows.flat().map((cell) => asString(cell));
+  },
+});
+
+/** Every block this file declares, in the order the picker draws them. */
+export const EMBED_AND_DATA_BLOCK_CONTRACTS = [
+  formBlockContract,
+  embedHtmlBlockContract,
+  codeBlockContract,
+  tableBlockContract,
+] as const;

@@ -4,6 +4,8 @@ import {
   pickedMediaSchema,
   pickedPageSchema,
 } from './block-values';
+import { defineBlockContract } from './block-contract';
+import { asString, pictureAlts } from './search-prose';
 
 /**
  * Per-block-type prop schemas, one per concrete block (Hero, Text, ...).
@@ -30,11 +32,44 @@ export const heroPropsSchema = z.object({
   eyebrow: z.string().default(''),
 });
 export type HeroProps = z.infer<typeof heroPropsSchema>;
+export const heroBlockContract = defineBlockContract({
+  type: 'Hero',
+  props: heroPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'var(--foreground)',
+    borderRadius: '0',
+    boxShadow: 'none',
+    backgroundImage: 'none',
+    backgroundPosition: 'center',
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    overlayColor: 'transparent',
+    minHeight: 'auto',
+    // The values the block already rendered — `sm:py-28`'s 7rem is the
+    // wide-screen half of a responsive default, so the resolved default
+    // shown in the editor is the base one.
+    contentAlign: 'stretch',
+    gap: '0',
+    paddingX: '0',
+    paddingY: '5rem',
+    maxWidth: '48rem',
+  },
+  search: (props) => [asString(props['title']), asString(props['subtitle'])],
+});
 
 export const textPropsSchema = z.object({
   body: z.string(),
 });
 export type TextProps = z.infer<typeof textPropsSchema>;
+export const textBlockContract = defineBlockContract({
+  type: 'Text',
+  props: textPropsSchema,
+  style: {
+    textColor: 'inherit',
+  },
+  search: (props) => [asString(props['body'])],
+});
 
 // A semantic section heading — no existing block filled this gap (Hero's
 // title/subtitle are a different intent, Feature's title is centered
@@ -52,6 +87,14 @@ export const headingPropsSchema = z.object({
   anchorId: z.string().optional(),
 });
 export type HeadingProps = z.infer<typeof headingPropsSchema>;
+export const headingBlockContract = defineBlockContract({
+  type: 'Heading',
+  props: headingPropsSchema,
+  style: {
+    textColor: 'inherit',
+  },
+  search: (props) => [asString(props['text'])],
+});
 
 /**
  * How a block sits in the width available to it (ADR-0057).
@@ -109,6 +152,19 @@ export const imagePropsSchema = z.object({
   aspectRatio: aspectRatioSchema.default('original'),
 });
 export type ImageProps = z.infer<typeof imagePropsSchema>;
+export const imageBlockContract = defineBlockContract({
+  type: 'Image',
+  props: imagePropsSchema,
+  style: {
+    borderRadius: '0',
+    borderWidth: '0',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    boxShadow: 'none',
+    maxWidth: 'none',
+  },
+  search: (props) => [asString(props['alt']), asString(props['caption'])],
+});
 
 /**
  * The card's own fields are its media header and nothing else — the rest
@@ -133,6 +189,34 @@ export const cardPropsSchema = z.object({
   isDecorative: z.boolean(),
 });
 export type CardProps = z.infer<typeof cardPropsSchema>;
+export const cardBlockContract = defineBlockContract({
+  type: 'Card',
+  props: cardPropsSchema,
+  style: {
+    // `--background` and not a `--card` token: this theme vocabulary has
+    // no such token, and inventing one here would name a custom property
+    // no theme.css defines — the reference would resolve to nothing and
+    // the card would come out transparent (ADR-0022 resolves these
+    // against the active theme, it does not create them).
+    backgroundColor: 'var(--background)',
+    textColor: 'inherit',
+    borderRadius: 'var(--radius)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    boxShadow: 'none',
+    paddingX: '1.25rem',
+    paddingY: '1.25rem',
+    gap: '0.75rem',
+    contentAlign: 'stretch',
+    maxWidth: 'none',
+    minHeight: 'auto',
+  },
+  // Its children index themselves; the header's alt is the card's own
+  // only prose, and it is prose for Image's reason.
+  search: (props) => [asString(props['alt'])],
+  variants: ['elevated', 'flat', 'horizontal'],
+});
 
 export const galleryPropsSchema = z.object({
   images: z.array(
@@ -154,6 +238,19 @@ export const galleryPropsSchema = z.object({
   lightbox: z.boolean().default(false),
 });
 export type GalleryProps = z.infer<typeof galleryPropsSchema>;
+export const galleryBlockContract = defineBlockContract({
+  type: 'Gallery',
+  props: galleryPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.5rem',
+  },
+  search: pictureAlts('images'),
+});
 
 /**
  * How many of the twelve tracks a column takes (ADR-0050).
@@ -224,6 +321,19 @@ export const videoFilePropsSchema = z.object({
   controls: z.boolean().default(true),
 });
 export type VideoFileProps = z.infer<typeof videoFilePropsSchema>;
+export const videoFileBlockContract = defineBlockContract({
+  type: 'VideoFile',
+  props: videoFilePropsSchema,
+  style: {
+    borderRadius: '0',
+    boxShadow: 'none',
+    maxWidth: '100%',
+    backgroundColor: '#000',
+  },
+  search: {
+    none: 'a hosted video has no words of its own: its poster and its file are not prose',
+  },
+});
 
 /** A hosted audio file — a podcast episode, a recorded message, a track. */
 export const audioPropsSchema = z.object({
@@ -232,9 +342,32 @@ export const audioPropsSchema = z.object({
   loop: z.boolean().default(false),
 });
 export type AudioProps = z.infer<typeof audioPropsSchema>;
+export const audioBlockContract = defineBlockContract({
+  type: 'Audio',
+  props: audioPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: (props) => [asString(props['title'])],
+});
 
 export const dividerPropsSchema = z.strictObject({});
 export type DividerProps = z.infer<typeof dividerPropsSchema>;
+export const dividerBlockContract = defineBlockContract({
+  type: 'Divider',
+  props: dividerPropsSchema,
+  style: {
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    maxWidth: 'none',
+  },
+  search: { none: 'a rule: no words' },
+});
 
 /**
  * Deliberate empty space (ADR-0053).
@@ -247,6 +380,15 @@ export type DividerProps = z.infer<typeof dividerPropsSchema>;
  */
 export const spacerPropsSchema = z.strictObject({});
 export type SpacerProps = z.infer<typeof spacerPropsSchema>;
+export const spacerBlockContract = defineBlockContract({
+  type: 'Spacer',
+  props: spacerPropsSchema,
+  style: {
+    minHeight: '2rem',
+    backgroundColor: 'transparent',
+  },
+  search: { none: 'empty space: no words' },
+});
 
 /** How large a standalone icon renders. A closed set: a free length would let an icon be pasted in at 3px or 900px, and every value here is a size something is actually designed at. */
 export const iconSizeSchema = z.enum(['sm', 'md', 'lg', 'xl']);
@@ -268,6 +410,15 @@ export const iconPropsSchema = z.object({
   label: z.string().default(''),
 });
 export type IconProps = z.infer<typeof iconPropsSchema>;
+export const iconBlockContract = defineBlockContract({
+  type: 'Icon',
+  props: iconPropsSchema,
+  style: {
+    textColor: 'currentColor',
+  },
+  // An icon's label is what it means when it is not decoration.
+  search: (props) => [asString(props['label'])],
+});
 
 /**
  * A row of social links (ADR-0053) — a collection, so it arranges itself
@@ -278,6 +429,19 @@ export const socialLinksPropsSchema = z.object({
   display: collectionDisplaySchema.default('grid'),
 });
 export type SocialLinksProps = z.infer<typeof socialLinksPropsSchema>;
+export const socialLinksBlockContract = defineBlockContract({
+  type: 'SocialLinks',
+  props: socialLinksPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.75rem',
+  },
+  search: { none: "a picked icon's wrapper: its words are its children's" },
+});
 
 /**
  * One social link.
@@ -295,11 +459,42 @@ export const socialLinkPropsSchema = z.object({
   url: z.string(),
 });
 export type SocialLinkProps = z.infer<typeof socialLinkPropsSchema>;
+export const socialLinkBlockContract = defineBlockContract({
+  type: 'SocialLink',
+  props: socialLinkPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '50%',
+    paddingX: '0',
+    paddingY: '0',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+  },
+  // The accessible name of an icon-only link is real prose and the only
+  // words the block has — someone searching for "Instagram" should find
+  // the page whose footer links to it.
+  search: (props) => [asString(props['label'])],
+});
 
 export const carouselPropsSchema = z.object({
   display: collectionDisplaySchema.default('carousel'),
 });
 export type CarouselProps = z.infer<typeof carouselPropsSchema>;
+export const carouselBlockContract = defineBlockContract({
+  type: 'Carousel',
+  props: carouselPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '1.5rem',
+  },
+  search: { none: "an arrangement wrapper: its words are its children's" },
+});
 
 /**
  * "Solo embed (link YouTube/Vimeo), niente encoding/hosting video lato
@@ -325,6 +520,20 @@ export const videoEmbedPropsSchema = z.object({
   caption: z.string().default(''),
 });
 export type VideoEmbedProps = z.infer<typeof videoEmbedPropsSchema>;
+export const videoEmbedBlockContract = defineBlockContract({
+  type: 'VideoEmbed',
+  props: videoEmbedPropsSchema,
+  style: {
+    // ConsentGatedEmbed's own fallback: this said 0 while every embed drew 8px.
+    borderRadius: '8px',
+    borderWidth: '0',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    boxShadow: 'none',
+    maxWidth: 'none',
+  },
+  search: (props) => [asString(props['caption'])],
+});
 
 /**
  * Google Maps by address, using the no-API-key `output=embed` query form
@@ -339,6 +548,21 @@ export const mapEmbedPropsSchema = z.object({
   address: z.string(),
 });
 export type MapEmbedProps = z.infer<typeof mapEmbedPropsSchema>;
+export const mapEmbedBlockContract = defineBlockContract({
+  type: 'MapEmbed',
+  props: mapEmbedPropsSchema,
+  style: {
+    // ConsentGatedEmbed's own fallback: this said 0 while every embed drew 8px.
+    borderRadius: '8px',
+    borderWidth: '0',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    boxShadow: 'none',
+    maxWidth: 'none',
+  },
+  // The address as written on the page — the street someone searches for.
+  search: (props) => [asString(props['address'])],
+});
 
 /**
  * Same `{ media, alt }[]` shape as `galleryPropsSchema`, on its own named
@@ -357,6 +581,16 @@ export const imageSliderPropsSchema = z.object({
   ),
 });
 export type ImageSliderProps = z.infer<typeof imageSliderPropsSchema>;
+export const imageSliderBlockContract = defineBlockContract({
+  type: 'ImageSlider',
+  props: imageSliderPropsSchema,
+  style: {
+    borderRadius: '0',
+    boxShadow: 'none',
+    maxWidth: 'none',
+  },
+  search: pictureAlts('images'),
+});
 
 /**
  * A reveal slider between two images of the same subject. `beforeLabel`/
@@ -370,6 +604,34 @@ export const beforeAfterPropsSchema = z.object({
   afterLabel: z.string().default('Dopo'),
 });
 export type BeforeAfterProps = z.infer<typeof beforeAfterPropsSchema>;
+export const beforeAfterBlockContract = defineBlockContract({
+  type: 'BeforeAfter',
+  props: beforeAfterPropsSchema,
+  style: {
+    borderRadius: '8px',
+    borderWidth: '0',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    boxShadow: 'none',
+    maxWidth: 'none',
+  },
+  /*
+   * The blocks whose prose search used to miss entirely — each one a
+   * decision about which of its fields a visitor is actually looking for,
+   * which is why they were left out of the 2026-09-02 batch rather than
+   * wired up in bulk.
+   *
+   * What stays out, and why: an address's URL, a video's URL, a plan's
+   * price and period, a statistic's prefix and suffix. A URL is not prose,
+   * and a number with its unit ("29", "€", "al mese") matches across pages
+   * that have nothing to do with each other — the plan's NAME is what
+   * someone types.
+   */
+  search: (props) => [
+    asString(props['beforeLabel']),
+    asString(props['afterLabel']),
+  ],
+});
 
 /**
  * Same `{ media, alt }[]` shape as `galleryPropsSchema`/
@@ -387,3 +649,37 @@ export const logoStripPropsSchema = z.object({
   ),
 });
 export type LogoStripProps = z.infer<typeof logoStripPropsSchema>;
+export const logoStripBlockContract = defineBlockContract({
+  type: 'LogoStrip',
+  props: logoStripPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: pictureAlts('logos'),
+});
+
+/** Every block this file declares, in the order the picker draws them. */
+export const TEXT_AND_MEDIA_BLOCK_CONTRACTS = [
+  heroBlockContract,
+  cardBlockContract,
+  headingBlockContract,
+  textBlockContract,
+  imageBlockContract,
+  galleryBlockContract,
+  dividerBlockContract,
+  videoFileBlockContract,
+  audioBlockContract,
+  spacerBlockContract,
+  iconBlockContract,
+  socialLinksBlockContract,
+  socialLinkBlockContract,
+  carouselBlockContract,
+  videoEmbedBlockContract,
+  mapEmbedBlockContract,
+  imageSliderBlockContract,
+  beforeAfterBlockContract,
+  logoStripBlockContract,
+] as const;

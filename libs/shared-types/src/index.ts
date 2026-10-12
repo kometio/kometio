@@ -9,6 +9,8 @@ export * from './lib/media-kind';
 export * from './lib/is-record';
 export * from './lib/shown-translation';
 export * from './lib/content-model';
+export * from './lib/block-contract';
+export * from './lib/block-contracts';
 export * from './lib/block-tree';
 export * from './lib/content-and-navigation-blocks';
 export * from './lib/commerce-local-content-blocks';

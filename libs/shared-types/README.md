@@ -126,7 +126,8 @@ Recurring patterns worth knowing when reading/extending these schemas:
   per-instance, at the root level of a page — see the comment on those two
   fields for why a per-type margin rule would leak into nested instances.
   `BLOCK_STYLE_DEFAULTS` is the single declared source of the CSS
-  expression each block type falls back to when no override is set, read
+  expression each block type falls back to when no override is set (each
+  block's own is the `style` of its contract), read
   by both `@kometio/block-registry` (editor picker) and
   `apps/public-site`'s `resolve-theme-block-style-defaults.ts` (the
   `/api/themes/current/block-style-defaults` endpoint).
@@ -169,9 +170,16 @@ scripts on the page) that must be silently ignored, not throw.
   the sitemap use case; a single page's own ancestors elsewhere in the
   codebase are resolved via a small I/O loop instead, to avoid fetching an
   entire site's pages just to answer one page's ancestry).
+- `block-contract.ts` / `block-contracts.ts` — `defineBlockContract` and
+  the list of every core block's contract ([ADR-0115](../../docs/adr/0115-a-block-is-declared-once-as-a-contract.md)):
+  its props schema, style defaults, what search reads of it and its
+  variants, declared once beside the schema in the family's file
+  (`text-and-media-blocks.ts`, …). `BLOCK_PROPS_SCHEMAS`, `BLOCK_TYPES`,
+  `BLOCK_STYLE_DEFAULTS`, `SEARCHABLE_BLOCK_TYPES`,
+  `BLOCKS_WITHOUT_SEARCHABLE_TEXT` and `BLOCK_VARIANTS` are derived from it.
 - `search-text.ts` / `search-excerpt.ts` — `extractSearchableText` builds
   the indexable plain-text blob for a page (an explicit per-block-type
-  prose-field allowlist, not a generic "grab every string prop", to avoid
+  prose-field allowlist — each contract's `search` — not a generic "grab every string prop", to avoid
   indexing urls/enum values/raw HTML as false-positive matches);
   `parseSearchExcerpt` turns Postgres `ts_headline`'s control-character
   match markers into `{ text, matched }` segments a UI can render safely

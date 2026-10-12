@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { defineBlockContract } from './block-contract';
 
 /**
  * A plain `<form method="get">` submitting to `/{locale}/search` (see
@@ -83,6 +84,21 @@ export const pageGridPropsSchema = z.object({
   items: z.array(pageGridItemSchema).default([]),
 });
 export type PageGridProps = z.infer<typeof pageGridPropsSchema>;
+export const pageGridBlockContract = defineBlockContract({
+  type: 'PageGrid',
+  props: pageGridPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.75rem',
+  },
+  search: {
+    none: "what it draws is other pages' titles, which are indexed on those pages themselves: indexing them again would make one page answer for words that are not on it (ADR-0064)",
+  },
+});
 
 /**
  * The line an article carries: when it went out, and who wrote it.
@@ -107,6 +123,20 @@ export const articleMetaPropsSchema = z.object({
   authorPath: z.string().nullable().default(null),
 });
 export type ArticleMetaProps = z.infer<typeof articleMetaPropsSchema>;
+export const articleMetaBlockContract = defineBlockContract({
+  type: 'ArticleMeta',
+  props: articleMetaPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: "every word it shows is filled in from elsewhere on the site (the page's own date, its neighbours): indexing it would file other pages' titles under this one",
+  },
+});
 
 /**
  * The two neighbours of this article inside its own section, by date.
@@ -123,6 +153,20 @@ export const articleNavPropsSchema = z.object({
   next: pageGridItemSchema.nullable().default(null),
 });
 export type ArticleNavProps = z.infer<typeof articleNavPropsSchema>;
+export const articleNavBlockContract = defineBlockContract({
+  type: 'ArticleNav',
+  props: articleNavPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: "every word it shows is filled in from elsewhere on the site (the page's neighbours): indexing it would file other pages' titles under this one",
+  },
+});
 
 /**
  * Other pages filed under the same terms as this one.
@@ -139,6 +183,21 @@ export const relatedPagesPropsSchema = z.object({
   items: z.array(pageGridItemSchema).default([]),
 });
 export type RelatedPagesProps = z.infer<typeof relatedPagesPropsSchema>;
+export const relatedPagesBlockContract = defineBlockContract({
+  type: 'RelatedPages',
+  props: relatedPagesPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.75rem',
+  },
+  search: {
+    none: "every word it shows is filled in from elsewhere on the site (the page's related pages): indexing it would file other pages' titles under this one",
+  },
+});
 
 /**
  * One term a `TermList` offers, filled in by the render pass.
@@ -182,3 +241,27 @@ export const termListPropsSchema = z.object({
   choices: z.array(termChoiceSchema).default([]),
 });
 export type TermListProps = z.infer<typeof termListPropsSchema>;
+export const termListBlockContract = defineBlockContract({
+  type: 'TermList',
+  props: termListPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.5rem',
+  },
+  search: {
+    none: "the names of terms, which the term's own page already answers for: a filter is a way to move through a list, not words this page says",
+  },
+});
+
+/** Every block this file declares, in the order the picker draws them. */
+export const PAGE_LISTING_BLOCK_CONTRACTS = [
+  articleMetaBlockContract,
+  articleNavBlockContract,
+  relatedPagesBlockContract,
+  termListBlockContract,
+  pageGridBlockContract,
+] as const;
