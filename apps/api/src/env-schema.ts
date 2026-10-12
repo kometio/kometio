@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assertSentryDsn } from '@kometio/sentry-error-reporter';
 import { STORAGE_PROVIDERS } from '@kometio/shared-types';
 
 /**
@@ -101,6 +102,13 @@ const apiEnvBaseSchema = z.object({
   // and the verifier on different captchas.
   TURNSTILE_SITE_KEY: emptyIsUnset(z.string().min(1).optional()),
   TURNSTILE_SECRET_KEY: emptyIsUnset(z.string().min(1).optional()),
+  // Where an error nobody expected is reported (docs/adr/0114). Unset: nowhere,
+  // and nothing is started. The public site reads the same variables; the API
+  // validates the address so that a typo is a refusal to start, not a
+  // deployment that believes it is watched.
+  SENTRY_DSN: emptyIsUnset(z.string().min(1).optional()),
+  SENTRY_ENVIRONMENT: emptyIsUnset(z.string().min(1).optional()),
+  SENTRY_RELEASE: emptyIsUnset(z.string().min(1).optional()),
   // Optional: unset, the API trusts no visitor address the public site
   // forwards (public-pages-throttler.guard.ts).
   PUBLIC_API_SERVICE_TOKEN: emptyIsUnset(z.string().min(1).optional()),
@@ -208,6 +216,18 @@ function refuseExampleSecrets(
 
 export const apiEnvSchema = apiEnvBaseSchema.superRefine((env, ctx) => {
   refuseExampleSecrets(env, ctx);
+  if (env.SENTRY_DSN !== undefined) {
+    try {
+      assertSentryDsn(env.SENTRY_DSN);
+    } catch (error) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SENTRY_DSN'],
+        message:
+          error instanceof Error ? error.message : 'SENTRY_DSN is not valid',
+      });
+    }
+  }
   const siteKeyGiven = env.TURNSTILE_SITE_KEY !== undefined;
   const secretGiven = env.TURNSTILE_SECRET_KEY !== undefined;
   if (siteKeyGiven !== secretGiven) {
