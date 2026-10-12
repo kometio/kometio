@@ -1,15 +1,14 @@
 ---
 import type { MenuItemProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = MenuItemProps & {
-  locale: string;
+  i18n: Translator;
   instanceClass?: string | null;
 };
 
-const { name, description, price, dietary, allergens, locale, instanceClass } =
+const { name, description, price, dietary, allergens, i18n, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 const tags = dietary
   .split(',')
   .map((tag) => tag.trim())

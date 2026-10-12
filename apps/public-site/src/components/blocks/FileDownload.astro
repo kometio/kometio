@@ -1,15 +1,15 @@
 ---
 import type { FileDownloadProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = FileDownloadProps & {
   locale?: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
 
-const { file, label, showDetails, locale, editable, instanceClass } = Astro.props;
-const i18n = new Translator(locale ?? '');
+const { file, label, showDetails, locale, i18n, editable, instanceClass } = Astro.props;
 
 /** "PDF", "DOCX" — the file's own extension, which is what a person recognises. */
 function formatOf(filename: string | undefined, mimeType: string | undefined): string {

@@ -12,12 +12,6 @@
   "references": [
     {
       "path": "../../ports/tsconfig.lib.json"
-    },
-    {
-      "path": "../../domain-core/tsconfig.lib.json"
-    },
-    {
-      "path": "../sharp-image-optimizer/tsconfig.lib.json"
     }
   ],
   "exclude": [

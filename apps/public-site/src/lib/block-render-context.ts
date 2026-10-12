@@ -3,6 +3,7 @@ import {
   resolveColumnSpans,
   type Block,
 } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
 import type {
   PublishedPageAncestor,
   PublishedPageTranslation,
@@ -26,6 +27,13 @@ export interface BlockRenderContext {
    */
   block: Block;
   locale: string;
+  /**
+   * Core's strings in the language this page is read in — the page's
+   * locale, and failing that the site's own language. Built once, here,
+   * for every block: a block that built its own from `locale` would leave
+   * the site's language out.
+   */
+  i18n: Translator;
   translations: PublishedPageTranslation[];
   site: PublishedSite;
   ancestors: PublishedPageAncestor[];
@@ -45,6 +53,7 @@ export interface BlockRenderContext {
 export function commonBlockProps(context: BlockRenderContext) {
   return {
     locale: context.locale,
+    i18n: context.i18n,
     editable: context.editable,
     site: context.site,
     translations: context.translations,

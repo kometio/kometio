@@ -102,7 +102,11 @@ async function walkToDocuments() {
   await screen.findByText('Quali documenti generare');
 }
 
-describe('LegalDocumentsWizard', () => {
+// The wizard is walked step by step in most of these, and under coverage on a
+// CI runner the file takes 25 s for 17 tests: the longest of them crossed the
+// default 5 s there (`says what is missing when the documents step is left
+// without a document`, 5.1 s), while it takes under 1 s on a free machine.
+describe('LegalDocumentsWizard', { timeout: 15_000 }, () => {
   afterEach(() => {
     vi.clearAllMocks();
   });

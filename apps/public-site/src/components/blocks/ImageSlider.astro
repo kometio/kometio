@@ -1,10 +1,10 @@
 ---
 import type { ImageSliderProps, PickedMedia } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 
 type Props = ImageSliderProps & {
-  locale: string;
+  i18n: Translator;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
 };
@@ -16,9 +16,8 @@ function isPictured(
   return image.media !== null;
 }
 
-const { images, locale, instanceClass } = Astro.props;
+const { images, i18n, instanceClass } = Astro.props;
 const pictured = images.filter(isPictured);
-const i18n = new Translator(locale);
 ---
 
 {

@@ -1,11 +1,13 @@
 import { randomBytes } from 'node:crypto';
 import { defineMiddleware } from 'astro:middleware';
 import { buildContentSecurityPolicy } from './lib/content-security-policy';
+import { errorReporter } from './lib/error-reporter';
 import {
   runWithRequestContext,
   visitorIpFromForwardedFor,
 } from './lib/request-context';
 import { referrerPolicyFor } from './lib/referrer-policy';
+import { reportErrors } from './lib/report-errors';
 import { resolveIconSvg } from './lib/resolve-theme-icons';
 
 // Default for every route: embeddable only by itself. The one route that
@@ -41,7 +43,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const visitorIp =
     visitorIpFromForwardedFor(context.request.headers.get('x-forwarded-for')) ??
     safeClientAddress(context);
-  const response = await runWithRequestContext({ visitorIp }, next);
+  // An error the route throws is reported on its way out (docs/adr/0114),
+  // by method and path, and goes on to Astro's own 500 page.
+  const response = await reportErrors(
+    errorReporter,
+    { method: context.request.method, path: context.url.pathname },
+    () => runWithRequestContext({ visitorIp }, next),
+  );
   if (!response.headers.has('Content-Security-Policy')) {
     response.headers.set(
       'Content-Security-Policy',

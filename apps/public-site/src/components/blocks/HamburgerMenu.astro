@@ -1,15 +1,14 @@
 ---
 import type { HamburgerMenuProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = HamburgerMenuProps & {
-  locale: string;
+  i18n: Translator;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
 };
 
-const { position, visibility, locale, instanceClass } = Astro.props;
-const i18n = new Translator(locale);
+const { position, visibility, i18n, instanceClass } = Astro.props;
 const openLabel = i18n.t('hamburgerMenu.open');
 const closeLabel = i18n.t('hamburgerMenu.close');
 ---

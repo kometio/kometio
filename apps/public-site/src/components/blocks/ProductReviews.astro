@@ -2,6 +2,7 @@
 import type { Block, ProductReviewsProps } from '@kometio/shared-types';
 import { richTextToPlainText } from '@kometio/shared-types';
 import CollectionLayout from '../CollectionLayout.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 export type Props = ProductReviewsProps & {
   /** The reviews, read off the block's own children for the structured data (Faq.astro's reason). */
@@ -10,7 +11,7 @@ export type Props = ProductReviewsProps & {
   hasChildren?: boolean;
   instanceClass?: string | null;
   emptyChildLabel?: string | null;
-  locale: string;
+  i18n: Translator;
 };
 
 const {
@@ -22,7 +23,7 @@ const {
   hasChildren,
   instanceClass,
   emptyChildLabel,
-  locale,
+  i18n,
 } = Astro.props;
 
 /*
@@ -79,7 +80,7 @@ const jsonLd =
   hasChildren={hasChildren}
   instanceClass={instanceClass}
   emptyChildLabel={emptyChildLabel}
-  locale={locale}
+  i18n={i18n}
   step="item"
 >
   <slot />

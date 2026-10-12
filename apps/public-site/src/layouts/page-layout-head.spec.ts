@@ -10,14 +10,22 @@ import { describe, expect, it } from 'vitest';
  * green suite. There is no browser in these tests, so this reads the file.
  */
 describe('PageLayout head', () => {
-  const source = readFileSync(
+  const layout = readFileSync(
     fileURLToPath(new URL('./PageLayout.astro', import.meta.url)),
     'utf8',
   );
-  const head = source.slice(
-    source.indexOf('<head>'),
-    source.indexOf('</head>'),
+  // What goes in the `<head>` is written in PageHead.astro.
+  const source = readFileSync(
+    fileURLToPath(new URL('./PageHead.astro', import.meta.url)),
+    'utf8',
   );
+  const head = source.slice(source.indexOf('---', 3) + 3);
+
+  it('draws its <head> with PageHead in it', () => {
+    expect(
+      layout.slice(layout.indexOf('<head>'), layout.indexOf('</head>')),
+    ).toContain('<PageHead');
+  });
 
   it('emits the cascade layer order before any other style or stylesheet', () => {
     const firstStyle = head.search(/<style|<link rel="stylesheet"/);

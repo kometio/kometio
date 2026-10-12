@@ -1,16 +1,15 @@
 ---
 import type { NewsletterSignupProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import CaptchaWidget from '../parts/CaptchaWidget.astro';
 
 type Props = NewsletterSignupProps & {
-  locale: string;
+  i18n: Translator;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
 };
 
-const { title, buttonLabel, locale, instanceClass } = Astro.props;
-const i18n = new Translator(locale);
+const { title, buttonLabel, i18n, instanceClass } = Astro.props;
 
 // Simple presence flags, not keyed by a block id the way Form.astro keys
 // by form.id — this block has no backing entity (docs/adr/0015's
@@ -66,7 +65,7 @@ const redirectTo =
           />
           <button type="submit" data-kometio-field="buttonLabel">{buttonLabel}</button>
         </div>
-        <CaptchaWidget locale={locale} />
+        <CaptchaWidget i18n={i18n} />
       </form>
     )
   }

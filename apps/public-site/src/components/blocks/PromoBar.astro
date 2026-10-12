@@ -1,12 +1,12 @@
 ---
 import type { PromoBarProps } from '@kometio/shared-types';
 import { resolveLinkHref } from '@kometio/theme-runtime';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import { PROMO_BAR_DISMISS_SCRIPT } from './promo-bar-dismiss-script';
 
 type Props = PromoBarProps & {
   instanceClass?: string | null;
-  locale: string;
+  i18n: Translator;
 };
 
 const {
@@ -15,7 +15,7 @@ const {
   page,
   url,
   visibility,
-  locale,
+  i18n,
   instanceClass,
 } = Astro.props;
 // One answer for both questions: where this points, and whether there
@@ -24,7 +24,6 @@ const {
 // this locale, and `href` then fell back to the url field (ADR-0063).
 const href = resolveLinkHref({ linkType, page, url });
 const hasLink = href !== null;
-const i18n = new Translator(locale);
 ---
 
 <div

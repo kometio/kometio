@@ -1,15 +1,15 @@
 ---
 import type { ShippingReturnsProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = ShippingReturnsProps & {
-  locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
 
 const props = Astro.props;
-const i18n = new Translator(props.locale);
+const { i18n } = props;
 
 /*
  * Lucide's truck, rotate-ccw and life-buoy, inlined: these are part of the

@@ -1,6 +1,6 @@
 ---
 import type { TermListProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import {
   selectedTermSlugs,
   termFilterHref,
@@ -10,13 +10,12 @@ import {
 type Props = TermListProps & {
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
-  /** The language being rendered: its own words are the only ones it has. */
-  locale?: string;
+  /** Its own words are the only ones it has. */
+  i18n: Translator;
 };
 
-const { behaviour, style, showAll, choices, instanceClass, locale } =
+const { behaviour, style, showAll, choices, instanceClass, i18n } =
   Astro.props;
-const i18n = new Translator(locale ?? '');
 
 // Empty both when no dimension has been chosen and when the one chosen
 // has no terms in this language. The reader is shown the same nothing

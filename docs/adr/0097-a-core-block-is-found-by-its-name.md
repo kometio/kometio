@@ -39,7 +39,7 @@ types, `editable` on 16 more: a second list of what each component's own
   handed them as `items`. It is worked out once per theme, with the theme's
   overrides and its own new block types in the same table, instead of once per
   block rendered.
-- **Every block is handed the page context** (`locale`, `site`,
+- **Every block is handed the page context** (`locale`, `i18n`, `site`,
   `translations`, `ancestors`, `currentPageTitle`, `editable`): a component
   reads the ones it wants. That is free only while nothing forwards its props
   into markup, which `block-components.spec.ts` holds for core blocks and for

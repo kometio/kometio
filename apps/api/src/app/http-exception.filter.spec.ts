@@ -1,6 +1,8 @@
 import { Logger, NotFoundException } from '@nestjs/common';
 import type { ArgumentsHost } from '@nestjs/common';
 import { PageGroupNotFoundError } from '@kometio/domain-core';
+import type { ErrorReporterPort } from '@kometio/ports';
+import { DeploymentNotSetUpError } from './deployment-tenant.resolver';
 import { HttpExceptionFilter } from './http-exception.filter';
 import type { RequestWithId } from './request-id.middleware';
 
@@ -126,5 +128,72 @@ describe('HttpExceptionFilter', () => {
 
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('req-5'));
     expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  describe('reporting (docs/adr/0114)', () => {
+    let reporter: jest.Mocked<ErrorReporterPort>;
+
+    beforeEach(() => {
+      reporter = {
+        enabled: true,
+        captureException: jest.fn(),
+        flush: jest.fn(),
+      };
+      filter = new HttpExceptionFilter(reporter);
+    });
+
+    it('reports an error nobody handled, with where it happened and not the query', () => {
+      const { host } = buildHost({
+        requestId: 'req-9',
+        method: 'POST',
+        originalUrl: '/api/pages/p1?token=segreto',
+      });
+      const error = new Error('db exploded');
+
+      filter.catch(error, host);
+
+      expect(reporter.captureException).toHaveBeenCalledWith(error, {
+        requestId: 'req-9',
+        method: 'POST',
+        path: '/api/pages/p1',
+      });
+    });
+
+    it.each([
+      ['a refused request', new NotFoundException('Page not found')],
+      ['a domain rule that said no', new PageGroupNotFoundError('abc')],
+      [
+        'a 503 the application answers on purpose (not set up yet)',
+        new DeploymentNotSetUpError(),
+      ],
+    ])(
+      'does not report %s: that is the application working',
+      (_name, error) => {
+        const { host } = buildHost({
+          requestId: 'req-10',
+          method: 'GET',
+          originalUrl: '/api/pages',
+        });
+
+        filter.catch(error, host);
+
+        expect(reporter.captureException).not.toHaveBeenCalled();
+      },
+    );
+
+    it('answers the request the same when the report itself fails', () => {
+      reporter.captureException.mockImplementation(() => {
+        throw new Error('sentry is down');
+      });
+      const { host, status } = buildHost({
+        requestId: 'req-11',
+        method: 'GET',
+        originalUrl: '/api/pages',
+      });
+
+      expect(() => filter.catch(new Error('boom'), host)).not.toThrow();
+
+      expect(status).toHaveBeenCalledWith(500);
+    });
   });
 });

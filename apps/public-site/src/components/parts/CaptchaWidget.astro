@@ -10,12 +10,14 @@
 // rendered HTML — this app doesn't do per-domain build-time bundling, so a
 // build-time-baked client constant would be wrong here anyway. Empty is unset: an
 // image started with no key passes one as an empty string.
+import type { Translator } from '@kometio/theme-runtime';
+
 type Props = {
-  /** The page's language, for the built-in widget's own words. */
-  locale: string;
+  /** The page's strings: the built-in widget says its own words in their language. */
+  i18n: Translator;
 };
 
-const { locale } = Astro.props;
+const { i18n } = Astro.props;
 const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
 ---
 
@@ -29,7 +31,7 @@ const turnstileSiteKey = process.env['TURNSTILE_SITE_KEY'] ?? '';
     <div
       data-kometio-altcha
       data-challenge="/api/captcha/challenge"
-      data-language={locale}
+      data-language={i18n.language}
     />
   )
 }

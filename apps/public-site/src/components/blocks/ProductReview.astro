@@ -1,11 +1,13 @@
 ---
 import type { ProductReviewProps } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
 import { resolveThemeBlockOverride } from '../../lib/resolve-theme-block-override';
 import TestimonialCore from './Testimonial.astro';
 import { delegatedRootClass } from '../../lib/delegated-root-class';
 
 type Props = ProductReviewProps & {
   locale: string;
+  i18n: Translator;
   themeName: string;
   instanceClass?: string | null;
 };

@@ -5,6 +5,7 @@ export * from './lib/dashboard-stats.port';
 export * from './lib/deployment-bootstrap.port';
 export * from './lib/deployment-locale.port';
 export * from './lib/email.port';
+export * from './lib/error-reporter.port';
 export * from './lib/form-repository.port';
 export * from './lib/form-submission-repository.port';
 export * from './lib/media-repository.port';

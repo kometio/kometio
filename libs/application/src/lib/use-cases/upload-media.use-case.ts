@@ -5,15 +5,18 @@ import {
   MediaTooLargeError,
 } from '@kometio/domain-core';
 import type {
+  ImageOptimizerPort,
   MediaRepositoryPort,
   MediaStoragePort,
   SiteRepositoryPort,
 } from '@kometio/ports';
 import { requireSite } from './require-site';
+import { storeUpload } from './store-upload';
 
 export interface UploadMediaDeps {
   mediaRepository: MediaRepositoryPort;
   mediaStorage: MediaStoragePort;
+  imageOptimizer: ImageOptimizerPort;
   siteRepository: Pick<SiteRepositoryPort, 'findById'>;
 }
 
@@ -59,23 +62,20 @@ export async function uploadMedia(
   // Before anything is stored: a file for a site that is not this
   // tenant's would otherwise be written first and refused after.
   await requireSite(deps.siteRepository, input.tenantId, input.siteId);
-  // Classified here as well as in the storage adapter, and deliberately:
-  // the limit is a rule about what this application accepts, and it needs
+  // The limit is a rule about what this application accepts, and it needs
   // to know what the file IS before it can say how big it may be. Nothing
   // is refused for its type any more (ADR-0070) — only for its size.
-  const { kind } = classifyUpload(input.data, input.filename);
-  const limit = MAX_UPLOAD_BYTES_BY_KIND[kind];
+  const classified = classifyUpload(input.data, input.filename);
+  const limit = MAX_UPLOAD_BYTES_BY_KIND[classified.kind];
   if (input.data.byteLength > limit) {
-    throw new MediaTooLargeError(kind, limit);
+    throw new MediaTooLargeError(classified.kind, limit);
   }
 
-  const uploaded = await deps.mediaStorage.upload({
-    tenantId: input.tenantId,
-    siteId: input.siteId,
-    filename: input.filename,
-    mimeType: input.mimeType,
-    data: input.data,
-  });
+  const uploaded = await storeUpload(
+    deps,
+    { filename: input.filename, data: input.data },
+    classified,
+  );
 
   const media = Media.create({
     id: randomUUID(),

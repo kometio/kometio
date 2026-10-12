@@ -8,6 +8,7 @@ import {
   type ExceptionFilter,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { noErrorReporter, type ErrorReporterPort } from '@kometio/ports';
 import { mapDomainErrorToHttpException } from './domain-error-http-mapping';
 import type { RequestWithId } from './request-id.middleware';
 
@@ -32,12 +33,19 @@ import type { RequestWithId } from './request-id.middleware';
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger('HttpException');
 
+  /**
+   * `reporter` is where an error nobody expected goes besides the log
+   * (docs/adr/0114). Left out, nowhere: the filters that only ever answer a
+   * known error (AuthErrorsFilter) have nothing to report.
+   */
+  constructor(private readonly reporter: ErrorReporterPort = noErrorReporter) {}
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<RequestWithId>();
 
-    const httpException = this.resolveHttpException(exception);
+    const { httpException, unexpected } = this.resolveHttpException(exception);
     const status = httpException.getStatus();
     const requestId = request.requestId;
 
@@ -54,6 +62,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
       this.logger.warn(`${logLine} ${httpException.message}`);
     }
 
+    // Only what nobody handled: a refused request, a missing page and a rule
+    // that said no are the application working, and a 503 before the first
+    // run is it saying so. The log has them all.
+    if (unexpected) {
+      try {
+        this.reporter.captureException(exception, {
+          requestId,
+          method: request.method,
+          path,
+        });
+      } catch {
+        // The request is already failing; the report is not worth a second.
+      }
+    }
+
     const body = httpException.getResponse();
     response
       .status(status)
@@ -64,14 +87,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
   }
 
-  private resolveHttpException(exception: unknown): HttpException {
+  private resolveHttpException(exception: unknown): {
+    httpException: HttpException;
+    /** True when nothing knew what this was: it is a bug, not an answer. */
+    unexpected: boolean;
+  } {
     if (exception instanceof HttpException) {
-      return exception;
+      return { httpException: exception, unexpected: false };
     }
     const mapped = mapDomainErrorToHttpException(exception);
     if (mapped) {
-      return mapped;
+      return { httpException: mapped, unexpected: false };
     }
-    return new InternalServerErrorException('Internal server error');
+    return {
+      httpException: new InternalServerErrorException('Internal server error'),
+      unexpected: true,
+    };
   }
 }

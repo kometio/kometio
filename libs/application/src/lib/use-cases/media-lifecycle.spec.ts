@@ -5,6 +5,7 @@ import { listMedia } from './list-media.use-case';
 import { countMediaByKind } from './count-media-by-kind.use-case';
 import { deleteMedia } from './delete-media.use-case';
 import {
+  InMemoryImageOptimizer,
   InMemoryMediaRepository,
   InMemoryMediaStorage,
   InMemorySiteRepository,
@@ -31,6 +32,7 @@ describe('media lifecycle: upload -> list -> delete', () => {
     return {
       mediaRepository,
       mediaStorage,
+      imageOptimizer: new InMemoryImageOptimizer(),
       // This tenant's two sites, and one of another tenant's.
       siteRepository: new InMemorySiteRepository(
         buildSite(),
@@ -59,8 +61,10 @@ describe('media lifecycle: upload -> list -> delete', () => {
     expect(media.storageProvider).toBe('local');
     expect(media.mimeType).toBe('image/webp'); // converted, not the input type
     expect(media.width).toBe(800);
-    expect(deps.mediaStorage.uploads).toHaveLength(1);
-    expect(deps.mediaStorage.uploads[0].filename).toBe('foto.png');
+    expect(deps.mediaStorage.puts).toHaveLength(1);
+    expect(deps.mediaStorage.puts[0]?.key).toBe(media.storageKey);
+    // The name the person gave is the library's to show, not the store's to keep.
+    expect(media.storageKey).not.toContain('foto');
 
     const found = await deps.mediaRepository.findById(tenantId, media.id);
     expect(found?.storageKey).toBe(media.storageKey);

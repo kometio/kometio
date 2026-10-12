@@ -1,10 +1,12 @@
 # s3-media-storage
 
-`MediaStoragePort` implementation for the curated media library — same
-processing as `@kometio/local-disk-media-storage`, but the
-resulting WebP is written to an S3 (or S3-compatible, e.g. MinIO) bucket
-instead of the local filesystem. See
-[ADR-0013](../../../docs/adr/0013-media-pipeline-local-serving-upload-time-resize.md).
+`MediaStoragePort` implementation for the curated media library — the
+same as `@kometio/local-disk-media-storage`, but what it is given is put in
+an S3 (or S3-compatible, e.g. MinIO) bucket instead of written to the local
+filesystem. What a file is and what becomes of it is the application's rule
+([ADR-0113](../../../docs/adr/0113-the-upload-policy-is-the-applications-not-the-stores.md);
+the pipeline is
+[ADR-0013](../../../docs/adr/0013-media-pipeline-local-serving-upload-time-resize.md)).
 Both this and its LocalDisk sibling **implement the exact same
 `MediaStoragePort` interface**, selected per deployment via
 `MEDIA_STORAGE_PROVIDER` — a swap, not a code fork.
@@ -12,16 +14,19 @@ Both this and its LocalDisk sibling **implement the exact same
 ## Implements
 
 `MediaStoragePort` (`libs/ports/src/lib/media-storage.port.ts`) —
-`upload`, `getUrl`, `delete`, `readonly provider = 's3'`.
+`put`, `getUrl`, `delete`, `readonly provider = 's3'`.
 
 ## How it works
 
-Same as `LocalDiskMediaStorageAdapter` in everything but where the bytes
-go: the bytes decide what a file is, and a picture goes through the
-`ImageOptimizerPort` it was given — the very same `@kometio/sharp-image-optimizer`
-instance type, so a picture becomes the same thing on either backend (this
-used to be two copies of the pipeline; the corrupt-image refusal made a
-second copy of the `try` the point at which to extract it).
+`put()` sends a `PutObjectCommand` with the key, the bytes and the type it
+was given — and, for a download (`downloadName`), the
+`Content-Disposition: attachment` header, which has to be stored WITH the
+object because the bucket serves it and no application is in the path to
+add it later. The name is written into the header with what would end its
+quoted string escaped, so that it cannot add a parameter of its own. What
+the file is, and which of these it gets, was decided before it arrived
+(`storeUpload`, `@kometio/application`) — this used to be two copies of the
+pipeline, one here and one in the local adapter.
 
 Storage itself uses `@aws-sdk/client-s3`'s `PutObjectCommand`/
 `DeleteObjectCommand`. `endpoint`/`forcePathStyle` target an
