@@ -1,42 +1,22 @@
-import { z } from 'zod';
 import {
-  exposedFieldsSchema,
-  reusableSectionKindSchema,
-} from '@kometio/shared-types';
+  createReusableSectionBodyShape,
+  saveReusableSectionDraftBodyShape,
+} from '@kometio/api-contracts';
 import { sanitizedPageContentSchema } from '../rich-text/sanitized-page-content.schema';
 
-/**
- * A name is shown in the insert menu and in the editor's title bar, never
- * interpolated into markup or a selector — but it is still bounded here,
- * because "whatever the client sent" is not a length any UI was designed
- * for.
+/*
+ * The two bodies of this module that carry block content, with the content
+ * passed through the sanitiser (ADR-0046, ADR-0111): the shape is the
+ * contract's, and what only a server does to it is added here. The other
+ * bodies of the area are the contract's own.
  */
-export const reusableSectionNameSchema = z.string().trim().min(1).max(120);
 
-export const listQuerySchema = z.object({ siteId: z.string().uuid() });
-export type ListQuery = z.infer<typeof listQuerySchema>;
+export const createReusableSectionBodySchema =
+  createReusableSectionBodyShape.extend({
+    content: sanitizedPageContentSchema.optional(),
+  });
 
-export const createBodySchema = z.object({
-  siteId: z.string().uuid(),
-  name: reusableSectionNameSchema,
-  kind: reusableSectionKindSchema,
-  // Present when the section is made out of blocks already on a page.
-  content: sanitizedPageContentSchema.optional(),
-});
-export type CreateBody = z.infer<typeof createBodySchema>;
-
-export const saveDraftBodySchema = z.object({
-  content: sanitizedPageContentSchema,
-});
-export type SaveDraftBody = z.infer<typeof saveDraftBodySchema>;
-
-export const renameBodySchema = z.object({ name: reusableSectionNameSchema });
-export type RenameBody = z.infer<typeof renameBodySchema>;
-
-export const exposedFieldsBodySchema = z.object({
-  exposedFields: exposedFieldsSchema,
-});
-export type ExposedFieldsBody = z.infer<typeof exposedFieldsBodySchema>;
-
-export const rollbackBodySchema = z.object({ versionId: z.string().uuid() });
-export type RollbackBody = z.infer<typeof rollbackBodySchema>;
+export const saveReusableSectionDraftBodySchema =
+  saveReusableSectionDraftBodyShape.extend({
+    content: sanitizedPageContentSchema,
+  });

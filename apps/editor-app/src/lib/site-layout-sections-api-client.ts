@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { type Block, type SiteLayoutSectionKind } from '@kometio/shared-types';
 import {
+  type RollbackSiteLayoutSectionBody,
+  type SaveSiteLayoutSectionDraftBody,
+  type SetSiteLayoutSectionStickyBody,
   type SiteLayoutSectionRecord,
   type SiteLayoutSectionVersionRecord,
   siteLayoutSectionRecordSchema,
@@ -35,7 +38,9 @@ export async function saveDraft(
   return siteLayoutSectionRecordSchema.parse(
     await request(`/site-layout-sections/${id}/draft`, {
       method: 'PATCH',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({
+        content,
+      } satisfies SaveSiteLayoutSectionDraftBody),
     }),
   );
 }
@@ -58,7 +63,7 @@ export async function updateSticky(
   return siteLayoutSectionRecordSchema.parse(
     await request(`/site-layout-sections/${id}/sticky`, {
       method: 'PATCH',
-      body: JSON.stringify({ sticky }),
+      body: JSON.stringify({ sticky } satisfies SetSiteLayoutSectionStickyBody),
     }),
   );
 }
@@ -78,7 +83,9 @@ export async function rollbackToVersion(
   return siteLayoutSectionRecordSchema.parse(
     await request(`/site-layout-sections/${id}/rollback`, {
       method: 'POST',
-      body: JSON.stringify({ versionId }),
+      body: JSON.stringify({
+        versionId,
+      } satisfies RollbackSiteLayoutSectionBody),
     }),
   );
 }

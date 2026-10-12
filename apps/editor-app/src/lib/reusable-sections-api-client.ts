@@ -5,6 +5,10 @@ import {
   type ReusableSectionKind,
 } from '@kometio/shared-types';
 import {
+  type CreateReusableSectionBody,
+  type RollbackReusableSectionBody,
+  type SaveReusableSectionDraftBody,
+  type SetReusableSectionExposedFieldsBody,
   type ReusableSectionListItem,
   type ReusableSectionRecord,
   type ReusableSectionVersionRecord,
@@ -38,12 +42,9 @@ export async function getReusableSection(
   );
 }
 
-export async function createReusableSection(input: {
-  siteId: string;
-  name: string;
-  kind: ReusableSectionKind;
-  content?: Block[];
-}): Promise<ReusableSectionRecord> {
+export async function createReusableSection(
+  input: CreateReusableSectionBody,
+): Promise<ReusableSectionRecord> {
   return reusableSectionRecordSchema.parse(
     await request('/reusable-sections', {
       method: 'POST',
@@ -59,7 +60,7 @@ export async function saveDraft(
   return reusableSectionRecordSchema.parse(
     await request(`/reusable-sections/${id}/draft`, {
       method: 'PATCH',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content } satisfies SaveReusableSectionDraftBody),
     }),
   );
 }
@@ -89,7 +90,9 @@ export async function setExposedFields(
   return reusableSectionRecordSchema.parse(
     await request(`/reusable-sections/${id}/exposed-fields`, {
       method: 'PATCH',
-      body: JSON.stringify({ exposedFields }),
+      body: JSON.stringify({
+        exposedFields,
+      } satisfies SetReusableSectionExposedFieldsBody),
     }),
   );
 }
@@ -121,7 +124,7 @@ export async function rollbackToVersion(
   return reusableSectionRecordSchema.parse(
     await request(`/reusable-sections/${id}/rollback`, {
       method: 'POST',
-      body: JSON.stringify({ versionId }),
+      body: JSON.stringify({ versionId } satisfies RollbackReusableSectionBody),
     }),
   );
 }

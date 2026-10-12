@@ -1,27 +1,12 @@
-import { z } from 'zod';
-import { SITE_LAYOUT_SECTION_KINDS } from '@kometio/shared-types';
+import { saveSiteLayoutSectionDraftBodyShape } from '@kometio/api-contracts';
 import { sanitizedPageContentSchema } from '../rich-text/sanitized-page-content.schema';
 
-export const siteLayoutSectionKindSchema = z.enum(SITE_LAYOUT_SECTION_KINDS);
-
-export const getOrCreateQuerySchema = z.object({
-  siteId: z.string().uuid(),
-  locale: z.string().min(2),
-  kind: siteLayoutSectionKindSchema,
-});
-export type GetOrCreateQuery = z.infer<typeof getOrCreateQuerySchema>;
-
-export const saveDraftBodySchema = z.object({
-  content: sanitizedPageContentSchema,
-});
-export type SaveDraftBody = z.infer<typeof saveDraftBodySchema>;
-
-export const rollbackBodySchema = z.object({
-  versionId: z.string().uuid(),
-});
-export type RollbackBody = z.infer<typeof rollbackBodySchema>;
-
-export const stickyBodySchema = z.object({
-  sticky: z.boolean(),
-});
-export type StickyBody = z.infer<typeof stickyBodySchema>;
+/*
+ * The body of this module that carries block content, with the content
+ * passed through the sanitiser (ADR-0046, ADR-0111). The other bodies of the
+ * area are the contract's own.
+ */
+export const saveSiteLayoutSectionDraftBodySchema =
+  saveSiteLayoutSectionDraftBodyShape.extend({
+    content: sanitizedPageContentSchema,
+  });

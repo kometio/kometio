@@ -31,18 +31,20 @@ import { ReusableSectionRecords } from './reusable-section-records';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
-  type CreateBody,
-  createBodySchema,
-  type ExposedFieldsBody,
-  exposedFieldsBodySchema,
-  type ListQuery,
-  listQuerySchema,
-  type RenameBody,
-  renameBodySchema,
-  type RollbackBody,
-  rollbackBodySchema,
-  type SaveDraftBody,
-  saveDraftBodySchema,
+  type CreateReusableSectionBody,
+  type ListReusableSectionsQuery,
+  listReusableSectionsQuerySchema,
+  type RenameReusableSectionBody,
+  renameReusableSectionBodySchema,
+  type RollbackReusableSectionBody,
+  rollbackReusableSectionBodySchema,
+  type SaveReusableSectionDraftBody,
+  type SetReusableSectionExposedFieldsBody,
+  setReusableSectionExposedFieldsBodySchema,
+} from '@kometio/api-contracts';
+import {
+  createReusableSectionBodySchema,
+  saveReusableSectionDraftBodySchema,
 } from './reusable-sections.schemas';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
@@ -61,7 +63,8 @@ export class ReusableSectionsController {
   @Get()
   async list(
     @TenantId() tenantId: string,
-    @Query(new ZodValidationPipe(listQuerySchema)) query: ListQuery,
+    @Query(new ZodValidationPipe(listReusableSectionsQuerySchema))
+    query: ListReusableSectionsQuery,
   ): Promise<ReusableSectionListItem[]> {
     const sections = await listReusableSectionsWithUsage(
       this.deps,
@@ -83,7 +86,8 @@ export class ReusableSectionsController {
   @Post()
   async create(
     @TenantId() tenantId: string,
-    @Body(new ZodValidationPipe(createBodySchema)) body: CreateBody,
+    @Body(new ZodValidationPipe(createReusableSectionBodySchema))
+    body: CreateReusableSectionBody,
   ) {
     const section = await createReusableSection(this.deps, {
       tenantId,
@@ -118,7 +122,8 @@ export class ReusableSectionsController {
   async saveDraft(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
-    @Body(new ZodValidationPipe(saveDraftBodySchema)) body: SaveDraftBody,
+    @Body(new ZodValidationPipe(saveReusableSectionDraftBodySchema))
+    body: SaveReusableSectionDraftBody,
   ) {
     const section = await saveReusableSectionDraft(this.deps, {
       tenantId,
@@ -133,7 +138,8 @@ export class ReusableSectionsController {
   async rename(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
-    @Body(new ZodValidationPipe(renameBodySchema)) body: RenameBody,
+    @Body(new ZodValidationPipe(renameReusableSectionBodySchema))
+    body: RenameReusableSectionBody,
   ) {
     const section = await renameReusableSection(this.deps, {
       tenantId,
@@ -148,8 +154,8 @@ export class ReusableSectionsController {
   async setExposedFields(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
-    @Body(new ZodValidationPipe(exposedFieldsBodySchema))
-    body: ExposedFieldsBody,
+    @Body(new ZodValidationPipe(setReusableSectionExposedFieldsBodySchema))
+    body: SetReusableSectionExposedFieldsBody,
   ) {
     const section = await setReusableSectionExposedFields(this.deps, {
       tenantId,
@@ -186,7 +192,8 @@ export class ReusableSectionsController {
   async rollback(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
-    @Body(new ZodValidationPipe(rollbackBodySchema)) body: RollbackBody,
+    @Body(new ZodValidationPipe(rollbackReusableSectionBodySchema))
+    body: RollbackReusableSectionBody,
   ) {
     const section = await rollbackReusableSectionToVersion(this.deps, {
       tenantId,

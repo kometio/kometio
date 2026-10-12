@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { siteDomainSchema } from '@kometio/shared-types';
-import { pagePathSchema, pageSlugSchema } from '@kometio/api-contracts';
+import { pagePathSchema, pageSlugSchema } from './page-slug';
 
 export const publicPageBySlugQuerySchema = z.object({
   domain: siteDomainSchema,
