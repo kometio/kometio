@@ -61,7 +61,7 @@ const WORD_RULES: readonly (readonly [RegExp, string])[] = [
  * email, a password hash, a page's text. From there to the end of the
  * message, because a value can have a line break in it.
  */
-const QUERY_PARAMS = /\bparams:/;
+const QUERY_PARAMS = /\bparams\s*:/i;
 
 /**
  * A value that is written next to the name of what it is: `password=…`,
@@ -98,11 +98,50 @@ function cutAtWord(text: string, max: number): string {
   return '';
 }
 
+/**
+ * The word as whoever reads it would read it: a percent-encoded address, a
+ * JSON `\u0040`, a numeric entity, a full-width `＠` are the same text, and a
+ * rule written for the plain one does not see them. What is redacted is the
+ * decoded form, so what is sent is that form with the secret gone.
+ */
+function normalised(word: string): string {
+  let text = word;
+  if (/%[0-9a-f]{2}/i.test(text)) {
+    try {
+      text = decodeURIComponent(text);
+    } catch {
+      // A malformed escape: the word is kept as it was written.
+    }
+  }
+  text = text
+    .replace(/\\u([0-9a-f]{4})/gi, (_, hex: string) =>
+      String.fromCharCode(Number.parseInt(hex, 16)),
+    )
+    .replace(/\\x([0-9a-f]{2})/gi, (_, hex: string) =>
+      String.fromCharCode(Number.parseInt(hex, 16)),
+    )
+    .replace(/&#x([0-9a-f]{1,6});/gi, (entity, hex: string) =>
+      codePointOrEntity(Number.parseInt(hex, 16), entity),
+    )
+    .replace(/&#(\d{1,7});/g, (entity, digits: string) =>
+      codePointOrEntity(Number.parseInt(digits, 10), entity),
+    );
+  return text.normalize('NFKC');
+}
+
+function codePointOrEntity(codePoint: number, entity: string): string {
+  return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : entity;
+}
+
 function redactWord(word: string): string {
   if (word.length > MAX_WORD_LENGTH) return '[long]';
+  const text = normalised(word);
+  // Normalising can make a word longer (a ligature is several letters): the
+  // rules are only safe to run over a word of this length, decoded or not.
+  if (text.length > MAX_WORD_LENGTH) return '[long]';
   return WORD_RULES.reduce(
     (current, [pattern, replacement]) => current.replace(pattern, replacement),
-    word,
+    text,
   );
 }
 

@@ -171,6 +171,51 @@ describe('redact', () => {
       expect(redact(42 as unknown as string)).toBe('');
     });
 
+    it.each([
+      [
+        'a percent-encoded address',
+        'GET /api/users/ana%40example.test failed',
+        'GET /api/users/[email] failed',
+      ],
+      [
+        'a percent-encoded query',
+        'fetch https://x.test/p%3Ftoken%3Dabc failed',
+        'fetch https://x.test/p?[query] failed',
+      ],
+      [
+        'a JSON unicode escape',
+        'bad "ana\\u0040example.test"',
+        'bad "[email]"',
+      ],
+      ['a hexadecimal escape', 'bad ana\\x40example.test', 'bad [email]'],
+      [
+        'a numeric entity',
+        'bad ana&#64;example.test and ana&#x40;example.test',
+        'bad [email] and [email]',
+      ],
+      ['a full-width at sign', 'bad ana＠example.test', 'bad [email]'],
+      [
+        'a capitalised params label',
+        'Failed query: x\nParams : a@b.test,hash',
+        'Failed query: x\nparams: [values]',
+      ],
+    ])(
+      'redacts %s: what a consumer would decode, not only what is written',
+      (_name, text, expected) => {
+        expect(redact(text)).toBe(expected);
+      },
+    );
+
+    it('does not let a character that expands under normalisation make a word long enough to be slow', () => {
+      const started = Date.now();
+      const text = `${'\ufdfa'.repeat(250)} `.repeat(60);
+
+      const redacted = redact(text);
+
+      expect(Date.now() - started).toBeLessThan(1000);
+      expect(redacted).toContain('[long]');
+    });
+
     it('keeps what is not a secret: an id, a status, a plain question', () => {
       const text =
         'page 3f9a1c5e-7b2d-4f6a-8c0e-1b3d5f7a9c2e not found (404): which one?';
