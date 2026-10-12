@@ -18,10 +18,9 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import sirv from 'sirv';
-import { cacheControlFor } from './asset-cache-control.mjs';
 import { buildCompatibility } from './build-compatibility.mjs';
 import { handler as astroHandler } from './dist/server/entry.mjs';
+import { staticAssets } from './static-assets.mjs';
 
 const ASSETS_PREFIX = '/_astro/';
 
@@ -29,7 +28,7 @@ const ASSETS_PREFIX = '/_astro/';
 const bundled = {
   id: 'bundled',
   handler: astroHandler,
-  assets: sirv('dist/client', { dev: false }),
+  assets: staticAssets('dist/client'),
 };
 let active = bundled;
 
@@ -85,7 +84,7 @@ async function loadPublishedBuild() {
   active = {
     id: published.build,
     handler,
-    assets: sirv(join(dist, 'client'), { dev: false }),
+    assets: staticAssets(join(dist, 'client')),
   };
   console.log(`Serving theme build ${published.build}.`);
 }
@@ -108,9 +107,6 @@ const server = createServer((req, res) => {
     // the internet read the response too, not just ours.
     res.setHeader('Access-Control-Allow-Origin', '*');
   }
-  // The bundles are named by the hash of their content: kept for good.
-  const cacheControl = cacheControlFor(req.url);
-  if (cacheControl) res.setHeader('Cache-Control', cacheControl);
   // Read once: a swap in the middle of a request must not split it
   // between two builds.
   const build = active;
