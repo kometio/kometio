@@ -538,11 +538,11 @@ path into `apps/public-site` — that coupling is what used to make a theme
 impossible to develop outside this monorepo, and there is now none of it
 left in either core theme:
 
-| Package                  | What you get                                                                                                                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@kometio/theme-runtime` | `localePath`/`localePathFromAncestors`/`localeDirection`, the `DictionaryTranslator` for `locales.json`, the `regions/` props, `PageTreeNodeDto`. |
-| `@kometio/shared-types`  | Every block's props type and the published-site/page shapes.                                                                                      |
-| `@kometio/block-sdk`     | `defineBlock`, the field types, `CORE_BLOCK_TYPES` for your own collision check, and `z` for a block's schema.                                    |
+| Package                  | What you get                                                                                                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@kometio/theme-runtime` | `localePath`/`localePathFromAncestors`/`localeDirection`, `languageLinks` (what a language switcher links to), the `DictionaryTranslator` for `locales.json`, the `regions/` props, `PageTreeNodeDto`. |
+| `@kometio/shared-types`  | Every block's props type and the published-site/page shapes.                                                                                                                                           |
+| `@kometio/block-sdk`     | `defineBlock`, the field types, `CORE_BLOCK_TYPES` for your own collision check, and `z` for a block's schema.                                                                                         |
 
 Your `env.d.ts` needs exactly two lines — the second is what types
 `Astro.locals` for you:
