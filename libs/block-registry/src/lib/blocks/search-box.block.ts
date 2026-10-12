@@ -1,11 +1,8 @@
-import type { SearchBoxProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { searchBoxBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { visibilityField } from '../fields/visibility-field';
 
-export const searchBoxBlock: BlockDescriptor<SearchBoxProps> = {
-  type: 'SearchBox',
+export const searchBoxBlock = coreBlock(searchBoxBlockContract, {
   label: 'blocks.searchBox.label',
   category: 'conversion',
   icon: 'search',
@@ -22,6 +19,4 @@ export const searchBoxBlock: BlockDescriptor<SearchBoxProps> = {
     },
     visibilityField,
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.SearchBox,
-};
+});

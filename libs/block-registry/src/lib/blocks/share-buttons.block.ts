@@ -1,7 +1,5 @@
-import type { ShareButtonsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { shareButtonsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 const NETWORKS = [
   'whatsapp',
@@ -17,8 +15,7 @@ const NETWORKS = [
  * from Facebook or anyone else loads until a visitor presses one, so
  * there is nothing here for a cookie banner to ask about.
  */
-export const shareButtonsBlock: BlockDescriptor<ShareButtonsProps> = {
-  type: 'ShareButtons',
+export const shareButtonsBlock = coreBlock(shareButtonsBlockContract, {
   label: 'blocks.shareButtons.label',
   category: 'conversion',
   icon: 'forward',
@@ -45,6 +42,4 @@ export const shareButtonsBlock: BlockDescriptor<ShareButtonsProps> = {
       label: `blocks.shareButtons.fields.${network}.fieldLabel`,
     })),
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ShareButtons,
-};
+});

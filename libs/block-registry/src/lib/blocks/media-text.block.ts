@@ -1,7 +1,6 @@
-import type { MediaTextProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { mediaTextBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * A picture beside words.
@@ -11,8 +10,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * `start`/`end` follow the page's direction, so the picture on the left
  * in Italian is on the right in Arabic.
  */
-export const mediaTextBlock: BlockDescriptor<MediaTextProps> = {
-  type: 'MediaText',
+export const mediaTextBlock = coreBlock(mediaTextBlockContract, {
   label: 'blocks.mediaText.label',
   category: 'media',
   icon: 'layout-panel-left',
@@ -108,6 +106,4 @@ export const mediaTextBlock: BlockDescriptor<MediaTextProps> = {
       ],
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.MediaText,
-};
+});

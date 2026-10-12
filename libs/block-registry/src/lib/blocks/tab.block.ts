@@ -1,12 +1,10 @@
-import type { BlockDescriptor } from '../field-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { tabBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 // `label` is the whole of `TabProps` in the domain (layout-blocks.ts):
 // TabProps = { label: string }. Tab has no `children` prop separate from
 // the real Block.children, so it needs no type of its own here.
-export const tabBlock: BlockDescriptor<{ label: string }> = {
-  type: 'Tab',
+export const tabBlock = coreBlock(tabBlockContract, {
   label: 'blocks.tab.label',
   category: 'interactive',
   icon: 'file',
@@ -24,6 +22,4 @@ export const tabBlock: BlockDescriptor<{ label: string }> = {
   // Its label becomes a button only when Tabs builds the tab list around
   // its panels (block-behaviors/tabs.ts); anywhere else there is no tab.
   allowedParentTypes: ['Tabs'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Tab,
-};
+});

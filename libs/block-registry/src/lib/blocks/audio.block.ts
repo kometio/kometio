@@ -1,9 +1,8 @@
-import { BLOCK_STYLE_DEFAULTS, type AudioProps } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { audioBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const audioBlock: BlockDescriptor<AudioProps> = {
-  type: 'Audio',
+export const audioBlock = coreBlock(audioBlockContract, {
   label: 'blocks.audio.label',
   category: 'media',
   icon: 'music',
@@ -28,6 +27,4 @@ export const audioBlock: BlockDescriptor<AudioProps> = {
       label: 'blocks.audio.fields.loop.fieldLabel',
     },
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Audio,
-};
+});

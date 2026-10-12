@@ -1,11 +1,8 @@
-import type { GlossaryProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { glossaryBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /** Terms and what they mean, with an A–Z index over them. */
-export const glossaryBlock: BlockDescriptor<GlossaryProps> = {
-  type: 'Glossary',
+export const glossaryBlock = coreBlock(glossaryBlockContract, {
   label: 'blocks.glossary.label',
   category: 'content',
   icon: 'book-a',
@@ -20,6 +17,4 @@ export const glossaryBlock: BlockDescriptor<GlossaryProps> = {
   isContainer: true,
   rendersFromChildren: true,
   allowedChildTypes: ['GlossaryTerm'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Glossary,
-};
+});

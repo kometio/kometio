@@ -1,9 +1,7 @@
-import type { EmbedHtmlProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { embedHtmlBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const embedHtmlBlock: BlockDescriptor<EmbedHtmlProps> = {
-  type: 'EmbedHtml',
+export const embedHtmlBlock = coreBlock(embedHtmlBlockContract, {
   label: 'blocks.embedHtml.label',
   category: 'content',
   icon: 'code-xml',
@@ -17,14 +15,4 @@ export const embedHtmlBlock: BlockDescriptor<EmbedHtmlProps> = {
       label: 'blocks.embedHtml.fields.html.fieldLabel',
     },
   ],
-  // No textColor: the content is arbitrary HTML pasted by the user,
-  // which often already carries its own color — only the "frame" space
-  // (background/corners/padding) makes sense here.
-  stylableProperties: [
-    'backgroundColor',
-    'borderRadius',
-    'paddingX',
-    'paddingY',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.EmbedHtml,
-};
+});

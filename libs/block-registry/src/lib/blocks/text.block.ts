@@ -1,9 +1,7 @@
-import type { TextProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { textBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const textBlock: BlockDescriptor<TextProps> = {
-  type: 'Text',
+export const textBlock = coreBlock(textBlockContract, {
   label: 'blocks.text.label',
   category: 'content',
   icon: 'type',
@@ -19,6 +17,4 @@ export const textBlock: BlockDescriptor<TextProps> = {
       inlineEditable: true,
     },
   ],
-  stylableProperties: ['textColor'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Text,
-};
+});

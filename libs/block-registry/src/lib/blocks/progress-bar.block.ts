@@ -1,10 +1,8 @@
-import type { ProgressBarProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { progressBarBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /** How far along something is — a fundraiser, a skill, a project. */
-export const progressBarBlock: BlockDescriptor<ProgressBarProps> = {
-  type: 'ProgressBar',
+export const progressBarBlock = coreBlock(progressBarBlockContract, {
   label: 'blocks.progressBar.label',
   category: 'content',
   icon: 'gauge',
@@ -31,13 +29,4 @@ export const progressBarBlock: BlockDescriptor<ProgressBarProps> = {
       label: 'blocks.progressBar.fields.showValue.fieldLabel',
     },
   ],
-  // The fill's colour, the track's rounding and the bar's thickness — the
-  // three things a bar is made of.
-  stylableProperties: [
-    'backgroundColor',
-    'textColor',
-    'borderRadius',
-    'minHeight',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ProgressBar,
-};
+});

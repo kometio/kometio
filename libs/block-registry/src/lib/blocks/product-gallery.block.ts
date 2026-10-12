@@ -1,7 +1,6 @@
-import type { ProductGalleryProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { productGalleryBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { aspectRatioField } from '../fields/aspect-ratio-field';
 
 /**
@@ -10,8 +9,7 @@ import { aspectRatioField } from '../fields/aspect-ratio-field';
  * The same picture list the Gallery block edits, so what somebody already
  * knows how to fill in works here unchanged.
  */
-export const productGalleryBlock: BlockDescriptor<ProductGalleryProps> = {
-  type: 'ProductGallery',
+export const productGalleryBlock = coreBlock(productGalleryBlockContract, {
   label: 'blocks.productGallery.label',
   category: 'shop',
   icon: 'gallery-thumbnails',
@@ -24,6 +22,4 @@ export const productGalleryBlock: BlockDescriptor<ProductGalleryProps> = {
     ),
     aspectRatioField,
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap', 'maxWidth'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ProductGallery,
-};
+});

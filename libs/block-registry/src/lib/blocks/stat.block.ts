@@ -1,10 +1,7 @@
-import type { StatProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { statBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const statBlock: BlockDescriptor<StatProps> = {
-  type: 'Stat',
+export const statBlock = coreBlock(statBlockContract, {
   label: 'blocks.stat.label',
   category: 'socialProof',
   icon: 'hash',
@@ -45,6 +42,4 @@ export const statBlock: BlockDescriptor<StatProps> = {
       inlineEditable: true,
     },
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Stat,
-};
+});

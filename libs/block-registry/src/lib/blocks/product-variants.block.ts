@@ -1,15 +1,12 @@
-import type { ProductVariantsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { productVariantsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The sizes or colours a product comes in, as information. Not a
  * selector: with no cart there is nothing a choice could change, and a
  * control that does nothing when pressed is worse than a list.
  */
-export const productVariantsBlock: BlockDescriptor<ProductVariantsProps> = {
-  type: 'ProductVariants',
+export const productVariantsBlock = coreBlock(productVariantsBlockContract, {
   label: 'blocks.productVariants.label',
   category: 'shop',
   icon: 'swatch-book',
@@ -28,6 +25,4 @@ export const productVariantsBlock: BlockDescriptor<ProductVariantsProps> = {
       label: 'blocks.productVariants.fields.options.fieldLabel',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ProductVariants,
-};
+});

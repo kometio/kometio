@@ -1,7 +1,6 @@
-import type { SubPagesProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { subPagesBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The pages filed under this one, or under one chosen by hand.
@@ -10,8 +9,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * section's index page that listed its children by hand would forget the
  * next one added.
  */
-export const subPagesBlock: BlockDescriptor<SubPagesProps> = {
-  type: 'SubPages',
+export const subPagesBlock = coreBlock(subPagesBlockContract, {
   label: 'blocks.subPages.label',
   category: 'content',
   icon: 'folder-tree',
@@ -45,6 +43,4 @@ export const subPagesBlock: BlockDescriptor<SubPagesProps> = {
       group: 'advanced',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.SubPages,
-};
+});

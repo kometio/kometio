@@ -1,12 +1,9 @@
-import type { EventListProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { eventListBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { displayField } from '../fields/display-field';
 
 /** What is on: dated events, as cards in a grid, a slider or a carousel. */
-export const eventListBlock: BlockDescriptor<EventListProps> = {
-  type: 'EventList',
+export const eventListBlock = coreBlock(eventListBlockContract, {
   label: 'blocks.eventList.label',
   category: 'localBusiness',
   icon: 'calendar-range',
@@ -14,6 +11,4 @@ export const eventListBlock: BlockDescriptor<EventListProps> = {
   fields: [displayField],
   isContainer: true,
   allowedChildTypes: ['EventItem'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.EventList,
-};
+});

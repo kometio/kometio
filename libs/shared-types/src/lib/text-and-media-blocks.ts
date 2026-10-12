@@ -46,6 +46,11 @@ export const heroBlockContract = defineBlockContract({
     backgroundRepeat: 'no-repeat',
     overlayColor: 'transparent',
     minHeight: 'auto',
+    // `contentAlign` is new with ADR-0056, now that the block is a flex
+    // container: an alignment control on a block that was not one would
+    // have done nothing, which is why the previous comment in Hero.astro
+    // refused to offer it.
+    //
     // The values the block already rendered — `sm:py-28`'s 7rem is the
     // wide-screen half of a responsive default, so the resolved default
     // shown in the editor is the base one.
@@ -360,6 +365,11 @@ export type DividerProps = z.infer<typeof dividerPropsSchema>;
 export const dividerBlockContract = defineBlockContract({
   type: 'Divider',
   props: dividerPropsSchema,
+  // No marginTop/marginBottom here: those two are instance-only and have
+  // no theme default to resolve (see blockStyleOverrideSchema), so the
+  // toolbar adds them for root-level blocks rather than the descriptor
+  // declaring them — a default for them here would be one that does not
+  // exist, which is how this was caught.
   style: {
     borderWidth: '1px',
     borderStyle: 'solid',
@@ -652,6 +662,7 @@ export type LogoStripProps = z.infer<typeof logoStripPropsSchema>;
 export const logoStripBlockContract = defineBlockContract({
   type: 'LogoStrip',
   props: logoStripPropsSchema,
+  // No textColor: the strip only contains images, no text.
   style: {
     backgroundColor: 'transparent',
     borderRadius: '0',

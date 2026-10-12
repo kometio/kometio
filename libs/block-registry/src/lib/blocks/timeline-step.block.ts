@@ -1,10 +1,7 @@
-import type { TimelineStepProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { timelineStepBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const timelineStepBlock: BlockDescriptor<TimelineStepProps> = {
-  type: 'TimelineStep',
+export const timelineStepBlock = coreBlock(timelineStepBlockContract, {
   label: 'blocks.timelineStep.label',
   category: 'socialProof',
   icon: 'circle-dot',
@@ -39,6 +36,4 @@ export const timelineStepBlock: BlockDescriptor<TimelineStepProps> = {
   // The line and the gutter its marker sits in belong to Timeline; on its
   // own the marker hangs outside the content column.
   allowedParentTypes: ['Timeline'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.TimelineStep,
-};
+});

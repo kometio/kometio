@@ -1,6 +1,5 @@
-import type { StickyContactBarProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { stickyContactBarBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * Call, WhatsApp, map and email, fixed to the bottom of a phone's screen.
@@ -10,8 +9,7 @@ import type { BlockDescriptor } from '../field-types';
  * the block's own, because Business info has no such field and a shop's
  * WhatsApp is often not its landline.
  */
-export const stickyContactBarBlock: BlockDescriptor<StickyContactBarProps> = {
-  type: 'StickyContactBar',
+export const stickyContactBarBlock = coreBlock(stickyContactBarBlockContract, {
   label: 'blocks.stickyContactBar.label',
   category: 'localBusiness',
   icon: 'phone',
@@ -44,8 +42,4 @@ export const stickyContactBarBlock: BlockDescriptor<StickyContactBarProps> = {
       label: 'blocks.stickyContactBar.fields.showEmail.fieldLabel',
     },
   ],
-  // No radius: a bar running edge to edge of the screen has no corners
-  // to round, and a site-wide one (a theme sets it at :root) rounded them.
-  stylableProperties: ['backgroundColor', 'textColor', 'paddingX', 'paddingY'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.StickyContactBar,
-};
+});

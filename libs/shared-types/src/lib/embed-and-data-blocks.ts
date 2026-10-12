@@ -49,6 +49,9 @@ export type EmbedHtmlProps = z.infer<typeof embedHtmlPropsSchema>;
 export const embedHtmlBlockContract = defineBlockContract({
   type: 'EmbedHtml',
   props: embedHtmlPropsSchema,
+  // No textColor: the content is arbitrary HTML pasted by the user,
+  // which often already carries its own color — only the "frame" space
+  // (background/corners/padding) makes sense here.
   style: {
     backgroundColor: 'transparent',
     borderRadius: '0',
@@ -68,6 +71,8 @@ export type CodeProps = z.infer<typeof codePropsSchema>;
 export const codeBlockContract = defineBlockContract({
   type: 'Code',
   props: codePropsSchema,
+  // No textColor: the Shiki theme (github-dark) already sets the syntax
+  // colors, same reason as EmbedHtml for free-form content.
   style: {
     backgroundColor: 'transparent',
     borderRadius: 'var(--radius)',

@@ -51,3 +51,8 @@ export function defineBlockContract<
 >(contract: BlockContract<Type, Schema>): BlockContract<Type, Schema> {
   return contract;
 }
+
+/** The props of a block, as its contract's schema reads them. */
+export type BlockContractProps<Contract extends BlockContract> = z.infer<
+  Contract['props']
+>;

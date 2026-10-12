@@ -1,10 +1,7 @@
-import type { RatingProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { ratingBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const ratingBlock: BlockDescriptor<RatingProps> = {
-  type: 'Rating',
+export const ratingBlock = coreBlock(ratingBlockContract, {
   label: 'blocks.rating.label',
   category: 'media',
   icon: 'star',
@@ -29,6 +26,4 @@ export const ratingBlock: BlockDescriptor<RatingProps> = {
       inlineEditable: true,
     },
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Rating,
-};
+});

@@ -1,7 +1,5 @@
-import type { FaqProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { faqBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * Questions and answers that search engines can read as such.
@@ -11,8 +9,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * schema.org `FAQPage` data, which is a claim about the page ("these are
  * its questions") that a plain accordion should not make.
  */
-export const faqBlock: BlockDescriptor<FaqProps> = {
-  type: 'Faq',
+export const faqBlock = coreBlock(faqBlockContract, {
   label: 'blocks.faq.label',
   category: 'interactive',
   icon: 'circle-help',
@@ -28,6 +25,4 @@ export const faqBlock: BlockDescriptor<FaqProps> = {
   isContainer: true,
   rendersFromChildren: true,
   allowedChildTypes: ['AccordionItem'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Faq,
-};
+});

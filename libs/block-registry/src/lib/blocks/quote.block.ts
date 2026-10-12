@@ -1,10 +1,7 @@
-import type { QuoteProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { quoteBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const quoteBlock: BlockDescriptor<QuoteProps> = {
-  type: 'Quote',
+export const quoteBlock = coreBlock(quoteBlockContract, {
   label: 'blocks.quote.label',
   category: 'content',
   icon: 'quote',
@@ -35,6 +32,4 @@ export const quoteBlock: BlockDescriptor<QuoteProps> = {
       inlineEditable: true,
     },
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Quote,
-};
+});

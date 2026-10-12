@@ -1,9 +1,8 @@
-import type { LogoStripProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { logoStripBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const logoStripBlock: BlockDescriptor<LogoStripProps> = {
-  type: 'LogoStrip',
+export const logoStripBlock = coreBlock(logoStripBlockContract, {
   label: 'blocks.logoStrip.label',
   category: 'media',
   icon: 'building-2',
@@ -17,12 +16,4 @@ export const logoStripBlock: BlockDescriptor<LogoStripProps> = {
       'gallery',
     ),
   ],
-  // No textColor: the strip only contains images, no text.
-  stylableProperties: [
-    'backgroundColor',
-    'borderRadius',
-    'paddingX',
-    'paddingY',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.LogoStrip,
-};
+});

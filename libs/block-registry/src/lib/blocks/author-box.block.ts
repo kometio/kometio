@@ -1,7 +1,5 @@
-import type { AuthorBoxProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { authorBoxBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * Who wrote this: their picture, their name, a few lines about them, and
@@ -12,8 +10,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * would be a copy of the one in the person's profile, and the two would
  * part ways the first time they edited it.
  */
-export const authorBoxBlock: BlockDescriptor<AuthorBoxProps> = {
-  type: 'AuthorBox',
+export const authorBoxBlock = coreBlock(authorBoxBlockContract, {
   label: 'blocks.authorBox.label',
   category: 'content',
   icon: 'user-pen',
@@ -35,11 +32,4 @@ export const authorBoxBlock: BlockDescriptor<AuthorBoxProps> = {
       label: 'blocks.authorBox.fields.showArticlesLink.fieldLabel',
     },
   ],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.AuthorBox,
-};
+});

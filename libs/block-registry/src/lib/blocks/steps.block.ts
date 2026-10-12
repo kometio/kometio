@@ -1,14 +1,11 @@
-import type { StepsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { stepsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * How it works, in numbered steps. The numbers are counted by the page,
  * not typed: dragging the third step first renumbers everything.
  */
-export const stepsBlock: BlockDescriptor<StepsProps> = {
-  type: 'Steps',
+export const stepsBlock = coreBlock(stepsBlockContract, {
   label: 'blocks.steps.label',
   category: 'content',
   icon: 'list-ordered',
@@ -33,6 +30,4 @@ export const stepsBlock: BlockDescriptor<StepsProps> = {
   ],
   isContainer: true,
   allowedChildTypes: ['Step'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Steps,
-};
+});

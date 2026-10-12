@@ -1,5 +1,3 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   BLOCK_STYLE_DEFAULTS,
@@ -7,6 +5,7 @@ import {
   COMMERCE_BLOCK_TYPES,
   SEARCHABLE_BLOCK_TYPES,
 } from '@kometio/shared-types';
+import type { BlockDescriptor } from './field-types';
 import { pageBlockCategories, pageBlocks } from './config';
 import { headerFooterBlocks } from './layout-config';
 
@@ -130,25 +129,35 @@ describe('translatable field audit spot-checks', () => {
 // Security review 2026-08-24, point 16: nothing checked that a block's
 // `stylableProperties` matched the keys in its `BLOCK_STYLE_DEFAULTS` — a
 // mismatch (a block declaring `backgroundColor` with no default for it,
-// say) went unnoticed. Header/footer and page blocks together (Text, Image
-// and SearchBox are shared by both, deduplicated by type).
+// say) went unnoticed. A first-party descriptor now takes both from its
+// contract (`coreBlock`, ADR-0116), so they agree by construction; what is
+// left to hold is the ones that say their own list (Anchor, Section): a
+// property the editor offers has to have a default to show. Header/footer
+// and page blocks together (Text, Image and SearchBox are shared by both,
+// deduplicated by type).
 describe('stylableProperties / BLOCK_STYLE_DEFAULTS alignment', () => {
   const allBlocksByType = new Map(
     [...pageBlocks, ...headerFooterBlocks].map((block) => [block.type, block]),
   );
 
-  it('gives every block with stylableProperties a BLOCK_STYLE_DEFAULTS entry with exactly those keys', () => {
+  it('gives every property a block offers a default in BLOCK_STYLE_DEFAULTS', () => {
     for (const block of allBlocksByType.values()) {
-      if (!block.stylableProperties || block.stylableProperties.length === 0) {
-        continue;
-      }
-      const defaults = BLOCK_STYLE_DEFAULTS[block.type];
+      const defaults = BLOCK_STYLE_DEFAULTS[block.type] ?? {};
+      const withoutDefault = (block.stylableProperties ?? []).filter(
+        (property) => !Object.hasOwn(defaults, property),
+      );
+
       expect(
-        defaults,
-        `${block.type} declares stylableProperties but has no BLOCK_STYLE_DEFAULTS entry`,
-      ).toBeDefined();
-      expect(Object.keys(defaults ?? {}).sort()).toEqual(
-        [...block.stylableProperties].sort(),
+        withoutDefault,
+        `${block.type} offers properties that have no default in BLOCK_STYLE_DEFAULTS`,
+      ).toEqual([]);
+    }
+  });
+
+  it('hands a block the defaults of its contract, not a copy that can drift', () => {
+    for (const block of allBlocksByType.values()) {
+      expect(block.defaultStyle, block.type).toBe(
+        BLOCK_STYLE_DEFAULTS[block.type],
       );
     }
   });
@@ -201,34 +210,50 @@ describe('every block a file defines is a block somebody can insert', () => {
    * of them could see a block that never got in. This one starts from the
    * files on disk instead.
    */
-  const blocksDir = join(import.meta.dirname, 'blocks');
-  const definedTypes = readdirSync(blocksDir)
-    .filter((file) => file.endsWith('.block.ts'))
-    .map((file) => {
-      const source = readFileSync(join(blocksDir, file), 'utf8');
-      const match = source.match(/type: '([A-Za-z]+)'/);
-      return { file, type: match?.[1] ?? null };
-    });
+  // The descriptors the block files export, read from the modules and not
+  // from their text: a block's `type` is its contract's now (`coreBlock`),
+  // so there is no literal in the file to scrape.
+  const definedBlocks = Object.entries(
+    import.meta.glob<Record<string, unknown>>('./blocks/*.block.ts', {
+      eager: true,
+    }),
+  ).map(([file, module]) => ({
+    file,
+    descriptors: Object.values(module).filter(isBlockDescriptor),
+  }));
 
-  it('finds a type in every block file, so the check below cannot go vacuous', () => {
-    const unreadable = definedTypes.filter((block) => block.type === null);
-    expect(unreadable).toEqual([]);
-    expect(definedTypes.length).toBeGreaterThan(50);
+  it('finds exactly one descriptor in every block file, so the check below cannot go vacuous', () => {
+    const wrong = definedBlocks.filter(
+      (block) => block.descriptors.length !== 1,
+    );
+    expect(wrong.map((block) => block.file)).toEqual([]);
+    expect(definedBlocks.length).toBeGreaterThan(50);
   });
 
-  it.each(definedTypes.map((block) => [block.file, block.type]))(
+  it.each(definedBlocks.map((block) => [block.file, block.descriptors[0]]))(
     '%s is listed in pageBlocks or headerFooterBlocks',
-    (file, type) => {
-      const listed = [...pageBlocks, ...headerFooterBlocks].some(
-        (block) => block.type === type,
+    (file, descriptor) => {
+      const listed = [...pageBlocks, ...headerFooterBlocks].includes(
+        descriptor,
       );
       expect(
         listed,
-        `${file} defines "${type}" but no list offers it — the editor cannot insert it`,
+        `${file} defines "${descriptor?.type}" but no list offers it — the editor cannot insert it`,
       ).toBe(true);
     },
   );
 });
+
+function isBlockDescriptor(value: unknown): value is BlockDescriptor {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof value.type === 'string' &&
+    'fields' in value &&
+    Array.isArray(value.fields)
+  );
+}
 
 /**
  * The guard for `COMMERCE_BLOCK_TYPES` (ADR-0084), which is a list of

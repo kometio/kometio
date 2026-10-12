@@ -1,11 +1,8 @@
-import type { NavProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { navBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { visibilityField } from '../fields/visibility-field';
 
-export const navBlock: BlockDescriptor<NavProps> = {
-  type: 'Nav',
+export const navBlock = coreBlock(navBlockContract, {
   label: 'blocks.nav.label',
   category: 'navigation',
   icon: 'menu',
@@ -18,6 +15,4 @@ export const navBlock: BlockDescriptor<NavProps> = {
     'HamburgerMenu',
     'NavDropdown',
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Nav,
-};
+});

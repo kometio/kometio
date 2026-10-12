@@ -1,15 +1,12 @@
-import type { VideoPlaylistProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { videoPlaylistBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * Several videos, one playing at a time, picked from a list of their
  * titles. Each video is a Video embed block, and its caption is its title
  * in the list.
  */
-export const videoPlaylistBlock: BlockDescriptor<VideoPlaylistProps> = {
-  type: 'VideoPlaylist',
+export const videoPlaylistBlock = coreBlock(videoPlaylistBlockContract, {
   label: 'blocks.videoPlaylist.label',
   category: 'media',
   icon: 'list-video',
@@ -18,6 +15,4 @@ export const videoPlaylistBlock: BlockDescriptor<VideoPlaylistProps> = {
   isContainer: true,
   rendersFromChildren: true,
   allowedChildTypes: ['VideoEmbed'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.VideoPlaylist,
-};
+});

@@ -1,7 +1,5 @@
-import type { ArticleNavProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { articleNavBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The way on to the article before and the article after.
@@ -13,8 +11,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  *
  * It has no fields at all: both ends are answers, not choices.
  */
-export const articleNavBlock: BlockDescriptor<ArticleNavProps> = {
-  type: 'ArticleNav',
+export const articleNavBlock = coreBlock(articleNavBlockContract, {
   label: 'blocks.articleNav.label',
   category: 'content',
   icon: 'arrow-left-right',
@@ -23,6 +20,4 @@ export const articleNavBlock: BlockDescriptor<ArticleNavProps> = {
     next: null,
   },
   fields: [],
-  stylableProperties: [...BlockStyleRegistry.STANDARD],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ArticleNav,
-};
+});

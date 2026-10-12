@@ -1,9 +1,5 @@
-import {
-  BLOCK_STYLE_DEFAULTS,
-  type CarouselProps,
-} from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { carouselBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 // Named Carousel rather than Slider, and not for taste: `ImageSlider`
 // already owns the `.kometio-slider` class that `blockTypeToClassName`
@@ -14,8 +10,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
 // No allowedChildTypes — the point of this block is that it holds
 // anything, the same reasoning as Container and Column. A collection with
 // a fixed child type answers the other half of the need (ADR-0052).
-export const carouselBlock: BlockDescriptor<CarouselProps> = {
-  type: 'Carousel',
+export const carouselBlock = coreBlock(carouselBlockContract, {
   label: 'blocks.carousel.label',
   category: 'layout',
   icon: 'gallery-horizontal',
@@ -33,6 +28,4 @@ export const carouselBlock: BlockDescriptor<CarouselProps> = {
     },
   ],
   isContainer: true,
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Carousel,
-};
+});

@@ -1,11 +1,8 @@
-import type { BannerProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { bannerBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { ctaLinkFields } from '../fields/link-type-field';
 
-export const bannerBlock: BlockDescriptor<BannerProps> = {
-  type: 'Banner',
+export const bannerBlock = coreBlock(bannerBlockContract, {
   label: 'blocks.banner.label',
   category: 'conversion',
   icon: 'megaphone',
@@ -50,15 +47,4 @@ export const bannerBlock: BlockDescriptor<BannerProps> = {
     { value: 'split', label: 'blocks.banner.variants.split' },
     { value: 'outline', label: 'blocks.banner.variants.outline' },
   ],
-  // STANDARD plus the frame and the spacing the two variants need: a
-  // border with no width to set is not a control, and `split` turns the
-  // block into a flex row whose gap is worth setting.
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'gap',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Banner,
-};
+});

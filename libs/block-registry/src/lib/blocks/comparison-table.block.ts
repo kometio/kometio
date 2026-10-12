@@ -1,7 +1,5 @@
-import type { ComparisonTableProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { comparisonTableBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * Plans or products side by side, a feature per row.
@@ -9,8 +7,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * Its rows are blocks rather than a spreadsheet field, so each one is
  * dragged, translated and styled like everything else on the page.
  */
-export const comparisonTableBlock: BlockDescriptor<ComparisonTableProps> = {
-  type: 'ComparisonTable',
+export const comparisonTableBlock = coreBlock(comparisonTableBlockContract, {
   label: 'blocks.comparisonTable.label',
   category: 'content',
   icon: 'table-properties',
@@ -34,11 +31,4 @@ export const comparisonTableBlock: BlockDescriptor<ComparisonTableProps> = {
   ],
   isContainer: true,
   allowedChildTypes: ['ComparisonRow'],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ComparisonTable,
-};
+});

@@ -1,7 +1,5 @@
-import type { PageGridProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { pageGridBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The pages filed under one term (docs/adr/0064). It is what a term's
@@ -12,8 +10,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * way a picked page's address is. Offering it as an input would let
  * somebody type a list that has nothing to do with the term.
  */
-export const pageGridBlock: BlockDescriptor<PageGridProps> = {
-  type: 'PageGrid',
+export const pageGridBlock = coreBlock(pageGridBlockContract, {
   label: 'blocks.pageGrid.label',
   category: 'content',
   icon: 'layout-grid',
@@ -91,6 +88,4 @@ export const pageGridBlock: BlockDescriptor<PageGridProps> = {
       group: 'advanced',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.PageGrid,
-};
+});

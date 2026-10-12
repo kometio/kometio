@@ -1,7 +1,5 @@
-import type { ProfileCardProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { profileCardBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { teamMemberBlock } from './team-member.block';
 
 /**
@@ -9,8 +7,7 @@ import { teamMemberBlock } from './team-member.block';
  * — the same fields, drawn by the same component — plus an email and a
  * phone number.
  */
-export const profileCardBlock: BlockDescriptor<ProfileCardProps> = {
-  type: 'ProfileCard',
+export const profileCardBlock = coreBlock(profileCardBlockContract, {
   label: 'blocks.profileCard.label',
   category: 'content',
   icon: 'id-card',
@@ -35,6 +32,4 @@ export const profileCardBlock: BlockDescriptor<ProfileCardProps> = {
       label: 'blocks.profileCard.fields.phone.fieldLabel',
     },
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ProfileCard,
-};
+});

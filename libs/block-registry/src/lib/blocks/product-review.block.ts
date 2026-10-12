@@ -1,7 +1,5 @@
-import type { ProductReviewProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { productReviewBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { testimonialBlock } from './testimonial.block';
 
 /**
@@ -10,13 +8,10 @@ import { testimonialBlock } from './testimonial.block';
  * blocks, not so that there are two of the same thing to maintain — the
  * fields are the Testimonial's own, labels included.
  */
-export const productReviewBlock: BlockDescriptor<ProductReviewProps> = {
-  type: 'ProductReview',
+export const productReviewBlock = coreBlock(productReviewBlockContract, {
   label: 'blocks.productReview.label',
   category: 'shop',
   icon: 'thumbs-up',
   defaultProps: { quote: '', author: '', role: '', avatar: null, rating: 5 },
   fields: testimonialBlock.fields,
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ProductReview,
-};
+});

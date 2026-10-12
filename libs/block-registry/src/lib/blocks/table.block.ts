@@ -1,9 +1,8 @@
-import { BLOCK_STYLE_DEFAULTS, type TableProps } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { tableBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const tableBlock: BlockDescriptor<TableProps> = {
-  type: 'Table',
+export const tableBlock = coreBlock(tableBlockContract, {
   label: 'blocks.table.label',
   category: 'content',
   icon: 'table',
@@ -20,11 +19,4 @@ export const tableBlock: BlockDescriptor<TableProps> = {
       'table-data',
     ),
   ],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Table,
-};
+});

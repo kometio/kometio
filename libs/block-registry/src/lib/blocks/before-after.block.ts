@@ -1,9 +1,8 @@
-import type { BeforeAfterProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { beforeAfterBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const beforeAfterBlock: BlockDescriptor<BeforeAfterProps> = {
-  type: 'BeforeAfter',
+export const beforeAfterBlock = coreBlock(beforeAfterBlockContract, {
   label: 'blocks.beforeAfter.label',
   category: 'media',
   icon: 'sliders-horizontal',
@@ -39,13 +38,4 @@ export const beforeAfterBlock: BlockDescriptor<BeforeAfterProps> = {
       inlineEditable: true,
     },
   ],
-  stylableProperties: [
-    'borderRadius',
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-    'maxWidth',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.BeforeAfter,
-};
+});

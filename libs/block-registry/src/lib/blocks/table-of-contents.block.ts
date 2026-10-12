@@ -1,7 +1,5 @@
-import type { TableOfContentsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { tableOfContentsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The page's own headings, as links to them.
@@ -10,8 +8,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * and gives each heading the anchor its link points at. One kept by hand
  * is wrong the first time a heading is renamed.
  */
-export const tableOfContentsBlock: BlockDescriptor<TableOfContentsProps> = {
-  type: 'TableOfContents',
+export const tableOfContentsBlock = coreBlock(tableOfContentsBlockContract, {
   label: 'blocks.tableOfContents.label',
   category: 'content',
   icon: 'list-tree',
@@ -45,6 +42,4 @@ export const tableOfContentsBlock: BlockDescriptor<TableOfContentsProps> = {
       group: 'style',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.TableOfContents,
-};
+});

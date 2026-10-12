@@ -1,9 +1,7 @@
-import type { MapEmbedProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { mapEmbedBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const mapEmbedBlock: BlockDescriptor<MapEmbedProps> = {
-  type: 'MapEmbed',
+export const mapEmbedBlock = coreBlock(mapEmbedBlockContract, {
   label: 'blocks.mapEmbed.label',
   category: 'media',
   icon: 'map-pin',
@@ -21,13 +19,4 @@ export const mapEmbedBlock: BlockDescriptor<MapEmbedProps> = {
       label: 'blocks.mapEmbed.fields.address.fieldLabel',
     },
   ],
-  stylableProperties: [
-    'borderRadius',
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-    'maxWidth',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.MapEmbed,
-};
+});

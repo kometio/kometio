@@ -1,10 +1,7 @@
-import type { ColumnsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { columnsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const columnsBlock: BlockDescriptor<ColumnsProps> = {
-  type: 'Columns',
+export const columnsBlock = coreBlock(columnsBlockContract, {
   label: 'blocks.columns.label',
   category: 'layout',
   icon: 'columns-3',
@@ -56,9 +53,4 @@ export const columnsBlock: BlockDescriptor<ColumnsProps> = {
   isContainer: true,
   rendersFromChildren: true,
   allowedChildTypes: ['Column'],
-  // `gap` on top of the standard set (ADR-0050): the space between columns
-  // was a hardcoded 1.5rem, which made a row of tight cards and a row of
-  // full sections the same distance apart.
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Columns,
-};
+});

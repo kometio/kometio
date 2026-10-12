@@ -279,6 +279,7 @@ export type PromoBarProps = z.infer<typeof promoBarPropsSchema>;
 export const promoBarBlockContract = defineBlockContract({
   type: 'PromoBar',
   props: promoBarPropsSchema,
+  // Replaces the old `colorOverride` — see button.block.ts.
   style: {
     backgroundColor: 'var(--primary)',
     textColor: 'var(--primary-foreground)',

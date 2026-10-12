@@ -1,7 +1,6 @@
-import type { EventItemProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { eventItemBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { ctaLinkFields } from '../fields/link-type-field';
 
 /**
@@ -9,8 +8,7 @@ import { ctaLinkFields } from '../fields/link-type-field';
  * somebody wants an archive — an invitation to last Saturday's concert is
  * a mistake a visitor notices before the owner does.
  */
-export const eventItemBlock: BlockDescriptor<EventItemProps> = {
-  type: 'EventItem',
+export const eventItemBlock = coreBlock(eventItemBlockContract, {
   label: 'blocks.eventItem.label',
   category: 'localBusiness',
   icon: 'calendar-clock',
@@ -83,11 +81,4 @@ export const eventItemBlock: BlockDescriptor<EventItemProps> = {
       group: 'advanced',
     },
   ],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.EventItem,
-};
+});
