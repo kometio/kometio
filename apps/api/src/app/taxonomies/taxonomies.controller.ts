@@ -35,19 +35,19 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   createTaxonomyBodySchema,
   createTermBodySchema,
-  listQuerySchema,
+  listTaxonomiesQuerySchema,
   moveTermBodySchema,
   reorderTermsBodySchema,
   updateTaxonomyBodySchema,
   updateTermBodySchema,
   type CreateTaxonomyBody,
   type CreateTermBody,
-  type ListQuery,
+  type ListTaxonomiesQuery,
   type MoveTermBody,
   type ReorderTermsBody,
   type UpdateTaxonomyBody,
   type UpdateTermBody,
-} from './taxonomies.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { TaxonomiesDeps } from './taxonomies.deps';
@@ -68,7 +68,8 @@ export class TaxonomiesController {
   @Get()
   async list(
     @TenantId() tenantId: string,
-    @Query(new ZodValidationPipe(listQuerySchema)) query: ListQuery,
+    @Query(new ZodValidationPipe(listTaxonomiesQuerySchema))
+    query: ListTaxonomiesQuery,
   ) {
     const taxonomies = await listTaxonomies(this.deps, tenantId, query.siteId);
     return taxonomies.map((taxonomy) => this.toTaxonomyDto(taxonomy));

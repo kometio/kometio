@@ -1,17 +1,18 @@
 import {
-  type ResponsiveBlockStyle,
-  type BusinessAddress,
-  type CookieBannerSettings,
-  type LocaleSettings,
-  type OpeningHoursDay,
-  type ThemeSettings,
-} from '@kometio/shared-types';
-import {
   availableThemesResponseSchema,
   formSubmissionCountSchema,
   siteRecordSchema,
   type AvailableTheme,
   type SiteRecord,
+  type UpdateBusinessInfoBody,
+  type UpdateCookieBannerSettingsBody,
+  type UpdateFormSubmissionRetentionBody,
+  type UpdateGeneralSettingsBody,
+  type UpdateLocaleSettingsBody,
+  type UpdateSeoSettingsBody,
+  type UpdateThemePackageBody,
+  type UpdateThemeSettingsBody,
+  type UpdateThemeTokensBody,
 } from '@kometio/api-contracts';
 import { request } from './http-client';
 
@@ -32,13 +33,7 @@ export function getCurrentSite(): Promise<SiteRecord> {
   return requestSite('/sites/current');
 }
 
-export interface UpdateBusinessInfoInput {
-  businessAddress: BusinessAddress | null;
-  businessPhone: string | null;
-  businessEmail: string | null;
-  businessType: string | null;
-  openingHours: OpeningHoursDay[] | null;
-}
+export type UpdateBusinessInfoInput = UpdateBusinessInfoBody;
 
 export function updateBusinessInfo(
   id: string,
@@ -50,10 +45,7 @@ export function updateBusinessInfo(
   });
 }
 
-export interface UpdateGeneralSettingsInput {
-  name: string;
-  domain: string | null;
-}
+export type UpdateGeneralSettingsInput = UpdateGeneralSettingsBody;
 
 export function updateGeneralSettings(
   id: string,
@@ -65,9 +57,7 @@ export function updateGeneralSettings(
   });
 }
 
-export interface UpdateSeoSettingsInput {
-  searchEngineIndexingEnabled: boolean;
-}
+export type UpdateSeoSettingsInput = UpdateSeoSettingsBody;
 
 export function updateSeoSettings(
   id: string,
@@ -79,9 +69,8 @@ export function updateSeoSettings(
   });
 }
 
-export interface UpdateFormSubmissionRetentionInput {
-  formSubmissionRetentionDays: number | null;
-}
+export type UpdateFormSubmissionRetentionInput =
+  UpdateFormSubmissionRetentionBody;
 
 export function updateFormSubmissionRetention(
   id: string,
@@ -108,7 +97,7 @@ export async function countSubmissionsOlderThan(
 
 export function updateLocaleSettings(
   id: string,
-  input: LocaleSettings,
+  input: UpdateLocaleSettingsBody,
 ): Promise<SiteRecord> {
   return requestSite(`/sites/${id}/locale-settings`, {
     method: 'PATCH',
@@ -118,7 +107,7 @@ export function updateLocaleSettings(
 
 export function updateThemeSettings(
   id: string,
-  input: ThemeSettings,
+  input: UpdateThemeSettingsBody,
 ): Promise<SiteRecord> {
   return requestSite(`/sites/${id}/theme-settings`, {
     method: 'PATCH',
@@ -128,7 +117,7 @@ export function updateThemeSettings(
 
 export function updateCookieBannerSettings(
   id: string,
-  input: CookieBannerSettings,
+  input: UpdateCookieBannerSettingsBody,
 ): Promise<SiteRecord> {
   return requestSite(`/sites/${id}/cookie-banner-settings`, {
     method: 'PATCH',
@@ -136,9 +125,7 @@ export function updateCookieBannerSettings(
   });
 }
 
-export interface UpdateThemePackageInput {
-  themeName: string;
-}
+export type UpdateThemePackageInput = UpdateThemePackageBody;
 
 export function updateThemePackage(
   id: string,
@@ -156,11 +143,7 @@ export async function listAvailableThemes(): Promise<AvailableTheme[]> {
   );
 }
 
-export interface UpdateThemeTokensInput {
-  blockType: string;
-  variant: string;
-  style: ResponsiveBlockStyle;
-}
+export type UpdateThemeTokensInput = UpdateThemeTokensBody;
 
 export function updateThemeTokens(
   id: string,

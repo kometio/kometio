@@ -74,7 +74,7 @@ export interface UpdateLocaleSettingsInput {
 export type UpdateThemeSettingsInput = ThemeSettings;
 
 export interface UpdateFormSubmissionRetentionInput {
-  /** `null` = keep forever. A number must be a positive integer (validated at the schema layer, apps/api/src/app/sites/sites.schemas.ts). */
+  /** `null` = keep forever. A number must be a positive integer (validated at the schema layer, libs/api-contracts/src/lib/site-requests.ts). */
   formSubmissionRetentionDays: number | null;
 }
 

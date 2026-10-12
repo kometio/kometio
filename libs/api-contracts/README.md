@@ -18,8 +18,10 @@ and `@kometio/testing` builds valid ones for specs.
   and this library imports it, never the other way round. When a record file
   needed one of those, it was split — `page-status.ts` stayed, the record
   moved (ADR-0096).
-- **Request bodies of one controller.** Those sit next to it in
-  `apps/api`, as `*.schemas.ts`.
+- **What only a server may do to a request.** A request body's schema is
+  here, with the record it concerns ([ADR-0111](../../docs/adr/0111-request-bodies-are-contracts-too.md)),
+  but the sanitiser every block content passes is a `.transform` that needs
+  the sanitising library: it sits in `apps/api`, layered on the shared shape.
 - **Adapters.** A persistence adapter maps rows to entities; it does not
   know how a client reads them.
 
