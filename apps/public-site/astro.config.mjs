@@ -47,8 +47,15 @@ export default defineConfig({
     // check (a POST's `Origin` against that address) refused every form and
     // newsletter signup with a 403: the browser's Origin is https://. The proxy
     // says which it was in X-Forwarded-Proto, and Astro believes that header only
-    // for the protocols listed here: https, so a request that claims plain HTTP
-    // changes nothing and the deployments with no proxy are as they were.
+    // for the protocols listed here.
+    //
+    // Plain HTTP is listed too, and that is not decoration: since @astrojs/node
+    // 11.1.7 the Host header is checked against this list, and a request that
+    // matches no entry is not believed. With only https here, a deployment on
+    // plain HTTP under any name but the one the server itself answers to (a trial
+    // opened by hostname or address, a stack with no TLS in front) found no site
+    // for its domain and answered 404 on every page. check.sh's moved site is
+    // exactly that (plain HTTP, `moved.localhost`) and was what caught it.
     //
     // No hostnames, on purpose: one built image serves whichever domains its env
     // points at, so there is no list to write here. Astro then also reads
@@ -56,7 +63,7 @@ export default defineConfig({
     // all it would pick is which domain's page this single-site deployment looks
     // up, and the compose stack and the image publish this port to nobody but the
     // proxy.
-    allowedDomains: [{ protocol: 'https' }],
+    allowedDomains: [{ protocol: 'https' }, { protocol: 'http' }],
   },
   // Available to any theme (docs/adr/0021), not used by core's own blocks:
   // ADR-0019's "no framework" precedent stays the default for blocks we
