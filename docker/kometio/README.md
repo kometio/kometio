@@ -57,6 +57,10 @@ and a version's image is made once, when it is released. `:main` is different: i
 moves with every change that is merged, newer and tried only by our own tests. Use
 it to follow the work, not for a site you care about.
 
+There is no `:latest`, on purpose: your site is in the volume, and a version's
+migrations only go forward. A tag that moves would update a site on a
+`docker pull`, with no way back, so a version is always named.
+
 Prefer a file? [`compose.yaml`](compose.yaml) in this folder is the same thing:
 `docker compose -f docker/kometio/compose.yaml up -d`.
 
