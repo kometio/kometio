@@ -23,3 +23,17 @@ export const PAGE_LIST_STATES = ['draft', 'published', 'pending'] as const;
 export const pageListStateSchema = z.enum(PAGE_LIST_STATES);
 
 export type PageListState = (typeof PAGE_LIST_STATES)[number];
+
+/**
+ * Which of the three a translation is in. A page that is not published has
+ * nothing online to differ from, so "unpublished changes" is of a published
+ * one only; the flag itself is the server's (`hasUnpublishedChanges` in
+ * `@kometio/domain-core`), never re-derived on the client.
+ */
+export function pageListStateOf(page: {
+  status: PageStatus;
+  hasUnpublishedChanges: boolean;
+}): PageListState {
+  if (page.status !== 'published') return 'draft';
+  return page.hasUnpublishedChanges ? 'pending' : 'published';
+}

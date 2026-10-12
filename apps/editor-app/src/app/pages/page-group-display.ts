@@ -1,4 +1,5 @@
 import type { PageGroupListItemRecord } from '@kometio/api-contracts';
+import { shownTranslation } from '@kometio/shared-types';
 import { pageStatusBadge, type PageStatusBadge } from './page-status';
 
 /** The default-locale translation's title, falling back to the first available one, then the group id — a group is never created without at least one translation, but a defensive fallback costs nothing. */
@@ -36,14 +37,10 @@ export function groupStatusBadge(
   );
 }
 
-/** The site's own language if this page has it, and whatever it does have if not. */
+/** The site's own language if this page has it, and the first by code if not: the one the pages list filters by state too. */
 export function preferredTranslation(
   group: PageGroupListItemRecord,
   defaultLocale: string,
 ) {
-  return (
-    group.translations.find(
-      (translation) => translation.locale === defaultLocale,
-    ) ?? group.translations[0]
-  );
+  return shownTranslation(group.translations, defaultLocale);
 }
