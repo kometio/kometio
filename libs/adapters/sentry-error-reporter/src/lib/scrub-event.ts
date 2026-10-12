@@ -7,6 +7,16 @@ import type {
 /** How much of an error's words is kept, after redacting them. */
 const MAX_TEXT_LENGTH = 1000;
 
+/**
+ * How much of it the rules are run over. Several of them scan forward from
+ * every position, so their time is the square of the length: 80,000
+ * characters took four seconds, and a message is whatever the code that threw
+ * it put there, a request's body included. Four times what is kept: a secret
+ * that straddles this cut is a fragment, and is past the final cut anyway
+ * unless the text before it shrank to nothing.
+ */
+const MAX_INPUT_LENGTH = 4 * MAX_TEXT_LENGTH;
+
 /** A character that cannot be part of the name or the host of an email address, written in a message. */
 const NOT_ADDRESS = String.raw`\s@<>()\[\]{}"'` + '`' + String.raw`,;:/\\`;
 
@@ -42,13 +52,16 @@ const RULES: readonly (readonly [RegExp, string])[] = [
   [/\b(kometio_[a-z_]+|[a-z_]*session[a-z_]*|sid)=[^;\s]+/gi, '$1=[token]'],
 ];
 
+/** What Sentry keeps of a tag's value: more is dropped on the other side. */
+const MAX_TAG_LENGTH = 200;
+
 export function redact(text: string): string {
   const redacted = RULES.reduce(
     (current, [pattern, replacement]) => current.replace(pattern, replacement),
-    text,
+    // Bounded before the rules, which are not linear; cut again after them,
+    // so that a secret cut in half at the final limit is not left written.
+    text.length > MAX_INPUT_LENGTH ? text.slice(0, MAX_INPUT_LENGTH) : text,
   );
-  // After, not before: a secret cut in half at the limit would no longer
-  // look like one.
   return redacted.length > MAX_TEXT_LENGTH
     ? `${redacted.slice(0, MAX_TEXT_LENGTH)}…`
     : redacted;
@@ -69,7 +82,7 @@ function keepFrame(frame: StackFrame): StackFrame {
 
 function keepException(value: Exception): Exception {
   const kept: Exception = {};
-  if (value.type !== undefined) kept.type = value.type;
+  if (value.type !== undefined) kept.type = redact(value.type);
   if (value.value !== undefined) kept.value = redact(value.value);
   if (value.mechanism) {
     // How it was caught, and whether it was handled; its `data` is free-form.
@@ -92,7 +105,9 @@ function redactTags(
     tags: Object.fromEntries(
       Object.entries(tags).map(([name, value]) => [
         name,
-        typeof value === 'string' ? redact(value) : value,
+        typeof value === 'string'
+          ? redact(value).slice(0, MAX_TAG_LENGTH)
+          : value,
       ]),
     ),
   };

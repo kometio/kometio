@@ -114,6 +114,25 @@ describe('SentryErrorReporter', () => {
     expect(fatal?.level).toBe('fatal');
   });
 
+  it('holds back a burst of errors, and never the one that ends the process', async () => {
+    for (let i = 0; i < 40; i += 1) {
+      reporter.captureException(new Error(`burst number ${i}`));
+    }
+    reporter.captureException(new Error('last words'), { fatal: true });
+    await reporter.flush(5000);
+
+    const bursts = eventsReceived().filter((event) =>
+      event.exception.values[0]?.value.startsWith('burst number'),
+    );
+    expect(bursts.length).toBeGreaterThan(0);
+    expect(bursts.length).toBeLessThan(40);
+    expect(
+      eventsReceived().some(
+        (event) => event.exception.values[0]?.value === 'last words',
+      ),
+    ).toBe(true);
+  });
+
   it('never throws, whatever it is given', () => {
     expect(() => reporter.captureException(undefined)).not.toThrow();
     expect(() => reporter.captureException({ not: 'an error' })).not.toThrow();

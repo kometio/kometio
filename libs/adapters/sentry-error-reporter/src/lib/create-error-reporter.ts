@@ -7,6 +7,8 @@ export interface ErrorReportingEnvironment {
   SENTRY_RELEASE?: string | undefined;
 }
 
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+
 /**
  * A Sentry DSN has a public key as its user name and a project id as its
  * path: `https://<key>@<host>/<project>`. One that does not is refused at
@@ -18,7 +20,9 @@ export function assertSentryDsn(dsn: string): void {
   try {
     url = new URL(dsn);
   } catch {
-    throw new Error(`SENTRY_DSN is not an address: ${JSON.stringify(dsn)}`);
+    // The value is not written into the message: what was typed here may be a
+    // DSN with its key, and this message ends up in a log.
+    throw new Error('SENTRY_DSN is not an address');
   }
   const hasProject = /^\/(?:.*\/)?\d+$/.test(url.pathname);
   if (
@@ -28,6 +32,14 @@ export function assertSentryDsn(dsn: string): void {
   ) {
     throw new Error(
       'SENTRY_DSN is not a Sentry DSN: it looks like https://<key>@<host>/<project number>',
+    );
+  }
+  // An error report crosses a network: in the clear, to a machine that is not
+  // this one, it is readable on the way. Plain http is for a collector on the
+  // same host.
+  if (url.protocol === 'http:' && !LOOPBACK_HOSTS.has(url.hostname)) {
+    throw new Error(
+      `SENTRY_DSN must be https unless it points at this machine: ${url.hostname} is reached over plain http`,
     );
   }
 }

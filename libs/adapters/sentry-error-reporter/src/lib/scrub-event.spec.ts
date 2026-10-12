@@ -130,6 +130,18 @@ describe('redact', () => {
       expect(redact(text)).toBe(text);
     });
 
+    it('takes a bounded time on a message of any length: the cap is applied before the rules, which are not linear', () => {
+      // 2 MB of one unbroken run, the worst case for a rule that scans
+      // forward from every position. Before the cap this took minutes.
+      const started = Date.now();
+
+      redact('a'.repeat(2_000_000));
+      redact('ab+.-'.repeat(400_000));
+      redact('?a'.repeat(1_000_000));
+
+      expect(Date.now() - started).toBeLessThan(1000);
+    });
+
     it('cuts a very long message, after redacting it, not before', () => {
       const long = `${'x'.repeat(5000)} ana@example.test`;
 
@@ -183,6 +195,17 @@ describe('scrubEvent', () => {
 
     expect(value).toBe(
       'duplicate key (email)=([email]) from https://x.test/p?[query] Bearer [token]',
+    );
+  });
+
+  it('redacts the type of an exception too: a name is whatever the code that threw it set', () => {
+    const event = richEvent();
+    const [value] = event.exception?.values ?? [];
+    if (!value) throw new Error('fixture');
+    value.type = 'ValidationError for ana@example.test';
+
+    expect(scrubEvent(event).exception?.values?.[0]?.type).toBe(
+      'ValidationError for [email]',
     );
   });
 

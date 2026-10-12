@@ -39,7 +39,13 @@ sent.
   missing page, a rule that said no): only what nobody expected.
 - **A DSN is validated** (`assertSentryDsn`): one that is not a DSN is
   refused with the variable's name (the API refuses to start; the public site
-  logs it and runs unreported), not silently ignored by the SDK.
+  logs it and runs unreported), not silently ignored by the SDK. The value is
+  never written into the message, and plain `http` is refused unless it points
+  at this machine.
+- **Bounded.** The rules run over at most 4000 characters of a message (several
+  of them scan forward from every position, so their time is the square of the
+  length), and a process sends at most 20 reports a minute, a fatal one
+  excepted.
 
 ## Configuration
 

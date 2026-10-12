@@ -47,6 +47,11 @@ not choose.
 - **The SDK is `@sentry/node-core/light`.** `@sentry/node` 11 depends on the
   bundler plugins, which depend on Sentry's command-line client (15 MB) and a
   native parser: nothing a server that only reports errors needs to install.
+- **Bounded**: the redaction rules run over at most 4000 characters of a
+  message (they are not linear, and a message is whatever the code that threw
+  it put there: 80,000 characters took four seconds), and a process sends at
+  most 20 reports a minute, a fatal one excepted — a visitor who can make the
+  server throw can make it throw as often as they like.
 - **A DSN that is not one**: the API refuses to start, naming the variable
   (the SDK would accept it and send nowhere, and a deployment would believe it
   was watched). The public site, which is what visitors reach, logs it once and

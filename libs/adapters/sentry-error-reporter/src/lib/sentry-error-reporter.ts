@@ -7,7 +7,11 @@ import {
   linkedErrorsIntegration,
 } from '@sentry/node-core/light';
 import type { ErrorReporterPort, ErrorReportContext } from '@kometio/ports';
+import { ReportRateLimit } from './report-rate';
 import { scrubEvent } from './scrub-event';
+
+/** What one process reports in a minute, a fatal error excepted. */
+const REPORTS_PER_MINUTE = 20;
 
 export interface SentryErrorReporterOptions {
   dsn: string;
@@ -29,6 +33,7 @@ export interface SentryErrorReporterOptions {
  */
 export class SentryErrorReporter implements ErrorReporterPort {
   readonly enabled = true;
+  private readonly rate = new ReportRateLimit(REPORTS_PER_MINUTE, 60_000);
 
   constructor(options: SentryErrorReporterOptions) {
     initWithoutDefaultIntegrations({
@@ -50,6 +55,8 @@ export class SentryErrorReporter implements ErrorReporterPort {
   }
 
   captureException(error: unknown, context: ErrorReportContext = {}): void {
+    // A fatal one is never held back: it is the last the process will say.
+    if (!context.fatal && !this.rate.take()) return;
     try {
       captureException(error, {
         level: context.fatal ? 'fatal' : 'error',
