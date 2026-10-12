@@ -23,6 +23,7 @@ import { PageHeader } from '../shell/page-header';
 import { SaveBar } from '../settings/save-bar';
 import { useToast } from '../shell/toast-provider';
 import { InlineError } from '../../components/ui/inline-error';
+import { useIsDemo } from '../common/deployment-queries';
 
 /** What the form holds of the profile, in the shape it is compared and put back in. */
 interface ProfileDraft {
@@ -65,8 +66,24 @@ interface ProfileFormProps extends AccountProfileViewProps {
  * save the profile.
  */
 export function AccountProfileView(props: AccountProfileViewProps) {
+  const { t } = useTranslation();
   const { changePassword, requestEmailChange } = useAccountCredentials();
   const [dialog, setDialog] = useState<'email' | 'password' | null>(null);
+  const inDemo = useIsDemo();
+
+  // The account of a demo is everybody's (docs/adr/0118): the server refuses
+  // every change to it, so the form is not offered.
+  if (inDemo) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageHeader
+          title={t('account.title')}
+          description={t('demo.accountShared')}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <ProfileForm
