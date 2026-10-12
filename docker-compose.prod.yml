@@ -171,6 +171,9 @@ services:
       # any other address). Same values as the api service's.
       API_PUBLIC_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
       S3_MEDIA_PUBLIC_BASE_URL: ${S3_MEDIA_PUBLIC_BASE_URL:-}
+      # How much disk the resized images may take (MB; 0 keeps none). The
+      # site makes each image once and keeps it; empty is 256.
+      IMAGE_CACHE_MAX_MB: ${IMAGE_CACHE_MAX_MB:-}
       # Serves the site the theme builder publishes here, once there is one.
       THEME_DATA_DIR: /data/themes
     volumes:

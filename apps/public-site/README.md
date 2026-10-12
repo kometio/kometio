@@ -92,6 +92,20 @@ Needs `apps/api` running and `API_URL` pointing at it (see `.env.example`)
 — there is no build-time list of pages to prerender, content is fetched
 per-request.
 
+### The images the site makes are kept (`image-cache.mjs`)
+
+`/_image` resizes with sharp and remembered nothing: each visitor whose
+browser had not seen a picture made the server make it again — measured on
+two CPUs, some 6 to 9 requests a second, against some 300 for a page of 23
+blocks. `server.mjs` puts `image-cache.mjs` in front of Astro's handler: the
+first answer of each request (status 200, an image type, at most 8 MB) is
+written under `IMAGE_CACHE_DIR` (default: a folder in the system's temporary
+directory) and given back for the same address and Host, and requests that
+arrive while it is being made wait for it instead of making it again. The
+directory is held to `IMAGE_CACHE_MAX_MB` (default 256; `0` turns the cache
+off), the oldest-used entries going first, and is not migrated: a restart that
+loses it makes the images again. See [ADR-0117](../../docs/adr/0117-the-site-keeps-the-images-it-makes.md).
+
 ### Production entrypoint is `server.mjs`, not `dist/server/entry.mjs`
 
 The adapter (`astro.config.mjs`) is configured with `mode: 'middleware'`, so

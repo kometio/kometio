@@ -235,6 +235,14 @@ setup token from `docker logs kometio`, open the editor, create your account.
   as another visitor. The log says so at the start.
 - If a browser warns about the certificate, the name's DNS does not point at this
   machine yet. `docker logs kometio` shows Caddy's attempts, and it keeps trying.
+- **Pictures are resized once, and kept.** The site makes each size of each
+  picture the first time it is asked for and keeps it on disk, up to 256 MB
+  (`-e IMAGE_CACHE_MAX_MB=…`; `0` keeps none; what goes over the limit is what
+  was asked for longest ago). Resizing is what costs a server the most — on two
+  CPUs, some forty times a page — and it was done again for every visitor whose
+  browser had not seen the picture. The cache is in the container's own
+  filesystem, not the volume: a new container makes them again, and nothing is
+  lost.
 
 ## Move a site to another installation
 

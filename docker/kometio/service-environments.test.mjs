@@ -165,6 +165,7 @@ describe('what the public site is told', () => {
       'API_URL',
       'EDITOR_APP_URL',
       'HOME',
+      'IMAGE_CACHE_MAX_MB',
       'KOMETIO_THEME',
       'LANG',
       'PATH',
@@ -191,6 +192,7 @@ describe('what the public site is told', () => {
     assert.equal(environment.TURNSTILE_SITE_KEY, '');
     assert.equal(environment.KOMETIO_THEME, '');
     assert.equal(environment.S3_MEDIA_PUBLIC_BASE_URL, '');
+    assert.equal(environment.IMAGE_CACHE_MAX_MB, '');
   });
 });
 
