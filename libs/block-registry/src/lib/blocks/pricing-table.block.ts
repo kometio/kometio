@@ -1,11 +1,8 @@
-import type { PricingTableProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { pricingTableBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { displayField } from '../fields/display-field';
 
-export const pricingTableBlock: BlockDescriptor<PricingTableProps> = {
-  type: 'PricingTable',
+export const pricingTableBlock = coreBlock(pricingTableBlockContract, {
   label: 'blocks.pricingTable.label',
   category: 'socialProof',
   icon: 'receipt',
@@ -13,6 +10,4 @@ export const pricingTableBlock: BlockDescriptor<PricingTableProps> = {
   fields: [displayField],
   isContainer: true,
   allowedChildTypes: ['PricingPlan'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.PricingTable,
-};
+});

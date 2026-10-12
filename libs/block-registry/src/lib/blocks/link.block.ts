@@ -1,11 +1,8 @@
-import type { LinkProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { linkBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { ctaLinkFields } from '../fields/link-type-field';
 
-export const linkBlock: BlockDescriptor<LinkProps> = {
-  type: 'Link',
+export const linkBlock = coreBlock(linkBlockContract, {
   label: 'blocks.link.label',
   category: 'content',
   icon: 'link',
@@ -25,6 +22,4 @@ export const linkBlock: BlockDescriptor<LinkProps> = {
     },
     ...ctaLinkFields(),
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Link,
-};
+});

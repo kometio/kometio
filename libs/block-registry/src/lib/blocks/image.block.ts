@@ -1,10 +1,9 @@
-import type { ImageProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { imageBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { aspectRatioField } from '../fields/aspect-ratio-field';
 
-export const imageBlock: BlockDescriptor<ImageProps> = {
-  type: 'Image',
+export const imageBlock = coreBlock(imageBlockContract, {
   label: 'blocks.image.label',
   category: 'content',
   icon: 'image',
@@ -104,13 +103,4 @@ export const imageBlock: BlockDescriptor<ImageProps> = {
       label: 'blocks.image.fields.lightbox.fieldLabel',
     },
   ],
-  stylableProperties: [
-    'borderRadius',
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-    'maxWidth',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Image,
-};
+});

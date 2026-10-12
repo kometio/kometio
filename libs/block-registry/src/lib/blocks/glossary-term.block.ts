@@ -1,10 +1,7 @@
-import type { GlossaryTermProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { glossaryTermBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const glossaryTermBlock: BlockDescriptor<GlossaryTermProps> = {
-  type: 'GlossaryTerm',
+export const glossaryTermBlock = coreBlock(glossaryTermBlockContract, {
   label: 'blocks.glossaryTerm.label',
   category: 'content',
   icon: 'whole-word',
@@ -27,6 +24,4 @@ export const glossaryTermBlock: BlockDescriptor<GlossaryTermProps> = {
   ],
   // A term and its definition belong to the glossary's description list.
   allowedParentTypes: ['Glossary'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.GlossaryTerm,
-};
+});

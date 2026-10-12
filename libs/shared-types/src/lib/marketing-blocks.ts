@@ -98,6 +98,9 @@ export type BannerProps = z.infer<typeof bannerPropsSchema>;
 export const bannerBlockContract = defineBlockContract({
   type: 'Banner',
   props: bannerPropsSchema,
+  // The standard five plus the frame and the spacing the two variants need: a
+  // border with no width to set is not a control, and `split` turns the
+  // block into a flex row whose gap is worth setting.
   style: {
     backgroundColor: 'var(--secondary)',
     textColor: 'inherit',
@@ -149,6 +152,9 @@ export type ButtonProps = z.infer<typeof buttonPropsSchema>;
 export const buttonBlockContract = defineBlockContract({
   type: 'Button',
   props: buttonPropsSchema,
+  // Color/borders/padding — editable for ALL Buttons on the site (the
+  // "Style" button in the toolbar) or only for this instance (popover on
+  // the selected block), docs/adr/0022. Replaces the old `colorOverride`.
   style: {
     backgroundColor: 'var(--primary)',
     textColor: 'var(--primary-foreground)',
@@ -199,6 +205,10 @@ export type FeatureProps = z.infer<typeof featurePropsSchema>;
 export const featureBlockContract = defineBlockContract({
   type: 'Feature',
   props: featurePropsSchema,
+  // The standard five plus `gap`: the `inline` variant makes this block a flex
+  // row, so the distance between the icon and the words is now a real
+  // thing to set — offering it before the variant existed would have been
+  // a control that did nothing.
   style: {
     backgroundColor: 'transparent',
     textColor: 'inherit',
@@ -467,6 +477,7 @@ export type TimelineProps = z.infer<typeof timelinePropsSchema>;
 export const timelineBlockContract = defineBlockContract({
   type: 'Timeline',
   props: timelinePropsSchema,
+  // No paddingX/paddingY: padding-left is structural in Timeline.astro.
   style: {
     backgroundColor: 'transparent',
     textColor: 'inherit',

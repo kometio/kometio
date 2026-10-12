@@ -1,9 +1,7 @@
-import type { HotspotProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { hotspotBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const hotspotBlock: BlockDescriptor<HotspotProps> = {
-  type: 'Hotspot',
+export const hotspotBlock = coreBlock(hotspotBlockContract, {
   label: 'blocks.hotspot.label',
   category: 'media',
   icon: 'crosshair',
@@ -43,6 +41,4 @@ export const hotspotBlock: BlockDescriptor<HotspotProps> = {
   // A point placed in percent of a picture: without the picture there is
   // nothing for the percentages to be of.
   allowedParentTypes: ['ImageHotspots'],
-  stylableProperties: ['backgroundColor', 'textColor'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Hotspot,
-};
+});

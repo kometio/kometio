@@ -1,11 +1,8 @@
-import type { TeamProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { teamBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { displayField } from '../fields/display-field';
 
-export const teamBlock: BlockDescriptor<TeamProps> = {
-  type: 'Team',
+export const teamBlock = coreBlock(teamBlockContract, {
   label: 'blocks.team.label',
   category: 'socialProof',
   icon: 'users',
@@ -13,6 +10,4 @@ export const teamBlock: BlockDescriptor<TeamProps> = {
   fields: [displayField],
   isContainer: true,
   allowedChildTypes: ['TeamMember'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Team,
-};
+});

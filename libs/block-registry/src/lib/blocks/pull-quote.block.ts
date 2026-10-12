@@ -1,6 +1,5 @@
-import type { PullQuoteProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { pullQuoteBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { quoteBlock } from './quote.block';
 
 /**
@@ -8,8 +7,7 @@ import { quoteBlock } from './quote.block';
  * Quote block's fields, drawn by the Quote component — what it adds is
  * the emphasis, not a second way to write a quotation.
  */
-export const pullQuoteBlock: BlockDescriptor<PullQuoteProps> = {
-  type: 'PullQuote',
+export const pullQuoteBlock = coreBlock(pullQuoteBlockContract, {
   label: 'blocks.pullQuote.label',
   category: 'content',
   icon: 'text-quote',
@@ -27,8 +25,4 @@ export const pullQuoteBlock: BlockDescriptor<PullQuoteProps> = {
       ],
     },
   ],
-  // No radius: the quote is framed by a rule above and below, and a
-  // site-wide radius (a theme sets one at :root) bent their ends.
-  stylableProperties: ['backgroundColor', 'textColor', 'paddingX', 'paddingY'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.PullQuote,
-};
+});

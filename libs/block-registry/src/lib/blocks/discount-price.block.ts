@@ -1,12 +1,9 @@
-import type { DiscountPriceProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { discountPriceBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { currencyField } from '../fields/currency-field';
 
 /** A price, and the one it replaces struck through beside it. */
-export const discountPriceBlock: BlockDescriptor<DiscountPriceProps> = {
-  type: 'DiscountPrice',
+export const discountPriceBlock = coreBlock(discountPriceBlockContract, {
   label: 'blocks.discountPrice.label',
   category: 'shop',
   icon: 'badge-percent',
@@ -41,6 +38,4 @@ export const discountPriceBlock: BlockDescriptor<DiscountPriceProps> = {
       label: 'blocks.discountPrice.fields.note.fieldLabel',
     },
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.DiscountPrice,
-};
+});

@@ -1,14 +1,12 @@
-import type { FileDownloadProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { fileDownloadBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * A file from the library, as a link that downloads it — a price list, a
  * menu, a brochure (ADR-0070 is what let the library hold them).
  */
-export const fileDownloadBlock: BlockDescriptor<FileDownloadProps> = {
-  type: 'FileDownload',
+export const fileDownloadBlock = coreBlock(fileDownloadBlockContract, {
   label: 'blocks.fileDownload.label',
   category: 'media',
   icon: 'file-down',
@@ -31,11 +29,4 @@ export const fileDownloadBlock: BlockDescriptor<FileDownloadProps> = {
       label: 'blocks.fileDownload.fields.showDetails.fieldLabel',
     },
   ],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.FileDownload,
-};
+});

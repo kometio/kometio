@@ -1,6 +1,5 @@
-import type { AnchorProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { anchorBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * A place in the page a link can land on — `/prices#table`.
@@ -10,8 +9,7 @@ import type { BlockDescriptor } from '../field-types';
  * The name is written as a slug when the page renders, so it is always a
  * valid `id` whatever was typed.
  */
-export const anchorBlock: BlockDescriptor<AnchorProps> = {
-  type: 'Anchor',
+export const anchorBlock = coreBlock(anchorBlockContract, {
   label: 'blocks.anchor.label',
   category: 'layout',
   icon: 'anchor',
@@ -26,5 +24,4 @@ export const anchorBlock: BlockDescriptor<AnchorProps> = {
     },
   ],
   stylableProperties: [],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Anchor,
-};
+});

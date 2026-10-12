@@ -1,12 +1,8 @@
-import {
-  BLOCK_STYLE_DEFAULTS,
-  type SocialLinkProps,
-} from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { socialLinkBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const socialLinkBlock: BlockDescriptor<SocialLinkProps> = {
-  type: 'SocialLink',
+export const socialLinkBlock = coreBlock(socialLinkBlockContract, {
   label: 'blocks.socialLink.label',
   category: 'conversion',
   icon: 'at-sign',
@@ -34,11 +30,4 @@ export const socialLinkBlock: BlockDescriptor<SocialLinkProps> = {
       required: true,
     },
   ],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.SocialLink,
-};
+});

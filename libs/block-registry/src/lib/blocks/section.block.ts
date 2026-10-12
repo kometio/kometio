@@ -1,9 +1,12 @@
-import type { SectionProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
+import { sectionBlockContract, type SectionProps } from '@kometio/shared-types';
 import { FieldBuilder, type BlockDescriptor } from '../field-types';
 
+// Not `coreBlock()`, the one block that is not: its props are declared as
+// `SectionProps` because what `z.infer` gives for its schema (`catchall`)
+// contradicts itself and `{ section: null }` does not satisfy it — see
+// `SectionProps`. `coreBlock` types `defaultProps` by the inference.
 export const sectionBlock: BlockDescriptor<SectionProps> = {
-  type: 'Section',
+  type: sectionBlockContract.type,
   label: 'blocks.section.label',
   category: 'layout',
   icon: 'rows-3',
@@ -32,5 +35,5 @@ export const sectionBlock: BlockDescriptor<SectionProps> = {
   // background or a padding on the wrapper would be a second, competing
   // place to set the same thing, and one the section's author cannot see.
   stylableProperties: ['maxWidth'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Section,
+  defaultStyle: sectionBlockContract.style,
 };

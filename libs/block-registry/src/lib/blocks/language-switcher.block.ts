@@ -1,17 +1,12 @@
-import type { LanguageSwitcherProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { languageSwitcherBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { positionField } from '../fields/position-field';
 import { visibilityField } from '../fields/visibility-field';
 
-export const languageSwitcherBlock: BlockDescriptor<LanguageSwitcherProps> = {
-  type: 'LanguageSwitcher',
+export const languageSwitcherBlock = coreBlock(languageSwitcherBlockContract, {
   label: 'blocks.languageSwitcher.label',
   category: 'navigation',
   icon: 'languages',
   defaultProps: { position: 'left', visibility: 'always' },
   fields: [positionField, visibilityField],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.LanguageSwitcher,
-};
+});

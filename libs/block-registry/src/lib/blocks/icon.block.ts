@@ -1,8 +1,8 @@
-import { BLOCK_STYLE_DEFAULTS, type IconProps } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { iconBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const iconBlock: BlockDescriptor<IconProps> = {
-  type: 'Icon',
+export const iconBlock = coreBlock(iconBlockContract, {
   label: 'blocks.icon.label',
   category: 'content',
   icon: 'smile',
@@ -31,6 +31,4 @@ export const iconBlock: BlockDescriptor<IconProps> = {
       placeholder: '',
     },
   ],
-  stylableProperties: ['textColor'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Icon,
-};
+});

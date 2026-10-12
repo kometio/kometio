@@ -11,6 +11,11 @@ import {
  * below is checked against `calloutPropsSchema` the moment this module
  * loads, so a typo here fails immediately instead of silently at first
  * render.
+ *
+ * It stays on `defineBlock()` and does not use `coreBlock()` like the rest of
+ * this folder, because it is the worked example of the surface a theme's
+ * own block gets: a type, a schema and its style written out. A first-party
+ * block takes its type and its style defaults from its contract.
  */
 export const calloutBlock = defineBlock({
   type: 'Callout',

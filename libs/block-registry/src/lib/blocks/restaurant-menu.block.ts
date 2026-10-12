@@ -1,15 +1,12 @@
-import type { RestaurantMenuProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { restaurantMenuBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * A menu: dishes, what is in them, what they cost. One section per block —
  * starters, mains, desserts are three menus under three headings, which
  * is how a page already says "this is a new part".
  */
-export const restaurantMenuBlock: BlockDescriptor<RestaurantMenuProps> = {
-  type: 'RestaurantMenu',
+export const restaurantMenuBlock = coreBlock(restaurantMenuBlockContract, {
   label: 'blocks.restaurantMenu.label',
   category: 'localBusiness',
   icon: 'utensils-crossed',
@@ -34,6 +31,4 @@ export const restaurantMenuBlock: BlockDescriptor<RestaurantMenuProps> = {
   ],
   isContainer: true,
   allowedChildTypes: ['MenuItem'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.RestaurantMenu,
-};
+});

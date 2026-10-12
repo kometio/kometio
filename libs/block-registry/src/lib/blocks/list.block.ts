@@ -1,7 +1,6 @@
-import type { ListProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { listBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * A list whose items are blocks.
@@ -10,8 +9,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * by dragging, styled and translated on its own — the same shape every
  * other repeatable thing here has (Accordion, Timeline, Team).
  */
-export const listBlock: BlockDescriptor<ListProps> = {
-  type: 'List',
+export const listBlock = coreBlock(listBlockContract, {
   label: 'blocks.list.label',
   category: 'content',
   icon: 'list',
@@ -34,6 +32,4 @@ export const listBlock: BlockDescriptor<ListProps> = {
   ],
   isContainer: true,
   allowedChildTypes: ['ListItem'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.List,
-};
+});

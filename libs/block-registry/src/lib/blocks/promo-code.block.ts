@@ -1,11 +1,9 @@
-import type { PromoCodeProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { promoCodeBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 /** A discount code with a button that copies it. */
-export const promoCodeBlock: BlockDescriptor<PromoCodeProps> = {
-  type: 'PromoCode',
+export const promoCodeBlock = coreBlock(promoCodeBlockContract, {
   label: 'blocks.promoCode.label',
   category: 'shop',
   icon: 'ticket-percent',
@@ -30,11 +28,4 @@ export const promoCodeBlock: BlockDescriptor<PromoCodeProps> = {
       'date',
     ),
   ],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.PromoCode,
-};
+});

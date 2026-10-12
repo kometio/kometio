@@ -1,10 +1,8 @@
-import type { ReadingProgressProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { readingProgressBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /** A thin bar that fills as the page is read. Its colour is the block's background. */
-export const readingProgressBlock: BlockDescriptor<ReadingProgressProps> = {
-  type: 'ReadingProgress',
+export const readingProgressBlock = coreBlock(readingProgressBlockContract, {
   label: 'blocks.readingProgress.label',
   category: 'interactive',
   icon: 'book-open-check',
@@ -26,6 +24,4 @@ export const readingProgressBlock: BlockDescriptor<ReadingProgressProps> = {
       ],
     },
   ],
-  stylableProperties: ['backgroundColor', 'minHeight'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ReadingProgress,
-};
+});

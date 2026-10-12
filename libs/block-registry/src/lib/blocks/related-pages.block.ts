@@ -1,7 +1,5 @@
-import type { RelatedPagesProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { relatedPagesBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The other pages filed under the same terms as this one.
@@ -11,8 +9,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * be wrong the day after it was written. A page with no terms has nothing
  * to be related to, and the block draws nothing.
  */
-export const relatedPagesBlock: BlockDescriptor<RelatedPagesProps> = {
-  type: 'RelatedPages',
+export const relatedPagesBlock = coreBlock(relatedPagesBlockContract, {
   label: 'blocks.relatedPages.label',
   category: 'content',
   icon: 'layers',
@@ -47,6 +44,4 @@ export const relatedPagesBlock: BlockDescriptor<RelatedPagesProps> = {
       group: 'advanced',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.RelatedPages,
-};
+});

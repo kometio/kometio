@@ -1,10 +1,9 @@
-import type { VideoEmbedProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { videoEmbedBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { aspectRatioField } from '../fields/aspect-ratio-field';
 
-export const videoEmbedBlock: BlockDescriptor<VideoEmbedProps> = {
-  type: 'VideoEmbed',
+export const videoEmbedBlock = coreBlock(videoEmbedBlockContract, {
   label: 'blocks.videoEmbed.label',
   category: 'media',
   icon: 'monitor-play',
@@ -34,13 +33,4 @@ export const videoEmbedBlock: BlockDescriptor<VideoEmbedProps> = {
       label: 'blocks.shared.caption.fieldLabel',
     },
   ],
-  stylableProperties: [
-    'borderRadius',
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-    'maxWidth',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.VideoEmbed,
-};
+});

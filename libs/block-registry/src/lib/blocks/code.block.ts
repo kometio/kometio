@@ -1,6 +1,5 @@
-import type { CodeProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { codeBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 // Short, curated list (not every language Shiki supports) — same reason
 // as columns.block.ts's layout radio: a few clear options beat an
@@ -16,8 +15,7 @@ const LANGUAGE_OPTIONS = [
   'plaintext',
 ] as const;
 
-export const codeBlock: BlockDescriptor<CodeProps> = {
-  type: 'Code',
+export const codeBlock = coreBlock(codeBlockContract, {
   label: 'blocks.code.label',
   category: 'content',
   icon: 'code',
@@ -47,13 +45,4 @@ export const codeBlock: BlockDescriptor<CodeProps> = {
       })),
     },
   ],
-  // No textColor: the Shiki theme (github-dark) already sets the syntax
-  // colors, same reason as EmbedHtml for free-form content.
-  stylableProperties: [
-    'backgroundColor',
-    'borderRadius',
-    'paddingX',
-    'paddingY',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Code,
-};
+});

@@ -1,6 +1,5 @@
-import type { BookingEmbedProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { bookingEmbedBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * A booking page from Calendly, Cal.com or Google Calendar, on this page.
@@ -9,8 +8,7 @@ import type { BlockDescriptor } from '../field-types';
  * booking service sets its own cookies, and nothing of it loads until the
  * visitor asks for it.
  */
-export const bookingEmbedBlock: BlockDescriptor<BookingEmbedProps> = {
-  type: 'BookingEmbed',
+export const bookingEmbedBlock = coreBlock(bookingEmbedBlockContract, {
   label: 'blocks.bookingEmbed.label',
   category: 'media',
   icon: 'calendar-check',
@@ -63,13 +61,4 @@ export const bookingEmbedBlock: BlockDescriptor<BookingEmbedProps> = {
       ],
     },
   ],
-  stylableProperties: [
-    'borderRadius',
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-    'maxWidth',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.BookingEmbed,
-};
+});

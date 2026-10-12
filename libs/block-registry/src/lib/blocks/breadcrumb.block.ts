@@ -1,13 +1,8 @@
-import {
-  BLOCK_STYLE_DEFAULTS,
-  type BreadcrumbProps,
-} from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { breadcrumbBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { visibilityField } from '../fields/visibility-field';
 
-export const breadcrumbBlock: BlockDescriptor<BreadcrumbProps> = {
-  type: 'Breadcrumb',
+export const breadcrumbBlock = coreBlock(breadcrumbBlockContract, {
   label: 'blocks.breadcrumb.label',
   category: 'content',
   icon: 'chevron-right',
@@ -25,6 +20,4 @@ export const breadcrumbBlock: BlockDescriptor<BreadcrumbProps> = {
     },
     visibilityField,
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Breadcrumb,
-};
+});

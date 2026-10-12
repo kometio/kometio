@@ -1,7 +1,5 @@
-import type { ProductReviewsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { productReviewsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { displayField } from '../fields/display-field';
 
 /**
@@ -9,8 +7,7 @@ import { displayField } from '../fields/display-field';
  * as stars — off until somebody names the product and turns it on, since
  * a review rich result is a claim that gets checked.
  */
-export const productReviewsBlock: BlockDescriptor<ProductReviewsProps> = {
-  type: 'ProductReviews',
+export const productReviewsBlock = coreBlock(productReviewsBlockContract, {
   label: 'blocks.productReviews.label',
   category: 'shop',
   icon: 'message-square-heart',
@@ -36,6 +33,4 @@ export const productReviewsBlock: BlockDescriptor<ProductReviewsProps> = {
   isContainer: true,
   rendersFromChildren: true,
   allowedChildTypes: ['ProductReview'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ProductReviews,
-};
+});

@@ -1,13 +1,8 @@
-import {
-  BLOCK_STYLE_DEFAULTS,
-  type SocialLinksProps,
-} from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { socialLinksBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { displayField } from '../fields/display-field';
 
-export const socialLinksBlock: BlockDescriptor<SocialLinksProps> = {
-  type: 'SocialLinks',
+export const socialLinksBlock = coreBlock(socialLinksBlockContract, {
   label: 'blocks.socialLinks.label',
   category: 'conversion',
   icon: 'share-2',
@@ -15,6 +10,4 @@ export const socialLinksBlock: BlockDescriptor<SocialLinksProps> = {
   fields: [displayField],
   isContainer: true,
   allowedChildTypes: ['SocialLink'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.SocialLinks,
-};
+});

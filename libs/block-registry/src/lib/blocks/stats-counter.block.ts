@@ -1,11 +1,8 @@
-import type { StatsCounterProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { statsCounterBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { displayField } from '../fields/display-field';
 
-export const statsCounterBlock: BlockDescriptor<StatsCounterProps> = {
-  type: 'StatsCounter',
+export const statsCounterBlock = coreBlock(statsCounterBlockContract, {
   label: 'blocks.statsCounter.label',
   category: 'socialProof',
   icon: 'chart-column',
@@ -13,6 +10,4 @@ export const statsCounterBlock: BlockDescriptor<StatsCounterProps> = {
   fields: [displayField],
   isContainer: true,
   allowedChildTypes: ['Stat'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.StatsCounter,
-};
+});

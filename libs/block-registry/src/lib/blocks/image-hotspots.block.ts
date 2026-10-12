@@ -1,11 +1,9 @@
-import type { ImageHotspotsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { imageHotspotsBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 /** A picture with points on it that open a short explanation. */
-export const imageHotspotsBlock: BlockDescriptor<ImageHotspotsProps> = {
-  type: 'ImageHotspots',
+export const imageHotspotsBlock = coreBlock(imageHotspotsBlockContract, {
   label: 'blocks.imageHotspots.label',
   category: 'media',
   icon: 'locate-fixed',
@@ -25,6 +23,4 @@ export const imageHotspotsBlock: BlockDescriptor<ImageHotspotsProps> = {
   ],
   isContainer: true,
   allowedChildTypes: ['Hotspot'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ImageHotspots,
-};
+});

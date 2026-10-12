@@ -1,20 +1,11 @@
-import type { BackToTopProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { backToTopBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { visibilityField } from '../fields/visibility-field';
 
-export const backToTopBlock: BlockDescriptor<BackToTopProps> = {
-  type: 'BackToTop',
+export const backToTopBlock = coreBlock(backToTopBlockContract, {
   label: 'blocks.backToTop.label',
   category: 'chrome',
   icon: 'arrow-up',
   defaultProps: { visibility: 'always' },
   fields: [visibilityField],
-  stylableProperties: [
-    'backgroundColor',
-    'textColor',
-    'borderRadius',
-    'boxShadow',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.BackToTop,
-};
+});

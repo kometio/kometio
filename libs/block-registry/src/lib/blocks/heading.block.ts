@@ -1,15 +1,10 @@
-import { defineBlock } from '@kometio/block-sdk';
-import {
-  BLOCK_STYLE_DEFAULTS,
-  headingPropsSchema,
-} from '@kometio/shared-types';
+import { headingBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const headingBlock = defineBlock({
-  type: 'Heading',
+export const headingBlock = coreBlock(headingBlockContract, {
   label: 'blocks.heading.label',
   category: 'content',
   icon: 'heading',
-  schema: headingPropsSchema,
   defaultProps: {
     text: 'Section heading',
     level: 'h2',
@@ -33,6 +28,4 @@ export const headingBlock = defineBlock({
       ],
     },
   ],
-  stylableProperties: ['textColor'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Heading,
 });

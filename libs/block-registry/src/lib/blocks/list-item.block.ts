@@ -1,10 +1,7 @@
-import type { ListItemProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { listItemBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const listItemBlock: BlockDescriptor<ListItemProps> = {
-  type: 'ListItem',
+export const listItemBlock = coreBlock(listItemBlockContract, {
   label: 'blocks.listItem.label',
   category: 'content',
   icon: 'dot',
@@ -19,6 +16,4 @@ export const listItemBlock: BlockDescriptor<ListItemProps> = {
     },
   ],
   allowedParentTypes: ['List'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ListItem,
-};
+});

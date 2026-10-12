@@ -1,7 +1,6 @@
-import type { ShippingReturnsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor, FieldDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { shippingReturnsBlockContract } from '@kometio/shared-types';
+import type { FieldDescriptor } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 const SECTIONS = ['shipping', 'returns', 'support'] as const;
 
@@ -29,8 +28,7 @@ function sectionFields(section: (typeof SECTIONS)[number]): FieldDescriptor[] {
  * Shipping, returns and help, side by side. A section left empty is not
  * drawn: a shop that ships nothing has no shipping to talk about.
  */
-export const shippingReturnsBlock: BlockDescriptor<ShippingReturnsProps> = {
-  type: 'ShippingReturns',
+export const shippingReturnsBlock = coreBlock(shippingReturnsBlockContract, {
   label: 'blocks.shippingReturns.label',
   category: 'shop',
   icon: 'truck',
@@ -43,6 +41,4 @@ export const shippingReturnsBlock: BlockDescriptor<ShippingReturnsProps> = {
     supportText: '',
   },
   fields: SECTIONS.flatMap(sectionFields),
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ShippingReturns,
-};
+});

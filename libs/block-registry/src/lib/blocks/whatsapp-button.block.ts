@@ -1,10 +1,8 @@
-import type { WhatsAppButtonProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { whatsAppButtonBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { visibilityField } from '../fields/visibility-field';
 
-export const whatsAppButtonBlock: BlockDescriptor<WhatsAppButtonProps> = {
-  type: 'WhatsAppButton',
+export const whatsAppButtonBlock = coreBlock(whatsAppButtonBlockContract, {
   label: 'blocks.whatsAppButton.label',
   category: 'chrome',
   icon: 'message-circle',
@@ -27,6 +25,4 @@ export const whatsAppButtonBlock: BlockDescriptor<WhatsAppButtonProps> = {
     },
     visibilityField,
   ],
-  stylableProperties: ['backgroundColor', 'borderRadius', 'boxShadow'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.WhatsAppButton,
-};
+});
