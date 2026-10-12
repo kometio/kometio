@@ -32,7 +32,7 @@ function richEvent(): ErrorEvent {
         {
           type: 'error',
           value:
-            'duplicate key (email)=(ana@example.test) from https://x.test/p?token=abc Bearer eyJhbGciOi.def',
+            'duplicate key (email)=(ana@example.test) from https://x.test/p?token=abc, Bearer eyJhbGciOi.def',
           stacktrace: {
             frames: [
               {
@@ -48,271 +48,178 @@ function richEvent(): ErrorEvent {
   };
 }
 
-describe('redact', () => {
-  it('replaces an email address, the query of an address, and a bearer token', () => {
-    expect(
-      redact(
-        'a@b.example failed on https://x.test/p/1?token=abc&q=1 with Bearer abc.def-1',
-      ),
-    ).toBe('[email] failed on https://x.test/p/1?[query] with Bearer [token]');
+describe('redact: what is kept is what is safe', () => {
+  it.each([
+    "Cannot read properties of undefined (reading 'id')",
+    'Request failed with status code 502',
+    'TypeError: x is not a function',
+    'Unexpected end of JSON input',
+    'ECONNREFUSED: connection refused',
+    'Cannot find module',
+    "it's a plain sentence, with punctuation; and a question?",
+    'Failed query: insert into "users" ("email", "password_hash") values',
+  ])('keeps a plain message: %s', (message) => {
+    expect(redact(message)).toBe(message);
   });
 
-  it('removes the values a failed query was run with, which Drizzle writes after the SQL', () => {
+  it('keeps what is useful about a message with something in it that is not safe', () => {
     expect(
-      redact(
-        'Failed query: insert into "users" ("email", "password_hash") values ($1, $2)\nparams: x@y.test,$argon2id$v=19$m=65536$abc',
-      ),
-    ).toBe(
-      'Failed query: insert into "users" ("email", "password_hash") values ($1, $2)\nparams: [values]',
+      redact('connect ECONNREFUSED 127.0.0.1:5999 while reading page'),
+    ).toBe('connect ECONNREFUSED … while reading page');
+  });
+
+  it.each([
+    ['an email address', 'for ana@example.test please', 'ana@example.test'],
+    ['an address without a top-level domain', 'ana@localhost', 'ana@localhost'],
+    ['a non-ASCII address', 'andré@exämple.test', 'exämple'],
+    ['a percent-encoded address', 'GET /u/ana%40example.test', 'example'],
+    ['a double-encoded address', 'GET /u/ana%2540example.test', 'example'],
+    [
+      'four layers of encoding',
+      'GET /u/ana%252525252540example.test',
+      'example',
+    ],
+    ['a JSON escape', 'bad "ana\\u0040example.test"', 'example'],
+    ['a numeric entity', 'bad ana&#64;example.test', 'example'],
+    ['a named entity', 'bad ana&commat;example.test', 'example'],
+    ['a full-width at sign', 'bad ana＠example.test', 'example'],
+    [
+      'a zero-width space in a secret',
+      'secret abcdef​0123456789',
+      '0123456789',
+    ],
+    ['a control character', 'bad ana\u0007@example.test', 'example'],
+    [
+      'an address with a query',
+      'GET /api/p/1?token=abc.def&x=1 failed',
+      'token',
+    ],
+    ['an absolute address', 'fetch https://x.test/p/1 failed', 'x.test'],
+    ['the same in capitals', 'HTTPS://X.TEST/P?TOKEN=ABC', 'X.TEST'],
+    [
+      'a connection string',
+      'postgres://app:s3cret@db.internal:5432/kometio',
+      's3cret',
+    ],
+    [
+      'a JSON web token',
+      'bad eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln',
+      'eyJ',
+    ],
+    [
+      'a password hash',
+      'saved $argon2id$v=19$m=65536,t=3,p=4$c29tZQ$aGFzaA',
+      'argon2',
+    ],
+    [
+      'a long hexadecimal secret',
+      'secret 3f9a1c5e7b2d4f6a8c0e1b3d5f7a9c2e4b6d8f0a',
+      '3f9a1c5e',
+    ],
+    ['a cookie', 'cookie: kometio_session=abc123def456; theme=dark', 'abc123'],
+    [
+      'a key=value pair',
+      'connect failed host=db user=app password=s3cret x',
+      's3cret',
+    ],
+    ['a number of eight digits', 'phone 0612345678 invalid', '0612345678'],
+    ['a word that is not one', 'weird Zm9vYmFyYmF6cXV4IGtleQ==', 'Zm9v'],
+  ])('does not keep %s', (_name, text, secret) => {
+    const redacted = redact(text);
+
+    expect(redacted).not.toContain(secret);
+  });
+
+  it('keeps the words around what it does not keep', () => {
+    expect(redact('could not send mail to ana@example.test now')).toBe(
+      'could not send mail to … now',
     );
   });
 
-  describe('what the first version of this let through', () => {
+  describe('what is made of plain words and is only given away by its name', () => {
     it.each([
       [
-        'the values of a failed query when they run over several lines',
-        'Failed query: update "pages" set "content" = $1\nparams: line one\nline two with ana@x.test\n$argon2id$v=19$abc',
-        'Failed query: update "pages" set "content" = $1\nparams: [values]',
+        'a quoted value with spaces in JSON',
+        'bad body {"email": "x", "password": "hunter with spaces", "n": 1}',
+        'hunter',
       ],
       [
-        'credentials inside a connection string',
-        'connect failed: postgres://kometio_app:s3cret@db.internal:5432/kometio',
-        'connect failed: postgres://[credentials]@db.internal:5432/kometio',
+        'a password written plainly',
+        'login failed password=hunter user',
+        'hunter',
       ],
+      ['an api key header', 'sent X-Api-Key: abcdef and more', 'abcdef'],
       [
-        'the query of an address that is not absolute',
-        'GET /api/public/pages/p1/preview?token=abc.def&x=1 failed',
-        'GET /api/public/pages/p1/preview?[query] failed',
+        'a bearer credential of letters only',
+        'rejected Bearer abcdefghijklmnop',
+        'abcdefghij',
       ],
+      ['a basic credential', 'Authorization: Basic YWJjZGVm', 'YWJjZGVm'],
       [
-        'the query of an address written in capitals',
-        'HTTPS://x.test/p?token=abc',
-        'HTTPS://x.test/p?[query]',
+        'a name that ends in the keyword',
+        'access_token=abcdefghij',
+        'abcdefghij',
       ],
-      [
-        'an email address that has no top-level domain, or is not ASCII',
-        'for ana@localhost and for andré@exämple.test',
-        'for [email] and for [email]',
-      ],
-      [
-        'an Authorization header of another scheme',
-        'rejected: Authorization: Basic YW5hOnMzY3JldA==',
-        'rejected: Authorization: [redacted]',
-      ],
-      [
-        'a JSON web token',
-        'bad token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJl',
-        'bad token [token]',
-      ],
-      [
-        'a password hash',
-        'saved $argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$aGFzaGhhc2g and went on',
-        'saved [hash] and went on',
-      ],
-      [
-        'a long hexadecimal secret',
-        'secret 3f9a1c5e7b2d4f6a8c0e1b3d5f7a9c2e4b6d8f0a1c3e5b7d9f1a3c5e7b9d1f3a',
-        'secret [token]',
-      ],
-      [
-        'a session cookie as it is written in a header',
-        'cookie: kometio_session=abc123def456; theme=dark',
-        'cookie: [redacted]; theme=dark',
-      ],
-    ])('redacts %s', (_name, text, expected) => {
-      expect(redact(text)).toBe(expected);
+      ['a camel-cased name', 'refreshToken: "abc def"', 'abc'],
+    ])('does not keep %s', (_name, text, secret) => {
+      expect(redact(text)).not.toContain(secret);
     });
 
-    it.each([
-      [
-        'a JSON body that names its secret',
-        'bad body {"email": "x", "password": "hunter2 with spaces", "n": 1}',
-        'bad body {"email": "x", "password": [redacted], "n": 1}',
-      ],
-      [
-        'a key=value pair that names its secret',
-        'connect failed: host=db user=app password=s3cret sslmode=require',
-        'connect failed: host=db user=app password=[redacted] sslmode=require',
-      ],
-      [
-        'an api key header',
-        'sent X-Api-Key: abc123 and Cookie: kometio_session=zzz',
-        'sent X-Api-Key: [redacted] and Cookie: [redacted]',
-      ],
-    ])('redacts %s', (_name, text, expected) => {
-      expect(redact(text)).toBe(expected);
-    });
+    it('removes the values a failed query was run with, to the end, whatever the case', () => {
+      const text =
+        'Failed query: update "pages" set "content" = $1\nParams : line one\nline two\n$argon2id$abc';
 
-    it.each([
-      ['access_token=abc.def', 'access_token=[redacted]'],
-      ['refreshToken: "abc def"', 'refreshToken: [redacted]'],
-      ['{"client_secret":"abc"}', '{"client_secret":[redacted]}'],
-      ['"session_id": "abc"', '"session_id": [redacted]'],
-      ['X-CSRF-Token: abc', 'X-CSRF-Token: [redacted]'],
-      ['x-xsrf-token=abc', 'x-xsrf-token=[redacted]'],
-      ['private_key: -----BEGIN', 'private_key: [redacted]'],
-      ['passwordHash=$2b$10$abc', 'passwordHash=[redacted]'],
-      ['Set-Cookie: sid=abc; Path=/', 'Set-Cookie: [redacted]; Path=/'],
-    ])(
-      'redacts the value when the name of it only ends or begins with a keyword: %s',
-      (text, expected) => {
-        expect(redact(text)).toBe(expected);
-      },
-    );
-
-    it('does not take a name that merely contains letters of a keyword', () => {
-      expect(redact('author: Ana, authority: none, tokenizer ready')).toBe(
-        'author: Ana, authority: none, tokenizer ready',
+      expect(redact(text)).toBe(
+        'Failed query: update "pages" set "content" …\nparams: [values]',
       );
     });
+  });
 
-    it('does not throw on what is not a string', () => {
-      expect(redact(undefined as unknown as string)).toBe('');
-      expect(redact(42 as unknown as string)).toBe('');
-    });
-
-    it.each([
-      [
-        'a percent-encoded address',
-        'GET /api/users/ana%40example.test failed',
-        'GET /api/users/[email] failed',
-      ],
-      [
-        'a percent-encoded query',
-        'fetch https://x.test/p%3Ftoken%3Dabc failed',
-        'fetch https://x.test/p?[query] failed',
-      ],
-      [
-        'a JSON unicode escape',
-        'bad "ana\\u0040example.test"',
-        'bad "[email]"',
-      ],
-      ['a hexadecimal escape', 'bad ana\\x40example.test', 'bad [email]'],
-      [
-        'a numeric entity',
-        'bad ana&#64;example.test and ana&#x40;example.test',
-        'bad [email] and [email]',
-      ],
-      ['a full-width at sign', 'bad ana＠example.test', 'bad [email]'],
-      [
-        'a capitalised params label',
-        'Failed query: x\nParams : a@b.test,hash',
-        'Failed query: x\nparams: [values]',
-      ],
-    ])(
-      'redacts %s: what a consumer would decode, not only what is written',
-      (_name, text, expected) => {
-        expect(redact(text)).toBe(expected);
-      },
-    );
-
-    it.each([
-      [
-        'a double-encoded address',
-        'GET /u/ana%2540example.test',
-        'GET /u/[email]',
-      ],
-      ['a braced unicode escape', 'bad ana\\u{40}example.test', 'bad [email]'],
-      ['a named entity', 'bad ana&commat;example.test', 'bad [email]'],
-      [
-        'a zero-width character in the middle',
-        'bad ana\u200b@example.test',
-        'bad [email]',
-      ],
-      [
-        'a secret broken by a zero-width character',
-        `secret ${'3f9a1c5e7b2d4f6a'.repeat(2)}\u200b${'8c0e1b3d5f7a9c2e'.repeat(2)}`,
-        'secret [token]',
-      ],
-      [
-        'a control character in an address',
-        'bad ana\u0007@example.test',
-        'bad [email]',
-      ],
-    ])('redacts %s', (_name, text, expected) => {
-      expect(redact(text)).toBe(expected);
-    });
-
-    it('does not let a character that expands under normalisation make a word long enough to be slow', () => {
-      const started = Date.now();
-      const text = `${'\ufdfa'.repeat(250)} `.repeat(60);
-
-      const redacted = redact(text);
-
-      expect(Date.now() - started).toBeLessThan(1000);
-      expect(redacted).toContain('[long]');
-    });
-
-    it('keeps what is not a secret: an id, a status, a plain question', () => {
-      const text =
-        'page 3f9a1c5e-7b2d-4f6a-8c0e-1b3d5f7a9c2e not found (404): which one?';
-
-      expect(redact(text)).toBe(text);
-    });
-
-    it('takes a bounded time on a message of any length: the cap is applied before the rules, which are not linear', () => {
-      // 2 MB of one unbroken run, the worst case for a rule that scans
-      // forward from every position. Before the cap this took minutes.
+  describe('bounds', () => {
+    it('takes a bounded time on a message of any length', () => {
       const started = Date.now();
 
       redact('a'.repeat(2_000_000));
       redact('ab+.-'.repeat(400_000));
       redact('?a'.repeat(1_000_000));
+      redact('a@'.repeat(500_000));
+      redact('token '.repeat(300_000));
 
       expect(Date.now() - started).toBeLessThan(1000);
     });
 
-    it('cuts a very long message after redacting it, at a word, and keeps the start', () => {
-      const long = `${'word '.repeat(600)}ana@example.test`;
-
-      const redacted = redact(long);
+    it('cuts a very long message at a word, and keeps the start', () => {
+      const redacted = redact('word '.repeat(600));
 
       expect(redacted.length).toBeLessThanOrEqual(1001);
       expect(redacted.startsWith('word word')).toBe(true);
-      // At the end of a word, never in the middle of one.
       expect(redacted).toMatch(/word…$/);
     });
 
     it('never leaves half a secret where the input is cut: the word at the cut is dropped whole', () => {
       const secret =
         '3f9a1c5e7b2d4f6a8c0e1b3d5f7a9c2e4b6d8f0a1c3e5b7d9f1a3c5e7b9d1f3a';
-      // Long unbroken runs shrink to six characters each, so what comes
-      // before the cut is short enough for a fragment to stay in the output.
-      // The secret begins ten characters before the limit and runs past it.
-      const run = `${'x'.repeat(300)} `;
-      const before = run.repeat(
-        Math.floor((MAX_REDACTED_INPUT_LENGTH - 11) / run.length),
-      );
-      const padding = 'w '.repeat(
-        Math.floor((MAX_REDACTED_INPUT_LENGTH - 11 - before.length) / 2),
-      );
-      const input = `${before}${padding} ${secret} tail`;
+      const input = `${'w '.repeat((MAX_REDACTED_INPUT_LENGTH - 11) / 2)} ${secret} tail`;
 
-      const redacted = redact(input);
-
-      expect(redacted).not.toMatch(/[0-9a-f]{8}/);
-      expect(redacted).toContain('[long]');
+      expect(redact(input)).not.toMatch(/[0-9a-f]{8}/);
     });
 
-    it('does not keep a run that is longer than any word of a message: it is data', () => {
+    it('does not keep a run longer than any word of a message: it is data', () => {
       const blob = 'x'.repeat(5000);
 
       expect(redact(`failed to parse ${blob} at line 3`)).toBe(
-        'failed to parse [long] at line 3',
+        'failed to parse … at line 3',
       );
     });
 
-    it('does not leave a long address with a query in it half-redacted', () => {
-      const url = `https://x.test/${'a'.repeat(300)}?token=abc`;
-
-      expect(redact(`fetch ${url} failed`)).toBe('fetch [long] failed');
+    it('is a gap, not several, where several words in a row were not kept', () => {
+      expect(redact('a b@c d@e f@g h')).toBe('a … h');
     });
-  });
 
-  it('leaves what carries nothing alone', () => {
-    expect(redact('Cannot read properties of undefined (reading id)')).toBe(
-      'Cannot read properties of undefined (reading id)',
-    );
+    it('does not throw on what is not a string', () => {
+      expect(redact(undefined as unknown as string)).toBe('');
+      expect(redact(42 as unknown as string)).toBe('');
+    });
   });
 });
 
@@ -346,37 +253,48 @@ describe('scrubEvent', () => {
     }
   });
 
-  it('redacts the words of the error', () => {
+  it('keeps the words of the error that are safe and nothing else', () => {
     const value = scrubEvent(richEvent()).exception?.values?.[0]?.value;
 
-    expect(value).toBe(
-      'duplicate key (email)=([email]) from https://x.test/p?[query] Bearer [token]',
-    );
+    expect(value).toBe('duplicate key … from … Bearer [redacted]');
   });
 
-  it('redacts the type of an exception too: a name is whatever the code that threw it set', () => {
+  it('redacts the type of an exception as it redacts its text', () => {
     const event = richEvent();
     const [value] = event.exception?.values ?? [];
     if (!value) throw new Error('fixture');
     value.type = 'ValidationError for ana@example.test';
 
     expect(scrubEvent(event).exception?.values?.[0]?.type).toBe(
-      'ValidationError for [email]',
+      'ValidationError for …',
     );
   });
 
-  it('redacts the tags too: a path or a request id is whatever the caller said', () => {
-    const event = richEvent();
-    event.tags = {
-      service: 'api',
-      http_path: '/api/users/ana@example.test',
-      request_id: 'Bearer abcdefghijklmnop',
-    };
+  describe('the tags', () => {
+    it('keeps a path of slugs and ids, and masks a segment that is not one', () => {
+      const event = richEvent();
+      event.tags = {
+        http_path:
+          '/api/users/ana%40example.test/pages/3f9a1c5e-7b2d-4f6a-8c0e-1b3d5f7a9c2e',
+      };
 
-    expect(scrubEvent(event).tags).toEqual({
-      service: 'api',
-      http_path: '/api/users/[email]',
-      request_id: 'Bearer [token]',
+      expect(scrubEvent(event).tags).toEqual({
+        http_path: '/api/users/…/pages/3f9a1c5e-7b2d-4f6a-8c0e-1b3d5f7a9c2e',
+      });
+    });
+
+    it('masks a request id that is whatever the client said it was', () => {
+      const event = richEvent();
+      event.tags = { request_id: 'Bearer abcdefghijklmnop' };
+
+      expect(scrubEvent(event).tags).toEqual({ request_id: '…' });
+    });
+
+    it('masks a method that is not one', () => {
+      const event = richEvent();
+      event.tags = { http_method: 'GET ana@example.test' };
+
+      expect(scrubEvent(event).tags).toEqual({ http_method: '…' });
     });
   });
 
@@ -418,6 +336,27 @@ describe('scrubEvent', () => {
       colno: 7,
       in_app: true,
     });
+  });
+
+  it('keeps the innermost frames and a bounded number of exceptions', () => {
+    const event = richEvent();
+    const frames = Array.from({ length: 300 }, (_, index) => ({
+      filename: `f${index}.js`,
+      lineno: index,
+    }));
+    event.exception = {
+      values: Array.from({ length: 30 }, () => ({
+        type: 'Error',
+        value: 'x',
+        stacktrace: { frames },
+      })),
+    };
+
+    const { values } = scrubEvent(event).exception ?? {};
+
+    expect(values).toHaveLength(10);
+    expect(values?.[0]?.stacktrace?.frames).toHaveLength(100);
+    expect(values?.[0]?.stacktrace?.frames?.at(-1)?.filename).toBe('f299.js');
   });
 
   it('is a list of what to keep: a field it does not know does not travel', () => {

@@ -95,11 +95,12 @@ address arrives without a hard refresh.
      API and the public site report the errors nobody handled (docs/adr/0114) —
      the error, the method, the path and the request id; no request body, no
      header, no cookie, no query string, no person. `SENTRY_ENVIRONMENT` and
-     `SENTRY_RELEASE` are optional labels. The text of an error is sent
-     redacted for what such messages are known to carry, and that is
-     best-effort: turn on the project's own server-side scrubbing as well
-     (Sentry → Settings → Security & Privacy → Data Scrubber, and Prevent
-     Storing of IP Addresses).
+     `SENTRY_RELEASE` are optional labels. Of the text of an error only plain
+     words are sent (an address, a path, a number of more than four digits or
+     a `key=value` is replaced by `…`); a name written as a plain word is the
+     one thing that cannot be told from the rest, so turn on the project's own
+     server-side scrubbing as well (Sentry → Settings → Security & Privacy →
+     Data Scrubber, and Prevent Storing of IP Addresses).
 
    The API refuses to start with a value left empty or too short, with
    Cloudflare's test captcha keys (which let every captcha through), or with

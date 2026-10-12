@@ -27,18 +27,26 @@ sent.
   no machine name, no `extra`, no breadcrumbs, no source lines, no variables:
   a field an SDK learns to attach later does not travel until somebody adds
   it here.
-- **The words of the error, and the tags, are redacted** (`redact`, an
-  ordered list of rules, each a thing seen or to be expected in such a
-  message): the values a failed query was run with (to the end of the
-  message), the credentials of a connection string, the query of an address
-  (absolute or not), an email address (whatever follows the `@`, in any
-  alphabet), an Authorization value of any scheme, a JSON web token, a
-  password hash, a long hexadecimal secret, a session written as a cookie, a
-  value written next to the name of what it is (`password=…`, `"token": "…"`,
-  `X-Api-Key: …`). A
-  text is cut at 1000 characters, after it has been redacted. The
-  application also never reports an error it handled (a refused request, a
-  missing page, a rule that said no): only what nobody expected.
+- **The words of the error are kept from a list of what is safe** (`redact`).
+  A list of what a secret looks like is always one entry short: every
+  encoding of an address, every separator, every alphabet is another. So a
+  word is kept only if it is a plain word (letters, with the punctuation of a
+  sentence around it), a number of up to four digits, or a marker; an address,
+  a path, a token, a longer number, `key=value`, JSON, an escape, an entity is
+  none of those and is replaced by `…`. Three whole-message rules come first,
+  for secrets made of plain words that only their name gives away: the values
+  of a failed query (`params:`, to the end of the message), a value written
+  beside the name of what it is (`password=…`, `"access_token": "…"`,
+  `X-Api-Key: …`, the keyword looked for inside the name), and an
+  Authorization value. The tags are held to what they should be: a path of
+  slugs and ids, a method, an id of a length and an alphabet.
+- **Bounded, and never cut through a word.** A message is read up to 16,000
+  characters and cut between words (half of a secret is still half of one); a
+  run of more than 256 characters is data and is not kept, so that nothing
+  scans a long text from every position; an event keeps at most ten
+  exceptions of at most a hundred frames each. The worst message measured
+  takes a millisecond. A process sends at most 20 reports a minute, a fatal
+  one excepted.
 - **A DSN is validated** (`assertSentryDsn`): one that is not a DSN is
   refused with the variable's name (the API refuses to start; the public site
   logs it and runs unreported), not silently ignored by the SDK. The value is

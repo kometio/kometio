@@ -85,9 +85,7 @@ describe('SentryErrorReporter', () => {
     );
     const [event] = eventsReceived();
     expect(event).toBeDefined();
-    expect(event?.exception.values[0]?.value).toBe(
-      'insert failed for [email] at https://site.test/p?[query]',
-    );
+    expect(event?.exception.values[0]?.value).toBe('insert failed for … at …');
     expect(event?.tags).toMatchObject({
       service: 'api',
       request_id: 'req-1',

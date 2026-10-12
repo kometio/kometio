@@ -36,14 +36,26 @@ not choose.
   field down to an exception and a frame: the error (type, message, how it was
   caught, the places in the code), level, environment, release and the
   application's own tags. No request, headers, cookies, body, query string,
-  user, machine name, extra data or breadcrumbs, and the SDK is started without
-  its default integrations, so it learns none of those to begin with. The
-  words of the error and the tags are redacted by an ordered list of rules, for
-  what such messages have been seen to carry: the values a failed query was run
-  with (Drizzle writes them after the SQL), the credentials of a connection
-  string, the query of an address, an email address, an Authorization value, a
-  token, a password hash, a session cookie; and they are cut at 1000
-  characters.
+  user, machine name, extra data or breadcrumbs, and the SDK is started
+  without its default integrations, so it learns none of those to begin with.
+- **The text of the error is kept word by word from a list of what is safe**,
+  not by removing what looks like a secret. The second was built first, and
+  five rounds of review each found another way to write an address (a
+  percent-encoding, a double one, an entity, a full-width character, a
+  zero-width space, a fourth layer of encoding): a list of what a secret looks
+  like is always one entry short. Now a word is kept only if it is a plain
+  word, a number of up to four digits, or a marker; everything else is `…`.
+  Three whole-message rules come first, for secrets that are made of plain
+  words and are only given away by their name: the values of a failed query,
+  a value written beside the name of what it is, an Authorization value.
+  What is lost is the detail of a message (`connect ECONNREFUSED …`); the
+  stack and the tags carry where.
+- **Bounded, and never cut through a word**: a message is read up to 16,000
+  characters and cut between words (half a secret is still half a secret); a
+  run of more than 256 characters is not kept, and an event keeps at most ten
+  exceptions of a hundred frames. A process sends at most 20 reports a minute,
+  a fatal one excepted: a visitor who can make the server throw can make it
+  throw as often as they like.
 - **The SDK is `@sentry/node-core/light`.** `@sentry/node` 11 depends on the
   bundler plugins, which depend on Sentry's command-line client (15 MB) and a
   native parser: nothing a server that only reports errors needs to install.
@@ -64,20 +76,20 @@ not choose.
 
 - A deployment that wants to hear about its errors sets one variable; one that
   does not has the same behaviour as before, plus an unused library.
-- Redaction is best-effort, on the text of an error, and a determined input
-  can be written in a form no rule has seen (every round of review found one
-  more encoding of an address). It is the first of two layers: the Sentry
+- A plain word is not known to be harmless: a name, or a password made of
+  letters and not written beside its name, is a plain word. That is the one
+  thing this cannot see, and the first of two layers: the Sentry
   project has its own server-side data scrubbing (Settings → Security &
   Privacy → Data Scrubber, with Prevent Storing of IP Addresses), which
   should be on for a project that receives these reports, and which
   self-hosting.md says. What Kometio does not do is trust either layer with
   something it could simply not send: nothing of the request, no variables,
   no breadcrumbs.
-- The messages of unexpected errors are sent, redacted for what they commonly
-  carry; an error whose text names something else a person typed would carry
-  it. That is the cost of hearing about the error at all, and the reason the
-  project is the deployment's own to choose, in the region it chooses
-  (Sentry has one in the EU).
+- The messages of unexpected errors are sent, as plain words and nothing else.
+  An error whose text is a name or a phrase somebody typed would carry it;
+  that is the cost of hearing about the error at all, and the reason the
+  project is the deployment's own to choose, in the region it chooses (Sentry
+  has one in the EU).
 - The editor (the browser) is not covered: a client-side SDK needs its own
   decision about the CSP and what a browser may send. Not done here.
 - Checked with the real SDK against a stand-in for Sentry's endpoint: in the

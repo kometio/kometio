@@ -4,7 +4,7 @@ import type {
   StackFrame,
 } from '@sentry/node-core/light';
 
-/** How much of an error's words is kept, after redacting them. */
+/** How much of an error's words is kept. */
 const MAX_TEXT_LENGTH = 1000;
 
 /**
@@ -14,46 +14,36 @@ const MAX_TEXT_LENGTH = 1000;
  */
 export const MAX_REDACTED_INPUT_LENGTH = 16_000;
 
-/**
- * The longest run of non-space characters that is still a word of a message.
- * A longer one is data (a body, a blob, an address with a long query), and is
- * replaced whole: a rule that found part of a secret in it would leave the
- * rest, and the rules below are only safe to run on a run this short.
- */
+/** The longest run of non-space characters that is still read as a word: a longer one is data. */
 const MAX_WORD_LENGTH = 256;
 
-/** A character that cannot be part of the name or the host of an email address, written in a message. */
-const NOT_ADDRESS = String.raw`\s@<>()\[\]{}"'` + '`' + String.raw`,;:/\\`;
+/** What of an event's lists is kept: a stack of thousands of frames is not one that is read. */
+const MAX_EXCEPTIONS = 10;
+const MAX_FRAMES = 100;
 
-/**
- * What an error's own words may carry out with them: the text of an error is
- * whatever the code that threw it put there, and a failed query, a failed
- * fetch or a failed connection names its values. Each rule is a thing that
- * has been seen in such a message or that one would expect to be.
+/** What Sentry keeps of a tag's value: more is dropped on the other side. */
+const MAX_TAG_LENGTH = 200;
+
+/** What stands where a word is not kept. */
+const MASK = '…';
+
+/*
+ * The text of an error is whatever the code that threw it put there, and a
+ * failed query, a failed fetch or a failed connection names its values. A
+ * list of what a secret looks like is a list that is always one entry short:
+ * every encoding of an address, every separator, every alphabet is another
+ * entry. So the words are kept from a list of what is safe instead, and what
+ * is not on it is not sent.
  *
- * Applied to ONE WORD at a time (a run of non-space characters, at most
- * `MAX_WORD_LENGTH` long): several of these scan forward from every position,
- * and over a whole message their time is the square of its length (80,000
- * characters took four seconds). Over a word of 256 it is a constant.
+ * Three whole-message rules come first, for the secrets that are made of
+ * plain words and so look like nothing: the values of a failed query, a
+ * value written beside the name of what it is, an Authorization value. Then
+ * every word is kept only if it is a plain word (letters, with the
+ * punctuation of a sentence around it), a small number or one of the markers
+ * this file writes. An address, a path, a token, a number with more than four
+ * digits, `key=value`, JSON, an escape, an entity: none of them is a plain
+ * word, and none of them is kept.
  */
-const WORD_RULES: readonly (readonly [RegExp, string])[] = [
-  // What stands before the `@` of an address with a scheme: a connection
-  // string with its password.
-  [/\b([a-z][a-z0-9+.-]*:\/\/)[^\s/@?#]+@/gi, '$1[credentials]@'],
-  // The query of an address, absolute or not: a token, an id, a search.
-  [/\?[\w.~%+-]+=[^\s#"'`)>]*/g, '?[query]'],
-  // An email address, whatever is after the `@` (`ana@localhost`) and
-  // whatever alphabet it is written in.
-  [new RegExp(`[^${NOT_ADDRESS}]+@[^${NOT_ADDRESS}]+`, 'g'), '[email]'],
-  // A JSON web token on its own.
-  [/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/g, '[token]'],
-  // A password hash.
-  [/\$argon2[a-z]*\$[^\s"'`)]+/g, '[hash]'],
-  // A secret written in hexadecimal (a UUID is not: its runs are shorter).
-  [/\b[0-9a-f]{32,}\b/gi, '[token]'],
-  // A session written as a cookie, or as a parameter.
-  [/\b(kometio_[a-z_]+|[a-z_]*session[a-z_]*|sid)=[^;\s]+/gi, '$1=[token]'],
-];
 
 /**
  * The values a failed query was run with. Drizzle writes them after the SQL
@@ -80,8 +70,26 @@ const SECRET_ASSIGNMENT =
 /** An Authorization value is two words, the scheme and the credential. */
 const AUTHORIZATION = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]+/gi;
 
-/** What Sentry keeps of a tag's value: more is dropped on the other side. */
-const MAX_TAG_LENGTH = 200;
+/** The markers this file writes in place of what it removed. */
+const MARKER = /^\[(?:redacted|values)\]$/;
+
+/** A plain word: letters, with `_`, `-` and an apostrophe inside, and the punctuation of a sentence around it. */
+const PLAIN_WORD = /^[("'[]*[\p{L}\p{M}][\p{L}\p{M}_'’-]{0,23}[)"'\],.:;!?]*$/u;
+
+/** A number of up to four digits: a status, a line, a count. Five could be a postcode and eight a phone number. */
+const SMALL_NUMBER = /^[("'[]*\d{1,4}[)"'\],.:;!?]*$/;
+
+/** Punctuation standing alone (`->`, `::`, `(`): it carries nothing. */
+const PUNCTUATION = /^[-–—:;,.!?()[\]'"|>*+]{1,3}$/;
+
+function isSafeWord(word: string): boolean {
+  return (
+    MARKER.test(word) ||
+    PLAIN_WORD.test(word) ||
+    SMALL_NUMBER.test(word) ||
+    PUNCTUATION.test(word)
+  );
+}
 
 /**
  * `text` cut to at most `max` characters, between two words. The word the cut
@@ -98,108 +106,26 @@ function cutAtWord(text: string, max: number): string {
   return '';
 }
 
-/**
- * The word as whoever reads it would read it: a percent-encoded address, a
- * JSON `\u0040`, a numeric entity, a full-width `＠` are the same text, and a
- * rule written for the plain one does not see them. What is redacted is the
- * decoded form, so what is sent is that form with the secret gone.
- */
-function normalised(word: string): string {
-  let text = word;
-  // More than once: `%2540` is `%40` is `@`, and a report goes through
-  // several layers that each add one. Bounded, and stopping when a pass
-  // changes nothing.
-  for (let pass = 0; pass < MAX_DECODE_PASSES; pass += 1) {
-    const decoded = decodeOnce(text);
-    if (decoded === text) break;
-    text = decoded;
-  }
-  return (
-    text
-      .normalize('NFKC')
-      // Format and control characters (a zero-width space, a bell) are not
-      // text, and one in the middle of a token is what stops a rule seeing it.
-      .replace(/[\p{Cf}\p{Cc}]/gu, '')
-  );
-}
-
-/** How many layers of encoding are peeled off a word. */
-const MAX_DECODE_PASSES = 3;
-
-/** The few named entities for the punctuation an address, a query or an assignment is made of. */
-const NAMED_ENTITIES: Readonly<Record<string, string>> = {
-  commat: '@',
-  period: '.',
-  colon: ':',
-  equals: '=',
-  quest: '?',
-  sol: '/',
-  lowbar: '_',
-  num: '#',
-  amp: '&',
-};
-
-function decodeOnce(text: string): string {
-  let decoded = text;
-  if (/%[0-9a-f]{2}/i.test(decoded)) {
-    try {
-      decoded = decodeURIComponent(decoded);
-    } catch {
-      // A malformed escape: the word is kept as it was written.
-    }
-  }
-  return decoded
-    .replace(/\\u\{([0-9a-f]{1,6})\}/gi, (escape, hex: string) =>
-      codePointOr(Number.parseInt(hex, 16), escape),
-    )
-    .replace(/\\u([0-9a-f]{4})/gi, (escape, hex: string) =>
-      codePointOr(Number.parseInt(hex, 16), escape),
-    )
-    .replace(/\\x([0-9a-f]{2})/gi, (escape, hex: string) =>
-      codePointOr(Number.parseInt(hex, 16), escape),
-    )
-    .replace(/&#x([0-9a-f]{1,6});/gi, (entity, hex: string) =>
-      codePointOr(Number.parseInt(hex, 16), entity),
-    )
-    .replace(/&#(\d{1,7});/g, (entity, digits: string) =>
-      codePointOr(Number.parseInt(digits, 10), entity),
-    )
-    .replace(
-      /&([a-z]+);/gi,
-      (entity, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? entity,
-    );
-}
-
-function codePointOr(codePoint: number, original: string): string {
-  return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : original;
-}
-
-function redactWord(word: string): string {
-  if (word.length > MAX_WORD_LENGTH) return '[long]';
-  const text = normalised(word);
-  // Normalising can make a word longer (a ligature is several letters): the
-  // rules are only safe to run over a word of this length, decoded or not.
-  if (text.length > MAX_WORD_LENGTH) return '[long]';
-  return WORD_RULES.reduce(
-    (current, [pattern, replacement]) => current.replace(pattern, replacement),
-    text,
-  );
-}
-
 export function redact(text: string): string {
   if (typeof text !== 'string') return '';
   const read = cutAtWord(text, MAX_REDACTED_INPUT_LENGTH);
   const paramsAt = read.search(QUERY_PARAMS);
-  const head = paramsAt === -1 ? read : read.slice(0, paramsAt);
-  const redacted = head
-    .split(/(\s+)/)
-    .map((part, index) => (index % 2 === 1 ? part : redactWord(part)))
-    .join('')
+  const head = (paramsAt === -1 ? read : read.slice(0, paramsAt))
     .replace(SECRET_ASSIGNMENT, '$1$2[redacted]')
-    .replace(AUTHORIZATION, '$1 [token]');
-  const withParams = paramsAt === -1 ? redacted : `${redacted}params: [values]`;
-  const kept = cutAtWord(withParams, MAX_TEXT_LENGTH);
-  return kept.length < withParams.length ? `${kept}…` : kept;
+    .replace(AUTHORIZATION, '$1 [redacted]');
+  const kept = head
+    .split(/(\s+)/)
+    .map((part, index) => {
+      if (index % 2 === 1 || part === '') return part;
+      if (part.length > MAX_WORD_LENGTH) return MASK;
+      return isSafeWord(part) ? part : MASK;
+    })
+    .join('')
+    // Several words in a row that were not kept are one gap, not several.
+    .replace(new RegExp(`${MASK}(?:\\s+${MASK})+`, 'g'), MASK);
+  const withParams = paramsAt === -1 ? kept : `${kept}params: [values]`;
+  const cut = cutAtWord(withParams, MAX_TEXT_LENGTH);
+  return cut.length < withParams.length ? `${cut}${MASK}` : cut;
 }
 
 /** Only where in the code it was: no source lines, no variables, nothing an integration may add later. */
@@ -227,9 +153,47 @@ function keepException(value: Exception): Exception {
     }
   }
   if (value.stacktrace?.frames) {
-    kept.stacktrace = { frames: value.stacktrace.frames.map(keepFrame) };
+    // The innermost frames are the last ones: it is the end that is kept.
+    kept.stacktrace = {
+      frames: value.stacktrace.frames.slice(-MAX_FRAMES).map(keepFrame),
+    };
   }
   return kept;
+}
+
+/** A path segment that is a slug or an id: letters, digits, `_`, `-`, `.`, `~`, and not long enough to be a secret. */
+const PATH_SEGMENT = /^[A-Za-z0-9_.~-]{1,64}$/;
+const HEX_SECRET = /^[0-9a-f]{32,}$/i;
+
+/**
+ * A path as the application wrote it, with what is not a slug or an id
+ * masked: an address in a segment, an encoded one, a token.
+ */
+function safePath(path: string): string {
+  return path
+    .split('/')
+    .map((segment) =>
+      segment === '' ||
+      (PATH_SEGMENT.test(segment) && !HEX_SECRET.test(segment))
+        ? segment
+        : MASK,
+    )
+    .join('/')
+    .slice(0, MAX_TAG_LENGTH);
+}
+
+/**
+ * What the application puts in a tag is a method, a path and an id it was
+ * given by a client (`X-Request-Id`): each is held to what it should be.
+ */
+function safeTag(name: string, value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  if (name === 'http_path') return safePath(value);
+  if (name === 'http_method') return /^[A-Z]{1,10}$/.test(value) ? value : MASK;
+  if (name === 'request_id') {
+    return /^[A-Za-z0-9._-]{1,64}$/.test(value) ? value : MASK;
+  }
+  return redact(value).slice(0, MAX_TAG_LENGTH);
 }
 
 function redactTags(
@@ -238,13 +202,8 @@ function redactTags(
   if (!tags) return {};
   return {
     tags: Object.fromEntries(
-      Object.entries(tags).map(([name, value]) => [
-        name,
-        typeof value === 'string'
-          ? redact(value).slice(0, MAX_TAG_LENGTH)
-          : value,
-      ]),
-    ),
+      Object.entries(tags).map(([name, value]) => [name, safeTag(name, value)]),
+    ) as NonNullable<ErrorEvent['tags']>,
   };
 }
 
@@ -257,8 +216,8 @@ function redactTags(
  * headers and cookies carry the session, its body what somebody typed), the
  * person, the machine, `extra`, breadcrumbs, a frame's source lines and
  * variables are absent because nothing here names them, and an SDK that
- * learns to attach one more thing does not start sending it. What is kept
- * of text is redacted.
+ * learns to attach one more thing does not start sending it. The text that
+ * is kept is kept word by word from a list of what is safe (`redact`).
  */
 export function scrubEvent(event: ErrorEvent): ErrorEvent {
   return {
@@ -272,7 +231,13 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
     ...redactTags(event.tags),
     ...(event.message === undefined ? {} : { message: redact(event.message) }),
     ...(event.exception?.values
-      ? { exception: { values: event.exception.values.map(keepException) } }
+      ? {
+          exception: {
+            values: event.exception.values
+              .slice(0, MAX_EXCEPTIONS)
+              .map(keepException),
+          },
+        }
       : {}),
     type: undefined,
   };
