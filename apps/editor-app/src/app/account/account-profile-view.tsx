@@ -6,7 +6,7 @@ import {
   isCanonicalSlug,
   slugify,
 } from '@kometio/shared-types';
-import { type AccountProfile } from '@kometio/api-contracts';
+import { BIO_MAX_CHARS, type AccountProfile } from '@kometio/api-contracts';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -23,9 +23,6 @@ import { PageHeader } from '../shell/page-header';
 import { SaveBar } from '../settings/save-bar';
 import { useToast } from '../shell/toast-provider';
 import { InlineError } from '../../components/ui/inline-error';
-
-/** The server's own limit (account.schemas.ts): a few lines, not an essay. */
-const BIO_MAX_CHARS = 1000;
 
 /** What the form holds of the profile, in the shape it is compared and put back in. */
 interface ProfileDraft {

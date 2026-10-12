@@ -42,7 +42,7 @@ import {
   type ResetPasswordBody,
   verifyEmailBodySchema,
   type VerifyEmailBody,
-} from './auth.schemas';
+} from '@kometio/api-contracts';
 import { SessionAuthGuard } from './session-auth.guard';
 import { AuthErrorsFilter } from './auth-errors.filter';
 import { SESSION_COOKIE_NAME, SessionCookies } from './session-cookies';

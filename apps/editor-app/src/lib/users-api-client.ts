@@ -2,7 +2,10 @@ import { type InterfaceLanguage, type UserRole } from '@kometio/shared-types';
 import {
   type InvitationRecord,
   type InvitationResendRecord,
+  type InviteUserRequest,
   type PaginatedUsers,
+  type SetUserActiveBody,
+  type UpdateUserRoleBody,
   type UserRecord,
   invitationRecordSchema,
   invitationResendRecordSchema,
@@ -32,13 +35,10 @@ export async function listUsers(
   );
 }
 
-export interface InviteUserInput {
-  email: string;
-  displayName: string;
-  role: UserRole;
-  /** What the invitation — and every email after it — is written in. */
+/** `language` is what the invitation — and every email after it — is written in: the editor always says it, where the API would take the site's. */
+export type InviteUserInput = InviteUserRequest & {
   language: InterfaceLanguage;
-}
+};
 
 /** The person is invited whether or not the email went out: `emailSent` says which. */
 export async function inviteUser(
@@ -56,10 +56,11 @@ export async function updateUserRole(
   id: string,
   role: UserRole,
 ): Promise<UserRecord> {
+  const body: UpdateUserRoleBody = { role };
   return userRecordSchema.parse(
     await request(`/users/${id}/role`, {
       method: 'PATCH',
-      body: JSON.stringify({ role }),
+      body: JSON.stringify(body),
     }),
   );
 }
@@ -68,10 +69,11 @@ export async function setUserActive(
   id: string,
   isActive: boolean,
 ): Promise<UserRecord> {
+  const body: SetUserActiveBody = { isActive };
   return userRecordSchema.parse(
     await request(`/users/${id}/active`, {
       method: 'PATCH',
-      body: JSON.stringify({ isActive }),
+      body: JSON.stringify(body),
     }),
   );
 }

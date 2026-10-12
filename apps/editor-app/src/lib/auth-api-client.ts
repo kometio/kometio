@@ -1,4 +1,12 @@
 import { z } from 'zod';
+import type {
+  AcceptInviteBody,
+  ConfirmEmailChangeBody,
+  LoginRequest,
+  RequestPasswordResetRequest,
+  ResetPasswordBody,
+  VerifyEmailBody,
+} from '@kometio/api-contracts';
 import { userRoleSchema } from '@kometio/shared-types';
 import { request, send } from './http-client';
 
@@ -7,10 +15,8 @@ export function login(
   password: string,
   captchaToken: string,
 ): Promise<void> {
-  return send('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password, captchaToken }),
-  });
+  const body: LoginRequest = { email, password, captchaToken };
+  return send('/auth/login', { method: 'POST', body: JSON.stringify(body) });
 }
 
 /** Who is logged in, and what they are allowed to be shown. */
@@ -34,9 +40,10 @@ export function requestPasswordReset(
   email: string,
   captchaToken: string,
 ): Promise<void> {
+  const body: RequestPasswordResetRequest = { email, captchaToken };
   return send('/auth/request-password-reset', {
     method: 'POST',
-    body: JSON.stringify({ email, captchaToken }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -44,30 +51,34 @@ export function resetPassword(
   token: string,
   newPassword: string,
 ): Promise<void> {
+  const body: ResetPasswordBody = { token, newPassword };
   return send('/auth/reset-password', {
     method: 'POST',
-    body: JSON.stringify({ token, newPassword }),
+    body: JSON.stringify(body),
   });
 }
 
 export function verifyEmail(token: string): Promise<void> {
+  const body: VerifyEmailBody = { token };
   return send('/auth/verify-email', {
     method: 'POST',
-    body: JSON.stringify({ token }),
+    body: JSON.stringify(body),
   });
 }
 
 /** The link mailed to the new address of an email change; no session is needed to follow it. */
 export function confirmEmailChange(token: string): Promise<void> {
+  const body: ConfirmEmailChangeBody = { token };
   return send('/auth/confirm-email-change', {
     method: 'POST',
-    body: JSON.stringify({ token }),
+    body: JSON.stringify(body),
   });
 }
 
 export function acceptInvite(token: string, password: string): Promise<void> {
+  const body: AcceptInviteBody = { token, password };
   return send('/auth/accept-invite', {
     method: 'POST',
-    body: JSON.stringify({ token, password }),
+    body: JSON.stringify(body),
   });
 }

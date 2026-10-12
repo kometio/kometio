@@ -23,7 +23,7 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   bootstrapDeploymentBodySchema,
   type BootstrapDeploymentBody,
-} from './setup.schemas';
+} from '@kometio/api-contracts';
 import { RequestTimeoutPolicy } from './request-timeout.policy';
 import { SetupTokenRegistry } from './setup-token.registry';
 import type { SetupDeps } from './setup.deps';

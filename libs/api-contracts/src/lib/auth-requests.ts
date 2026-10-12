@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { MIN_PASSWORD_LENGTH } from '@kometio/shared-types';
 
+/** What the sign-in, the reset and the invitation endpoints accept (docs/adr/0111). */
+
 /** A password somebody chooses: the reset, the invitation and the change all ask the same of it. */
 export const newPasswordSchema = z
   .string()
@@ -52,3 +54,9 @@ export const acceptInviteBodySchema = z.object({
   password: newPasswordSchema,
 });
 export type AcceptInviteBody = z.infer<typeof acceptInviteBodySchema>;
+
+/** What a client sends, which is not what the API's handler receives: a captcha token left out is `''`. */
+export type LoginRequest = z.input<typeof loginBodySchema>;
+export type RequestPasswordResetRequest = z.input<
+  typeof requestPasswordResetBodySchema
+>;

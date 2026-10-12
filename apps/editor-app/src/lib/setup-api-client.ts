@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { BootstrapDeploymentRequest as BootstrapDeploymentBody } from '@kometio/api-contracts';
 import { API_BASE_URL, ApiError, request, send } from './http-client';
 
 const setupStatusSchema = z.object({
@@ -13,16 +14,8 @@ const setupStatusSchema = z.object({
 
 export type SetupStatus = z.infer<typeof setupStatusSchema>;
 
-export interface BootstrapDeploymentRequest {
-  /** Printed in the API's log at boot — see the server's SetupTokenRegistry. */
-  setupToken: string;
-  siteName: string;
-  defaultLocale: string;
-  /** The hostname the site is served on, or `null` to set it later in Settings. */
-  domain: string | null;
-  adminEmail: string;
-  adminPassword: string;
-}
+/** `domain` is the hostname the site is served on, or `null` to set it later in Settings. */
+export type BootstrapDeploymentRequest = BootstrapDeploymentBody;
 
 /**
  * Both endpoints are unauthenticated — they are what runs before anyone

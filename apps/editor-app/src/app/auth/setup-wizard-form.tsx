@@ -15,8 +15,6 @@ import { Label } from '../../components/ui/label';
 import { InlineError } from '../../components/ui/inline-error';
 import { cleanDomainInput } from '../settings/domain-input';
 
-/** Mirrors the server's own minimum (setup.schemas.ts) so the field can say so before submitting. */
-
 /**
  * The locale the language field starts on. Exported so a test can assert it
  * is actually one of `CURATED_LOCALE_CODES` — the pairing that broke once

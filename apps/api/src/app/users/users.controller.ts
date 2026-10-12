@@ -40,7 +40,7 @@ import {
   setUserActiveBodySchema,
   type UpdateUserRoleBody,
   updateUserRoleBodySchema,
-} from './users.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import { RequiresPermission } from '../auth/allowed.decorator';
 import { RolesGuard } from '../auth/roles.guard';

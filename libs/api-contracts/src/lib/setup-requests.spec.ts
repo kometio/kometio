@@ -1,4 +1,5 @@
-import { bootstrapDeploymentBodySchema } from './setup.schemas';
+import { describe, expect, it } from 'vitest';
+import { bootstrapDeploymentBodySchema } from './setup-requests';
 
 const BODY = {
   setupToken: 'the-real-token',
