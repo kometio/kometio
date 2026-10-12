@@ -65,11 +65,17 @@ const QUERY_PARAMS = /\bparams:/;
 
 /**
  * A value that is written next to the name of what it is: `password=…`,
- * `"token": "…"`, `X-Api-Key: …`. The name is what gives it away, and the
- * value may have spaces in it when it is quoted.
+ * `"access_token": "…"`, `X-Api-Key: …`. The name is what gives it away, and
+ * the value may have spaces in it when it is quoted.
+ *
+ * The keyword is looked for INSIDE the name (`access_token`, `refreshToken`,
+ * `client_secret`, `passwordHash`): `\b` would not see it, because `_` is a
+ * word character and a camel-cased name has no boundary at all. What is
+ * matched ends the name (`[\w.-]*`) and takes the value; what began the name
+ * is left as it was. It is anchored on the keyword, which keeps it linear.
  */
 const SECRET_ASSIGNMENT =
-  /\b(password|passwd|pwd|secret|token|api[_-]?key|authorization|cookie)\b(["']?\s*[:=]\s*)(?:(?:Bearer|Basic|Digest)\s+)?(?:"[^"]*"|'[^']*'|[^\s"',;}]+)/gi;
+  /(password|passwd|passphrase|pwd|secret|token|api[_-]?key|authorization|cookie|credential|session|csrf|xsrf|private[_-]?key)([\w.-]*["']?\s*[:=]\s*)(?:(?:Bearer|Basic|Digest)\s+)?(?:"[^"]*"|'[^']*'|[^\s"',;}]+)/gi;
 
 /** An Authorization value is two words, the scheme and the credential. */
 const AUTHORIZATION = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]+/gi;

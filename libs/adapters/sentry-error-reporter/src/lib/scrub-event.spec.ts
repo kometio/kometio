@@ -143,6 +143,29 @@ describe('redact', () => {
       expect(redact(text)).toBe(expected);
     });
 
+    it.each([
+      ['access_token=abc.def', 'access_token=[redacted]'],
+      ['refreshToken: "abc def"', 'refreshToken: [redacted]'],
+      ['{"client_secret":"abc"}', '{"client_secret":[redacted]}'],
+      ['"session_id": "abc"', '"session_id": [redacted]'],
+      ['X-CSRF-Token: abc', 'X-CSRF-Token: [redacted]'],
+      ['x-xsrf-token=abc', 'x-xsrf-token=[redacted]'],
+      ['private_key: -----BEGIN', 'private_key: [redacted]'],
+      ['passwordHash=$2b$10$abc', 'passwordHash=[redacted]'],
+      ['Set-Cookie: sid=abc; Path=/', 'Set-Cookie: [redacted]; Path=/'],
+    ])(
+      'redacts the value when the name of it only ends or begins with a keyword: %s',
+      (text, expected) => {
+        expect(redact(text)).toBe(expected);
+      },
+    );
+
+    it('does not take a name that merely contains letters of a keyword', () => {
+      expect(redact('author: Ana, authority: none, tokenizer ready')).toBe(
+        'author: Ana, authority: none, tokenizer ready',
+      );
+    });
+
     it('does not throw on what is not a string', () => {
       expect(redact(undefined as unknown as string)).toBe('');
       expect(redact(42 as unknown as string)).toBe('');
