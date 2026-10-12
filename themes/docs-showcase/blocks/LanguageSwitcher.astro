@@ -11,8 +11,7 @@
 // content primitive).
 import type { LanguageSwitcherProps } from '@kometio/shared-types';
 import type { PublishedPageTranslation, PublishedSite } from '@kometio/api-contracts';
-import { localePathFromAncestors } from '@kometio/theme-runtime';
-import { Translator } from '@kometio/theme-runtime';
+import { languageLinks, Translator } from '@kometio/theme-runtime';
 
 interface Props extends LanguageSwitcherProps {
   locale: string;
@@ -31,46 +30,7 @@ interface Props extends LanguageSwitcherProps {
 const { position, visibility, locale, translations, site, instanceClass } =
   Astro.props;
 
-const defaultTranslation = translations.find(
-  (translation) => translation.locale === site.defaultLocale,
-);
-
-interface LocaleLink {
-  locale: string;
-  href: string;
-}
-
-const links = site.enabledLocales
-  .map((enabledLocale): LocaleLink | null => {
-    const translation = translations.find(
-      (candidate) => candidate.locale === enabledLocale,
-    );
-    if (translation) {
-      return {
-        locale: enabledLocale,
-        // The ancestor chain, not the bare slug: slugs are scoped to
-        // their siblings (ADR-0029), so `/it/first-run` is not where a
-        // nested page lives and linking there 404s.
-        href: localePathFromAncestors(
-          translation.locale,
-          translation.ancestorSlugs,
-          translation.slug,
-        ),
-      };
-    }
-    if (site.untranslatedPageFallback === 'redirect-to-default' && defaultTranslation) {
-      return {
-        locale: enabledLocale,
-        href: localePathFromAncestors(
-          defaultTranslation.locale,
-          defaultTranslation.ancestorSlugs,
-          defaultTranslation.slug,
-        ),
-      };
-    }
-    return null;
-  })
-  .filter((link): link is LocaleLink => link !== null);
+const links = languageLinks(site, translations);
 
 const i18n = new Translator(locale);
 const globeSvg = Astro.locals.resolveIcon('globe', site.themeName);
