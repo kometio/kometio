@@ -1,6 +1,7 @@
 // `export` and `import` (docs/adr/0105), as the image's commands:
 //
 //   docker exec kometio node /opt/kometio/cli.mjs export > site.tar.gz
+//   docker exec kometio node /opt/kometio/cli.mjs backup   (into /data/backups, docs/adr/0119)
 //   docker stop kometio
 //   docker run --rm -i -v kometio-data:/data [-e DOMAIN=…] ghcr.io/kometio/kometio:0.1.0-beta.1 import < site.tar.gz
 //
@@ -27,6 +28,9 @@ import {
 } from './embedded-postgres.mjs';
 import { ids, minimalEnv, output } from './processes.mjs';
 import { resolveAddresses } from './server-mode.mjs';
+import { BACKUPS_FOLDER, backupSettings, makeBackup } from './backups.mjs';
+import { CONTROL_SOCKET } from './control-server.mjs';
+import { existsSync } from 'node:fs';
 
 const env = process.env;
 const DATA = env.KOMETIO_DATA_DIR ?? '/data';
@@ -77,6 +81,7 @@ async function withDatabase(work, { mustBeStopped }) {
 
 const USAGE = `usage:
   export   writes the site as a .tar.gz on stdout:   docker exec kometio node /opt/kometio/cli.mjs export > ${archiveFileName(new Date())}
+  backup   makes a backup now, in /data/backups, as the daily one does (the container has to be running)
   import   opens one, read from stdin, into a new volume (stop the container first)`;
 
 export async function run(command) {
@@ -93,6 +98,24 @@ export async function run(command) {
       await withDatabase(
         () => exportArchive({ dataDir: DATA, out: process.stdout, say }),
         { mustBeStopped: false },
+      );
+    } else if (command === 'backup') {
+      // Asked of the running server over its socket, like the editor's export and
+      // the daily backup: one at a time, and the same archive. A stopped volume
+      // has no server to ask: `docker run … export` is for that.
+      if (!existsSync(CONTROL_SOCKET)) {
+        throw new Refusal(
+          'no Kometio is running in this container to make the backup: start it, or export a stopped volume with `docker run … export`',
+        );
+      }
+      const { keep } = backupSettings(env);
+      const made = await makeBackup({
+        socketPath: CONTROL_SOCKET,
+        directory: `${DATA}/${BACKUPS_FOLDER}`,
+        keep,
+      });
+      say(
+        `backup: ${made.path} (${(made.bytes / 1024 / 1024).toFixed(1)} MiB); the ${keep} newest are kept`,
       );
     } else if (command === 'import') {
       if (process.stdin.isTTY)

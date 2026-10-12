@@ -22,6 +22,7 @@
 //   uploads/    the media library
 //   secrets/    the key that seals each site's AI provider key (the API's own)
 //   state/      what this launcher generated (root only)
+//   backups/    the site's backups, one a day by default (root only; docs/adr/0119)
 //   caddy/      the certificates and the account with the certificate authority
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -35,6 +36,11 @@ import {
   removeLeftoverExports,
   restoreArchive,
 } from './archive-commands.mjs';
+import {
+  BACKUPS_FOLDER,
+  backupSettings,
+  startBackupSchedule,
+} from './backups.mjs';
 import { CONTROL_SOCKET, startControlServer } from './control-server.mjs';
 import {
   DATABASE_USER,
@@ -97,6 +103,17 @@ const {
   apiPublicUrl: API_PUBLIC_URL,
   siteUrl: SITE_URL,
 } = addresses;
+
+// How often the site is backed up, and how many are kept (docs/adr/0119): read
+// now, so that a value that is not a number stops the start with its reason,
+// rather than switching backups off by a typo.
+let backups;
+try {
+  backups = backupSettings(env);
+} catch (error) {
+  console.error(`[kometio] ${error.message}`);
+  process.exit(1);
+}
 
 const PORTS = innerPorts(domain);
 const API_PORT = PORTS.api;
@@ -388,7 +405,21 @@ async function main() {
     socketDir: SOCKET_DIR,
   });
   migrate(adminEnv);
-  if (OWN_DATABASE) await startControl(s, adminEnv);
+  if (OWN_DATABASE) {
+    await startControl(s, adminEnv);
+    if (backups.enabled) {
+      // root's own, like state/: an archive holds the accounts' password hashes.
+      ensureDir(`${DATA}/${BACKUPS_FOLDER}`, 'root', 0o700);
+      startBackupSchedule({
+        socketPath: CONTROL_SOCKET,
+        directory: `${DATA}/${BACKUPS_FOLDER}`,
+        everyHours: backups.everyHours,
+        keep: backups.keep,
+        pingUrl: backups.pingUrl,
+        say: log,
+      });
+    }
+  }
 
   await startApi(s);
   await startSite(s);
