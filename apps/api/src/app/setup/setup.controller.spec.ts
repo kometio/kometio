@@ -15,7 +15,7 @@ import { testApiEnv } from '../../test/api-env.test-fixture';
 import { SessionCookies } from '../auth/session-cookies';
 import type { RequestTimeoutPolicy } from './request-timeout.policy';
 import { SetupController } from './setup.controller';
-import type { BootstrapDeploymentBody } from './setup.schemas';
+import type { BootstrapDeploymentBody } from '@kometio/api-contracts';
 import type { SetupTokenRegistry } from './setup-token.registry';
 
 const VALID_BODY: BootstrapDeploymentBody = {

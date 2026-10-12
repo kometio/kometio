@@ -36,7 +36,7 @@ import {
   requestEmailChangeBodySchema,
   type UpdateAccountProfileBody,
   updateAccountProfileBodySchema,
-} from './account.schemas';
+} from '@kometio/api-contracts';
 import type { AccountDeps } from './account.deps';
 import { ACCOUNT_DEPS } from './account.tokens';
 import type { ApiEnv } from '../../env-schema';

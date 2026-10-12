@@ -34,3 +34,8 @@ export const bootstrapDeploymentBodySchema = z.object({
 export type BootstrapDeploymentBody = z.infer<
   typeof bootstrapDeploymentBodySchema
 >;
+
+/** What a client sends: the domain may be left out (or null) and means "set it later". */
+export type BootstrapDeploymentRequest = z.input<
+  typeof bootstrapDeploymentBodySchema
+>;

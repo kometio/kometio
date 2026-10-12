@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { interfaceLanguageSchema } from '@kometio/shared-types';
-import { pageSlugSchema } from '../pages/page-slug.schemas';
-import { newPasswordSchema } from '../auth/auth.schemas';
+import { pageSlugSchema } from './page-slug';
+import { newPasswordSchema } from './auth-requests';
 
 /**
  * A locale tag as a site may store one: `it`, `pt-BR`, and the spellings
@@ -54,4 +54,12 @@ export const changeAccountLanguageBodySchema = z.object({
 });
 export type ChangeAccountLanguageBody = z.infer<
   typeof changeAccountLanguageBodySchema
+>;
+
+export type UpdateAccountProfileRequest = z.input<
+  typeof updateAccountProfileBodySchema
+>;
+export type ChangePasswordRequest = z.input<typeof changePasswordBodySchema>;
+export type RequestEmailChangeRequest = z.input<
+  typeof requestEmailChangeBodySchema
 >;

@@ -5,7 +5,7 @@ import {
   seoMetaSchema,
 } from '@kometio/shared-types';
 import { sanitizedPageContentSchema } from '../rich-text/sanitized-page-content.schema';
-import { pageSlugSchema } from './page-slug.schemas';
+import { pageSlugSchema } from '@kometio/api-contracts';
 import { reusableSectionNameSchema } from '../reusable-sections/reusable-sections.schemas';
 
 // Fase 4's pages-list view — every filter optional, an absent one just

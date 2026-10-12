@@ -1,6 +1,10 @@
 import {
   accountProfileSchema,
   type AccountProfile,
+  type ChangeAccountLanguageBody,
+  type ChangePasswordRequest,
+  type RequestEmailChangeRequest,
+  type UpdateAccountProfileRequest,
 } from '@kometio/api-contracts';
 import type { InterfaceLanguage } from '@kometio/shared-types';
 import { request, send } from './http-client';
@@ -10,12 +14,8 @@ export async function getAccountProfile(): Promise<AccountProfile> {
   return accountProfileSchema.parse(await request('/account/profile'));
 }
 
-export interface UpdateAccountProfileInput {
-  displayName: string;
-  /** `null` leaves the address as it is — or has one made from the name, for someone who has none yet. */
-  slug: string | null;
-  bio: Record<string, string>;
-}
+/** `slug: null` leaves the address as it is — or has one made from the name, for someone who has none yet. */
+export type UpdateAccountProfileInput = UpdateAccountProfileRequest;
 
 export async function updateAccountProfile(
   input: UpdateAccountProfileInput,
@@ -35,10 +35,11 @@ export async function updateAccountProfile(
 export async function changeAccountLanguage(
   language: InterfaceLanguage,
 ): Promise<AccountProfile> {
+  const body: ChangeAccountLanguageBody = { language };
   return accountProfileSchema.parse(
     await request('/account/language', {
       method: 'PATCH',
-      body: JSON.stringify({ language }),
+      body: JSON.stringify(body),
     }),
   );
 }
@@ -57,10 +58,7 @@ export async function removeAccountAvatar(): Promise<AccountProfile> {
   );
 }
 
-export interface ChangePasswordInput {
-  currentPassword: string;
-  newPassword: string;
-}
+export type ChangePasswordInput = ChangePasswordRequest;
 
 /** Ends every other place the person is signed in; this one stays. */
 export function changePassword(input: ChangePasswordInput): Promise<void> {
@@ -70,10 +68,7 @@ export function changePassword(input: ChangePasswordInput): Promise<void> {
   });
 }
 
-export interface RequestEmailChangeInput {
-  newEmail: string;
-  currentPassword: string;
-}
+export type RequestEmailChangeInput = RequestEmailChangeRequest;
 
 /** Mails a link to the NEW address: nothing changes until it is opened. */
 export function requestEmailChange(

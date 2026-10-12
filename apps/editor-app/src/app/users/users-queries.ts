@@ -1,4 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
+import { USERS_MAX_PAGE_SIZE } from '@kometio/api-contracts';
 import { listUsers } from '../../lib/users-api-client';
 
 export const USERS_PAGE_SIZE = 20;
@@ -17,10 +18,9 @@ export function usersQueryOptions(page: number) {
 // scale this product assumes" reasoning as page-list-provider.tsx's own
 // locale filter.
 //
-// The API's own ceiling (listUsersQuerySchema in apps/api's
-// users.schemas.ts): this was 200, which the API refuses, so the filter
-// never had anyone to offer.
-const ALL_USERS_PAGE_SIZE = 100;
+// The API's own ceiling, which the contract says: this was 200, which the API
+// refuses, so the filter never had anyone to offer.
+const ALL_USERS_PAGE_SIZE = USERS_MAX_PAGE_SIZE;
 
 export function allUsersQueryOptions() {
   return queryOptions({
