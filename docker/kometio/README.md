@@ -317,6 +317,54 @@ What you should know:
   a file that is not its own.
 - It needs room for the archive, unpacked, next to the data.
 
+## Run a public demo
+
+A demo is a Kometio that anybody may try: the address and password of its
+account are on a page, and strangers sign in with it
+([ADR-0118](../../docs/adr/0118-a-deployment-can-be-a-public-demo.md)). Start it
+with `-e KOMETIO_DEMO=true` and what a stranger can do is what a publisher can,
+minus the few things that are not the demo's to give:
+
+- **Nobody configures the site.** The account may be an admin; in a demo it is a
+  publisher. Its users, settings, AI key, themes, imports and archive are out of
+  reach, and the editor shows only what it can use.
+- **Nothing is uploaded and the account is not changed**: no file reaches the
+  disk, and the password, the address and the profile of the shared account stay
+  as they are.
+- **What visitors typed into the site's forms cannot be read** from the editor:
+  the next person to sign in would otherwise read it.
+- **No embed runs.** An `EmbedHtml` block shows a line saying so, instead of the
+  pasted HTML.
+- **Nothing is mailed, and nobody is added to a newsletter**, though the
+  environment has a mail server or a provider: whoever signs in could make a form
+  notify an address of their choosing.
+- **Search engines are kept out**, whatever the site's own setting says.
+
+What it does not do is start over: that is `demo-reset.sh`, which makes the demo
+again from a **seed**, the export of a site you prepared on an installation of
+your own (Settings → Export). Resetting is opening the seed into a volume that has
+never been used, so what visitors did is gone and what they find is the seed.
+
+```sh
+KOMETIO_IMAGE=ghcr.io/kometio/kometio:0.1.0-beta.1 \
+SEED=/srv/kometio/demo-seed.tar.gz \
+DOMAIN=demo.example.com \
+sh docker/kometio/demo-reset.sh -p 80:80 -p 443:443 -p 443:443/udp
+```
+
+The script removes the demo that is running before it opens the seed, and takes
+a minute or two. Try a new seed once by hand before it is the one cron uses, and
+put it in cron at the hour the fewest people are looking:
+
+```cron
+0 4 * * * KOMETIO_IMAGE=… SEED=… DOMAIN=… sh /srv/kometio/demo-reset.sh -p 80:80 -p 443:443
+```
+
+Two things to know before it is public. **Two visitors in the same demo see each
+other's edits**: it is one site. And **the seed is a file with password hashes**:
+prepare it on a site whose account is only for the demo, and give that account a
+password you are happy to print.
+
 ## With a database of your own
 
 Give the image a `POSTGRES_HOST` and it runs no Postgres of its own: it uses that

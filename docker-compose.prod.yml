@@ -122,6 +122,9 @@ services:
       # address for every rate limit (login, forms, generation). Change it
       # only if you put another proxy in front of Caddy.
       TRUSTED_PROXY_HOPS: '1'
+      # A public demo (docs/adr/0118): nobody there configures the site,
+      # uploads, or changes the account. Empty is off.
+      KOMETIO_DEMO: ${KOMETIO_DEMO:-}
     volumes:
       - media-uploads:/app/uploads
       - theme-data:/data/themes
@@ -169,6 +172,8 @@ services:
       SENTRY_RELEASE: ${SENTRY_RELEASE:-}
       POSTGRES_POOL_MAX: ${POSTGRES_POOL_MAX:-}
       KOMETIO_THEME: ${KOMETIO_THEME:-}
+      # A demo (docs/adr/0118): out of search engines, and no embed runs.
+      KOMETIO_DEMO: ${KOMETIO_DEMO:-}
       # Where this site's media is served from, as the API builds its URLs:
       # the only images the site resizes on the server (/_image refuses
       # any other address). Same values as the api service's.

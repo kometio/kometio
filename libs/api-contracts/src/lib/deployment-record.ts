@@ -23,6 +23,14 @@ export const deploymentRecordSchema = z.object({
    * it says what the server is, not what is in it.
    */
   siteArchive: z.boolean(),
+  /**
+   * Whether this deployment is a public demo (docs/adr/0118): somebody else's
+   * visitors sign in to an account whose password is on the page, so nobody
+   * configures the site, nothing can be uploaded and the account cannot be
+   * taken over. The editor says so and offers none of it. Open to anyone, like
+   * the rest: it says what the server is.
+   */
+  demo: z.boolean(),
 });
 
 export type DeploymentRecord = z.infer<typeof deploymentRecordSchema>;

@@ -29,6 +29,12 @@ describe('createEmailPort', () => {
     );
   });
 
+  it('writes the emails to the log in a demo, even with a mail server: strangers must not be able to use it', () => {
+    expect(
+      createEmailPort(testApiEnv({ KOMETIO_DEMO: 'true' }), jest.fn()),
+    ).toBeInstanceOf(LogEmailAdapter);
+  });
+
   it('writes where the API says, so the entry is in the API log with the rest', async () => {
     const write = jest.fn();
     const noMailServer = testApiEnv({ SMTP_HOST: undefined });

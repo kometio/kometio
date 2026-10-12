@@ -9,8 +9,12 @@ import { requiredIn, type ApiEnv } from '../../env-schema';
  * boots exactly as before. A provider's own variables are required once
  * that provider is chosen. One port for the newsletter-consent checkbox on
  * a form and for the NewsletterSignup block alike.
+ *
+ * Nobody is added to a list from a demo (docs/adr/0118): its visitors are
+ * strangers, and the list would be somebody's.
  */
 export function createNewsletterPort(env: ApiEnv): NewsletterPort {
+  if (env.KOMETIO_DEMO === 'true') return new NoopNewsletterPort();
   switch (env.NEWSLETTER_PROVIDER) {
     case 'mailchimp':
       return new MailchimpNewsletterAdapter({

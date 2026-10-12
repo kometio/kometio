@@ -176,5 +176,6 @@
   "blocks.fileDownload.label": "Scarica file",
   "blocks.glossaryTerm.label": "Voce di glossario",
   "blocks.hotspot.label": "Punto",
-  "blocks.videoEmbed.label": "Video"
+  "blocks.videoEmbed.label": "Video",
+  "embedHtml.demo": "I contenuti incorporati sono disattivati nella demo."
 }

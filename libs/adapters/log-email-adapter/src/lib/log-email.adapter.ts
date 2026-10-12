@@ -22,18 +22,51 @@ export class LogEmailAdapter implements EmailPort {
   constructor(private readonly write: (entry: string) => void) {}
 
   async sendEmail(message: EmailMessage): Promise<void> {
-    const text = message.text
-      .split('\n')
-      .map((line) => (line === '' ? '' : `    ${line}`))
+    const text = lines(message.text)
+      .map((line) => (line === '' ? '' : `    ${visible(line)}`))
       .join('\n');
     this.write(
       [
         'Email NOT sent: no mail server is configured (set SMTP_HOST to send email).',
-        `  To:      ${message.to}`,
-        `  Subject: ${message.subject}`,
+        `  To:      ${visible(message.to)}`,
+        `  Subject: ${visible(message.subject)}`,
         '',
         text,
       ].join('\n'),
     );
   }
+}
+
+/**
+ * What a log reader takes for the end of a line: LF and CR, but also the
+ * vertical tab, the form feed, NEL and the Unicode separators.
+ */
+// eslint-disable-next-line no-control-regex
+const LINE_BREAK = /\r\n|[\n\r\u000b\u000c\u0085\u2028\u2029]/;
+
+/**
+ * The lines of a text, split on every kind of line end: an entry is one
+ * message, and a line that a reader sees as its own (`Email NOT sent…`, a
+ * setup token's banner) must not be one a message could write.
+ */
+function lines(text: string): string[] {
+  return text.split(LINE_BREAK);
+}
+
+/**
+ * A value as one line a person can read: whatever is a control character is
+ * written as its code instead of acted on. The recipient, the subject and
+ * the words of a message come from forms and profiles that strangers fill
+ * in (a demo's visitors; any site's contact form), and the log is read by a
+ * person, and by their terminal.
+ */
+function visible(value: string): string {
+  return lines(value)
+    .join(' ')
+    .replace(
+      // eslint-disable-next-line no-control-regex
+      /[\u0000-\u0008\u000e-\u001f\u007f-\u009f]/g,
+      (character) =>
+        `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`,
+    );
 }
