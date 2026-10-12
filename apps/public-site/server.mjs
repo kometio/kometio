@@ -16,10 +16,12 @@
 // that can add it.
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { buildCompatibility } from './build-compatibility.mjs';
 import { handler as astroHandler } from './dist/server/entry.mjs';
+import { createImageCache } from './image-cache.mjs';
 import { staticAssets } from './static-assets.mjs';
 
 const ASSETS_PREFIX = '/_astro/';
@@ -98,6 +100,23 @@ if (buildsDir) {
   setInterval(check, 2000).unref();
 }
 
+/*
+ * The images the site makes (`/_image`) are kept on disk, once each: sharp is
+ * some forty times dearer than a page, and the endpoint remembers nothing
+ * (image-cache.mjs). `IMAGE_CACHE_MAX_MB=0` turns it off.
+ */
+const imageCacheMegabytes = process.env.IMAGE_CACHE_MAX_MB
+  ? Number(process.env.IMAGE_CACHE_MAX_MB)
+  : 256;
+const imageCache =
+  imageCacheMegabytes > 0
+    ? createImageCache({
+        directory:
+          process.env.IMAGE_CACHE_DIR ?? join(tmpdir(), 'kometio-image-cache'),
+        maxBytes: imageCacheMegabytes * 1024 * 1024,
+      })
+    : null;
+
 const server = createServer((req, res) => {
   if (req.url?.startsWith(ASSETS_PREFIX)) {
     // These are public, tenant-agnostic asset bundles (no user/tenant data
@@ -110,7 +129,15 @@ const server = createServer((req, res) => {
   // Read once: a swap in the middle of a request must not split it
   // between two builds.
   const build = active;
-  build.assets(req, res, () => build.handler(req, res));
+  const answer = () => build.handler(req, res);
+  build.assets(req, res, () => {
+    if (!imageCache) return answer();
+    imageCache.handle(req, res, answer).catch((error) => {
+      console.error('The image cache failed:', error);
+      if (!res.headersSent) res.statusCode = 500;
+      res.end();
+    });
+  });
 });
 
 // PUBLIC_SITE_PORT (not the bare PORT every other local app already reads
