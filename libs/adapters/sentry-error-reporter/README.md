@@ -33,7 +33,9 @@ sent.
   message), the credentials of a connection string, the query of an address
   (absolute or not), an email address (whatever follows the `@`, in any
   alphabet), an Authorization value of any scheme, a JSON web token, a
-  password hash, a long hexadecimal secret, a session written as a cookie. A
+  password hash, a long hexadecimal secret, a session written as a cookie, a
+  value written next to the name of what it is (`password=…`, `"token": "…"`,
+  `X-Api-Key: …`). A
   text is cut at 1000 characters, after it has been redacted. The
   application also never reports an error it handled (a refused request, a
   missing page, a rule that said no): only what nobody expected.

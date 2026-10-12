@@ -97,7 +97,7 @@ describe('redact', () => {
       [
         'an Authorization header of another scheme',
         'rejected: Authorization: Basic YW5hOnMzY3JldA==',
-        'rejected: Authorization: Basic [token]',
+        'rejected: Authorization: [redacted]',
       ],
       [
         'a JSON web token',
@@ -117,10 +117,35 @@ describe('redact', () => {
       [
         'a session cookie as it is written in a header',
         'cookie: kometio_session=abc123def456; theme=dark',
-        'cookie: kometio_session=[token]; theme=dark',
+        'cookie: [redacted]; theme=dark',
       ],
     ])('redacts %s', (_name, text, expected) => {
       expect(redact(text)).toBe(expected);
+    });
+
+    it.each([
+      [
+        'a JSON body that names its secret',
+        'bad body {"email": "x", "password": "hunter2 with spaces", "n": 1}',
+        'bad body {"email": "x", "password": [redacted], "n": 1}',
+      ],
+      [
+        'a key=value pair that names its secret',
+        'connect failed: host=db user=app password=s3cret sslmode=require',
+        'connect failed: host=db user=app password=[redacted] sslmode=require',
+      ],
+      [
+        'an api key header',
+        'sent X-Api-Key: abc123 and Cookie: kometio_session=zzz',
+        'sent X-Api-Key: [redacted] and Cookie: [redacted]',
+      ],
+    ])('redacts %s', (_name, text, expected) => {
+      expect(redact(text)).toBe(expected);
+    });
+
+    it('does not throw on what is not a string', () => {
+      expect(redact(undefined as unknown as string)).toBe('');
+      expect(redact(42 as unknown as string)).toBe('');
     });
 
     it('keeps what is not a secret: an id, a status, a plain question', () => {

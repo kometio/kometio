@@ -63,6 +63,14 @@ const WORD_RULES: readonly (readonly [RegExp, string])[] = [
  */
 const QUERY_PARAMS = /\bparams:/;
 
+/**
+ * A value that is written next to the name of what it is: `password=…`,
+ * `"token": "…"`, `X-Api-Key: …`. The name is what gives it away, and the
+ * value may have spaces in it when it is quoted.
+ */
+const SECRET_ASSIGNMENT =
+  /\b(password|passwd|pwd|secret|token|api[_-]?key|authorization|cookie)\b(["']?\s*[:=]\s*)(?:(?:Bearer|Basic|Digest)\s+)?(?:"[^"]*"|'[^']*'|[^\s"',;}]+)/gi;
+
 /** An Authorization value is two words, the scheme and the credential. */
 const AUTHORIZATION = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]+/gi;
 
@@ -93,6 +101,7 @@ function redactWord(word: string): string {
 }
 
 export function redact(text: string): string {
+  if (typeof text !== 'string') return '';
   const read = cutAtWord(text, MAX_REDACTED_INPUT_LENGTH);
   const paramsAt = read.search(QUERY_PARAMS);
   const head = paramsAt === -1 ? read : read.slice(0, paramsAt);
@@ -100,6 +109,7 @@ export function redact(text: string): string {
     .split(/(\s+)/)
     .map((part, index) => (index % 2 === 1 ? part : redactWord(part)))
     .join('')
+    .replace(SECRET_ASSIGNMENT, '$1$2[redacted]')
     .replace(AUTHORIZATION, '$1 [token]');
   const withParams = paramsAt === -1 ? redacted : `${redacted}params: [values]`;
   const kept = cutAtWord(withParams, MAX_TEXT_LENGTH);
