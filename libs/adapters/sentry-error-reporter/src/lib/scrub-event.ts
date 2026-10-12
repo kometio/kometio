@@ -128,13 +128,29 @@ export function redact(text: string): string {
   return cut.length < withParams.length ? `${cut}${MASK}` : cut;
 }
 
+/**
+ * A file as a stack names it: segments of letters, digits and `._~+-`, a
+ * leading `@` for a scope, an optional scheme. A query, an `@` inside a name,
+ * a space or a percent sign are not part of one.
+ */
+const CODE_PATH =
+  /^(?:[a-z][a-z0-9+.-]*:\/{0,3}|\/)?(?:@?[\w.~+-]+\/)*@?[\w.~+-]+$/i;
+/** A function as a stack names it: an identifier path, `<anonymous>`, `async x`, `Class.method [as alias]`. */
+const CODE_NAME = /^[\w$.<>[\]#:()\s-]{1,200}$/;
+/** A name given to a deployment or a release: no spaces, no `@`. */
+const LABEL = /^[\w.+-]{1,64}$/;
+
 /** Only where in the code it was: no source lines, no variables, nothing an integration may add later. */
 function keepFrame(frame: StackFrame): StackFrame {
   const kept: StackFrame = {};
-  if (frame.filename !== undefined) kept.filename = frame.filename;
-  if (frame.abs_path !== undefined) kept.abs_path = frame.abs_path;
-  if (frame.function !== undefined) kept.function = frame.function;
-  if (frame.module !== undefined) kept.module = frame.module;
+  const path = (value: string | undefined): value is string =>
+    value !== undefined && value.length <= 300 && CODE_PATH.test(value);
+  if (path(frame.filename)) kept.filename = frame.filename;
+  if (path(frame.abs_path)) kept.abs_path = frame.abs_path;
+  if (frame.function !== undefined && CODE_NAME.test(frame.function)) {
+    kept.function = frame.function;
+  }
+  if (path(frame.module)) kept.module = frame.module;
   if (frame.lineno !== undefined) kept.lineno = frame.lineno;
   if (frame.colno !== undefined) kept.colno = frame.colno;
   if (frame.in_app !== undefined) kept.in_app = frame.in_app;
@@ -225,8 +241,12 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
     timestamp: event.timestamp,
     platform: event.platform,
     level: event.level,
-    environment: event.environment,
-    release: event.release,
+    ...(event.environment !== undefined && LABEL.test(event.environment)
+      ? { environment: event.environment }
+      : {}),
+    ...(event.release !== undefined && LABEL.test(event.release)
+      ? { release: event.release }
+      : {}),
     sdk: event.sdk,
     ...redactTags(event.tags),
     ...(event.message === undefined ? {} : { message: redact(event.message) }),

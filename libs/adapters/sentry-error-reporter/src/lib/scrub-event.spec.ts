@@ -338,6 +338,55 @@ describe('scrubEvent', () => {
     });
   });
 
+  describe('the places in the code are held to what a place in the code is', () => {
+    const keptFrame = (frame: Record<string, unknown>) => {
+      const event = richEvent();
+      event.exception = {
+        values: [
+          { type: 'Error', value: 'x', stacktrace: { frames: [frame] } },
+        ],
+      };
+      return scrubEvent(event).exception?.values?.[0]?.stacktrace?.frames?.[0];
+    };
+
+    it('keeps a file, a module and a function as they are written', () => {
+      expect(
+        keptFrame({
+          filename: 'file:///app/dist/main.js',
+          abs_path: '/app/node_modules/@sentry/core/build/cjs/index.js',
+          module: '@sentry/core',
+          function: 'Object.<anonymous>',
+        }),
+      ).toEqual({
+        filename: 'file:///app/dist/main.js',
+        abs_path: '/app/node_modules/@sentry/core/build/cjs/index.js',
+        module: '@sentry/core',
+        function: 'Object.<anonymous>',
+      });
+    });
+
+    it('does not keep what is not one: an address with a query, or an email in a name', () => {
+      expect(
+        keptFrame({
+          filename: 'https://x.test/a.js?token=abc',
+          abs_path: '/srv/ana@example.test/main.js',
+          function: 'handler for ana@example.test',
+        }),
+      ).toEqual({});
+    });
+  });
+
+  it('keeps the environment and the release only if they are names', () => {
+    const event = richEvent();
+    event.environment = 'production';
+    event.release = 'ana@example.test';
+
+    const scrubbed = scrubEvent(event);
+
+    expect(scrubbed.environment).toBe('production');
+    expect(scrubbed).not.toHaveProperty('release');
+  });
+
   it('keeps the innermost frames and a bounded number of exceptions', () => {
     const event = richEvent();
     const frames = Array.from({ length: 300 }, (_, index) => ({
