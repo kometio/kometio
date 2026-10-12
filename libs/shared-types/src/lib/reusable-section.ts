@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { Block, PageContent } from './content-model';
 import { eachBlock } from './block-tree';
+import { defineBlockContract } from './block-contract';
+import { asString } from './search-prose';
 
 /**
  * A reusable section, and the two things an author can do with one
@@ -107,6 +109,32 @@ export const sectionPropsSchema = z
       }
     }
   });
+export const sectionBlockContract = defineBlockContract({
+  type: 'Section',
+  props: sectionPropsSchema,
+  style: {
+    // The only thing the wrapper owns — see section.block.ts on why it
+    // owns nothing else.
+    maxWidth: 'none',
+  },
+  /*
+   * A section instance's own prose is the values it overrides — the
+   * section's other words arrive as resolved CHILDREN, which
+   * `collectBlockText` already walks (docs/adr/0059).
+   *
+   * Every `ovr:` prop and no allow-list of keys, unlike every other entry
+   * here: which fields exist depends on the section, so there is no fixed
+   * list to write. That is safe precisely because these keys can hold
+   * nothing else — `sectionPropsSchema` refuses any key that is not an
+   * override, so "every other string prop" is exactly "every value an
+   * author typed".
+   */
+  search: (props) =>
+    Object.entries(props)
+      .filter(([key]) => parseSectionOverrideKey(key) !== null)
+      .map(([, value]) => asString(value)),
+});
+
 /**
  * Declared rather than inferred from the schema above, and this is the
  * one place in this package where that is the right call.
@@ -278,3 +306,6 @@ export function copySectionBlocks(
       : {}),
   }));
 }
+
+/** Every block this file declares, in the order the picker draws them. */
+export const REUSABLE_SECTION_BLOCK_CONTRACTS = [sectionBlockContract] as const;

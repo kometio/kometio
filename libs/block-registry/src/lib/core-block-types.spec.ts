@@ -4,13 +4,19 @@ import { pageBlocks } from './config';
 import { headerFooterBlocks } from './layout-config';
 
 /**
- * The anti-drift guard for `@kometio/block-sdk`'s `CORE_BLOCK_TYPES`.
+ * The guard between the registry and the blocks' contracts
+ * (`@kometio/shared-types`, ADR-0115) — which is what block-sdk's
+ * `CORE_BLOCK_TYPES` now is.
  *
- * That constant has to be a literal list: block-sdk is what a theme built
- * outside this monorepo depends on, and this package is React plus editor
- * UI (ADR-0037 fixed that dependency direction deliberately). So the list
- * cannot be derived — but it must not silently rot either, and adding a
- * core block type is exactly the moment someone would forget.
+ * Block-sdk can read the contracts, because it already depends on
+ * `shared-types` and a theme built outside this monorepo has both; it
+ * cannot read this registry, which is React plus editor UI (ADR-0037 fixed
+ * that dependency direction deliberately). So the list is derived from the
+ * contracts, and what is left to hold is that the descriptors the editor
+ * offers and the contracts the site and the API validate against name the
+ * same blocks: a descriptor without a contract is a block the picker offers
+ * and the site cannot check; a contract without a descriptor is a block
+ * nobody can insert.
  *
  * This file is the one place in the workspace allowed to know both, and
  * it fails naming precisely what to add or remove.
@@ -23,7 +29,7 @@ describe('CORE_BLOCK_TYPES', () => {
 
     expect(
       [...CORE_BLOCK_TYPES].sort(),
-      'block-sdk/src/lib/core-block-types.ts is out of date with this registry — add or remove the types the diff shows',
+      "the registry and the blocks' contracts (libs/shared-types) name different block types — a descriptor needs a defineBlockContract beside its schema, or a contract needs a descriptor; the diff shows which",
     ).toEqual(actual);
   });
 });
@@ -32,7 +38,8 @@ describe('CORE_BLOCK_TYPES', () => {
  * The same guard for the variant map. It exists so a theme can check it
  * is not redeclaring a look core already ships (ADR-0047) without
  * depending on this package — and the moment someone gives a core block
- * its first variant is exactly the moment they would forget to add it.
+ * its first variant is exactly the moment they would forget to give its
+ * contract the same list.
  */
 describe('CORE_BLOCK_VARIANTS', () => {
   it('matches the registry exactly', () => {
@@ -54,7 +61,7 @@ describe('CORE_BLOCK_VARIANTS', () => {
 
     expect(
       declared,
-      'block-sdk/src/lib/core-block-types.ts is out of date with this registry — add or remove the variants the diff shows',
+      "the registry's variants and the blocks' contracts (libs/shared-types) differ — add or remove the `variants` of the contract, or the descriptor's, as the diff shows",
     ).toEqual(actual);
   });
 });

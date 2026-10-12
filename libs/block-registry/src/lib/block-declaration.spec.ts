@@ -6,20 +6,24 @@ import { headerFooterBlocks } from './layout-config';
 
 /**
  * What a core block has to be declared in, beyond its own descriptor and
- * its component, and the check that fails when one is missing (docs/adding-a-block.md):
+ * its component, and the check that fails when one is missing (the
+ * walk-through is in libs/block-sdk/README.md):
  *
  * | Declaration                              | Held by                                  |
  * | ---------------------------------------- | ---------------------------------------- |
- * | props schema (`BLOCK_PROPS_SCHEMAS`)     | this file                                |
- * | `CORE_BLOCK_TYPES` (block-sdk)           | core-block-types.spec.ts                 |
+ * | its contract (`defineBlockContract`)    | the compiler; shared-types' block-contracts.spec.ts |
+ * | a contract for each descriptor, and back | core-block-types.spec.ts                 |
+ * | props its own defaults satisfy           | this file                                |
  * | listed in `pageBlocks` / header-footer   | config.spec.ts                           |
- * | search text, or an explicit exclusion    | config.spec.ts                           |
+ * | search text covers the registry's types  | config.spec.ts                           |
  * | style defaults, when it takes a style    | config.spec.ts                           |
  * | a component of its name                  | apps/public-site block-components.spec.ts |
  * | an icon of its own                       | block-icons.spec.ts                      |
  *
- * The props schema was the one nothing held: a type without an entry is
- * read by the site as "no schema", and its props are rendered unchecked.
+ * The props schema was the one nothing held: a type without one is read by
+ * the site as "no schema", and its props are rendered unchecked. It is the
+ * `props` of the type's contract now, so what is held here is that there is
+ * a contract, and that the descriptor's defaults satisfy it.
  */
 describe('a core block has a props schema its own defaults satisfy', () => {
   const descriptors = [
@@ -38,7 +42,7 @@ describe('a core block has a props schema its own defaults satisfy', () => {
     (type, descriptor) => {
       expect(
         isBlockType(type),
-        `${type} has no entry in BLOCK_PROPS_SCHEMAS (libs/shared-types/src/lib/block-props-schemas.ts)`,
+        `${type} has no contract: add a defineBlockContract beside its props schema and name it in its family's *_BLOCK_CONTRACTS list (libs/shared-types/src/lib)`,
       ).toBe(true);
       if (!isBlockType(type)) return;
       const parsed = BLOCK_PROPS_SCHEMAS[type].safeParse(

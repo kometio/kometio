@@ -4,6 +4,8 @@ import {
   pickedMediaSchema,
   pickedPageSchema,
 } from './block-values';
+import { defineBlockContract } from './block-contract';
+import { asString, quoteProse, teamMemberProse } from './search-prose';
 
 export const quotePropsSchema = z.object({
   quote: z.string(),
@@ -11,6 +13,18 @@ export const quotePropsSchema = z.object({
   role: z.string(),
 });
 export type QuoteProps = z.infer<typeof quotePropsSchema>;
+export const quoteBlockContract = defineBlockContract({
+  type: 'Quote',
+  props: quotePropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: quoteProse,
+});
 
 /**
  * `rating` is a plain 1-5 number, not a wrapper object — the editor's
@@ -22,6 +36,18 @@ export const ratingPropsSchema = z.object({
   label: z.string(),
 });
 export type RatingProps = z.infer<typeof ratingPropsSchema>;
+export const ratingBlockContract = defineBlockContract({
+  type: 'Rating',
+  props: ratingPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: (props) => [asString(props['label'])],
+});
 
 /**
  * Shared 5-point star SVG path — every star-rating render (Rating,
@@ -46,6 +72,18 @@ export const countdownPropsSchema = z.object({
   label: z.string(),
 });
 export type CountdownProps = z.infer<typeof countdownPropsSchema>;
+export const countdownBlockContract = defineBlockContract({
+  type: 'Countdown',
+  props: countdownPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: (props) => [asString(props['label'])],
+});
 
 /** Reuses NavLink/PromoBar's `linkType`/`page`/`url` shape for the button's destination. Per-instance color/spacing overrides live on `Block.styleOverride` (docs/adr/0022), not here — a block-agnostic mechanism, not a bespoke field per block. */
 export const bannerPropsSchema = z.object({
@@ -57,6 +95,29 @@ export const bannerPropsSchema = z.object({
   url: z.string(),
 });
 export type BannerProps = z.infer<typeof bannerPropsSchema>;
+export const bannerBlockContract = defineBlockContract({
+  type: 'Banner',
+  props: bannerPropsSchema,
+  style: {
+    backgroundColor: 'var(--secondary)',
+    textColor: 'inherit',
+    borderRadius: '12px',
+    paddingX: '1.5rem',
+    paddingY: '2.5rem',
+    // What the block's own CSS falls back to: no frame by default, and
+    // the gap the `split` variant opens between the words and the button.
+    borderWidth: '0',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    gap: '1.5rem',
+  },
+  search: (props) => [
+    asString(props['title']),
+    asString(props['text']),
+    asString(props['buttonLabel']),
+  ],
+  variants: ['split', 'outline'],
+});
 
 /** Standalone CTA button — same link shape as Banner/NavLink/PromoBar. Which of the two looks it wears is `Block.variant` (ADR-0047), not a prop: a look is presentation, and a theme may add or hide one without touching stored content. Per-instance color/spacing overrides live on `Block.styleOverride` (docs/adr/0022), not here either. */
 /** Button sizes, a closed set: a free length would let a call to action be 4px tall. */
@@ -85,6 +146,21 @@ export const buttonPropsSchema = z.object({
   openInNewTab: z.boolean().default(false),
 });
 export type ButtonProps = z.infer<typeof buttonPropsSchema>;
+export const buttonBlockContract = defineBlockContract({
+  type: 'Button',
+  props: buttonPropsSchema,
+  style: {
+    backgroundColor: 'var(--primary)',
+    textColor: 'var(--primary-foreground)',
+    borderRadius: 'var(--radius)',
+    paddingX: '1.25rem',
+    paddingY: '0.5rem',
+    // The space between an icon and its label (ADR-0056).
+    gap: '0.5em',
+  },
+  search: (props) => [asString(props['label'])],
+  variants: ['secondary', 'outline', 'ghost', 'link'],
+});
 
 /**
  * Plain inline text link — same page/URL targeting as Button, deliberately
@@ -100,6 +176,18 @@ export const linkPropsSchema = z.object({
   url: z.string(),
 });
 export type LinkProps = z.infer<typeof linkPropsSchema>;
+export const linkBlockContract = defineBlockContract({
+  type: 'Link',
+  props: linkPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'var(--primary)',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: (props) => [asString(props['label'])],
+});
 
 /** `icon` resolves against the active theme's icon set (docs/adr/0023), same nullable-name pattern as NavLink's own `icon` — `null` = no icon. */
 export const featurePropsSchema = z.object({
@@ -108,6 +196,21 @@ export const featurePropsSchema = z.object({
   text: z.string(),
 });
 export type FeatureProps = z.infer<typeof featurePropsSchema>;
+export const featureBlockContract = defineBlockContract({
+  type: 'Feature',
+  props: featurePropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    // What `.kometio-feature--inline` falls back to.
+    gap: '1rem',
+  },
+  search: (props) => [asString(props['title']), asString(props['text'])],
+  variants: ['inline', 'start'],
+});
 
 /** Pure layout wrapper, no props of its own — same reasoning as `columnPropsSchema`. Its content lives entirely in `Block.children` (Feature only). */
 export const featureGridPropsSchema = z.strictObject({
@@ -115,6 +218,20 @@ export const featureGridPropsSchema = z.strictObject({
   display: collectionDisplaySchema.default('grid'),
 });
 export type FeatureGridProps = z.infer<typeof featureGridPropsSchema>;
+export const featureGridBlockContract = defineBlockContract({
+  type: 'FeatureGrid',
+  props: featureGridPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: 'an arrangement whose every word belongs to a child that indexes itself',
+  },
+});
 
 /**
  * A single testimonial/review card — always a child of Testimonials,
@@ -132,6 +249,18 @@ export const testimonialPropsSchema = z.object({
   rating: z.number().min(1).max(5),
 });
 export type TestimonialProps = z.infer<typeof testimonialPropsSchema>;
+export const testimonialBlockContract = defineBlockContract({
+  type: 'Testimonial',
+  props: testimonialPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'var(--foreground)',
+    borderRadius: '12px',
+    paddingX: '1.5rem',
+    paddingY: '1.5rem',
+  },
+  search: quoteProse,
+});
 
 /** Pure layout wrapper, no props of its own — same reasoning as `columnPropsSchema`. Its content lives entirely in `Block.children` (Testimonial only). */
 export const testimonialsPropsSchema = z.strictObject({
@@ -139,6 +268,20 @@ export const testimonialsPropsSchema = z.strictObject({
   display: collectionDisplaySchema.default('slider'),
 });
 export type TestimonialsProps = z.infer<typeof testimonialsPropsSchema>;
+export const testimonialsBlockContract = defineBlockContract({
+  type: 'Testimonials',
+  props: testimonialsPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: 'an arrangement whose every word belongs to a child that indexes itself',
+  },
+});
 
 /** A single team member card — always a child of Team. */
 export const teamMemberPropsSchema = z.object({
@@ -148,6 +291,18 @@ export const teamMemberPropsSchema = z.object({
   photo: pickedMediaSchema.nullable(),
 });
 export type TeamMemberProps = z.infer<typeof teamMemberPropsSchema>;
+export const teamMemberBlockContract = defineBlockContract({
+  type: 'TeamMember',
+  props: teamMemberPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: teamMemberProse,
+});
 
 /** Pure layout wrapper, no props of its own — same reasoning as `columnPropsSchema`. Its content lives entirely in `Block.children` (TeamMember only). */
 export const teamPropsSchema = z.strictObject({
@@ -155,6 +310,20 @@ export const teamPropsSchema = z.strictObject({
   display: collectionDisplaySchema.default('grid'),
 });
 export type TeamProps = z.infer<typeof teamPropsSchema>;
+export const teamBlockContract = defineBlockContract({
+  type: 'Team',
+  props: teamPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: 'an arrangement whose every word belongs to a child that indexes itself',
+  },
+});
 
 /**
  * A single pricing plan card — always a child of PricingTable. `price` is a
@@ -179,6 +348,18 @@ export const pricingPlanPropsSchema = z.object({
   url: z.string(),
 });
 export type PricingPlanProps = z.infer<typeof pricingPlanPropsSchema>;
+export const pricingPlanBlockContract = defineBlockContract({
+  type: 'PricingPlan',
+  props: pricingPlanPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '12px',
+    paddingX: '1.5rem',
+    paddingY: '1.5rem',
+  },
+  search: (props) => [asString(props['name']), asString(props['buttonLabel'])],
+});
 
 /** Pure layout wrapper, no props of its own — same reasoning as `columnPropsSchema`. Its content lives entirely in `Block.children` (PricingPlan only). */
 export const pricingTablePropsSchema = z.strictObject({
@@ -186,6 +367,20 @@ export const pricingTablePropsSchema = z.strictObject({
   display: collectionDisplaySchema.default('grid'),
 });
 export type PricingTableProps = z.infer<typeof pricingTablePropsSchema>;
+export const pricingTableBlockContract = defineBlockContract({
+  type: 'PricingTable',
+  props: pricingTablePropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: 'an arrangement whose every word belongs to a child that indexes itself',
+  },
+});
 
 /**
  * A single animated counter — always a child of StatsCounter. `value` is
@@ -203,6 +398,18 @@ export const statPropsSchema = z.object({
   label: z.string(),
 });
 export type StatProps = z.infer<typeof statPropsSchema>;
+export const statBlockContract = defineBlockContract({
+  type: 'Stat',
+  props: statPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: (props) => [asString(props['label'])],
+});
 
 /** Pure layout wrapper, no props of its own — same reasoning as `columnPropsSchema`. Its content lives entirely in `Block.children` (Stat only). */
 export const statsCounterPropsSchema = z.strictObject({
@@ -210,6 +417,20 @@ export const statsCounterPropsSchema = z.strictObject({
   display: collectionDisplaySchema.default('grid'),
 });
 export type StatsCounterProps = z.infer<typeof statsCounterPropsSchema>;
+export const statsCounterBlockContract = defineBlockContract({
+  type: 'StatsCounter',
+  props: statsCounterPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+  },
+  search: {
+    none: 'an arrangement whose every word belongs to a child that indexes itself',
+  },
+});
 
 /**
  * A single timeline step — always a child of Timeline. `label` is a short
@@ -223,10 +444,38 @@ export const timelineStepPropsSchema = z.object({
   description: z.string(),
 });
 export type TimelineStepProps = z.infer<typeof timelineStepPropsSchema>;
+export const timelineStepBlockContract = defineBlockContract({
+  type: 'TimelineStep',
+  props: timelineStepPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '1rem',
+    paddingY: '1.5rem',
+  },
+  search: (props) => [
+    asString(props['label']),
+    asString(props['title']),
+    asString(props['description']),
+  ],
+});
 
 /** Pure layout wrapper, no props of its own — same reasoning as `columnPropsSchema`. Its content lives entirely in `Block.children` (TimelineStep only). */
 export const timelinePropsSchema = z.strictObject({});
 export type TimelineProps = z.infer<typeof timelinePropsSchema>;
+export const timelineBlockContract = defineBlockContract({
+  type: 'Timeline',
+  props: timelinePropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+  },
+  search: {
+    none: 'an arrangement whose every word belongs to a child that indexes itself',
+  },
+});
 
 /**
  * Standalone newsletter signup — deliberately decoupled from the Form
@@ -243,6 +492,19 @@ export const newsletterSignupPropsSchema = z.object({
   buttonLabel: z.string(),
 });
 export type NewsletterSignupProps = z.infer<typeof newsletterSignupPropsSchema>;
+export const newsletterSignupBlockContract = defineBlockContract({
+  type: 'NewsletterSignup',
+  props: newsletterSignupPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    maxWidth: '24rem',
+  },
+  search: (props) => [asString(props['title']), asString(props['buttonLabel'])],
+});
 
 /**
  * The worked example for `@kometio/block-sdk`'s `defineBlock()` (see
@@ -257,3 +519,39 @@ export const calloutPropsSchema = z.object({
   tone: z.enum(['info', 'warning', 'success']),
 });
 export type CalloutProps = z.infer<typeof calloutPropsSchema>;
+export const calloutBlockContract = defineBlockContract({
+  type: 'Callout',
+  props: calloutPropsSchema,
+  style: {
+    // The tone's own colours are deliberately literal and stay put (see
+    // Callout.astro) — what is stylable here is the box around them.
+    borderRadius: 'var(--radius)',
+    paddingX: '1.25rem',
+    paddingY: '1rem',
+  },
+  search: (props) => [asString(props['message'])],
+});
+
+/** Every block this file declares, in the order the picker draws them. */
+export const MARKETING_BLOCK_CONTRACTS = [
+  quoteBlockContract,
+  calloutBlockContract,
+  ratingBlockContract,
+  countdownBlockContract,
+  bannerBlockContract,
+  buttonBlockContract,
+  linkBlockContract,
+  featureGridBlockContract,
+  featureBlockContract,
+  testimonialsBlockContract,
+  testimonialBlockContract,
+  teamBlockContract,
+  teamMemberBlockContract,
+  pricingTableBlockContract,
+  pricingPlanBlockContract,
+  statsCounterBlockContract,
+  statBlockContract,
+  timelineBlockContract,
+  timelineStepBlockContract,
+  newsletterSignupBlockContract,
+] as const;
