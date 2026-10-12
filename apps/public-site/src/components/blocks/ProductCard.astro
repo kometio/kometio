@@ -1,7 +1,7 @@
 ---
 import type { ProductCardProps } from '@kometio/shared-types';
 import { richTextToPlainText } from '@kometio/shared-types';
-import { resolveLinkHref, Translator } from '@kometio/theme-runtime';
+import { resolveLinkHref, type Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 import { GRID_ITEM_SIZES } from '../../lib/image-sizes';
 import Price from '../Price.astro';
@@ -9,6 +9,7 @@ import { absoluteSchemaUrl } from '../../lib/schema-org';
 
 type Props = ProductCardProps & {
   locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
@@ -27,10 +28,10 @@ const {
   url,
   structuredData,
   locale,
+  i18n,
   editable,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 const href = resolveLinkHref({ linkType, page, url });
 const isEmpty = !name.trim() && !image && price === null;
 
@@ -120,6 +121,7 @@ const jsonLd =
           compareAtPrice={compareAtPrice}
           currency={currency}
           locale={locale}
+        i18n={i18n}
         />
       </div>
       {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}

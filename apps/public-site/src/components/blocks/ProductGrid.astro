@@ -1,16 +1,17 @@
 ---
 import type { ProductGridProps } from '@kometio/shared-types';
 import CollectionLayout from '../CollectionLayout.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 export type Props = ProductGridProps & {
   editable?: boolean;
   hasChildren?: boolean;
   instanceClass?: string | null;
   emptyChildLabel?: string | null;
-  locale: string;
+  i18n: Translator;
 };
 
-const { display, editable, hasChildren, instanceClass, emptyChildLabel, locale } =
+const { display, editable, hasChildren, instanceClass, emptyChildLabel, i18n } =
   Astro.props;
 ---
 
@@ -21,7 +22,7 @@ const { display, editable, hasChildren, instanceClass, emptyChildLabel, locale }
   hasChildren={hasChildren}
   instanceClass={instanceClass}
   emptyChildLabel={emptyChildLabel}
-  locale={locale}
+  i18n={i18n}
   step="item"
 >
   <slot />

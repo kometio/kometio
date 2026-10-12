@@ -3,14 +3,11 @@ import {
   STAR_ICON_PATH,
   type RatingProps,
 } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
-type Props = RatingProps & { locale?: string; instanceClass?: string | null };
+type Props = RatingProps & { i18n: Translator; instanceClass?: string | null };
 
-const { rating, label, locale, instanceClass } = Astro.props;
-// Said in the page's language: this was Italian on every site, so an
-// English page's stars were announced as "5 su 5 stelle".
-const i18n = new Translator(locale ?? '');
+const { rating, label, i18n, instanceClass } = Astro.props;
 
 const STAR_POSITIONS = [1, 2, 3, 4, 5];
 ---

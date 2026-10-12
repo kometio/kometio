@@ -2,11 +2,12 @@
 import type { Block, FaqProps } from '@kometio/shared-types';
 import { richTextToPlainText } from '@kometio/shared-types';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = FaqProps & {
   /** The questions, read off the block's own children for the structured data. */
   items?: Block[];
-  locale?: string;
+  i18n: Translator;
   emptyChildLabel?: string | null;
   editable?: boolean;
   hasChildren?: boolean;
@@ -16,7 +17,7 @@ type Props = FaqProps & {
 const {
   structuredData,
   items = [],
-  locale,
+  i18n,
   emptyChildLabel,
   editable,
   hasChildren,
@@ -60,7 +61,7 @@ const jsonLd =
   <slot />
   <EmptyContainerHint
     show={!hasChildren && Boolean(editable)}
-    locale={locale}
+    i18n={i18n}
     childLabel={emptyChildLabel}
   />
   {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}

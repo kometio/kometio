@@ -1,9 +1,10 @@
 ---
 import type { MarqueeProps } from '@kometio/shared-types';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = MarqueeProps & {
-  locale?: string;
+  i18n: Translator;
   emptyChildLabel?: string | null;
   editable?: boolean;
   hasChildren?: boolean;
@@ -14,7 +15,7 @@ const {
   speed,
   direction,
   pauseOnHover,
-  locale,
+  i18n,
   emptyChildLabel,
   editable,
   hasChildren,
@@ -53,7 +54,7 @@ const content = animated ? await Astro.slots.render('default') : '';
         <slot />
         <EmptyContainerHint
           show={!hasChildren && Boolean(editable)}
-          locale={locale}
+          i18n={i18n}
           childLabel={emptyChildLabel}
         />
       </div>
