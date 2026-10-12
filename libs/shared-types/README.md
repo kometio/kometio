@@ -29,7 +29,7 @@ sync with what `apps/api`'s controllers actually serialize. A drift
 between server and client shape fails loudly (a parse error) instead of
 producing a `undefined` deep in a component that assumed a field existed.
 
-## The block content model (`content-model.ts`)
+## The block content model (`content-model.ts`, and the files it gathers)
 
 `Block` is the generic recursive shape every page/header/footer's content
 is made of: `{ id?, type, props, children?, styleOverride? }`. `children`
@@ -44,9 +44,16 @@ already-persisted block before any editor that requires one ships — making
 it required too early would break an in-flight save from an editor that
 doesn't write ids yet.
 
-This file also holds the **per-block-type `props` schema** for every one
-of the ~48 registered block types (`heroPropsSchema`, `bannerPropsSchema`,
-`navLinkPropsSchema`, ...) — deliberately _here_ and not in
+The **per-block-type `props` schema** of every registered block type
+(`heroPropsSchema`, `bannerPropsSchema`, `navLinkPropsSchema`, ...) is written
+in a file of the block's family — `block.ts` (the generic format),
+`block-values.ts` (values several families pick), `text-and-media-blocks.ts`,
+`navigation-blocks.ts`, `layout-blocks.ts`, `marketing-blocks.ts`,
+`page-listing-blocks.ts`, `embed-and-data-blocks.ts`, and the two older family
+files `content-and-navigation-blocks.ts` and
+`commerce-local-content-blocks.ts` — and `content-model.ts` gathers the first
+group, so that nothing that imports from it changed. They are deliberately
+_here_ and not in
 `@kometio/block-registry`, even though that package is "the" block registry.
 Two independent reasons converge on the same answer:
 
