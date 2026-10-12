@@ -1,16 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import {
   DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { classifyUpload, safeDownloadName } from '@kometio/domain-core';
-import type {
-  ImageOptimizerPort,
-  MediaStoragePort,
-  UploadMediaInput,
-  UploadMediaResult,
-} from '@kometio/ports';
+import type { MediaStoragePort, StoredObject } from '@kometio/ports';
 
 export interface S3MediaStorageOptions {
   bucket: string;
@@ -23,10 +16,15 @@ export interface S3MediaStorageOptions {
   forcePathStyle?: boolean;
   /** Origin (+ optional path prefix) the returned URLs are built against — same role as LocalDiskMediaStorageOptions.publicBaseUrl, e.g. a CDN in front of the bucket or the bucket's own public endpoint. */
   publicBaseUrl: string;
-  /** What a picture becomes before it is stored (ADR-0013) — the same one the local adapter is given. */
-  imageOptimizer: ImageOptimizerPort;
 }
 
+/**
+ * Puts what it is given in the bucket. What a file is and what it may be
+ * served as were decided before it got here (ADR-0113); what this adds is
+ * how a bucket says it: the type and, for a download, the header, which
+ * has to be stored with the object because the bucket serves it with no
+ * application in the path.
+ */
 export class S3MediaStorageAdapter implements MediaStoragePort {
   readonly provider = 's3' as const;
   private readonly client: S3Client;
@@ -43,77 +41,18 @@ export class S3MediaStorageAdapter implements MediaStoragePort {
     });
   }
 
-  async upload(input: UploadMediaInput): Promise<UploadMediaResult> {
-    // The bytes decide what may be opened, not the declared type — see
-    // the same call in LocalDiskMediaStorageAdapter, and ADR-0054/0070.
-    const sniffed = classifyUpload(input.data, input.filename);
-
-    if (!sniffed.inline) {
-      const name = safeDownloadName(input.filename);
-      const key = `files/${randomUUID()}/${name}`;
-      await this.client.send(
-        new PutObjectCommand({
-          Bucket: this.options.bucket,
-          Key: key,
-          Body: input.data,
-          ContentType: sniffed.mimeType,
-          // The bucket serves the file, not our API, so the rule
-          // media-static.ts applies to `files/` has to travel with the
-          // object itself: a download, never a page a browser renders.
-          ContentDisposition: `attachment; filename="${name}"`,
-        }),
-      );
-      return {
-        storageKey: key,
-        mimeType: sniffed.mimeType,
-        size: input.data.byteLength,
-        width: 0,
-        height: 0,
-      };
-    }
-
-    if (sniffed.kind !== 'image') {
-      const key = `${randomUUID()}.${sniffed.extension}`;
-      await this.client.send(
-        new PutObjectCommand({
-          Bucket: this.options.bucket,
-          Key: key,
-          Body: input.data,
-          // The SNIFFED type, never the declared one: this header is what
-          // a browser trusts when it plays the file back.
-          ContentType: sniffed.mimeType,
-        }),
-      );
-      return {
-        storageKey: key,
-        mimeType: sniffed.mimeType,
-        size: input.data.byteLength,
-        // See the local adapter: reading a container's dimensions means
-        // decoding it, and nothing needs them for these two.
-        width: 0,
-        height: 0,
-      };
-    }
-
-    const image = await this.options.imageOptimizer.optimize(input.data);
-
-    const storageKey = `${randomUUID()}.${image.extension}`;
+  async put(object: StoredObject): Promise<void> {
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.options.bucket,
-        Key: storageKey,
-        Body: image.data,
-        ContentType: image.mimeType,
+        Key: object.key,
+        Body: object.data,
+        ContentType: object.contentType,
+        ContentDisposition: object.downloadName
+          ? attachment(object.downloadName)
+          : undefined,
       }),
     );
-
-    return {
-      storageKey,
-      mimeType: image.mimeType,
-      size: image.data.byteLength,
-      width: image.width,
-      height: image.height,
-    };
   }
 
   getUrl(storageKey: string): string {
@@ -131,4 +70,15 @@ export class S3MediaStorageAdapter implements MediaStoragePort {
       }),
     );
   }
+}
+
+/**
+ * `attachment; filename="…"`, with what would end the quoted string — or
+ * the header — written out, so that a name cannot add a parameter or a
+ * header of its own. The application hands over a name already made safe
+ * (`safeDownloadName`); this is the adapter not relying on that.
+ */
+function attachment(name: string): string {
+  const quoted = name.replace(/[\\"]/g, '\\$&').replace(/[\r\n]+/g, ' ');
+  return `attachment; filename="${quoted}"`;
 }

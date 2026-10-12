@@ -23,7 +23,7 @@ function setup() {
     deploymentLocale: new FakeDeploymentLocale(),
     mediaStorage: {
       provider: 'local',
-      upload: jest.fn(),
+      put: jest.fn(),
       getUrl: (storageKey) => `/media/${storageKey}`,
       delete: jest.fn(),
     },

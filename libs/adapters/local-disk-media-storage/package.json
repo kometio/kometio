@@ -19,11 +19,6 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@kometio/domain-core": "workspace:*",
     "@kometio/ports": "workspace:*"
-  },
-  "devDependencies": {
-    "@kometio/sharp-image-optimizer": "workspace:*",
-    "sharp": "^0.35.5"
   }
 }

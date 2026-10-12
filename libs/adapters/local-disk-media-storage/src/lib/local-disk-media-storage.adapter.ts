@@ -1,13 +1,6 @@
-import { randomUUID } from 'node:crypto';
 import { mkdir, rmdir, unlink, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { classifyUpload, safeDownloadName } from '@kometio/domain-core';
-import type {
-  ImageOptimizerPort,
-  MediaStoragePort,
-  UploadMediaInput,
-  UploadMediaResult,
-} from '@kometio/ports';
+import { dirname, join, relative } from 'node:path';
+import type { MediaStoragePort, StoredObject } from '@kometio/ports';
 
 export interface LocalDiskMediaStorageOptions {
   /** Absolute path files are written to and served from (see ADR-0013 —
@@ -15,71 +8,25 @@ export interface LocalDiskMediaStorageOptions {
   uploadDir: string;
   /** Origin the returned URLs are built against, e.g. http://localhost:3000/api. */
   publicBaseUrl: string;
-  /** What a picture becomes before it is written (ADR-0013). */
-  imageOptimizer: ImageOptimizerPort;
 }
 
+/**
+ * Writes what it is given under `uploadDir`, and serves nothing: what a
+ * file is, what it is called and what a browser may do with it were
+ * decided before it got here (ADR-0113). What stays here is the one rule
+ * that is the disk's own: nothing is written outside the directory.
+ */
 export class LocalDiskMediaStorageAdapter implements MediaStoragePort {
   readonly provider = 'local' as const;
 
   constructor(private readonly options: LocalDiskMediaStorageOptions) {}
 
-  async upload(input: UploadMediaInput): Promise<UploadMediaResult> {
-    // The file's own bytes decide what may be OPENED, not the declared
-    // type (ADR-0054): a caller can set any header it likes. What the
-    // bytes do not vouch for is still taken (ADR-0070), but only as a
-    // download — see media-static.ts, which serves `files/` that way.
-    const sniffed = classifyUpload(input.data, input.filename);
-
-    if (!sniffed.inline) {
-      // Its own directory, so the file can keep the name it was uploaded
-      // with: a download is saved under the last segment of its address,
-      // and "listino-2026.pdf" should arrive as that, not as a UUID.
-      const key = `files/${randomUUID()}/${safeDownloadName(input.filename)}`;
-      await mkdir(dirname(join(this.options.uploadDir, key)), {
-        recursive: true,
-      });
-      await writeFile(join(this.options.uploadDir, key), input.data);
-      return {
-        storageKey: key,
-        mimeType: sniffed.mimeType,
-        size: input.data.byteLength,
-        width: 0,
-        height: 0,
-      };
-    }
-
-    if (sniffed.kind !== 'image') {
-      await mkdir(this.options.uploadDir, { recursive: true });
-      const key = `${randomUUID()}.${sniffed.extension}`;
-      await writeFile(join(this.options.uploadDir, key), input.data);
-      return {
-        storageKey: key,
-        mimeType: sniffed.mimeType,
-        size: input.data.byteLength,
-        // A video has pixel dimensions and an audio file does not, but
-        // reading a container's dimensions means decoding it — a
-        // different kind of dependency than sharp. Left unset rather than
-        // guessed: `width`/`height` are nullable for exactly this, and
-        // nothing in the renderer needs them for these two.
-        width: 0,
-        height: 0,
-      };
-    }
-
-    const image = await this.options.imageOptimizer.optimize(input.data);
-
-    await mkdir(this.options.uploadDir, { recursive: true });
-    const storageKey = `${randomUUID()}.${image.extension}`;
-    await writeFile(join(this.options.uploadDir, storageKey), image.data);
-
-    return {
-      storageKey,
-      mimeType: image.mimeType,
-      size: image.data.byteLength,
-      width: image.width,
-      height: image.height,
-    };
+  async put(object: StoredObject): Promise<void> {
+    const path = this.pathOf(object.key);
+    // A key can hold a directory (a download keeps the name it was
+    // uploaded with, in a directory of its own).
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, object.data);
   }
 
   getUrl(storageKey: string): string {
@@ -87,8 +34,9 @@ export class LocalDiskMediaStorageAdapter implements MediaStoragePort {
   }
 
   async delete(storageKey: string): Promise<void> {
+    const path = this.pathOf(storageKey);
     try {
-      await unlink(join(this.options.uploadDir, storageKey));
+      await unlink(path);
     } catch (error) {
       // Already gone is fine — delete is idempotent from the caller's
       // point of view (matches PageRepositoryPort.delete's semantics).
@@ -96,13 +44,21 @@ export class LocalDiskMediaStorageAdapter implements MediaStoragePort {
         throw error;
       }
     }
-    // A download lives alone in its own directory; leaving the empty
-    // directory behind would grow `files/` by one entry for every file
-    // anybody ever deleted.
-    if (storageKey.startsWith('files/')) {
-      await rmdir(dirname(join(this.options.uploadDir, storageKey))).catch(
-        () => undefined,
-      );
+    // A key with a directory in it was given one of its own: leaving the
+    // empty directory behind would grow the tree by one entry for every
+    // file anybody ever deleted. `rmdir` refuses one that is not empty.
+    if (storageKey.includes('/')) {
+      await rmdir(dirname(path)).catch(() => undefined);
     }
+  }
+
+  /** The path a key is kept at, and never one outside the upload directory. */
+  private pathOf(key: string): string {
+    const path = join(this.options.uploadDir, key);
+    const inside = relative(this.options.uploadDir, path);
+    if (inside === '' || inside.startsWith('..')) {
+      throw new Error(`Not a key inside the upload directory: ${key}`);
+    }
+    return path;
   }
 }

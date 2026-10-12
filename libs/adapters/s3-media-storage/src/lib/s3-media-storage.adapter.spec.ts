@@ -1,14 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import sharp from 'sharp';
-import { UnreadableImageError } from '@kometio/domain-core';
-import { SharpImageOptimizer } from '@kometio/sharp-image-optimizer';
 import { S3Client } from '@aws-sdk/client-s3';
 import { S3MediaStorageAdapter } from './s3-media-storage.adapter';
 
 const sendMock = vi.fn();
 
 // No real bucket/MinIO needed for these — the S3Client itself is mocked,
-// so upload()/delete() are verified by asserting on the command objects
+// so put()/delete() are verified by asserting on the command objects
 // passed to send(), not by hitting a real endpoint.
 vi.mock('@aws-sdk/client-s3', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@aws-sdk/client-s3')>();
@@ -23,19 +20,10 @@ vi.mock('@aws-sdk/client-s3', async (importOriginal) => {
   };
 });
 
-async function makePng(width: number, height: number): Promise<Uint8Array> {
-  return sharp({
-    create: {
-      width,
-      height,
-      channels: 3,
-      background: { r: 200, g: 100, b: 50 },
-    },
-  })
-    .png()
-    .toBuffer();
-}
-
+/*
+ * What a file is, and what it may be served as, is the application's to
+ * decide (store-upload.spec.ts). This adapter says how a bucket is told.
+ */
 describe('S3MediaStorageAdapter', () => {
   let adapter: S3MediaStorageAdapter;
 
@@ -48,7 +36,6 @@ describe('S3MediaStorageAdapter', () => {
       accessKeyId: 'test-key',
       secretAccessKey: 'test-secret',
       publicBaseUrl: 'https://media.example.com',
-      imageOptimizer: new SharpImageOptimizer(),
     });
   });
 
@@ -56,66 +43,56 @@ describe('S3MediaStorageAdapter', () => {
     vi.clearAllMocks();
   });
 
-  it('converts a small image to WebP and uploads it under a generated key', async () => {
-    const data = await makePng(400, 300);
+  it('puts the bytes it is given under the key and the type it is given', async () => {
+    const data = new Uint8Array([1, 2, 3]);
 
-    const result = await adapter.upload({
-      tenantId: 'tenant-1',
-      siteId: 'site-1',
-      filename: 'foto.png',
-      mimeType: 'image/png',
+    await adapter.put({
+      key: 'abc.webp',
       data,
+      contentType: 'image/webp',
     });
 
-    expect(result.storageKey).toMatch(/\.webp$/);
-    expect(result.mimeType).toBe('image/webp');
-    expect(result.width).toBe(400);
-    expect(result.height).toBe(300);
     expect(sendMock).toHaveBeenCalledTimes(1);
     const command = sendMock.mock.calls[0][0];
     expect(command.input.Bucket).toBe('kometio-media');
-    expect(command.input.Key).toBe(result.storageKey);
+    expect(command.input.Key).toBe('abc.webp');
+    expect(command.input.Body).toBe(data);
     expect(command.input.ContentType).toBe('image/webp');
-  });
-
-  it('refuses an image that cannot be read, and sends nothing to the bucket', async () => {
-    const good = await makePng(40, 40);
-
-    await expect(
-      adapter.upload({
-        tenantId: 'tenant-1',
-        siteId: 'site-1',
-        filename: 'rotta.png',
-        mimeType: 'image/png',
-        data: good.subarray(0, 60),
-      }),
-    ).rejects.toBeInstanceOf(UnreadableImageError);
-
-    expect(sendMock).not.toHaveBeenCalled();
+    expect(command.input.ContentDisposition).toBeUndefined();
   });
 
   /*
-   * Refused until ADR-0070. The bucket serves these files itself, so the
-   * rule that they download rather than open has to travel WITH the
-   * object — our API is not in the path to add the header later.
+   * The bucket serves these files itself, so the rule that they download
+   * rather than open has to travel WITH the object — our API is not in the
+   * path to add the header later.
    */
-  it('stores a file it cannot vouch for as a download, under its own name', async () => {
-    sendMock.mockResolvedValueOnce({});
-
-    const result = await adapter.upload({
-      tenantId: 'tenant-1',
-      siteId: 'site-1',
-      filename: 'pagina.html',
-      mimeType: 'text/html',
-      data: new TextEncoder().encode('<script>alert(1)</script>'),
+  it('stores a download with the header that makes it one', async () => {
+    await adapter.put({
+      key: 'files/1b4e28ba/pagina.html',
+      data: new Uint8Array([1]),
+      contentType: 'text/html',
+      downloadName: 'pagina.html',
     });
 
-    expect(result.storageKey).toMatch(/^files\/[^/]+\/pagina\.html$/);
     const command = sendMock.mock.calls[0][0];
-    expect(command.input.Key).toBe(result.storageKey);
     expect(command.input.ContentType).toBe('text/html');
     expect(command.input.ContentDisposition).toBe(
       'attachment; filename="pagina.html"',
+    );
+  });
+
+  it('does not let a name close the quoted string or add a header', async () => {
+    await adapter.put({
+      key: 'files/1b4e28ba/x',
+      data: new Uint8Array([1]),
+      contentType: 'text/plain',
+      downloadName: "a\"; filename*=UTF-8''evil.html\r\nX-Injected: 1",
+    });
+
+    const header: string = sendMock.mock.calls[0][0].input.ContentDisposition;
+    expect(header).not.toMatch(/[\r\n]/);
+    expect(header).toBe(
+      'attachment; filename="a\\"; filename*=UTF-8\'\'evil.html X-Injected: 1"',
     );
   });
 
@@ -149,7 +126,6 @@ describe('S3MediaStorageAdapter', () => {
       accessKeyId: 'x',
       secretAccessKey: 'y',
       publicBaseUrl: 'http://localhost:9000/kometio-media',
-      imageOptimizer: new SharpImageOptimizer(),
     });
 
     expect(S3Client).toHaveBeenCalledWith(
