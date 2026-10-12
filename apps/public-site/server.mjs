@@ -18,9 +18,9 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import sirv from 'sirv';
 import { buildCompatibility } from './build-compatibility.mjs';
 import { handler as astroHandler } from './dist/server/entry.mjs';
+import { staticAssets } from './static-assets.mjs';
 
 const ASSETS_PREFIX = '/_astro/';
 
@@ -28,7 +28,7 @@ const ASSETS_PREFIX = '/_astro/';
 const bundled = {
   id: 'bundled',
   handler: astroHandler,
-  assets: sirv('dist/client', { dev: false }),
+  assets: staticAssets('dist/client'),
 };
 let active = bundled;
 
@@ -84,7 +84,7 @@ async function loadPublishedBuild() {
   active = {
     id: published.build,
     handler,
-    assets: sirv(join(dist, 'client'), { dev: false }),
+    assets: staticAssets(join(dist, 'client')),
   };
   console.log(`Serving theme build ${published.build}.`);
 }
