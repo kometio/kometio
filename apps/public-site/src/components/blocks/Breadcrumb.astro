@@ -2,10 +2,11 @@
 import type { BreadcrumbProps } from '@kometio/shared-types';
 import type { PublishedPageAncestor } from '@kometio/api-contracts';
 import { localePath, localePathFromAncestors } from '@kometio/theme-runtime';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 interface Props extends BreadcrumbProps {
   locale: string;
+  i18n: Translator;
   ancestors: PublishedPageAncestor[];
   currentPageTitle: string;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
@@ -16,6 +17,7 @@ const {
   homeLabel,
   visibility,
   locale,
+  i18n,
   ancestors,
   currentPageTitle,
   instanceClass,
@@ -42,7 +44,6 @@ const crumbs: Crumb[] = [
   })),
   { title: currentPageTitle, href: null },
 ];
-const i18n = new Translator(locale);
 ---
 
 <nav

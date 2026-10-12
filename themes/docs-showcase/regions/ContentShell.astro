@@ -2,7 +2,6 @@
 import type { PageTreeNodeDto } from '@kometio/theme-runtime';
 import { localePathFromAncestors } from '@kometio/theme-runtime';
 import type { ThemeContentShellProps } from '@kometio/theme-runtime';
-import { DictionaryTranslator } from '@kometio/theme-runtime';
 import themeLocales from '../locales.json';
 
 /**
@@ -17,12 +16,13 @@ import themeLocales from '../locales.json';
  */
 type Props = ThemeContentShellProps;
 
-const { locale, currentPath, pageTree, route } = Astro.props;
+const { locale, currentPath, pageTree, route, i18n } = Astro.props;
 
 // This theme's own UI copy (../locales.json): core's dictionary is not the
 // place for a theme's words, and a theme outside this repository could not
-// reach it anyway (docs/adr/0089).
-const strings = new DictionaryTranslator(locale, themeLocales);
+// reach it anyway (docs/adr/0089). Bound to core's translator, so that these
+// words and core's come out in the same language, the site's own included.
+const strings = i18n.withDictionaries(themeLocales);
 
 // --- Sidebar: a docs section is a 2-level hierarchy (root → category →
 // doc page), all categories shown simultaneously (like inertiajs.com's own

@@ -3,14 +3,14 @@ import {
   type LogoStripProps,
   type PickedMedia,
 } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 import { fixedHeightSizes } from '../../lib/image-sizes';
 
 type Props = LogoStripProps & {
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
-  locale: string;
+  i18n: Translator;
 };
 type LogoItem = LogoStripProps['logos'][number];
 
@@ -18,9 +18,8 @@ function isPictured(logo: LogoItem): logo is LogoItem & { media: PickedMedia } {
   return logo.media !== null;
 }
 
-const { logos, locale, instanceClass } = Astro.props;
+const { logos, i18n, instanceClass } = Astro.props;
 const pictured = logos.filter(isPictured);
-const i18n = new Translator(locale);
 ---
 
 {

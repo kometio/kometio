@@ -59,6 +59,19 @@ describe('block components do not forward their props into markup', () => {
     expect(all.length).toBeGreaterThan(100);
   });
 
+  it("builds no translator of its own: it is handed `i18n`, with the site's language in it", () => {
+    // `new Translator(locale)` leaves out the language of the site, which a
+    // page in a language nobody translated is read in (BlockRenderer builds
+    // the one every block is given).
+    const offenders = all.filter((path) =>
+      /new\s+(?:Dictionary)?Translator\s*(?:<[^>]*>)?\(/.test(
+        readFileSync(path, 'utf8'),
+      ),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+
   it('spreads neither Astro.props nor a rest of them', () => {
     const offenders = all.filter((path) =>
       /\{\s*\.\.\.(?:Astro\.props|rest|props|attrs|restProps)\b/.test(

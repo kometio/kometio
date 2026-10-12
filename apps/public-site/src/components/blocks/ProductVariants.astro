@@ -1,15 +1,14 @@
 ---
 import type { ProductVariantsProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = ProductVariantsProps & {
-  locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
 
-const { label, options, locale, editable, instanceClass } = Astro.props;
-const i18n = new Translator(locale);
+const { label, options, i18n, editable, instanceClass } = Astro.props;
 const values = options
   .split('\n')
   .map((option) => option.trim())

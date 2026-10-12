@@ -1,16 +1,17 @@
 ---
 import type { FileListProps } from '@kometio/shared-types';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = FileListProps & {
-  locale?: string;
+  i18n: Translator;
   editable?: boolean;
   hasChildren?: boolean;
   emptyChildLabel?: string | null;
   instanceClass?: string | null;
 };
 
-const { title, locale, editable, hasChildren, emptyChildLabel, instanceClass } =
+const { title, i18n, editable, hasChildren, emptyChildLabel, instanceClass } =
   Astro.props;
 ---
 
@@ -28,7 +29,7 @@ const { title, locale, editable, hasChildren, emptyChildLabel, instanceClass } =
   </div>
   <EmptyContainerHint
     show={!hasChildren && Boolean(editable)}
-    locale={locale}
+    i18n={i18n}
     childLabel={emptyChildLabel}
   />
 </section>

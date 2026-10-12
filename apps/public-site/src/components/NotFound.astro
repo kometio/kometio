@@ -11,10 +11,12 @@ import { localePath } from '@kometio/theme-runtime';
 // know anything about themes itself.
 interface Props {
   locale?: string;
+  /** The site's own language, when there is a site to ask: what a language nobody translated is read in. */
+  siteDefaultLocale?: string | undefined;
 }
 
-const { locale } = Astro.props;
-const i18n = new Translator(locale ?? 'it');
+const { locale, siteDefaultLocale } = Astro.props;
+const i18n = new Translator(locale ?? 'it', siteDefaultLocale);
 // No locale at all (a truly locale-less URL) has nowhere real to send
 // "back home" to — falls back to the bare domain root rather than a
 // broken link.

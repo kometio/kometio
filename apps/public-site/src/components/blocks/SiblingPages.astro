@@ -1,16 +1,15 @@
 ---
 import type { SiblingPagesProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import PrevNextNav from '../PrevNextNav.astro';
 import { delegatedRootClass } from '../../lib/delegated-root-class';
 
 type Props = SiblingPagesProps & {
   instanceClass?: string | null;
-  locale?: string;
+  i18n: Translator;
 };
 
-const { previous, next, instanceClass, locale } = Astro.props;
-const i18n = new Translator(locale ?? '');
+const { previous, next, instanceClass, i18n } = Astro.props;
 // Filled by resolveSiteNavigationBlocks: the siblings on either side, in
 // the page tree's own order.
 ---

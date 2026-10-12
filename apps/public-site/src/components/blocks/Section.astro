@@ -1,9 +1,9 @@
 ---
 import type { SectionProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = SectionProps & {
-  locale: string;
+  i18n: Translator;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
   /** True once the section has been resolved into blocks — see resolveSectionBlocks. */
@@ -12,8 +12,7 @@ type Props = SectionProps & {
   editable?: boolean;
 };
 
-const { section, instanceClass, hasChildren, editable, locale } = Astro.props;
-const i18n = new Translator(locale);
+const { section, instanceClass, hasChildren, editable, i18n } = Astro.props;
 ---
 
 {/*

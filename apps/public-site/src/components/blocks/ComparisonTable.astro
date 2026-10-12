@@ -1,10 +1,10 @@
 ---
 import type { ComparisonTableProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
 
 type Props = ComparisonTableProps & {
-  locale: string;
+  i18n: Translator;
   editable?: boolean;
   hasChildren?: boolean;
   emptyChildLabel?: string | null;
@@ -14,13 +14,12 @@ type Props = ComparisonTableProps & {
 const {
   columns,
   highlightColumn,
-  locale,
+  i18n,
   editable,
   hasChildren,
   emptyChildLabel,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 
 /** Six at most: past that a comparison is a spreadsheet, and a phone shows none of it. */
 const MAX_COLUMNS = 6;
@@ -73,7 +72,7 @@ const highlighted =
   </div>
   <EmptyContainerHint
     show={!hasChildren && Boolean(editable)}
-    locale={locale}
+    i18n={i18n}
     childLabel={emptyChildLabel}
   />
 </div>

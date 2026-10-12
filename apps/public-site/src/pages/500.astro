@@ -92,7 +92,10 @@ const errorPageTranslations =
       ancestors={[]}
       route="error"
     >
-      <ServerError locale={guessedLocale} />
+      <ServerError
+        locale={guessedLocale}
+        siteDefaultLocale={chrome.site.defaultLocale}
+      />
     </PageLayout>
   ) : (
     <ErrorPageShell title="500">

@@ -1,14 +1,16 @@
 ---
 import type { SubPagesProps } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
 import PageGrid from './PageGrid.astro';
 import { delegatedRootClass } from '../../lib/delegated-root-class';
 
 type Props = SubPagesProps & {
   instanceClass?: string | null;
   locale?: string;
+  i18n: Translator;
 };
 
-const { layout, items, instanceClass, locale } = Astro.props;
+const { layout, items, instanceClass, locale, i18n } = Astro.props;
 
 // The same list and cards a page grid draws, delegated rather than copied
 // (RelatedPages does the same, for the same reason). The cap was applied
@@ -30,6 +32,7 @@ const { layout, items, instanceClass, locale } = Astro.props;
       filterable={false}
       instanceClass={delegatedRootClass('kometio-sub-pages', instanceClass)}
       locale={locale}
+      i18n={i18n}
     />
   )
 }

@@ -1,15 +1,14 @@
 ---
 import type { ComparisonRowProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import { comparisonValueKind } from '../../lib/comparison-value';
 
 type Props = ComparisonRowProps & {
-  locale: string;
+  i18n: Translator;
   instanceClass?: string | null;
 };
 
-const { feature, values, locale, instanceClass } = Astro.props;
-const i18n = new Translator(locale);
+const { feature, values, i18n, instanceClass } = Astro.props;
 // Blank lines in the middle are kept — an empty cell is a column this
 // feature says nothing about — and only the trailing ones are dropped.
 const cells =
