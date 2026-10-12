@@ -106,31 +106,72 @@ function cutAtWord(text: string, max: number): string {
  */
 function normalised(word: string): string {
   let text = word;
-  if (/%[0-9a-f]{2}/i.test(text)) {
+  // More than once: `%2540` is `%40` is `@`, and a report goes through
+  // several layers that each add one. Bounded, and stopping when a pass
+  // changes nothing.
+  for (let pass = 0; pass < MAX_DECODE_PASSES; pass += 1) {
+    const decoded = decodeOnce(text);
+    if (decoded === text) break;
+    text = decoded;
+  }
+  return (
+    text
+      .normalize('NFKC')
+      // Format and control characters (a zero-width space, a bell) are not
+      // text, and one in the middle of a token is what stops a rule seeing it.
+      .replace(/[\p{Cf}\p{Cc}]/gu, '')
+  );
+}
+
+/** How many layers of encoding are peeled off a word. */
+const MAX_DECODE_PASSES = 3;
+
+/** The few named entities for the punctuation an address, a query or an assignment is made of. */
+const NAMED_ENTITIES: Readonly<Record<string, string>> = {
+  commat: '@',
+  period: '.',
+  colon: ':',
+  equals: '=',
+  quest: '?',
+  sol: '/',
+  lowbar: '_',
+  num: '#',
+  amp: '&',
+};
+
+function decodeOnce(text: string): string {
+  let decoded = text;
+  if (/%[0-9a-f]{2}/i.test(decoded)) {
     try {
-      text = decodeURIComponent(text);
+      decoded = decodeURIComponent(decoded);
     } catch {
       // A malformed escape: the word is kept as it was written.
     }
   }
-  text = text
-    .replace(/\\u([0-9a-f]{4})/gi, (_, hex: string) =>
-      String.fromCharCode(Number.parseInt(hex, 16)),
+  return decoded
+    .replace(/\\u\{([0-9a-f]{1,6})\}/gi, (escape, hex: string) =>
+      codePointOr(Number.parseInt(hex, 16), escape),
     )
-    .replace(/\\x([0-9a-f]{2})/gi, (_, hex: string) =>
-      String.fromCharCode(Number.parseInt(hex, 16)),
+    .replace(/\\u([0-9a-f]{4})/gi, (escape, hex: string) =>
+      codePointOr(Number.parseInt(hex, 16), escape),
+    )
+    .replace(/\\x([0-9a-f]{2})/gi, (escape, hex: string) =>
+      codePointOr(Number.parseInt(hex, 16), escape),
     )
     .replace(/&#x([0-9a-f]{1,6});/gi, (entity, hex: string) =>
-      codePointOrEntity(Number.parseInt(hex, 16), entity),
+      codePointOr(Number.parseInt(hex, 16), entity),
     )
     .replace(/&#(\d{1,7});/g, (entity, digits: string) =>
-      codePointOrEntity(Number.parseInt(digits, 10), entity),
+      codePointOr(Number.parseInt(digits, 10), entity),
+    )
+    .replace(
+      /&([a-z]+);/gi,
+      (entity, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? entity,
     );
-  return text.normalize('NFKC');
 }
 
-function codePointOrEntity(codePoint: number, entity: string): string {
-  return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : entity;
+function codePointOr(codePoint: number, original: string): string {
+  return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : original;
 }
 
 function redactWord(word: string): string {

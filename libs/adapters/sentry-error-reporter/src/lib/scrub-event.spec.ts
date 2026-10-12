@@ -206,6 +206,33 @@ describe('redact', () => {
       },
     );
 
+    it.each([
+      [
+        'a double-encoded address',
+        'GET /u/ana%2540example.test',
+        'GET /u/[email]',
+      ],
+      ['a braced unicode escape', 'bad ana\\u{40}example.test', 'bad [email]'],
+      ['a named entity', 'bad ana&commat;example.test', 'bad [email]'],
+      [
+        'a zero-width character in the middle',
+        'bad ana\u200b@example.test',
+        'bad [email]',
+      ],
+      [
+        'a secret broken by a zero-width character',
+        `secret ${'3f9a1c5e7b2d4f6a'.repeat(2)}\u200b${'8c0e1b3d5f7a9c2e'.repeat(2)}`,
+        'secret [token]',
+      ],
+      [
+        'a control character in an address',
+        'bad ana\u0007@example.test',
+        'bad [email]',
+      ],
+    ])('redacts %s', (_name, text, expected) => {
+      expect(redact(text)).toBe(expected);
+    });
+
     it('does not let a character that expands under normalisation make a word long enough to be slow', () => {
       const started = Date.now();
       const text = `${'\ufdfa'.repeat(250)} `.repeat(60);
