@@ -43,6 +43,7 @@ import { DrizzleUserRepository } from '@kometio/postgres-user-repository';
 import type { PageGeneratorConnection } from '@kometio/ports';
 import { PreviewTokenAdapter } from '@kometio/preview-token-adapter';
 import { SessionAuthAdapter } from '@kometio/session-auth-adapter';
+import { SharpImageOptimizer } from '@kometio/sharp-image-optimizer';
 import { VerificationTokenAdapter } from '@kometio/verification-token-adapter';
 import { WxrExportReader } from '@kometio/wordpress-wxr';
 import type { ApiEnv } from '../../env-schema';
@@ -180,6 +181,7 @@ const PROVIDERS = [
   ),
 
   configured(port.MEDIA_STORAGE, createMediaStorage),
+  { provide: port.IMAGE_OPTIMIZER, useClass: SharpImageOptimizer },
   configured(port.ATTACHMENT_STORAGE, createAttachmentStorage),
   configured(port.THEME_CATALOG, createThemeCatalog),
   // Off unless the deployment gives the theme volume: an API that could

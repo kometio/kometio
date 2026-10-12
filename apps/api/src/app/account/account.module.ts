@@ -5,6 +5,7 @@ import {
   AUTH_PORT,
   DEPLOYMENT_LOCALE,
   EMAIL_PORT,
+  IMAGE_OPTIMIZER,
   MEDIA_STORAGE,
   USER_REPOSITORY,
   VERIFICATION_TOKEN_PORT,
@@ -34,6 +35,7 @@ import { ACCOUNT_DEPS } from './account.tokens';
     moduleDeps<AccountDeps>(ACCOUNT_DEPS, {
       userRepository: USER_REPOSITORY,
       mediaStorage: MEDIA_STORAGE,
+      imageOptimizer: IMAGE_OPTIMIZER,
       authPort: AUTH_PORT,
       verificationTokenPort: VERIFICATION_TOKEN_PORT,
       emailPort: EMAIL_PORT,

@@ -18,7 +18,6 @@ import type {
   Term,
 } from '@kometio/domain-core';
 import {
-  classifyUpload,
   LastActiveAdminError,
   CollectionNotFoundError,
   FormNotFoundError,
@@ -36,7 +35,6 @@ import {
   SecretUnreadableError,
   User,
   hasUnpublishedChanges,
-  safeDownloadName,
   VERSION_HISTORY_LIMIT,
 } from '@kometio/domain-core';
 import {
@@ -58,7 +56,9 @@ import type {
   MediaRepositoryPort,
   MediaUsagePort,
   MediaUsageRows,
+  ImageOptimizerPort,
   MediaStoragePort,
+  OptimizedImage,
   PaginatedResult,
   Pagination,
   PageGroupListFilters,
@@ -84,8 +84,7 @@ import type {
   StoredSiteAiSettings,
   AvailableTheme,
   ThemeCatalogPort,
-  UploadMediaInput,
-  UploadMediaResult,
+  StoredObject,
   UserRepositoryPort,
 } from '@kometio/ports';
 
@@ -1405,47 +1404,15 @@ export class InMemoryFormSubmissionRepository implements FormSubmissionRepositor
   }
 }
 
-/** Fake, not a real storage backend — records what was uploaded/deleted so
+/** Fake, not a real storage backend — records what was put/deleted so
  * use-case tests can assert on the interaction without touching disk/S3. */
 export class InMemoryMediaStorage implements MediaStoragePort {
   readonly provider = 'local' as const;
-  uploads: UploadMediaInput[] = [];
+  puts: StoredObject[] = [];
   deletedKeys: string[] = [];
 
-  async upload(input: UploadMediaInput): Promise<UploadMediaResult> {
-    this.uploads.push(input);
-    // Mirrors what the real adapters do (ADR-0054, ADR-0070): an image is
-    // re-encoded to WebP, video and audio are stored as uploaded with
-    // their own sniffed type, and anything the sniffer does not vouch for
-    // is kept under `files/` with its own name, for download. A fake that
-    // answered `image/webp` to everything would let a test assert a file
-    // had been stored correctly when nothing of the kind had happened.
-    const sniffed = classifyUpload(input.data, input.filename);
-    if (!sniffed.inline) {
-      return {
-        storageKey: `files/fake-${this.uploads.length}/${safeDownloadName(input.filename)}`,
-        mimeType: sniffed.mimeType,
-        size: input.data.byteLength,
-        width: 0,
-        height: 0,
-      };
-    }
-    if (sniffed.kind === 'image') {
-      return {
-        storageKey: `fake-${this.uploads.length}.webp`,
-        mimeType: 'image/webp',
-        size: input.data.byteLength,
-        width: 800,
-        height: 600,
-      };
-    }
-    return {
-      storageKey: `fake-${this.uploads.length}.${sniffed.extension}`,
-      mimeType: sniffed.mimeType,
-      size: input.data.byteLength,
-      width: 0,
-      height: 0,
-    };
+  async put(object: StoredObject): Promise<void> {
+    this.puts.push(object);
   }
 
   getUrl(storageKey: string): string {
@@ -1454,6 +1421,28 @@ export class InMemoryMediaStorage implements MediaStoragePort {
 
   async delete(storageKey: string): Promise<void> {
     this.deletedKeys.push(storageKey);
+  }
+}
+
+/**
+ * A picture comes back as an 800x600 WebP of the bytes it was given, so that
+ * a test can say what became of it without a decoder in the way. One that is
+ * not an image at all is the real optimizer's to refuse; a spec of that
+ * kind makes this throw (`failWith`).
+ */
+export class InMemoryImageOptimizer implements ImageOptimizerPort {
+  /** Set to make every picture unreadable, as a truncated one would be. */
+  failWith: Error | null = null;
+
+  async optimize(data: Uint8Array): Promise<OptimizedImage> {
+    if (this.failWith) throw this.failWith;
+    return {
+      data,
+      mimeType: 'image/webp',
+      extension: 'webp',
+      width: 800,
+      height: 600,
+    };
   }
 }
 
