@@ -1,21 +1,20 @@
 ---
 import type { Block, VideoPlaylistProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
 
 type Props = VideoPlaylistProps & {
   /** The videos, read off the block's own children for their titles (Faq.astro's reason). */
   items?: Block[];
-  locale: string;
+  i18n: Translator;
   editable?: boolean;
   hasChildren?: boolean;
   emptyChildLabel?: string | null;
   instanceClass?: string | null;
 };
 
-const { items = [], locale, editable, hasChildren, emptyChildLabel, instanceClass } =
+const { items = [], i18n, editable, hasChildren, emptyChildLabel, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 // A video's caption is its title here; one without gets its number.
 const titles = items
   .filter((item) => item.type === 'VideoEmbed')
@@ -55,7 +54,7 @@ const titles = items
   )}
   <EmptyContainerHint
     show={!hasChildren && Boolean(editable)}
-    locale={locale}
+    i18n={i18n}
     childLabel={emptyChildLabel}
   />
 </div>

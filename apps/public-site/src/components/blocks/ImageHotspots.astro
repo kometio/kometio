@@ -1,20 +1,19 @@
 ---
 import type { ImageHotspotsProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
 import OptimizedImage from '../OptimizedImage.astro';
 
 type Props = ImageHotspotsProps & {
-  locale: string;
+  i18n: Translator;
   editable?: boolean;
   hasChildren?: boolean;
   emptyChildLabel?: string | null;
   instanceClass?: string | null;
 };
 
-const { image, alt, locale, editable, hasChildren, emptyChildLabel, instanceClass } =
+const { image, alt, i18n, editable, hasChildren, emptyChildLabel, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 // Nothing to point at without the picture — but in the canvas its points
 // still need somewhere to be, or they could not be selected until one
 // was chosen.
@@ -39,7 +38,7 @@ const show = Boolean(image) || Boolean(editable);
       </div>
       <EmptyContainerHint
         show={!hasChildren && Boolean(editable)}
-        locale={locale}
+        i18n={i18n}
         childLabel={emptyChildLabel}
       />
     </div>

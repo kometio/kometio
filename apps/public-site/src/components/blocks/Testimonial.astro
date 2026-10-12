@@ -3,15 +3,13 @@ import {
   STAR_ICON_PATH,
   type TestimonialProps,
 } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 import { fixedSizes } from '../../lib/image-sizes';
 
-type Props = TestimonialProps & { locale?: string; instanceClass?: string | null };
+type Props = TestimonialProps & { i18n: Translator; instanceClass?: string | null };
 
-const { quote, author, role, avatar, rating, locale, instanceClass } = Astro.props;
-// Rating.astro's reason: the stars were announced in Italian everywhere.
-const i18n = new Translator(locale ?? '');
+const { quote, author, role, avatar, rating, i18n, instanceClass } = Astro.props;
 
 const STAR_POSITIONS = [1, 2, 3, 4, 5];
 ---

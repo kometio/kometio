@@ -1,5 +1,6 @@
 ---
 import type { RelatedPagesProps } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
 import PageGrid from './PageGrid.astro';
 import { delegatedRootClass } from '../../lib/delegated-root-class';
 
@@ -8,9 +9,10 @@ type Props = RelatedPagesProps & {
   instanceClass?: string | null;
   /** The language being rendered, so the cards' dates are written the way its readers write dates. */
   locale?: string;
+  i18n: Translator;
 };
 
-const { layout, items, instanceClass, locale } = Astro.props;
+const { layout, items, instanceClass, locale, i18n } = Astro.props;
 
 // The same cards a Page list draws, delegated rather than copied: two
 // listings of pages that looked subtly different on the same site would
@@ -36,6 +38,7 @@ const { layout, items, instanceClass, locale } = Astro.props;
       filterable={false}
       instanceClass={delegatedRootClass('kometio-related-pages', instanceClass)}
       locale={locale}
+      i18n={i18n}
     />
   )
 }

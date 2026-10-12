@@ -1,10 +1,11 @@
 ---
 import type { ColumnProps } from '@kometio/shared-types';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = ColumnProps & {
-  /** The locale this page renders in — see EmptyContainerHint. */
-  locale?: string;
+  /** This page's strings, for the hint an empty container shows — see EmptyContainerHint. */
+  i18n: Translator;
   /** The only child type this container accepts, already translated. */
   emptyChildLabel?: string | null;
   editable?: boolean;
@@ -13,7 +14,7 @@ type Props = ColumnProps & {
   instanceClass?: string | null;
 };
 
-const { editable, hasChildren, instanceClass, locale, emptyChildLabel} = Astro.props;
+const { editable, hasChildren, instanceClass, i18n, emptyChildLabel} = Astro.props;
 
 /*
  * The width is NOT read from `span` here, deliberately, even though this
@@ -36,7 +37,7 @@ const { editable, hasChildren, instanceClass, locale, emptyChildLabel} = Astro.p
   <slot />
   <EmptyContainerHint
   show={!hasChildren && Boolean(editable)}
-  locale={locale}
+  i18n={i18n}
   childLabel={emptyChildLabel}
 />
 </div>

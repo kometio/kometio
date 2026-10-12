@@ -1,15 +1,14 @@
 ---
 import type { SiteMapProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import SiteMapTree from '../parts/SiteMapTree.astro';
 
 type Props = SiteMapProps & {
   instanceClass?: string | null;
-  locale?: string;
+  i18n: Translator;
 };
 
-const { tree, instanceClass, locale } = Astro.props;
-const i18n = new Translator(locale ?? '');
+const { tree, instanceClass, i18n } = Astro.props;
 // `tree` comes from resolveSiteNavigationBlocks, already cut to the depth
 // asked for and without the pages filed in a collection.
 ---

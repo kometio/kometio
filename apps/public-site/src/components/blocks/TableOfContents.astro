@@ -1,14 +1,13 @@
 ---
 import type { TableOfContentsProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = TableOfContentsProps & {
   instanceClass?: string | null;
-  locale?: string;
+  i18n: Translator;
 };
 
-const { title, numbered, entries, instanceClass, locale } = Astro.props;
-const i18n = new Translator(locale ?? '');
+const { title, numbered, entries, instanceClass, i18n } = Astro.props;
 const ListTag = numbered ? 'ol' : 'ul';
 // `entries` comes from resolveTableOfContents, which also gave every
 // heading it lists the id these links point at.

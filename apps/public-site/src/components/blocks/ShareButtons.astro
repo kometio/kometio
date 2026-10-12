@@ -1,7 +1,7 @@
 ---
 import type { ShareButtonsProps } from '@kometio/shared-types';
 import type { PublishedPageTranslation } from '@kometio/api-contracts';
-import { localePathFromAncestors, Translator } from '@kometio/theme-runtime';
+import { localePathFromAncestors, type Translator } from '@kometio/theme-runtime';
 
 type Props = ShareButtonsProps & {
   translations: PublishedPageTranslation[];
@@ -9,6 +9,7 @@ type Props = ShareButtonsProps & {
   /** The networks' logos, resolved by BlockRenderer from the brand set (ADR-0053). */
   brandIcons?: { whatsapp?: string | null; facebook?: string | null; x?: string | null };
   locale: string;
+  i18n: Translator;
   instanceClass?: string | null;
 };
 
@@ -24,9 +25,9 @@ const {
   pageTitle,
   brandIcons = {},
   locale,
+  i18n,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 
 // The page's own address, built the way PageLayout builds its canonical
 // — never `Astro.url`, which carries whatever `?utm_source=` the visitor

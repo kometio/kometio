@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PublishedSite } from '@kometio/api-contracts';
+import { Translator } from '@kometio/theme-runtime';
 import {
   COMPUTED_BLOCK_PROPS,
   commonBlockProps,
@@ -12,6 +13,7 @@ function context(
   return {
     block: { id: 'b1', type: 'Card', props: {} },
     locale: 'it',
+    i18n: new Translator('it'),
     translations: [{ locale: 'en', slug: 'hello', ancestorSlugs: [] }],
     site: { themeName: 'classic' } as PublishedSite,
     ancestors: [{ slug: 'servizi', title: 'Servizi' }],
@@ -27,6 +29,7 @@ describe('commonBlockProps', () => {
 
     expect(commonBlockProps(ctx)).toEqual({
       locale: 'it',
+      i18n: ctx.i18n,
       editable: true,
       site: ctx.site,
       translations: ctx.translations,

@@ -1,11 +1,11 @@
 ---
 import type { BeforeAfterProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 import { labelledImageAlt } from '../../lib/image-alt';
 
 type Props = BeforeAfterProps & {
-  locale: string;
+  i18n: Translator;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
 };
@@ -15,12 +15,11 @@ const {
   afterImage,
   beforeLabel,
   afterLabel,
-  locale,
+  i18n,
   instanceClass,
 } =
   Astro.props;
 const canRender = beforeImage !== null && afterImage !== null;
-const i18n = new Translator(locale);
 ---
 
 {

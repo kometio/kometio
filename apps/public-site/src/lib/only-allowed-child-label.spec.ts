@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { headerFooterBlocks, pageBlocks } from '@kometio/block-registry';
+import { Translator } from '@kometio/theme-runtime';
 import { onlyAllowedChildLabel } from './only-allowed-child-label';
 
 /**
@@ -25,7 +26,7 @@ describe('onlyAllowedChildLabel', () => {
       const unnamed = containers
         .map((block) => ({
           type: block.type,
-          label: onlyAllowedChildLabel(block.type, locale),
+          label: onlyAllowedChildLabel(block.type, new Translator(locale)),
         }))
         .filter((entry) => !entry.label || entry.label.includes('.label'));
       expect(unnamed).toEqual([]);
@@ -35,7 +36,8 @@ describe('onlyAllowedChildLabel', () => {
   it('says nothing for a container that genuinely takes anything', () => {
     // Container and Column accept any block: there is no single answer to
     // name, and inventing one is worse than the generic sentence.
-    expect(onlyAllowedChildLabel('Container', 'en')).toBeNull();
-    expect(onlyAllowedChildLabel('Text', 'en')).toBeNull();
+    const i18n = new Translator('en');
+    expect(onlyAllowedChildLabel('Container', i18n)).toBeNull();
+    expect(onlyAllowedChildLabel('Text', i18n)).toBeNull();
   });
 });

@@ -2,15 +2,15 @@
 import type { VideoEmbedProps } from '@kometio/shared-types';
 import ConsentGatedEmbed from '../ConsentGatedEmbed.astro';
 import { parseVideoEmbedUrl } from '../../lib/video-embed';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = VideoEmbedProps & {
-  locale: string;
+  i18n: Translator;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
 };
 
-const { url, poster, aspectRatio, caption, locale, instanceClass } =
+const { url, poster, aspectRatio, caption, i18n, instanceClass } =
   Astro.props;
 
 // The same four shapes as Image and Gallery, resolved here because CSS
@@ -24,7 +24,6 @@ const RATIOS: Record<string, string | null> = {
   wide: '16 / 9',
 };
 const parsed = url ? parseVideoEmbedUrl(url) : null;
-const i18n = new Translator(locale);
 ---
 
 {
