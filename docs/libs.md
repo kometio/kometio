@@ -73,13 +73,14 @@ Storage (each pair implements the same Port, swappable at deploy time):
 
 Outbound communication:
 
-| Lib                                                                                                                                       | What it does                                                                                                       |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [log-email-adapter](../libs/adapters/log-email-adapter/README.md)                                                                         | `EmailPort` with no mail server — writes each email, link included, to a log.                                      |
-| [smtp-email-adapter](../libs/adapters/smtp-email-adapter/README.md)                                                                       | `EmailPort` via Nodemailer — generic SMTP, no vendor lock-in.                                                      |
-| [brevo-newsletter](../libs/adapters/brevo-newsletter/README.md) / [mailchimp-newsletter](../libs/adapters/mailchimp-newsletter/README.md) | `NewsletterPort` implementations — Brevo's contacts API (upsert) vs. Mailchimp's Marketing API (MD5-keyed upsert). |
-| [turnstile-captcha](../libs/adapters/turnstile-captcha/README.md)                                                                         | `CaptchaPort` — Cloudflare Turnstile verification, fail-closed.                                                    |
-| [altcha-captcha](../libs/adapters/altcha-captcha/README.md)                                                                               | `CaptchaPort` and `CaptchaChallengePort` — the captcha built into Kometio, a proof of work (ALTCHA).               |
+| Lib                                                                                                                                       | What it does                                                                                                                        |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [log-email-adapter](../libs/adapters/log-email-adapter/README.md)                                                                         | `EmailPort` with no mail server — writes each email, link included, to a log.                                                       |
+| [smtp-email-adapter](../libs/adapters/smtp-email-adapter/README.md)                                                                       | `EmailPort` via Nodemailer — generic SMTP, no vendor lock-in.                                                                       |
+| [sentry-error-reporter](../libs/adapters/sentry-error-reporter/README.md)                                                                 | `ErrorReporterPort` on Sentry — off unless `SENTRY_DSN` is set; reports only what nobody handled, with the least it can (ADR-0114). |
+| [brevo-newsletter](../libs/adapters/brevo-newsletter/README.md) / [mailchimp-newsletter](../libs/adapters/mailchimp-newsletter/README.md) | `NewsletterPort` implementations — Brevo's contacts API (upsert) vs. Mailchimp's Marketing API (MD5-keyed upsert).                  |
+| [turnstile-captcha](../libs/adapters/turnstile-captcha/README.md)                                                                         | `CaptchaPort` — Cloudflare Turnstile verification, fail-closed.                                                                     |
+| [altcha-captcha](../libs/adapters/altcha-captcha/README.md)                                                                               | `CaptchaPort` and `CaptchaChallengePort` — the captcha built into Kometio, a proof of work (ALTCHA).                                |
 
 Themes and foreign content:
 

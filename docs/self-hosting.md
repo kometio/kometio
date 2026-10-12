@@ -88,7 +88,14 @@ address arrives without a hard refresh.
      background, which needs no account and no network (docs/adr/0103), and so
      do the forms and the newsletter signup of the public site;
    - the `SMTP_*` values of your mail provider, if you have one (all three of
-     `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM_ADDRESS`, or none).
+     `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM_ADDRESS`, or none);
+   - `SENTRY_DSN`, only if you want to be told when something breaks: the
+     address of a Sentry project (`https://<key>@<host>/<project>`; Sentry has
+     a region in the EU). Left empty, nothing is sent anywhere. With it, the
+     API and the public site report the errors nobody handled (docs/adr/0114) —
+     the error, the method, the path and the request id; no request body, no
+     header, no cookie, no query string, no person. `SENTRY_ENVIRONMENT` and
+     `SENTRY_RELEASE` are optional labels.
 
    The API refuses to start with a value left empty or too short, with
    Cloudflare's test captcha keys (which let every captcha through), or with

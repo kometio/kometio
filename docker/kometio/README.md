@@ -355,6 +355,12 @@ Said plainly, so that you do not find out by failing:
   to be the last word on abuse. To use Cloudflare Turnstile instead, give both of
   your keys, `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (`-e` on the
   `docker run`; both, or neither).
+- **It reports its errors nowhere unless you say where.** With `-e SENTRY_DSN=…`
+  (a Sentry project's address) the API and the public site report the errors
+  nobody handled: the error, the method, the path and the request id, with no
+  request body, header, cookie, query string or person (docs/adr/0114).
+  `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` are optional labels. An address
+  that is not a DSN stops the API at start, naming the variable.
 - **Without `DOMAIN` it has no HTTPS.** It is reached at `localhost`, over plain
   HTTP: right for a trial, not for a server — see
   [On a server](#on-a-server-with-your-own-domain).

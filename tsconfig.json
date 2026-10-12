@@ -158,6 +158,9 @@
     },
     {
       "path": "./libs/adapters/launcher-site-archive"
+    },
+    {
+      "path": "./libs/adapters/sentry-error-reporter"
     }
   ],
   "compilerOptions": {}

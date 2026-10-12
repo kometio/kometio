@@ -279,6 +279,7 @@ libs/            see docs/libs.md for the full index (every lib's README,
     preview-token-adapter/     stateless HMAC-signed draft-preview tokens
     log-email-adapter/         EmailPort that writes to a log (no mail server)
     smtp-email-adapter/        EmailPort via nodemailer
+    sentry-error-reporter/     ErrorReporterPort — Sentry, only when SENTRY_DSN is set (ADR-0114)
     local-disk-media-storage/, s3-media-storage/  MediaStoragePort implementations
     sharp-image-optimizer/                        ImageOptimizerPort, given to both of them
     local-disk-attachment-storage/, s3-attachment-storage/  form file-upload storage

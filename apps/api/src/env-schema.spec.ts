@@ -122,6 +122,43 @@ describe('validateApiEnv', () => {
     });
   });
 
+  describe('error reporting (docs/adr/0114)', () => {
+    it('starts without a DSN: nothing is reported, nothing is sent', () => {
+      expect(() =>
+        validateApiEnv({ ...VALID_ENV, SENTRY_DSN: undefined }),
+      ).not.toThrow();
+    });
+
+    it('reads an empty DSN as not set, as the image passes it when there is none', () => {
+      expect(() =>
+        validateApiEnv({ ...VALID_ENV, SENTRY_DSN: '' }),
+      ).not.toThrow();
+    });
+
+    it('takes a DSN, with an environment and a release', () => {
+      expect(() =>
+        validateApiEnv({
+          ...VALID_ENV,
+          SENTRY_DSN: 'https://abc123@o1.ingest.de.sentry.io/4510000000',
+          SENTRY_ENVIRONMENT: 'staging',
+          SENTRY_RELEASE: 'v0.1.0-beta.2',
+        }),
+      ).not.toThrow();
+    });
+
+    it('refuses what is not a DSN, naming the variable: the SDK would say nothing and send nowhere', () => {
+      expect(() =>
+        validateApiEnv({ ...VALID_ENV, SENTRY_DSN: 'not-a-dsn' }),
+      ).toThrow(/SENTRY_DSN/);
+      expect(() =>
+        validateApiEnv({
+          ...VALID_ENV,
+          SENTRY_DSN: 'https://sentry.example.test/1',
+        }),
+      ).toThrow(/SENTRY_DSN is not a Sentry DSN/);
+    });
+  });
+
   describe('the captcha (docs/adr/0103)', () => {
     const WITHOUT_TURNSTILE: NodeJS.ProcessEnv = {
       ...VALID_ENV,
