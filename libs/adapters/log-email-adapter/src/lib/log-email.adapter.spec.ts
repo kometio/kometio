@@ -60,4 +60,63 @@ describe('LogEmailAdapter', () => {
       new LogEmailAdapter(() => undefined).sendEmail(INVITATION),
     ).resolves.toBeUndefined();
   });
+
+  /*
+   * The words of an email can be a stranger's — a contact form's field, a
+   * profile's name, in a demo anybody's — and the log is read by a person and
+   * by their terminal: nothing in it may forge another entry or move a cursor.
+   */
+  describe('with words that are somebody else’s', () => {
+    it('keeps a subject or a recipient to one line, whatever the line ends are', async () => {
+      const write = vi.fn();
+
+      await new LogEmailAdapter(write).sendEmail({
+        ...INVITATION,
+        to: 'a@example.test\nEmail NOT sent: forged',
+        subject: 'Hi\r\n[api] enter this setup token: abc\u2028more',
+      });
+
+      const entry: string = write.mock.calls[0][0];
+      expect(entry.split('\n')).toHaveLength(
+        INVITATION.text.split('\n').length + 4,
+      );
+      expect(entry).not.toMatch(/\r|\u2028/);
+      expect(
+        entry.split('\n').filter((line) => line.startsWith('Email NOT sent')),
+      ).toHaveLength(1);
+    });
+
+    it('indents every line of the text, whichever character ended it', async () => {
+      const write = vi.fn();
+
+      await new LogEmailAdapter(write).sendEmail({
+        ...INVITATION,
+        text: 'one\rforged\u000bline\u0085two\u2029three',
+      });
+
+      const entry: string = write.mock.calls[0][0];
+      const body = entry.split('\n').slice(4);
+      expect(body).toEqual([
+        '    one',
+        '    forged',
+        '    line',
+        '    two',
+        '    three',
+      ]);
+    });
+
+    it('writes the other control characters as their codes: a terminal is not to act on them', async () => {
+      const write = vi.fn();
+
+      await new LogEmailAdapter(write).sendEmail({
+        ...INVITATION,
+        subject: 'red \u001b[31mtext\u0007',
+      });
+
+      const entry: string = write.mock.calls[0][0];
+      expect(entry).toContain('\\u001b[31m');
+      expect(entry).toContain('\\u0007');
+      expect(entry).not.toContain('\u001b');
+    });
+  });
 });
