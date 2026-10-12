@@ -17,6 +17,11 @@ import {
   pageGroups,
   withTenant,
 } from '@kometio/postgres-db';
+import { pageListStateOf, shownTranslation } from '@kometio/shared-types';
+import {
+  PAGE_LIST_STATE_CASES,
+  buildPageForListStateCase,
+} from '@kometio/testing';
 import {
   createIntegrationSite,
   createIntegrationTenant,
@@ -596,135 +601,115 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
       });
 
       describe('status', () => {
-        const T0 = new Date('2026-01-01T00:00:00Z');
-        const PUBLISHED_AT = new Date('2026-04-01T00:00:00Z');
-        const LATER = new Date('2026-06-01T00:00:00Z');
-
-        /** One page per state and language shape, all findable by one word in their title. */
-        async function seed() {
-          const word = `stato${randomUUID().replace(/-/g, '').slice(0, 10)}`;
-          const make = async (
-            label: string,
-            translations: {
-              locale: string;
-              published?: boolean;
-              diverged?: boolean;
-            }[],
-            sharedChangedAt?: Date,
-          ) => {
-            const group = buildGroup({ now: T0 });
+        /**
+         * The shared cases, which the TypeScript functions and the in-memory
+         * repository answer too (page-list-state-cases.test-fixture.ts in
+         * @kometio/testing): the SQL of the state filter and the rule it
+         * writes again are held to one set of answers.
+         */
+        it.each(PAGE_LIST_STATE_CASES.map((c) => [c.name, c] as const))(
+          '%s',
+          async (_name, listCase) => {
+            const id = randomUUID();
+            const word = `stato${randomUUID().replace(/-/g, '').slice(0, 10)}`;
+            const { group, translations } = buildPageForListStateCase(
+              listCase,
+              {
+                id,
+                tenantId: tenantAId,
+                siteId: siteAId,
+                title: word,
+                translationId: () => randomUUID(),
+              },
+            );
             await groupRepository.add(group);
-            for (const t of translations) {
-              // Created before it is published, as it is in life: a
-              // translation made after its own publication would read as
-              // having changes waiting.
-              const translation = buildTranslation(group.id, {
-                locale: t.locale,
-                seoMeta: { title: `${word} ${label}`, description: '' },
-                now: T0,
-              });
-              if (t.diverged) translation.diverge([], { by: null, now: T0 });
-              if (t.published) {
-                translation.publish([], { by: null, now: PUBLISHED_AT });
-              }
+            for (const translation of translations) {
               await translationRepository.add(translation, null);
             }
-            if (sharedChangedAt) {
-              group.saveContent(
-                [{ id: `b-${label}`, type: 'Text', props: { body: label } }],
-                { by: null, now: sharedChangedAt },
+
+            for (const state of ['draft', 'published', 'pending'] as const) {
+              const result = await groupRepository.listBySiteFiltered(
+                tenantAId,
+                siteAId,
+                { page: 1, pageSize: 100 },
+                {
+                  search: word,
+                  status: { state, defaultLocale: listCase.defaultLocale },
+                },
               );
-              await groupRepository.saveContent(group, groupVersionOf(group));
+
+              expect(result.items.map((item) => item.id).includes(id)).toBe(
+                listCase.expected.state === state,
+              );
             }
-            return group.id;
-          };
-          const pages = {
-            draft: await make('draft', [{ locale: 'it' }]),
-            published: await make('published', [
-              { locale: 'it', published: true },
-            ]),
-            pending: await make(
-              'pending',
-              [{ locale: 'it', published: true }],
-              LATER,
-            ),
-            // Its own structure: what changed in the shared one is not its.
-            divergedIsClean: await make(
-              'diverged',
-              [{ locale: 'it', published: true, diverged: true }],
-              LATER,
-            ),
-            // The default language decides, whatever the others are.
-            defaultWins: await make('default-wins', [
-              { locale: 'it', published: true },
-              { locale: 'en' },
-            ]),
-            // No default language: the first by code — "de" — decides.
-            firstByCode: await make('first-by-code', [
-              { locale: 'en' },
-              { locale: 'de', published: true },
-            ]),
-          };
-          return { word, pages };
-        }
+          },
+        );
 
-        async function idsIn(
-          word: string,
-          state: 'draft' | 'published' | 'pending',
-        ) {
-          const result = await groupRepository.listBySiteFiltered(
-            tenantAId,
-            siteAId,
-            { page: 1, pageSize: 100 },
-            { search: word, status: { state, defaultLocale: 'it' } },
-          );
-          return result.items.map((item) => item.id).sort();
-        }
+        it('agrees with the state the row itself reports, in the language it shows', async () => {
+          const word = `stato${randomUUID().replace(/-/g, '').slice(0, 10)}`;
+          const ids: string[] = [];
+          for (const listCase of PAGE_LIST_STATE_CASES) {
+            const id = randomUUID();
+            ids.push(id);
+            const { group, translations } = buildPageForListStateCase(
+              listCase,
+              {
+                id,
+                tenantId: tenantAId,
+                siteId: siteAId,
+                title: word,
+                translationId: () => randomUUID(),
+              },
+            );
+            await groupRepository.add(group);
+            for (const translation of translations) {
+              await translationRepository.add(translation, null);
+            }
+          }
 
-        it('finds the pages in each state, judged by the language the row shows', async () => {
-          const { word, pages } = await seed();
-
-          expect(await idsIn(word, 'draft')).toEqual([pages.draft].sort());
-          expect(await idsIn(word, 'published')).toEqual(
-            [
-              pages.published,
-              pages.divergedIsClean,
-              pages.defaultWins,
-              pages.firstByCode,
-            ].sort(),
-          );
-          expect(await idsIn(word, 'pending')).toEqual([pages.pending]);
-        });
-
-        it('agrees, page by page, with the state the row itself reports', async () => {
-          const { word, pages } = await seed();
           const all = await groupRepository.listBySiteFiltered(
             tenantAId,
             siteAId,
             { page: 1, pageSize: 100 },
             { search: word },
           );
-          expect(all.items).toHaveLength(Object.keys(pages).length);
+          expect(all.items).toHaveLength(
+            PAGE_LIST_STATE_CASES.filter((c) => c.translations.length > 0)
+              .length,
+          );
 
-          const stateOf = (item: (typeof all.items)[number]) => {
-            const shown =
-              item.translations.find((t) => t.locale === 'it') ??
-              item.translations[0];
-            if (shown?.status !== 'published') return 'draft';
-            return shown.hasUnpublishedChanges ? 'pending' : 'published';
-          };
-          for (const state of ['draft', 'published', 'pending'] as const) {
-            const filtered = await idsIn(word, state);
-            const expected = all.items
-              .filter((item) => stateOf(item) === state)
-              .map((item) => item.id)
-              .sort();
-            expect(filtered).toEqual(expected);
+          for (const item of all.items) {
+            const listCase = PAGE_LIST_STATE_CASES[ids.indexOf(item.id)];
+            const shown = shownTranslation(
+              item.translations,
+              listCase.defaultLocale,
+            );
+            expect(shown?.locale ?? null).toBe(listCase.expected.shown);
+            expect(shown ? pageListStateOf(shown) : null).toBe(
+              listCase.expected.state,
+            );
           }
         });
 
         it('counts the same pages it lists', async () => {
-          const { word } = await seed();
+          const word = `stato${randomUUID().replace(/-/g, '').slice(0, 10)}`;
+          const published = PAGE_LIST_STATE_CASES[1];
+          for (let n = 0; n < 3; n += 1) {
+            const { group, translations } = buildPageForListStateCase(
+              published,
+              {
+                id: randomUUID(),
+                tenantId: tenantAId,
+                siteId: siteAId,
+                title: word,
+                translationId: () => randomUUID(),
+              },
+            );
+            await groupRepository.add(group);
+            for (const translation of translations) {
+              await translationRepository.add(translation, null);
+            }
+          }
 
           const result = await groupRepository.listBySiteFiltered(
             tenantAId,
@@ -737,11 +722,31 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
           );
 
           expect(result.items).toHaveLength(1);
-          expect(result.total).toBe(4);
+          expect(result.total).toBe(3);
         });
 
         it('hands a page’s languages back in the order of their codes, so the first is the one the filter judges', async () => {
-          const { word, pages } = await seed();
+          const word = `stato${randomUUID().replace(/-/g, '').slice(0, 10)}`;
+          const firstByCode = PAGE_LIST_STATE_CASES.find((c) =>
+            c.name.startsWith('without the default language'),
+          );
+          expect(firstByCode).toBeDefined();
+          const id = randomUUID();
+          const { group, translations } = buildPageForListStateCase(
+            firstByCode!,
+            {
+              id,
+              tenantId: tenantAId,
+              siteId: siteAId,
+              title: word,
+              translationId: () => randomUUID(),
+            },
+          );
+          await groupRepository.add(group);
+          // Added in the opposite order to the codes.
+          for (const translation of translations) {
+            await translationRepository.add(translation, null);
+          }
 
           const result = await groupRepository.listBySiteFiltered(
             tenantAId,
@@ -750,9 +755,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
             { search: word },
           );
 
-          const row = result.items.find(
-            (item) => item.id === pages.firstByCode,
-          );
+          const row = result.items.find((item) => item.id === id);
           expect(row?.translations.map((t) => t.locale)).toEqual(['de', 'en']);
         });
       });

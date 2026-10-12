@@ -44,8 +44,9 @@ import {
   type Block,
   type FieldValueOverlay,
   type MediaKind,
+  pageListStateOf,
+  shownTranslation,
   type PageContent,
-  type PageListState,
   type ResponsiveBlockStyle,
 } from '@kometio/shared-types';
 import type {
@@ -174,33 +175,9 @@ function hasChangesWaiting(
   });
 }
 
-/** The order a row's languages come back in, as the adapter's `order by locale`: the first is the one a state filter falls back on. */
+/** The order a row's languages come back in, as the adapter's `order by locale`. */
 function byLocaleCode(a: PageTranslation, b: PageTranslation): number {
   return a.locale < b.locale ? -1 : a.locale > b.locale ? 1 : 0;
-}
-
-/**
- * The language a row shows, and so the one a state filter judges: the
- * site's default when the page has it, else the first by code
- * (`PageGroupStatusFilter` in the port says why). `translations` is
- * already in the order of their codes.
- */
-function shownTranslation(
-  translations: readonly PageTranslation[],
-  defaultLocale: string,
-): PageTranslation | undefined {
-  return (
-    translations.find((translation) => translation.locale === defaultLocale) ??
-    translations[0]
-  );
-}
-
-function listStateOf(
-  translation: PageTranslation,
-  group: PageGroup,
-): PageListState {
-  if (translation.status !== 'published') return 'draft';
-  return hasChangesWaiting(translation, group) ? 'pending' : 'published';
 }
 
 export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
@@ -453,7 +430,13 @@ export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
           translationsByGroup.get(group.id) ?? [],
           defaultLocale,
         );
-        return shown !== undefined && listStateOf(shown, group) === state;
+        return (
+          shown !== undefined &&
+          pageListStateOf({
+            status: shown.status,
+            hasUnpublishedChanges: hasChangesWaiting(shown, group),
+          }) === state
+        );
       });
     }
 

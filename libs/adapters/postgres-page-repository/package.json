@@ -26,6 +26,7 @@
     "drizzle-orm": "^0.45.4"
   },
   "devDependencies": {
+    "@kometio/testing": "workspace:*",
     "dotenv": "^18.0.6"
   }
 }

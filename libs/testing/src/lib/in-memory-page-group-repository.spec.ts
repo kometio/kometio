@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { PageGroupListFilters } from '@kometio/ports';
-import { buildPageGroup, buildPageTranslation } from './entities.test-fixture';
 import {
   InMemoryPageGroupRepository,
   InMemoryPageTranslationRepository,
 } from './in-memory-repositories.test-fixture';
+import {
+  PAGE_LIST_STATE_CASES,
+  buildPageForListStateCase,
+} from './page-list-state-cases.test-fixture';
 
 /*
  * The fake answers the port's list filters in memory, and a spec that goes
@@ -14,25 +17,14 @@ import {
 
 const TENANT = 'tenant-1';
 const SITE = 'site-1';
-const T0 = new Date('2026-01-01T00:00:00Z');
-const PUBLISHED_AT = new Date('2026-04-01T00:00:00Z');
-const LATER = new Date('2026-06-01T00:00:00Z');
 const EVERYTHING = { page: 1, pageSize: 100 };
 
-interface LanguageOf {
-  locale: string;
-  published?: boolean;
-  diverged?: boolean;
-}
-
 interface PageOptions {
-  languages?: LanguageOf[];
+  languages?: { locale: string; published?: boolean }[];
   title?: string;
   parentId?: string;
   createdBy?: string;
   collectionId?: string;
-  /** The shared structure changed at this time, after any publication. */
-  sharedChangedAt?: Date;
 }
 
 async function setup() {
@@ -40,40 +32,27 @@ async function setup() {
   const groups = new InMemoryPageGroupRepository(undefined, translations);
 
   const page = async (id: string, options: PageOptions = {}) => {
-    const group = buildPageGroup({
-      id,
-      tenantId: TENANT,
-      siteId: SITE,
-      parentId: options.parentId ?? null,
-      createdBy: options.createdBy ?? null,
-      collectionId: options.collectionId ?? null,
-      now: T0,
-    });
-    if (options.sharedChangedAt) {
-      group.saveContent(
-        [{ id: `b-${id}`, type: 'Text', props: { body: id } }],
-        { by: null, now: options.sharedChangedAt },
-      );
-    }
-    await groups.add(group);
-    for (const language of options.languages ?? []) {
-      // Created before it is published, as it is in life: a translation
-      // made after its own publication would read as having changes
-      // waiting.
-      const translation = buildPageTranslation({
-        id: `${id}-${language.locale}`,
+    const { group, translations: entities } = buildPageForListStateCase(
+      {
+        name: id,
+        defaultLocale: 'it',
+        translations: options.languages ?? [],
+        expected: { shown: null, state: null },
+      },
+      {
+        id,
         tenantId: TENANT,
         siteId: SITE,
-        pageGroupId: id,
-        locale: language.locale,
-        slug: `${id}-${language.locale}`,
-        seoMeta: { title: options.title ?? id, description: '' },
-        now: T0,
-      });
-      if (language.diverged) translation.diverge([], { by: null, now: T0 });
-      if (language.published) {
-        translation.publish([], { by: null, now: PUBLISHED_AT });
-      }
+        title: options.title,
+        group: {
+          parentId: options.parentId,
+          createdBy: options.createdBy,
+          collectionId: options.collectionId,
+        },
+      },
+    );
+    await groups.add(group);
+    for (const translation of entities) {
       await translations.add(translation, options.parentId ?? null);
     }
     return id;
@@ -84,96 +63,42 @@ async function setup() {
       .map((item) => item.id)
       .sort();
 
-  return { page, idsOf, groups };
+  return { page, idsOf, groups, translations };
 }
 
 describe('InMemoryPageGroupRepository.listBySiteFiltered', () => {
   describe('status', () => {
-    const state = (
-      value: 'draft' | 'published' | 'pending',
-      defaultLocale = 'it',
-    ) => ({ status: { state: value, defaultLocale } });
+    /** The shared cases: the same ones the SQL of the page repository answers (page-list-state-cases.test-fixture.ts). */
+    it.each(PAGE_LIST_STATE_CASES.map((c) => [c.name, c] as const))(
+      '%s',
+      async (_name, listCase) => {
+        const { idsOf, groups, translations } = await setup();
+        const { group, translations: entities } = buildPageForListStateCase(
+          listCase,
+          { id: 'page', tenantId: TENANT, siteId: SITE },
+        );
+        await groups.add(group);
+        for (const translation of entities) {
+          await translations.add(translation, null);
+        }
 
-    async function seed() {
-      const { page, idsOf, groups } = await setup();
-      const pages = {
-        draft: await page('draft', { languages: [{ locale: 'it' }] }),
-        published: await page('published', {
-          languages: [{ locale: 'it', published: true }],
-        }),
-        pending: await page('pending', {
-          languages: [{ locale: 'it', published: true }],
-          sharedChangedAt: LATER,
-        }),
-        // Its own structure: what changed in the shared one is not its.
-        divergedIsClean: await page('diverged', {
-          languages: [{ locale: 'it', published: true, diverged: true }],
-          sharedChangedAt: LATER,
-        }),
-        // The default language decides, whatever the others are.
-        defaultWins: await page('default-wins', {
-          languages: [{ locale: 'it', published: true }, { locale: 'en' }],
-        }),
-        // No default language: the first by code — "de" — decides.
-        firstByCode: await page('first-by-code', {
-          languages: [{ locale: 'en' }, { locale: 'de', published: true }],
-        }),
-        // Nothing to show: it is in no state.
-        noLanguage: await page('no-language'),
-      };
-      return { pages, idsOf, groups };
-    }
+        for (const state of ['draft', 'published', 'pending'] as const) {
+          const found = await idsOf({
+            status: { state, defaultLocale: listCase.defaultLocale },
+          });
 
-    it('finds the pages in each state, judged by the language the row shows', async () => {
-      const { pages, idsOf } = await seed();
-
-      expect(await idsOf(state('draft'))).toEqual([pages.draft]);
-      expect(await idsOf(state('published'))).toEqual(
-        [
-          pages.published,
-          pages.divergedIsClean,
-          pages.defaultWins,
-          pages.firstByCode,
-        ].sort(),
-      );
-      expect(await idsOf(state('pending'))).toEqual([pages.pending]);
-    });
-
-    it('takes the site’s default language wherever the page has it', async () => {
-      const { pages, idsOf } = await seed();
-
-      // With "en" as the default, "default-wins" and "first-by-code" are
-      // judged by their draft English; the pages with no English, by the
-      // only language they have.
-      expect(await idsOf(state('draft', 'en'))).toEqual(
-        [pages.draft, pages.defaultWins, pages.firstByCode].sort(),
-      );
-    });
-
-    it('agrees, page by page, with the state the row itself reports', async () => {
-      const { pages, idsOf, groups } = await seed();
-      const all = await groups.listBySiteFiltered(TENANT, SITE, EVERYTHING, {});
-      expect(all.items).toHaveLength(Object.keys(pages).length);
-
-      const stateOf = (item: (typeof all.items)[number]) => {
-        const shown =
-          item.translations.find((t) => t.locale === 'it') ??
-          item.translations[0];
-        if (!shown) return null;
-        if (shown.status !== 'published') return 'draft';
-        return shown.hasUnpublishedChanges ? 'pending' : 'published';
-      };
-      for (const value of ['draft', 'published', 'pending'] as const) {
-        const expected = all.items
-          .filter((item) => stateOf(item) === value)
-          .map((item) => item.id)
-          .sort();
-        expect(await idsOf(state(value))).toEqual(expected);
-      }
-    });
+          expect(found.includes('page')).toBe(
+            listCase.expected.state === state,
+          );
+        }
+      },
+    );
 
     it('hands a page’s languages back in the order of their codes, so the first is the one the filter judges', async () => {
-      const { pages, groups } = await seed();
+      const { page, groups } = await setup();
+      await page('page', {
+        languages: [{ locale: 'en' }, { locale: 'de', published: true }],
+      });
 
       const result = await groups.listBySiteFiltered(
         TENANT,
@@ -182,8 +107,10 @@ describe('InMemoryPageGroupRepository.listBySiteFiltered', () => {
         {},
       );
 
-      const row = result.items.find((item) => item.id === pages.firstByCode);
-      expect(row?.translations.map((t) => t.locale)).toEqual(['de', 'en']);
+      expect(result.items[0]?.translations.map((t) => t.locale)).toEqual([
+        'de',
+        'en',
+      ]);
     });
 
     it('counts the same pages it lists', async () => {

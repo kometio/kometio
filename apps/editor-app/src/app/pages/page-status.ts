@@ -1,4 +1,4 @@
-import type { PageStatus } from '@kometio/shared-types';
+import { pageListStateOf, type PageStatus } from '@kometio/shared-types';
 
 export interface PageStatusBadge {
   /** The word for the state, as the list and the activity feed both say it. */
@@ -29,10 +29,12 @@ export function pageStatusBadge(
   status: PageStatus,
   hasUnpublishedChanges: boolean,
 ): PageStatusBadge {
-  if (status !== 'published') {
-    return { key: 'pages.list.statusDraft', variant: 'secondary' };
+  switch (pageListStateOf({ status, hasUnpublishedChanges })) {
+    case 'draft':
+      return { key: 'pages.list.statusDraft', variant: 'secondary' };
+    case 'pending':
+      return { key: 'pages.list.statusPendingShort', variant: 'warning' };
+    case 'published':
+      return { key: 'pages.list.statusPublished', variant: 'success' };
   }
-  return hasUnpublishedChanges
-    ? { key: 'pages.list.statusPendingShort', variant: 'warning' }
-    : { key: 'pages.list.statusPublished', variant: 'success' };
 }
