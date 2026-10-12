@@ -281,7 +281,7 @@ libs/            see docs/libs.md for the full index (every lib's README,
     smtp-email-adapter/        EmailPort via nodemailer
     sentry-error-reporter/     ErrorReporterPort — Sentry, only when SENTRY_DSN is set (ADR-0114)
     local-disk-media-storage/, s3-media-storage/  MediaStoragePort implementations
-    sharp-image-optimizer/                        ImageOptimizerPort, given to both of them
+    sharp-image-optimizer/                        ImageOptimizerPort, used by the upload policy
     local-disk-attachment-storage/, s3-attachment-storage/  form file-upload storage
     turnstile-captcha/         CaptchaPort — Cloudflare Turnstile
     altcha-captcha/            CaptchaPort + CaptchaChallengePort — the captcha built into Kometio

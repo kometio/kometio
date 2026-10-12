@@ -1,5 +1,5 @@
 import { headerFooterBlocks, pageBlocks } from '@kometio/block-registry';
-import { isTranslationKey, Translator } from '@kometio/theme-runtime';
+import { isTranslationKey, type Translator } from '@kometio/theme-runtime';
 
 const DESCRIPTOR_BY_TYPE = new Map(
   [...pageBlocks, ...headerFooterBlocks].map((block) => [block.type, block]),
@@ -20,7 +20,7 @@ const DESCRIPTOR_BY_TYPE = new Map(
  */
 export function onlyAllowedChildLabel(
   type: string,
-  locale: string,
+  i18n: Translator,
 ): string | null {
   const allowed = DESCRIPTOR_BY_TYPE.get(type)?.allowedChildTypes;
   if (!allowed || allowed.length !== 1) return null;
@@ -31,7 +31,5 @@ export function onlyAllowedChildLabel(
   // The label is an i18n key on the descriptor (`blocks.tab.label`), the
   // same one the editor's own inserter shows. One this catalogue does not
   // have is shown as it is, which is what the translator would have done.
-  return isTranslationKey(child.label)
-    ? new Translator(locale).t(child.label)
-    : child.label;
+  return isTranslationKey(child.label) ? i18n.t(child.label) : child.label;
 }

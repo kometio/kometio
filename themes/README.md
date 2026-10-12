@@ -408,7 +408,11 @@ Every region receives `ThemeRegionProps` (see
 `libs/theme-runtime`'s `theme-regions.ts`, which is the authority):
 
 - **`locale`**, **`currentPath`** (`Astro.url.pathname`, no trailing slash)
-  and **`i18n`** (core's translator, already bound to `locale`).
+  and **`i18n`** (core's translator, already bound to `locale` and to the
+  site's own language, for a language core has no dictionary of; a block
+  override is handed the same one). Your own `locales.json` goes through
+  `i18n.withDictionaries(strings)`, so that your words and core's come out in
+  the same language.
 - **`route`** — `'page' | 'search' | 'error'`. Regions are never rendered
   on the 500 page at all: that page is the last error handler, and a throw
   there has nowhere left to propagate.

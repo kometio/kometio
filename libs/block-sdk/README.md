@@ -106,7 +106,8 @@ can trace every step against actual code instead of a hypothetical. To add
 a block of your own, in order:
 
 1. **Schema** — a `z.object({...})` + inferred type, in
-   `libs/shared-types/src/lib/content-model.ts` (see `calloutPropsSchema`),
+   the file of its family in `libs/shared-types/src/lib/` (see
+   `calloutPropsSchema` in `marketing-blocks.ts`),
    and its entry in `BLOCK_PROPS_SCHEMAS`
    (`libs/shared-types/src/lib/block-props-schemas.ts`), which is what the
    API and the site validate a saved block's props against.

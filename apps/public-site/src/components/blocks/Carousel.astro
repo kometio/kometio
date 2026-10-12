@@ -1,15 +1,16 @@
 ---
 import type { CarouselProps } from '@kometio/shared-types';
 import CollectionLayout from '../CollectionLayout.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = CarouselProps & {
   editable?: boolean;
   hasChildren?: boolean;
   instanceClass?: string | null;
-  locale: string;
+  i18n: Translator;
 };
 
-const { display, editable, hasChildren, instanceClass, locale } = Astro.props;
+const { display, editable, hasChildren, instanceClass, i18n } = Astro.props;
 ---
 
 <CollectionLayout
@@ -18,7 +19,7 @@ const { display, editable, hasChildren, instanceClass, locale } = Astro.props;
   editable={editable}
   hasChildren={hasChildren}
   instanceClass={instanceClass}
-  locale={locale}
+  i18n={i18n}
 >
   <slot />
 </CollectionLayout>

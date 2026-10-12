@@ -2,7 +2,7 @@ import type { BlockDescriptor } from '../field-types';
 import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
 import { BlockStyleRegistry } from '../block-style-registry';
 
-// `label` is the whole of `TabProps` in the domain (content-model.ts):
+// `label` is the whole of `TabProps` in the domain (layout-blocks.ts):
 // TabProps = { label: string }. Tab has no `children` prop separate from
 // the real Block.children, so it needs no type of its own here.
 export const tabBlock: BlockDescriptor<{ label: string }> = {

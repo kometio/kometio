@@ -388,6 +388,14 @@ check "and the installation has one tenant, so it can be served" \
   test "$(docker exec "$NAME" psql -h /run/postgresql -U kometio -d kometio -Atc 'select count(*) from tenants')" = 1
 check "the site holds the address it was given" sh -c "curl -s -b '$COOKIES' '${API_URL}/sites/current' | grep -q '\"domain\":\"${SITE_DOMAIN}\"'"
 check "the site answers at its address at once, with its name" sh -c "curl -sL '${SITE_URL}/' | grep -q '<title>Check Site'"
+# The bundles carry the hash of their content in their names, so they are kept
+# for good; a page is rendered per request (its policy has a nonce of its own)
+# and says nothing of the sort.
+SITE_BUNDLE="$(curl -sL "${SITE_URL}/" | grep -o '/_astro/[^"]*\.css' | head -1)"
+check "the site's hashed bundles are kept for good" \
+  sh -c "curl -sI '${SITE_URL}${SITE_BUNDLE}' | tr -d '\r' | grep -qi '^cache-control: public, max-age=31536000, immutable$'"
+check "and a page is not" \
+  sh -c "! curl -sIL '${SITE_URL}/' | grep -qi '^cache-control: .*immutable'"
 # A setup form that sends a name nothing would match is refused, not stored.
 check "an address that is not a hostname is refused (400)" test "$(status_code -H 'content-type: application/json' -d '{"setupToken":"x","siteName":"x","defaultLocale":"en","domain":"https://nope.test/","adminEmail":"a@example.test","adminPassword":"a-long-enough-password"}' "${API_URL}/setup")" = 400
 check "the new session is valid" test "$(status_code -b "$COOKIES" "${API_URL}/auth/session")" = 200

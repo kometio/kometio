@@ -15,16 +15,15 @@
  * `show` is computed by the caller from `editable`, the same way
  * `EmptyContainerHint` does it.
  */
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 export interface Props {
   show: boolean;
   type: string;
-  locale: string;
+  i18n: Translator;
 }
 
-const { show, type, locale } = Astro.props;
-const i18n = new Translator(locale);
+const { show, type, i18n } = Astro.props;
 ---
 
 {

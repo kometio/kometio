@@ -6,7 +6,11 @@ import {
   User,
   UserSlugAlreadyExistsError,
 } from '@kometio/domain-core';
-import { InMemoryMediaStorage, InMemoryUserRepository } from '@kometio/testing';
+import {
+  InMemoryImageOptimizer,
+  InMemoryMediaStorage,
+  InMemoryUserRepository,
+} from '@kometio/testing';
 import {
   changeAccountAvatar,
   changeAccountLanguage,
@@ -30,6 +34,7 @@ describe('account profile', () => {
   let deps: {
     userRepository: InMemoryUserRepository;
     mediaStorage: InMemoryMediaStorage;
+    imageOptimizer: InMemoryImageOptimizer;
   };
 
   async function seedUser(
@@ -70,6 +75,7 @@ describe('account profile', () => {
     deps = {
       userRepository: new InMemoryUserRepository(),
       mediaStorage: new InMemoryMediaStorage(),
+      imageOptimizer: new InMemoryImageOptimizer(),
     };
   });
 
@@ -197,12 +203,13 @@ describe('account profile', () => {
         });
 
       const first = await upload();
-      expect(first.avatarUrl).toBe('https://fake-storage.test/fake-1.webp');
+      const firstKey = deps.mediaStorage.puts[0]?.key ?? '';
+      expect(first.avatarUrl).toBe(`https://fake-storage.test/${firstKey}`);
       // The person's own file name is not what storage keeps.
-      expect(deps.mediaStorage.uploads[0]?.filename).not.toContain('me');
+      expect(firstKey).toMatch(/^[0-9a-f-]{36}\.webp$/);
 
       await upload();
-      expect(deps.mediaStorage.deletedKeys).toEqual(['fake-1.webp']);
+      expect(deps.mediaStorage.deletedKeys).toEqual([firstKey]);
     });
 
     it('refuses anything whose bytes are not an image, whatever it is called', async () => {
@@ -217,7 +224,7 @@ describe('account profile', () => {
           data: new TextEncoder().encode('<svg onload="alert(1)"></svg>'),
         }),
       ).rejects.toThrow(AvatarNotAnImageError);
-      expect(deps.mediaStorage.uploads).toEqual([]);
+      expect(deps.mediaStorage.puts).toEqual([]);
     });
 
     it('refuses a picture larger than the library would take', async () => {
@@ -234,7 +241,7 @@ describe('account profile', () => {
           data: oversized,
         }),
       ).rejects.toThrow(MediaTooLargeError);
-      expect(deps.mediaStorage.uploads).toEqual([]);
+      expect(deps.mediaStorage.puts).toEqual([]);
     });
 
     it('goes back to no picture and deletes the stored one', async () => {
@@ -253,7 +260,9 @@ describe('account profile', () => {
       });
 
       expect(profile.avatarUrl).toBeNull();
-      expect(deps.mediaStorage.deletedKeys).toEqual(['fake-1.webp']);
+      expect(deps.mediaStorage.deletedKeys).toEqual([
+        deps.mediaStorage.puts[0]?.key,
+      ]);
     });
   });
   describe('the language', () => {

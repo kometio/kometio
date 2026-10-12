@@ -745,19 +745,9 @@ importers:
 
   libs/adapters/local-disk-media-storage:
     dependencies:
-      '@kometio/domain-core':
-        specifier: workspace:*
-        version: link:../../domain-core
       '@kometio/ports':
         specifier: workspace:*
         version: link:../../ports
-    devDependencies:
-      '@kometio/sharp-image-optimizer':
-        specifier: workspace:*
-        version: link:../sharp-image-optimizer
-      sharp:
-        specifier: ^0.35.5
-        version: 0.35.5(@types/node@26.6.4)
 
   libs/adapters/log-email-adapter:
     dependencies:
@@ -1078,19 +1068,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.1148.0
         version: 3.1148.0
-      '@kometio/domain-core':
-        specifier: workspace:*
-        version: link:../../domain-core
       '@kometio/ports':
         specifier: workspace:*
         version: link:../../ports
-    devDependencies:
-      '@kometio/sharp-image-optimizer':
-        specifier: workspace:*
-        version: link:../sharp-image-optimizer
-      sharp:
-        specifier: ^0.35.5
-        version: 0.35.5(@types/node@26.6.4)
 
   libs/adapters/sentry-error-reporter:
     dependencies:

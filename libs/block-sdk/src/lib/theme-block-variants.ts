@@ -1,3 +1,9 @@
+import {
+  DEFAULT_VARIANT,
+  blockTypeToClassName,
+  blockVariantNameSchema,
+} from '@kometio/shared-types';
+
 /**
  * A theme adding named looks to a block type core already ships
  * (ADR-0047's fourth decision, under ADR-0048's additive rule).
@@ -50,9 +56,16 @@ export interface ThemeBlockVariantError {
   message: string;
 }
 
-const VARIANT_NAME = /^[a-z][a-z0-9-]{0,63}$/;
-/** Reserved for the type's own look — `DEFAULT_VARIANT` in @kometio/shared-types, repeated rather than imported: this SDK stays free of that dependency so a theme can be built outside the monorepo (ADR-0037). */
-const RESERVED_VARIANT = 'default';
+/**
+ * A well-formed variant name, the reserved word included: the schema in
+ * `shared-types` refuses `default` as a name, and here it is a name of its
+ * own that has a message of its own (it is the type's own look, not a typo).
+ */
+function isVariantName(value: string): boolean {
+  return (
+    value === DEFAULT_VARIANT || blockVariantNameSchema.safeParse(value).success
+  );
+}
 
 /**
  * Shapes an `import.meta.glob({ eager: true })` map of
@@ -114,12 +127,12 @@ export function validateThemeVariantExtensions(
 
     const hidden = new Set<string>();
     for (const value of extension.hides) {
-      if (value === RESERVED_VARIANT) {
+      if (value === DEFAULT_VARIANT) {
         errors.push({
           blockType: extension.blockType,
-          message: `variant "${RESERVED_VARIANT}" is the block type's own look and cannot be hidden`,
+          message: `variant "${DEFAULT_VARIANT}" is the block type's own look and cannot be hidden`,
         });
-      } else if (!VARIANT_NAME.test(value)) {
+      } else if (!isVariantName(value)) {
         errors.push({
           blockType: extension.blockType,
           message: `hidden variant "${value}" is not a variant name`,
@@ -135,17 +148,17 @@ export function validateThemeVariantExtensions(
 
     const seen = new Set<string>();
     for (const variant of extension.variants) {
-      if (!VARIANT_NAME.test(variant.value)) {
+      if (!isVariantName(variant.value)) {
         errors.push({
           blockType: extension.blockType,
           message: `variant "${variant.value}" must be lower case letters, digits and dashes, starting with a letter — it becomes a CSS class`,
         });
         continue;
       }
-      if (variant.value === RESERVED_VARIANT) {
+      if (variant.value === DEFAULT_VARIANT) {
         errors.push({
           blockType: extension.blockType,
-          message: `variant "${RESERVED_VARIANT}" is reserved for the block type's own look`,
+          message: `variant "${DEFAULT_VARIANT}" is reserved for the block type's own look`,
         });
         continue;
       }
@@ -221,11 +234,6 @@ export function checkVariantsAgainstCore(
   });
 }
 
-/** `Button` → `kometio-button`, `FeatureGrid` → `kometio-feature-grid`: the class a block's looks hang from. Repeated from @kometio/shared-types for the same reason as `RESERVED_VARIANT`. */
-function blockClassName(blockType: string): string {
-  return `kometio-${blockType.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}`;
-}
-
 /**
  * A theme that replaces a core block (`<Type>.astro`) draws that block's
  * looks itself, so each of them needs a rule there —
@@ -249,7 +257,7 @@ export function checkOverridesDrawVariants(
       extensions.find((extension) => extension.blockType === blockType)
         ?.hides ?? [],
     );
-    const className = blockClassName(blockType);
+    const className = blockTypeToClassName(blockType);
     return (coreVariantsByType[blockType] ?? [])
       .filter(
         (variant) =>

@@ -1,20 +1,20 @@
 ---
 import type { BuyButtonProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import { resolveThemeBlockOverride } from '../../lib/resolve-theme-block-override';
 import ButtonCore from './Button.astro';
 import { delegatedRootClass } from '../../lib/delegated-root-class';
 
 type Props = BuyButtonProps & {
   locale: string;
+  i18n: Translator;
   themeName: string;
   instanceClass?: string | null;
   variantClass?: string | null;
 };
 
-const { label, url, price, currency, locale, themeName, instanceClass } =
+const { label, url, price, currency, locale, i18n, themeName, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 // The theme's Button when it has one: a buy button that looks different
 // from every other button on the site would read as a different kind of
 // thing.

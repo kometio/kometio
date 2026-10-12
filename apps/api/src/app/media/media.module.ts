@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AdaptersModule } from '../adapters/adapters.module';
 import {
+  IMAGE_OPTIMIZER,
   MEDIA_REPOSITORY,
   MEDIA_STORAGE,
   MEDIA_USAGE_PORT,
@@ -30,6 +31,7 @@ import { MEDIA_DEPS } from './media.tokens';
       siteRepository: SITE_REPOSITORY,
       mediaRepository: MEDIA_REPOSITORY,
       mediaStorage: MEDIA_STORAGE,
+      imageOptimizer: IMAGE_OPTIMIZER,
       mediaUsage: MEDIA_USAGE_PORT,
     }),
   ],

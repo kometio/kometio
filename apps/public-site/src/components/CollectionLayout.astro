@@ -1,6 +1,6 @@
 ---
 import type { CollectionDisplay } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import EmptyContainerHint from './EmptyContainerHint.astro';
 
 /**
@@ -25,7 +25,7 @@ interface Props {
   editable?: boolean;
   hasChildren?: boolean;
   instanceClass?: string | null;
-  locale: string;
+  i18n: Translator;
   /**
    * How far one press of prev/next moves. `item` steps by the width of a
    * single child, which is what a carousel of cards should do; `track`
@@ -42,11 +42,10 @@ const {
   editable,
   hasChildren,
   instanceClass,
-  locale,
+  i18n,
   step = 'item',
   emptyChildLabel,
 } = Astro.props;
-const i18n = new Translator(locale);
 // Nav buttons belong to the scrolling arrangements, and only once there
 // is something to scroll.
 const scrollable = display !== 'grid';
@@ -82,7 +81,7 @@ const showNav = scrollable && hasChildren;
   }
   {!hasChildren && <EmptyContainerHint
   show={Boolean(editable)}
-  locale={locale}
+  i18n={i18n}
   childLabel={emptyChildLabel}
 />}
   {

@@ -36,7 +36,10 @@ for why, and `docs/development.md` for how to run it locally alongside
    `locale`/`translations`/`site`/`ancestors`/`currentPageTitle` are threaded
    through every recursive `BlockRenderer` call (not re-fetched per block) so
    that nested blocks like `LanguageSwitcher` or `Breadcrumb` — which can sit
-   inside a `Nav` — still have what they need. Response shapes themselves
+   inside a `Nav` — still have what they need. Every block is also handed
+   `i18n`, core's strings in the page's language and, for one with no
+   dictionary, the site's own ([ADR-0112](../../docs/adr/0112-a-language-nobody-translated-is-read-in-the-sites-own.md));
+   a block does not build a translator itself. Response shapes themselves
    (`PublishedPage`, `PublishedSite`, ...) are shared Zod schemas from
    `@kometio/shared-types`, parsed at the network boundary instead of just
    cast — see

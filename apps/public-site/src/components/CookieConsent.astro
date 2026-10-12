@@ -8,19 +8,20 @@
 // `settings.enabled` is true — see both PageLayout.astro call sites.
 import type { CookieBannerSettings } from '@kometio/shared-types';
 import { localePath } from '@kometio/theme-runtime';
-import { Translator, type TranslationKey } from '@kometio/theme-runtime';
+import type { Translator, TranslationKey } from '@kometio/theme-runtime';
 import { COOKIE_CONSENT_DISMISS_SCRIPT } from './cookie-consent-dismiss-script';
 import { COOKIE_CONSENT_PANEL_SCRIPT } from './cookie-consent-panel-script';
 
 interface Props {
   settings: CookieBannerSettings;
   locale: string;
+  i18n: Translator;
   privacyPolicySlug: string | null;
   cookiePolicySlug: string | null;
 }
 
-const { settings, locale, privacyPolicySlug, cookiePolicySlug } = Astro.props;
-const i18n = new Translator(locale);
+const { settings, locale, i18n, privacyPolicySlug, cookiePolicySlug } =
+  Astro.props;
 
 // copyOverrides wins field-by-field over the built-in dictionary (a site
 // can enable a locale, e.g. fr, the dictionary has nothing for) — see

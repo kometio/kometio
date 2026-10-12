@@ -11,10 +11,11 @@
 // content primitive).
 import type { LanguageSwitcherProps } from '@kometio/shared-types';
 import type { PublishedPageTranslation, PublishedSite } from '@kometio/api-contracts';
-import { languageLinks, Translator } from '@kometio/theme-runtime';
+import { languageLinks, type Translator } from '@kometio/theme-runtime';
 
 interface Props extends LanguageSwitcherProps {
   locale: string;
+  i18n: Translator;
   translations: PublishedPageTranslation[];
   site: PublishedSite;
   /**
@@ -27,12 +28,11 @@ interface Props extends LanguageSwitcherProps {
   instanceClass?: string | null;
 }
 
-const { position, visibility, locale, translations, site, instanceClass } =
+const { position, visibility, locale, i18n, translations, site, instanceClass } =
   Astro.props;
 
 const links = languageLinks(site, translations);
 
-const i18n = new Translator(locale);
 const globeSvg = Astro.locals.resolveIcon('globe', site.themeName);
 
 // Exactly 2 enabled locales (this site's real config, and the common

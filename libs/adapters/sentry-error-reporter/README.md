@@ -2,7 +2,7 @@
 
 `ErrorReporterPort` implementation on the Sentry SDK: where an error nobody
 expected is sent, when the deployment has somewhere to send it
-([ADR-0114](../../../docs/adr/0114-unexpected-errors-are-reported-only-where-the-deployment-says.md)).
+([ADR-0114](../../../docs/adr/0114-unexpected-errors-go-where-the-deployment-says.md)).
 Off unless `SENTRY_DSN` is set; with none, nothing is started and nothing is
 sent.
 

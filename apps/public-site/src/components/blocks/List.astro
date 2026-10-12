@@ -2,18 +2,19 @@
 import { parseMediaIcon, type ListProps } from '@kometio/shared-types';
 import { siteIconImageUrl } from '../../lib/media-icon-url';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = ListProps & {
   /** Resolved by BlockRenderer from the `icon` prop (docs/adr/0023). */
   iconSvg?: string | null;
-  locale?: string;
+  i18n: Translator;
   emptyChildLabel?: string | null;
   editable?: boolean;
   hasChildren?: boolean;
   instanceClass?: string | null;
 };
 
-const { marker, icon, iconSvg, locale, emptyChildLabel, editable, hasChildren, instanceClass } =
+const { marker, icon, iconSvg, i18n, emptyChildLabel, editable, hasChildren, instanceClass } =
   Astro.props;
 
 // A numbered list is an <ol>, so a screen reader says "item 2 of 5"; the
@@ -54,7 +55,7 @@ const markerStyle = mediaIcon
   <slot />
   <EmptyContainerHint
     show={!hasChildren && Boolean(editable)}
-    locale={locale}
+    i18n={i18n}
     childLabel={emptyChildLabel}
   />
 </Tag>

@@ -1,14 +1,15 @@
 ---
 import type { MasonryGalleryProps } from '@kometio/shared-types';
 import Gallery from './Gallery.astro';
+import type { Translator } from '@kometio/theme-runtime';
 import { delegatedRootClass } from '../../lib/delegated-root-class';
 
 type Props = MasonryGalleryProps & {
-  locale: string;
+  i18n: Translator;
   instanceClass?: string | null;
 };
 
-const { images, columns, lightbox, locale, instanceClass } = Astro.props;
+const { images, columns, lightbox, i18n, instanceClass } = Astro.props;
 ---
 
 {/*
@@ -23,7 +24,7 @@ const { images, columns, lightbox, locale, instanceClass } = Astro.props;
   columns={columns}
   aspectRatio="original"
   lightbox={lightbox}
-  locale={locale}
+  i18n={i18n}
   instanceClass={delegatedRootClass('kometio-masonry-gallery', instanceClass)}
   layout="masonry"
 />

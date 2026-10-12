@@ -152,7 +152,7 @@ site would not have. The build refuses a theme whose `package.json` lists
 anything more.
 
 - `@kometio/theme-runtime` — the region props, `localePath`, the
-  `DictionaryTranslator` for your own strings
+  `i18n` translator and its `withDictionaries` for your own strings
 - `@kometio/shared-types` — every block's props type
 - `@kometio/block-sdk` — `defineBlock`, field types, `CORE_BLOCK_TYPES`, and
   `z` for a block schema of your own (core's zod — never add zod yourself)
@@ -169,16 +169,19 @@ go in a `locales.json` next to `theme.json`, one object per language:
 
 ```astro
 ---
-import { DictionaryTranslator } from '@kometio/theme-runtime';
 import strings from '../locales.json';
-const t = new DictionaryTranslator(Astro.props.locale, strings);
+const t = Astro.props.i18n.withDictionaries(strings);
 ---
 <a rel="next">{t.t('next')}</a>
 ```
 
-A language the file does not have falls back to Italian, then English.
-Core's own dictionary (the `i18n` a region receives) is for core's words;
-a theme's never go there.
+A language the file does not have falls back to the site's own language,
+then English — the same chain core's words follow, which is why the
+dictionaries are bound to the `i18n` a region receives rather than built
+from `locale` alone (`new DictionaryTranslator(locale, strings)` still
+works, and ends in English where it has no site to ask). A block override
+is handed the same `i18n`. Core's own dictionary is for core's words; a
+theme's never go there.
 
 Your `env.d.ts` needs exactly two lines:
 
