@@ -12,7 +12,7 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   type SubscribeNewsletterBody,
   subscribeNewsletterBodySchema,
-} from './public-newsletter.schemas';
+} from '@kometio/api-contracts';
 import type { PublicNewsletterDeps } from './public-newsletter.deps';
 import { PUBLIC_NEWSLETTER_DEPS } from './public-newsletter.tokens';
 

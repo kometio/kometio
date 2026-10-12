@@ -8,3 +8,8 @@ export const subscribeNewsletterBodySchema = z.object({
 export type SubscribeNewsletterBody = z.infer<
   typeof subscribeNewsletterBodySchema
 >;
+
+/** What a client sends: the honeypot and the captcha token may be left out. */
+export type SubscribeNewsletterRequest = z.input<
+  typeof subscribeNewsletterBodySchema
+>;

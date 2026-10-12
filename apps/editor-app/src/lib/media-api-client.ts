@@ -4,6 +4,7 @@ import {
   type MediaRecord,
   type MediaUsage,
   type PaginatedMedia,
+  type UpdateMediaBody,
   mediaKindCountsSchema,
   mediaRecordSchema,
   mediaUsageSchema,
@@ -74,7 +75,7 @@ export async function getMedia(id: string): Promise<MediaRecord> {
 /** What a person writes about a file. Neither reaches a page that has already picked it. */
 export async function updateMedia(
   id: string,
-  changes: { filename?: string; alt?: string },
+  changes: UpdateMediaBody,
 ): Promise<MediaRecord> {
   return mediaRecordSchema.parse(
     await request(`/media/${id}`, {

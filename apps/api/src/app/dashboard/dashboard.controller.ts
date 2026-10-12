@@ -5,7 +5,7 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   type GetDashboardStatsQuery,
   getDashboardStatsQuerySchema,
-} from './dashboard.schemas';
+} from '@kometio/api-contracts';
 import type { DashboardDeps } from './dashboard.deps';
 import { DASHBOARD_DEPS } from './dashboard.tokens';
 import { TenantId } from '../auth/session-identity.decorator';

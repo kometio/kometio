@@ -23,7 +23,7 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   type SubmitFormBody,
   submitFormBodySchema,
-} from './public-forms.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import {
   AttachmentQuotaGuard,

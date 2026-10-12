@@ -4,6 +4,8 @@ import { requireEnv } from '@kometio/env-config';
 import {
   PUBLIC_API_SERVICE_TOKEN_HEADER,
   PUBLIC_API_VISITOR_IP_HEADER,
+  type SubmitFormRequest,
+  type SubscribeNewsletterRequest,
 } from '@kometio/api-contracts';
 import { currentVisitorIp } from './request-context';
 import { pageContentSchema } from '@kometio/shared-types';
@@ -517,12 +519,8 @@ export async function uploadFormAttachment(
   return uploadedFormAttachmentSchema.parse(await res.json());
 }
 
-export interface SubmitPublicFormInput {
-  pageId: string | null;
-  values: Record<string, unknown>;
-  honeypot: string;
-  captchaToken: string;
-}
+/** What the proxy endpoint sends the API for a form: the contract's, and every field is given. */
+export type SubmitPublicFormInput = Required<SubmitFormRequest>;
 
 export type SubmitPublicFormResult =
   { ok: true } | { ok: false; status: number };
@@ -546,11 +544,8 @@ export async function submitPublicForm(
   return { ok: false, status: res.status };
 }
 
-export interface SubscribeNewsletterInput {
-  email: string;
-  honeypot: string;
-  captchaToken: string;
-}
+/** What the proxy endpoint sends the API for a signup: the contract's, and every field is given. */
+export type SubscribeNewsletterInput = Required<SubscribeNewsletterRequest>;
 
 export type SubscribeNewsletterResult =
   { ok: true } | { ok: false; status: number };

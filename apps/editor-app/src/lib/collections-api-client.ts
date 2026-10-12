@@ -1,6 +1,8 @@
 import {
   collectionRecordSchema,
   type CollectionRecord,
+  type CreateCollectionBody,
+  type UpdateCollectionBody,
 } from '@kometio/api-contracts';
 import { request, send } from './http-client';
 import { z } from 'zod';
@@ -16,11 +18,7 @@ export async function listCollections(
     .parse(await request(`/collections?siteId=${encodeURIComponent(siteId)}`));
 }
 
-export interface CreateCollectionInput {
-  siteId: string;
-  name: string;
-  icon?: string;
-}
+export type CreateCollectionInput = CreateCollectionBody;
 
 export async function createCollection(
   input: CreateCollectionInput,
@@ -35,7 +33,7 @@ export async function createCollection(
 
 export async function updateCollection(
   id: string,
-  input: { name?: string; icon?: string; defaultTemplateId?: string | null },
+  input: UpdateCollectionBody,
 ): Promise<CollectionRecord> {
   return collectionRecordSchema.parse(
     await request(`/collections/${id}`, {

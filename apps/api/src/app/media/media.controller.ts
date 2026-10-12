@@ -48,7 +48,7 @@ import {
   updateMediaBodySchema,
   type UploadMediaBody,
   uploadMediaBodySchema,
-} from './media.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { MediaDeps } from './media.deps';

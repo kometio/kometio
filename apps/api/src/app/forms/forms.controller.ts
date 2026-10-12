@@ -47,7 +47,7 @@ import {
   listFormSubmissionsQuerySchema,
   type UpdateFormBody,
   updateFormBodySchema,
-} from './forms.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { FormsDeps } from './forms.deps';
