@@ -1,7 +1,7 @@
 ---
 import type { EventItemProps } from '@kometio/shared-types';
 import { richTextToPlainText } from '@kometio/shared-types';
-import { resolveLinkHref, Translator } from '@kometio/theme-runtime';
+import { resolveLinkHref, type Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 import { GRID_ITEM_SIZES } from '../../lib/image-sizes';
 import {
@@ -13,6 +13,7 @@ import { absoluteSchemaUrl } from '../../lib/schema-org';
 
 type Props = EventItemProps & {
   locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
@@ -31,10 +32,10 @@ const {
   hideWhenPast,
   structuredData,
   locale,
+  i18n,
   editable,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 const dates = readEventDates({ startDate, startTime, endDate });
 const over = isEventOver(dates, new Date().toISOString().slice(0, 10));
 // Hidden from visitors only. In the canvas it stays, marked, or the

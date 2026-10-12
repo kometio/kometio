@@ -13,6 +13,7 @@ import type { BlockDispatchEntry } from '../lib/block-dispatch';
 import { normalizeRenderedProps } from '../lib/normalize-rendered-content';
 import { onlyAllowedChildLabel } from '../lib/only-allowed-child-label';
 import { blockInstanceClassName, blockVariantClassName } from '@kometio/shared-types';
+import { Translator } from '@kometio/theme-runtime';
 import UnrenderableBlockHint from './UnrenderableBlockHint.astro';
 
 interface Props {
@@ -118,9 +119,14 @@ const variantClass = blockVariantClassName(block.type, block.variant);
 
 const entry = dispatch[block.type];
 const Component = entry?.component;
+// The page's language and, for one nobody translated, the site's own: built
+// here once and handed to every block, so that none of them has to know
+// where the second comes from (docs/adr/0112).
+const i18n = new Translator(locale, site.defaultLocale);
 const context: BlockRenderContext = {
   block,
   locale,
+  i18n,
   translations,
   site,
   ancestors,
@@ -180,7 +186,7 @@ const dispatchProps =
             // holding the registry — a block component has no way to ask,
             // and "pick an element" otherwise sends somebody hunting
             // through fifty-four tiles for the one that is allowed.
-            emptyChildLabel: onlyAllowedChildLabel(block.type, locale),
+            emptyChildLabel: onlyAllowedChildLabel(block.type, i18n),
           }
         : {}),
       // docs/adr/0042 — always included, not gated by a dispatch-entry
@@ -201,7 +207,7 @@ const dispatchProps =
     <UnrenderableBlockHint
       show={editable === true}
       type={block.type}
-      locale={locale}
+      i18n={i18n}
     />
   )
 }

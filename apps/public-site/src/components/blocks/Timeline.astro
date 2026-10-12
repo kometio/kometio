@@ -1,9 +1,10 @@
 ---
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 export interface Props {
-  /** The locale this page renders in — see EmptyContainerHint. */
-  locale?: string;
+  /** This page's strings, for the hint an empty container shows — see EmptyContainerHint. */
+  i18n: Translator;
   /** The only child type this container accepts, already translated. */
   emptyChildLabel?: string | null;
   editable?: boolean;
@@ -12,14 +13,14 @@ export interface Props {
   instanceClass?: string | null;
 }
 
-const { editable, hasChildren, instanceClass, locale, emptyChildLabel} = Astro.props;
+const { editable, hasChildren, instanceClass, i18n, emptyChildLabel} = Astro.props;
 ---
 
 <div class:list={['kometio-timeline', instanceClass]} data-kometio-editable-outline={editable && hasChildren ? '' : undefined}>
   <slot />
   <EmptyContainerHint
   show={!hasChildren && Boolean(editable)}
-  locale={locale}
+  i18n={i18n}
   childLabel={emptyChildLabel}
 />
 </div>

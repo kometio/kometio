@@ -1,6 +1,6 @@
 ---
 import type { PageGridProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import {
   gridPageHref,
   paginateGridItems,
@@ -12,6 +12,7 @@ type Props = PageGridProps & {
   instanceClass?: string | null;
   /** The language being rendered, so a date is written the way its readers write dates. */
   locale?: string;
+  i18n: Translator;
   /**
    * Whether a `TermList` on this page may narrow this list.
    *
@@ -32,9 +33,9 @@ const {
   items,
   instanceClass,
   locale,
+  i18n,
   filterable = true,
 } = Astro.props;
-const i18n = new Translator(locale ?? '');
 
 // `items` is resolved server-side (resolvePageGridItems) and is empty
 // both when the term has no pages and when the block has no term yet —

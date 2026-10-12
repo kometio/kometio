@@ -5,18 +5,17 @@ import {
   type FormStep,
 } from '@kometio/shared-types';
 import { getPublicForm } from '../../lib/public-api-client';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import FormFieldComponent from '../parts/FormField.astro';
 import CaptchaWidget from '../parts/CaptchaWidget.astro';
 
 type Props = FormBlockProps & {
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
-  locale: string;
+  i18n: Translator;
 };
 
-const { form: pickedForm, locale, instanceClass } = Astro.props;
-const i18n = new Translator(locale);
+const { form: pickedForm, i18n, instanceClass } = Astro.props;
 const form = pickedForm ? await getPublicForm(pickedForm.formId) : null;
 
 // Read back from the submission proxy's redirect (src/pages/api/forms/[id]/
@@ -171,7 +170,7 @@ if (form && form.steps.length > 0) {
               <FormFieldComponent formId={form.id} field={field} />
             ))
           )}
-          <CaptchaWidget locale={locale} />
+          <CaptchaWidget i18n={i18n} />
           <button
             type="submit"
             class="kometio-form__submit"

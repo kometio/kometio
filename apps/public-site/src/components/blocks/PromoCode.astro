@@ -1,16 +1,16 @@
 ---
 import type { PromoCodeProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = PromoCodeProps & {
   locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
 
-const { code, description, expiresOn, locale, editable, instanceClass } =
+const { code, description, expiresOn, locale, i18n, editable, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 
 // `YYYY-MM-DD`, compared as text — the one date spelling for which that
 // is correct. The last valid day is the day itself, so "until the 30th"

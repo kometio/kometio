@@ -1,6 +1,6 @@
 ---
 import type { Block, GlossaryProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
 import { glossaryIndex } from '../../lib/glossary-index';
 
@@ -8,6 +8,7 @@ type Props = GlossaryProps & {
   /** The terms, read off the block's own children for the index (Faq.astro's reason). */
   items?: Block[];
   locale: string;
+  i18n: Translator;
   editable?: boolean;
   hasChildren?: boolean;
   emptyChildLabel?: string | null;
@@ -18,12 +19,12 @@ const {
   showIndex,
   items = [],
   locale,
+  i18n,
   editable,
   hasChildren,
   emptyChildLabel,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 const index = showIndex ? glossaryIndex(items, locale) : [];
 ---
 
@@ -50,7 +51,7 @@ const index = showIndex ? glossaryIndex(items, locale) : [];
   </dl>
   <EmptyContainerHint
     show={!hasChildren && Boolean(editable)}
-    locale={locale}
+    i18n={i18n}
     childLabel={emptyChildLabel}
   />
 </div>

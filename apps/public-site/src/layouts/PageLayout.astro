@@ -123,7 +123,7 @@ const pageTree = () =>
 const themeBaseTokens = parseRootCustomProperties(
 	getThemeCssRaw(site.themeName),
 );
-const i18n = new Translator(locale);
+const i18n = new Translator(locale, site.defaultLocale);
 
 // The consent banner belongs to a visitor, and the canvas has no visitor.
 // The editor's iframe is sandboxed WITHOUT allow-same-origin (see
@@ -553,6 +553,7 @@ const blockStyleCss =
 				<CookieConsent
 					settings={site.cookieBannerSettings}
 					locale={locale}
+					i18n={i18n}
 					privacyPolicySlug={site.privacyPolicySlug}
 					cookiePolicySlug={site.cookiePolicySlug}
 				/>

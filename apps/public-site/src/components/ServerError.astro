@@ -5,10 +5,12 @@ import { localePath } from '@kometio/theme-runtime';
 // Content-only, same reasoning as NotFound.astro — see ErrorPageShell.astro.
 interface Props {
   locale?: string;
+  /** The site's own language, when there is a site to ask: what a language nobody translated is read in. */
+  siteDefaultLocale?: string | undefined;
 }
 
-const { locale } = Astro.props;
-const i18n = new Translator(locale ?? 'it');
+const { locale, siteDefaultLocale } = Astro.props;
+const i18n = new Translator(locale ?? 'it', siteDefaultLocale);
 const homeHref = locale ? localePath(locale, 'home') : '/';
 ---
 

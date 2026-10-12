@@ -1,17 +1,17 @@
 ---
 import type { DiscountPriceProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import Price from '../Price.astro';
 
 type Props = DiscountPriceProps & {
   locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
 
-const { price, compareAtPrice, currency, note, locale, editable, instanceClass } =
+const { price, compareAtPrice, currency, note, locale, i18n, editable, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 ---
 
 {
@@ -22,6 +22,7 @@ const i18n = new Translator(locale);
         compareAtPrice={compareAtPrice}
         currency={currency}
         locale={locale}
+        i18n={i18n}
         size="large"
       />
       {note && (

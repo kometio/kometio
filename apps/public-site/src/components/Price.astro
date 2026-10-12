@@ -1,6 +1,6 @@
 ---
 import type { Currency } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 /**
  * A price the way this language writes one — "19,90 €" in Italian,
@@ -16,6 +16,7 @@ interface Props {
   compareAtPrice?: number | null;
   currency: Currency;
   locale: string;
+  i18n: Translator;
   /** `large` when the price IS the block (DiscountPrice), `normal` inside a card. */
   size?: 'normal' | 'large';
 }
@@ -25,9 +26,9 @@ const {
   compareAtPrice = null,
   currency,
   locale,
+  i18n,
   size = 'normal',
 } = Astro.props;
-const i18n = new Translator(locale);
 const money = new Intl.NumberFormat(locale || undefined, {
   style: 'currency',
   currency,
