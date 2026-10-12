@@ -64,6 +64,15 @@ not choose.
 
 - A deployment that wants to hear about its errors sets one variable; one that
   does not has the same behaviour as before, plus an unused library.
+- Redaction is best-effort, on the text of an error, and a determined input
+  can be written in a form no rule has seen (every round of review found one
+  more encoding of an address). It is the first of two layers: the Sentry
+  project has its own server-side data scrubbing (Settings → Security &
+  Privacy → Data Scrubber, with Prevent Storing of IP Addresses), which
+  should be on for a project that receives these reports, and which
+  self-hosting.md says. What Kometio does not do is trust either layer with
+  something it could simply not send: nothing of the request, no variables,
+  no breadcrumbs.
 - The messages of unexpected errors are sent, redacted for what they commonly
   carry; an error whose text names something else a person typed would carry
   it. That is the cost of hearing about the error at all, and the reason the
