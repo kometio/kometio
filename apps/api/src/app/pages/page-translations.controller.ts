@@ -31,14 +31,14 @@ import {
   type RollbackToVersionBody,
   rollbackToVersionBodySchema,
   type SaveDivergedPageTranslationContentBody,
-  saveDivergedPageTranslationContentBodySchema,
   type SavePageTranslationFieldValuesBody,
   savePageTranslationFieldValuesBodySchema,
   type RenamePageTranslationBody,
   type UpdatePageTranslationSeoMetaBody,
   renamePageTranslationBodySchema,
   updatePageTranslationSeoMetaBodySchema,
-} from './page-groups.schemas';
+} from '@kometio/api-contracts';
+import { saveDivergedPageTranslationContentBodySchema } from './page-groups.schemas';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { PagesDeps } from './pages.deps';

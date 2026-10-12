@@ -35,6 +35,14 @@ request the API refused at run time, found by a person.
   shape with that field replaced (`.extend`), and the spec that walks the
   API's schemas for a path that lets a `<script>` through keeps finding them
   where it always did.
+- **The bodies that carry block content are `*BodyShape` in the contract**
+  (what a client sends, content as the shared schema reads it) and
+  `*BodySchema` only in the API, where the content has passed the
+  sanitiser: a controller that reached for the contract's shape by mistake
+  has no schema of the name the guard looks for, nor one that is named like
+  an accepting entrance. A body with refinements is extended with
+  `safeExtend`, which keeps them. The spec that walks the API's schemas now
+  walks the reusable sections' too, which it had never done.
 - **The use case keeps its own input type.** The API hands the parsed body
   to it, so the compiler holds the two to each other: a field added to one
   and not the other does not build. There is no third copy.

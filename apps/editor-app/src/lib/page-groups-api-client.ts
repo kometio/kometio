@@ -5,6 +5,19 @@ import {
   type SeoMeta,
 } from '@kometio/shared-types';
 import {
+  type CreatePageGroupBody,
+  type CreatePageGroupTranslationBody,
+  type MoveToCollectionBody,
+  type MoveToParentBody,
+  type RelinkPageTranslationBody,
+  type RenamePageTranslationBody,
+  type ReorderPageGroupsBody,
+  type RollbackToVersionBody,
+  type SaveAsTemplateBody,
+  type SaveDivergedPageTranslationContentBody,
+  type SavePageGroupContentBody,
+  type SavePageTranslationFieldValuesBody,
+  type UpdatePageTranslationSeoMetaBody,
   paginatedPageGroupsSchema,
   pageGroupRecordSchema,
   pageGroupVersionRecordSchema,
@@ -48,21 +61,14 @@ export function getPageGroup(id: string): Promise<PageGroupRecord> {
   return requestGroup(`/page-groups/${id}`);
 }
 
-export interface CreatePageGroupInput {
-  siteId: string;
-  parentId?: string | null;
-  /** Which section of the editor it is being created from — see the Collection entity. */
-  collectionId?: string | null;
-  content?: Block[];
-  /** Start from a copy of this template's published blocks instead — never together with `content` (docs/adr/0072). */
-  templateId?: string;
-  /** The first language, written in the same transaction as the page — required with `templateId`. */
-  translation?: {
-    locale: string;
-    slug: string;
-    seoMeta: SeoMeta;
-  };
-}
+/**
+ * `collectionId`: which section of the editor it is being created from — see
+ * the Collection entity. `templateId` starts from a copy of that template's
+ * published blocks instead, never together with `content` (docs/adr/0072);
+ * `translation` is the first language, written in the same transaction as the
+ * page, and required with `templateId`.
+ */
+export type CreatePageGroupInput = CreatePageGroupBody;
 
 export function createPageGroup(
   input: CreatePageGroupInput,
@@ -123,7 +129,7 @@ export function movePageGroupToCollection(
 ): Promise<PageGroupRecord> {
   return requestGroup(`/page-groups/${id}/collection`, {
     method: 'PATCH',
-    body: JSON.stringify({ collectionId }),
+    body: JSON.stringify({ collectionId } satisfies MoveToCollectionBody),
   });
 }
 
@@ -134,7 +140,7 @@ export function movePageGroupToParent(
 ): Promise<PageGroupRecord> {
   return requestGroup(`/page-groups/${id}/parent`, {
     method: 'PATCH',
-    body: JSON.stringify({ parentId }),
+    body: JSON.stringify({ parentId } satisfies MoveToParentBody),
   });
 }
 
@@ -144,7 +150,7 @@ export function savePageGroupContent(
 ): Promise<PageGroupRecord> {
   return requestGroup(`/page-groups/${id}/content`, {
     method: 'PATCH',
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content } satisfies SavePageGroupContentBody),
   });
 }
 
@@ -159,7 +165,11 @@ export function reorderPageGroups(
 ): Promise<void> {
   return send('/page-groups/reorder', {
     method: 'PATCH',
-    body: JSON.stringify({ siteId, parentId, orderedPageGroupIds }),
+    body: JSON.stringify({
+      siteId,
+      parentId,
+      orderedPageGroupIds,
+    } satisfies ReorderPageGroupsBody),
   });
 }
 
@@ -175,7 +185,7 @@ export async function savePageGroupAsTemplate(
   return reusableSectionRecordSchema.parse(
     await request(`/page-groups/${id}/save-as-template`, {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name } satisfies SaveAsTemplateBody),
     }),
   );
 }
@@ -190,7 +200,7 @@ export function rollbackPageGroupToVersion(
 ): Promise<PageGroupRecord> {
   return requestGroup(`/page-groups/${id}/rollback`, {
     method: 'PATCH',
-    body: JSON.stringify({ versionId }),
+    body: JSON.stringify({ versionId } satisfies RollbackToVersionBody),
   });
 }
 
@@ -208,11 +218,7 @@ export async function listPageGroupTranslations(
   return pageTranslationRecordSchema.array().parse(translations);
 }
 
-export interface CreatePageGroupTranslationInput {
-  locale: string;
-  slug: string;
-  seoMeta: SeoMeta;
-}
+export type CreatePageGroupTranslationInput = CreatePageGroupTranslationBody;
 
 export function createPageGroupTranslation(
   groupId: string,
@@ -232,7 +238,9 @@ export function savePageTranslationFieldValues(
     `/page-groups/translations/${translationId}/field-values`,
     {
       method: 'PATCH',
-      body: JSON.stringify({ fieldValues }),
+      body: JSON.stringify({
+        fieldValues,
+      } satisfies SavePageTranslationFieldValuesBody),
     },
   );
 }
@@ -245,7 +253,9 @@ export function saveDivergedPageTranslationContent(
     `/page-groups/translations/${translationId}/diverged-content`,
     {
       method: 'PATCH',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({
+        content,
+      } satisfies SaveDivergedPageTranslationContentBody),
     },
   );
 }
@@ -256,7 +266,9 @@ export function updatePageTranslationSeoMeta(
 ): Promise<PageTranslationRecord> {
   return requestTranslation(`/page-groups/translations/${translationId}/seo`, {
     method: 'PATCH',
-    body: JSON.stringify({ seoMeta }),
+    body: JSON.stringify({
+      seoMeta,
+    } satisfies UpdatePageTranslationSeoMetaBody),
   });
 }
 
@@ -272,7 +284,10 @@ export function renamePageTranslation(
 ): Promise<PageTranslationRecord> {
   return requestTranslation(`/page-groups/translations/${translationId}/slug`, {
     method: 'PATCH',
-    body: JSON.stringify({ slug, parentGroupId }),
+    body: JSON.stringify({
+      slug,
+      parentGroupId,
+    } satisfies RenamePageTranslationBody),
   });
 }
 
@@ -304,7 +319,10 @@ export function relinkPageTranslation(
 ): Promise<PageTranslationRecord> {
   return requestTranslation(
     `/page-groups/translations/${translationId}/relink`,
-    { method: 'POST', body: JSON.stringify({ fieldValues }) },
+    {
+      method: 'POST',
+      body: JSON.stringify({ fieldValues } satisfies RelinkPageTranslationBody),
+    },
   );
 }
 
@@ -314,7 +332,10 @@ export function rollbackPageTranslationToVersion(
 ): Promise<PageTranslationRecord> {
   return requestTranslation(
     `/page-groups/translations/${translationId}/rollback`,
-    { method: 'PATCH', body: JSON.stringify({ versionId }) },
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ versionId } satisfies RollbackToVersionBody),
+    },
   );
 }
 

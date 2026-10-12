@@ -42,7 +42,7 @@ import {
   publicPagesTreeQuerySchema,
   type PublicTermByPathQuery,
   publicTermByPathQuerySchema,
-} from './public-pages.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import type { PublicPagesDeps } from './public-pages.deps';
 import { PUBLIC_PAGES_DEPS } from './public-pages.tokens';

@@ -1,12 +1,19 @@
 import { z } from 'zod';
 import * as pageGroupSchemas from '../pages/page-groups.schemas';
+import * as reusableSectionSchemas from '../reusable-sections/reusable-sections.schemas';
 import * as siteLayoutSectionSchemas from '../site-layout-sections/site-layout-sections.schemas';
 import { sanitizedPageContentSchema } from './sanitized-page-content.schema';
 
 const ATTACK = '<p>ciao</p><script>steal()</script>';
 
+/**
+ * The kinds the bodies below ask for: a header or footer's, and a reusable
+ * section's. One fixture cannot be both, so a schema is tried with each.
+ */
+const KINDS = ['header', 'shared'];
+
 /** A body carrying a content tree with one hostile rich text value. */
-function bodyWithHostileContent(): Record<string, unknown> {
+function bodyWithHostileContent(kind: string): Record<string, unknown> {
   return {
     content: [{ id: 'a', type: 'Text', props: { body: ATTACK } }],
     // Enough to satisfy the other keys of every body schema below.
@@ -15,8 +22,30 @@ function bodyWithHostileContent(): Record<string, unknown> {
     slug: 'x',
     title: 'x',
     locale: 'it',
-    kind: 'header',
+    name: 'x',
+    kind,
   };
+}
+
+/** The body the schema accepts, if it accepts one of the fixtures. */
+function acceptedFixture(schema: z.ZodType): Record<string, unknown> | null {
+  for (const kind of KINDS) {
+    const body = bodyWithHostileContent(kind);
+    const parsed = schema.safeParse(body);
+    // Parsing the fixture is not enough: zod drops unknown keys, so a
+    // body that has nothing to do with content — renaming a page, say —
+    // parses it happily and then throws the content away. What makes a
+    // schema an ENTRANCE is that the content survives it.
+    if (
+      parsed.success &&
+      typeof parsed.data === 'object' &&
+      parsed.data !== null &&
+      'content' in parsed.data
+    ) {
+      return body;
+    }
+  }
+  return null;
 }
 
 /**
@@ -25,38 +54,27 @@ function bodyWithHostileContent(): Record<string, unknown> {
  *
  * It does not check a hand-kept list of routes — that list is exactly
  * what goes stale. It walks every schema the API actually exports for
- * these two modules, keeps the ones that accept block content, and
+ * these three modules, keeps the ones that accept block content, and
  * requires each of them to strip a script. A new write path built on the
  * raw `pageContentSchema` fails here on the day it is written, naming
  * itself.
  */
 function contentAcceptingSchemas(
   module: Record<string, unknown>,
-): [string, z.ZodType][] {
-  return Object.entries(module).filter(
-    (entry): entry is [string, z.ZodType] => {
-      const [name, value] = entry;
-      if (!name.endsWith('BodySchema') || !(value instanceof z.ZodType)) {
-        return false;
-      }
-      const parsed = value.safeParse(bodyWithHostileContent());
-      // Parsing the fixture is not enough: zod drops unknown keys, so a
-      // body that has nothing to do with content — renaming a page, say —
-      // parses it happily and then throws the content away. What makes a
-      // schema an ENTRANCE is that the content survives it.
-      return (
-        parsed.success &&
-        typeof parsed.data === 'object' &&
-        parsed.data !== null &&
-        'content' in parsed.data
-      );
-    },
-  );
+): [string, z.ZodType, Record<string, unknown>][] {
+  const found: [string, z.ZodType, Record<string, unknown>][] = [];
+  for (const [name, value] of Object.entries(module)) {
+    if (!name.endsWith('BodySchema') || !(value instanceof z.ZodType)) continue;
+    const body = acceptedFixture(value);
+    if (body) found.push([name, value, body]);
+  }
+  return found;
 }
 
 describe('every API entrance that accepts block content sanitises it', () => {
   const entrances = [
     ...contentAcceptingSchemas(pageGroupSchemas),
+    ...contentAcceptingSchemas(reusableSectionSchemas),
     ...contentAcceptingSchemas(siteLayoutSectionSchemas),
   ];
 
@@ -64,17 +82,20 @@ describe('every API entrance that accepts block content sanitises it', () => {
   // a rename of the schemas, or a change of convention, would otherwise
   // leave it passing while checking nothing at all.
   it('finds the entrances it is supposed to be guarding', () => {
-    expect(entrances.length).toBeGreaterThanOrEqual(4);
+    expect(entrances.length).toBeGreaterThanOrEqual(6);
   });
 
-  it.each(entrances)('%s strips a script from rich text', (_name, schema) => {
-    const parsed = schema.parse(bodyWithHostileContent()) as {
-      content?: { props: Record<string, string> }[];
-    };
-    const body = parsed.content?.[0].props['body'];
-    expect(body).toBe('<p>ciao</p>');
-    expect(body).not.toContain('steal');
-  });
+  it.each(entrances)(
+    '%s strips a script from rich text',
+    (_name, schema, hostile) => {
+      const parsed = schema.parse(hostile) as {
+        content?: { props: Record<string, string> }[];
+      };
+      const body = parsed.content?.[0].props['body'];
+      expect(body).toBe('<p>ciao</p>');
+      expect(body).not.toContain('steal');
+    },
+  );
 });
 
 describe('sanitizedPageContentSchema', () => {

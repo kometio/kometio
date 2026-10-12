@@ -42,7 +42,6 @@ import {
 } from '@kometio/api-contracts';
 import {
   type CreatePageGroupBody,
-  createPageGroupBodySchema,
   type SaveAsTemplateBody,
   saveAsTemplateBodySchema,
   type ListPageGroupsQuery,
@@ -56,6 +55,9 @@ import {
   type RollbackToVersionBody,
   rollbackToVersionBodySchema,
   type SavePageGroupContentBody,
+} from '@kometio/api-contracts';
+import {
+  createPageGroupBodySchema,
   savePageGroupContentBodySchema,
 } from './page-groups.schemas';
 import { UuidParam } from '../uuid-param.decorator';

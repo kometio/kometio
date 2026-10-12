@@ -27,15 +27,15 @@ import {
 import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
-  type GetOrCreateQuery,
-  getOrCreateQuerySchema,
-  type RollbackBody,
-  rollbackBodySchema,
-  type SaveDraftBody,
-  saveDraftBodySchema,
-  type StickyBody,
-  stickyBodySchema,
-} from './site-layout-sections.schemas';
+  type GetOrCreateSiteLayoutSectionQuery,
+  getOrCreateSiteLayoutSectionQuerySchema,
+  type RollbackSiteLayoutSectionBody,
+  rollbackSiteLayoutSectionBodySchema,
+  type SaveSiteLayoutSectionDraftBody,
+  type SetSiteLayoutSectionStickyBody,
+  setSiteLayoutSectionStickyBodySchema,
+} from '@kometio/api-contracts';
+import { saveSiteLayoutSectionDraftBodySchema } from './site-layout-sections.schemas';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { SiteLayoutSectionsDeps } from './site-layout-sections.deps';
@@ -53,8 +53,8 @@ export class SiteLayoutSectionsController {
   @Get()
   async getOrCreate(
     @TenantId() tenantId: string,
-    @Query(new ZodValidationPipe(getOrCreateQuerySchema))
-    query: GetOrCreateQuery,
+    @Query(new ZodValidationPipe(getOrCreateSiteLayoutSectionQuerySchema))
+    query: GetOrCreateSiteLayoutSectionQuery,
   ) {
     const section = await getOrCreateSiteLayoutSection(this.deps, {
       tenantId,
@@ -76,7 +76,8 @@ export class SiteLayoutSectionsController {
   async saveDraft(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
-    @Body(new ZodValidationPipe(saveDraftBodySchema)) body: SaveDraftBody,
+    @Body(new ZodValidationPipe(saveSiteLayoutSectionDraftBodySchema))
+    body: SaveSiteLayoutSectionDraftBody,
   ) {
     const section = await saveSiteLayoutSectionDraft(
       {
@@ -106,7 +107,8 @@ export class SiteLayoutSectionsController {
   async updateSticky(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
-    @Body(new ZodValidationPipe(stickyBodySchema)) body: StickyBody,
+    @Body(new ZodValidationPipe(setSiteLayoutSectionStickyBodySchema))
+    body: SetSiteLayoutSectionStickyBody,
   ) {
     const section = await updateSiteLayoutSectionSticky(this.deps, {
       tenantId,
@@ -144,7 +146,8 @@ export class SiteLayoutSectionsController {
   async rollback(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
-    @Body(new ZodValidationPipe(rollbackBodySchema)) body: RollbackBody,
+    @Body(new ZodValidationPipe(rollbackSiteLayoutSectionBodySchema))
+    body: RollbackSiteLayoutSectionBody,
   ) {
     const section = await rollbackSiteLayoutSectionToVersion(
       {
