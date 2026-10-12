@@ -13,6 +13,7 @@ export * from './lib/media-storage.port';
 export * from './lib/media-usage.port';
 export * from './lib/newsletter.port';
 export * from './lib/page-group-repository.port';
+export * from './lib/version-repository.port';
 export * from './lib/page-group-version-repository.port';
 export * from './lib/page-translation-repository.port';
 export * from './lib/page-translation-version-repository.port';

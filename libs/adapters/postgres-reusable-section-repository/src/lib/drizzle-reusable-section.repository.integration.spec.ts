@@ -197,10 +197,7 @@ describe('DrizzleReusableSectionRepository (integration)', () => {
       });
     }
 
-    const versions = await versionRepository.listBySection(
-      tenantAId,
-      section.id,
-    );
+    const versions = await versionRepository.listByOwner(tenantAId, section.id);
     expect(versions).toHaveLength(10);
     // Oldest first, and the two earliest are the ones dropped.
     expect(versions[0]?.content).toEqual([

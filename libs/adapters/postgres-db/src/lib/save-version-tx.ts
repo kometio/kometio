@@ -1,12 +1,13 @@
 import { and, desc, eq, notInArray } from 'drizzle-orm';
 import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
+import { VERSION_HISTORY_LIMIT } from '@kometio/domain-core';
 import type { KometioTx } from './client';
 
 /**
  * The retention policy every version table shares: keep the last N, prune
  * inline after each save, no scheduled job (PR #94).
  */
-const MAX_VERSIONS_TO_KEEP = 10;
+const MAX_VERSIONS_TO_KEEP = VERSION_HISTORY_LIMIT;
 
 /**
  * Insert one version row and prune the owner's history beyond the cap,

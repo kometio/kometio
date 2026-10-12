@@ -298,7 +298,7 @@ export async function listReusableSectionVersions(
   id: string,
 ): Promise<ReusableSectionVersion[]> {
   await load(deps, tenantId, id);
-  return deps.reusableSectionVersionRepository.listBySection(tenantId, id);
+  return deps.reusableSectionVersionRepository.listByOwner(tenantId, id);
 }
 
 export interface RollbackReusableSectionInput {

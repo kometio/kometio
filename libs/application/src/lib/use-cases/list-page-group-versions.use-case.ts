@@ -14,7 +14,7 @@ export function listPageGroupVersions(
   deps: ListPageGroupVersionsDeps,
   input: ListPageGroupVersionsInput,
 ): Promise<PageGroupVersion[]> {
-  return deps.pageGroupVersionRepository.listByGroup(
+  return deps.pageGroupVersionRepository.listByOwner(
     input.tenantId,
     input.pageGroupId,
   );

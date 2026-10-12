@@ -932,7 +932,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
 
         const foundGroup = await groupRepository.findById(tenantAId, group.id);
         expect(foundGroup?.id).toBe(group.id);
-        const versions = await groupVersionRepository.listByGroup(
+        const versions = await groupVersionRepository.listByOwner(
           tenantAId,
           group.id,
         );
@@ -957,7 +957,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
           });
         }
 
-        const versions = await groupVersionRepository.listByGroup(
+        const versions = await groupVersionRepository.listByOwner(
           tenantAId,
           group.id,
         );
@@ -989,7 +989,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
           group.id,
         );
         expect(
-          (await groupVersionRepository.listByGroup(tenantAId, group.id)).map(
+          (await groupVersionRepository.listByOwner(tenantAId, group.id)).map(
             (v) => v.id,
           ),
         ).toEqual([version.id]);
@@ -1026,7 +1026,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
 
         expect(await groupRepository.findById(tenantAId, group.id)).toBeNull();
         expect(
-          await groupVersionRepository.listByGroup(tenantAId, group.id),
+          await groupVersionRepository.listByOwner(tenantAId, group.id),
         ).toEqual([]);
       });
     });
@@ -1408,7 +1408,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
           translation.id,
         );
         expect(foundTranslation?.id).toBe(translation.id);
-        const versions = await translationVersionRepository.listByTranslation(
+        const versions = await translationVersionRepository.listByOwner(
           tenantAId,
           translation.id,
         );
@@ -1430,7 +1430,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
           translation.toVersion(randomUUID()),
         );
 
-        const [version] = await translationVersionRepository.listByTranslation(
+        const [version] = await translationVersionRepository.listByOwner(
           tenantAId,
           translation.id,
         );
@@ -1459,7 +1459,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
           });
         }
 
-        const versions = await translationVersionRepository.listByTranslation(
+        const versions = await translationVersionRepository.listByOwner(
           tenantAId,
           translation.id,
         );

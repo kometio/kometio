@@ -1,13 +1,6 @@
 import type { ReusableSectionVersion } from '@kometio/domain-core';
+import type { VersionRepositoryPort } from './version-repository.port';
 
-export interface ReusableSectionVersionRepositoryPort {
-  save(version: ReusableSectionVersion): Promise<void>;
-  findById(
-    tenantId: string,
-    versionId: string,
-  ): Promise<ReusableSectionVersion | null>;
-  listBySection(
-    tenantId: string,
-    reusableSectionId: string,
-  ): Promise<ReusableSectionVersion[]>;
-}
+/** The history of one reusable section: `listByOwner` takes its id. */
+export type ReusableSectionVersionRepositoryPort =
+  VersionRepositoryPort<ReusableSectionVersion>;

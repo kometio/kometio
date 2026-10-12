@@ -205,7 +205,7 @@ describe('page templates', () => {
       });
 
       expect(group.collectionId).toBe('collection-news');
-      const versions = await deps.pageGroupVersionRepository.listByGroup(
+      const versions = await deps.pageGroupVersionRepository.listByOwner(
         tenantId,
         group.id,
       );
@@ -422,11 +422,10 @@ describe('page templates', () => {
       for (const id of idsOf(template.content)) {
         expect(idsOf(pageContent)).not.toContain(id);
       }
-      const versions =
-        await deps.reusableSectionVersionRepository.listBySection(
-          tenantId,
-          template.id,
-        );
+      const versions = await deps.reusableSectionVersionRepository.listByOwner(
+        tenantId,
+        template.id,
+      );
       expect(versions).toHaveLength(1);
     });
 

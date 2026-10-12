@@ -30,7 +30,7 @@ describe('SiteLayoutSectionsController (unit)', () => {
     siteLayoutSectionVersionRepository = {
       save: jest.fn(),
       findById: jest.fn(),
-      listBySection: jest.fn(),
+      listByOwner: jest.fn(),
     };
     siteRepository = new InMemorySiteRepository();
     controller = new SiteLayoutSectionsController({
