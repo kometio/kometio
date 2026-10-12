@@ -11,8 +11,9 @@ export interface OptimizedImage {
 /**
  * What every uploaded picture goes through before it is stored (ADR-0013):
  * one optimized version, not a ladder of sizes. Implemented by
- * `@kometio/sharp-image-optimizer`, and handed to both media storage adapters,
- * so what a picture becomes does not depend on where it is kept.
+ * `@kometio/sharp-image-optimizer`, and used by the application's upload
+ * policy (`storeUpload`, ADR-0113), so what a picture becomes does not depend
+ * on where it is kept.
  */
 export interface ImageOptimizerPort {
   /**
