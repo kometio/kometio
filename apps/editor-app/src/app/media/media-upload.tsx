@@ -57,6 +57,14 @@ export function MediaUploadButton({
     void uploads.upload(files);
   }
 
+  // A demo takes no file (docs/adr/0118): the button is not offered, and the
+  // line says why, so the library does not look broken.
+  if (uploads.turnedOff) {
+    return (
+      <p className="text-sm text-muted-foreground">{t('demo.uploadsOff')}</p>
+    );
+  }
+
   return (
     <>
       <input
@@ -193,6 +201,9 @@ export function MediaDropZone({ uploads, children }: MediaDropZoneProps) {
   // dragenter/dragleave also fire for every child crossed on the way, so a
   // plain flag flickers off over each card. Entries and exits are counted.
   const depth = useRef(0);
+
+  // Nothing is taken in a demo (docs/adr/0118): a drop would only be refused.
+  if (uploads.turnedOff) return <>{children}</>;
 
   return (
     <div

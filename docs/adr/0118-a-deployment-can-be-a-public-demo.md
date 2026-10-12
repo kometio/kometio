@@ -56,15 +56,16 @@ hosted editor. The first was chosen. This is that mode.
 false`.
 - **The editor is told** by `demo` in `GET /deployment`, which is open to
   anyone like the rest of that record.
+  It then says what a demo is (a notice above every screen), does not offer
+  an upload (the button, and a drop onto the library) or the shared account's
+  form — each says why in its place — and draws only the screens a publisher
+  has, since `/auth/session` says `publisher`.
 
 ## What this does not do
 
 - **It does not reset.** A demo is reset by being made again from a seed
   archive; that is operations (`docker/kometio/README.md`), not the
   application's business.
-- **The editor still draws what a demo refuses** until its own change lands:
-  the upload button answers 403 with a sentence, which is correct and not
-  kind.
 - **Two visitors in one demo see each other's edits.** Accepted on
   2026-09-25: it is the price of one shared instance.
 - **Rate limits are the deployment's own** (the login's five a minute per

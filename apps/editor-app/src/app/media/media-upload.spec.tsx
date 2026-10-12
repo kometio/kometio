@@ -176,3 +176,40 @@ describe('MediaUploadButton', () => {
     expect(container.querySelector('input')?.getAttribute('accept')).toBeNull();
   });
 });
+
+/*
+ * A demo takes no file (docs/adr/0118): the server refuses it, and the editor
+ * does not offer what would only be refused — and says why in the place the
+ * button was.
+ */
+describe('on a server that takes no uploads', () => {
+  it('offers no button, and says uploads are off', () => {
+    render(<MediaUploadButton uploads={fakeUploads({ turnedOff: true })} />);
+
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(
+      screen.getByText('Nella demo il caricamento di file è disattivato.'),
+    ).toBeTruthy();
+  });
+
+  it('keeps the button where uploads are on', () => {
+    render(<MediaUploadButton uploads={fakeUploads({ turnedOff: false })} />);
+
+    expect(screen.getByRole('button')).toBeTruthy();
+  });
+
+  it('does not take a drop', () => {
+    const upload = vi.fn(() => Promise.resolve());
+    render(
+      <MediaDropZone uploads={fakeUploads({ turnedOff: true, upload })}>
+        <p>the grid</p>
+      </MediaDropZone>,
+    );
+
+    fireEvent.drop(screen.getByText('the grid'), {
+      dataTransfer: { types: ['Files'], files: [png('a.png')] },
+    });
+
+    expect(upload).not.toHaveBeenCalled();
+  });
+});

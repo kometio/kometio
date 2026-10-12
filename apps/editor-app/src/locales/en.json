@@ -79,6 +79,11 @@
     "title": "This installation cannot send email",
     "body": "Invitations, password resets and form notifications are not mailed: they are written to the server's log, with their links. Set SMTP_HOST (and the other SMTP settings) on the server to send them."
   },
+  "demo": {
+    "notice": "This is a demo. Others may be trying it at the same time, and it starts over from time to time: nothing you do here is kept. Uploads and the shared account are turned off.",
+    "uploadsOff": "Uploads are turned off in the demo.",
+    "accountShared": "Everybody who tries the demo signs in with this account, so its name, picture, address and password are not changed here."
+  },
   "setup": {
     "title": "Welcome to Kometio",
     "description": "This installation has not been set up yet. Create your administrator account to get started.",

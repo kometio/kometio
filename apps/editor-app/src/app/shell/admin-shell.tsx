@@ -4,6 +4,7 @@ import { Menu, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
 import { useApplySavedInterfaceLanguage } from '../account/use-interface-language';
+import { DemoNotice } from '../common/demo-notice';
 import { IconButton } from '../common/icon-button';
 import { KometioMark } from './kometio-mark';
 import { GlobalSearch } from './global-search';
@@ -121,6 +122,7 @@ export function AdminShell({ children }: AdminShellProps) {
       </Dialog>
       <GlobalSearch open={isSearchOpen} onOpenChange={setIsSearchOpen} />
       <main className="min-w-0 flex-1 overflow-auto p-4 md:p-6">
+        <DemoNotice />
         {children}
       </main>
     </div>

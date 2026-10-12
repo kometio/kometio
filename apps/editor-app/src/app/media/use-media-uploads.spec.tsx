@@ -10,6 +10,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { buildMediaRecord } from '@kometio/testing/records';
 import * as api from '../../lib/media-api-client';
+import * as deployment from '../../lib/deployment-api-client';
+import { deploymentRecord } from '../../test/deployment.test-fixture';
 import { ApiError } from '../../lib/http-client';
 import { WithToasts } from '../../test/toasts.test-fixture';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
@@ -20,6 +22,8 @@ vi.mock('../../lib/media-api-client', async (importOriginal) => {
     await importOriginal<typeof import('../../lib/media-api-client')>();
   return { ...actual, uploadMedia: vi.fn() };
 });
+
+vi.mock('../../lib/deployment-api-client', () => ({ getDeployment: vi.fn() }));
 
 const image = (name: string) => new File(['x'], name, { type: 'image/png' });
 
@@ -211,5 +215,28 @@ describe('useMediaUploads', () => {
     act(() => result.current.dismiss());
 
     expect(result.current.entries).toEqual([]);
+  });
+
+  // A demo takes no file (docs/adr/0118); the button and the drop zone read it from here.
+  it('says uploads are turned off on a demo, and not before the server has said so', async () => {
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ demo: true }),
+    );
+    const { result } = setup({ siteId: 'site-1' });
+    expect(result.current.turnedOff).toBe(false);
+
+    await waitFor(() => expect(result.current.turnedOff).toBe(true));
+  });
+
+  it('leaves uploads on where the deployment is not a demo', async () => {
+    vi.mocked(deployment.getDeployment).mockResolvedValue(
+      deploymentRecord({ demo: false }),
+    );
+    const { result } = setup({ siteId: 'site-1' });
+
+    await waitFor(() =>
+      expect(deployment.getDeployment).toHaveBeenCalledTimes(1),
+    );
+    expect(result.current.turnedOff).toBe(false);
   });
 });

@@ -26,6 +26,17 @@ export function useServerSendsEmail(): boolean {
   return data?.emailConfigured !== false;
 }
 
+/**
+ * Whether this server is a public demo (docs/adr/0118). False until the server
+ * has said so, like `useServerFeatures`: what a demo takes away is shown as
+ * taken away only when the server says it is one, and nothing is hidden on a
+ * guess. (The server refuses it all the same, which is what holds it.)
+ */
+export function useIsDemo(): boolean {
+  const { data } = useQuery(deploymentQueryOptions());
+  return data?.demo === true;
+}
+
 /** What the editor offers only where the server can do it (docs/adr/0105), by the name `GET /deployment` gives it. */
 export type ServerFeature = 'siteArchive';
 
