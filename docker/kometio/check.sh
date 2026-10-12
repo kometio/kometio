@@ -203,6 +203,12 @@ check "every table of the schema is a site's or a moment's, so that no new one i
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive-tables.test.mjs"
 check "the healthcheck looks at the three parts, on the ports the launcher gives them" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/healthcheck.test.mjs"
+check "the processes live and die together as documented: one that stops takes the others, one stopped on purpose does not, every stop is in the same order with the same time to leave" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/process-supervisor.test.mjs"
+check "each part is told what it reads and no more: the API never gets the database administrator, the site only its own variables" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/service-environments.test.mjs"
+check "every module the container starts on is copied into the image, so that a new file cannot be a container that does not start" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/image-contents.test.mjs"
 check "every page that tells a person which version of the image to run says the same one" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/image-tag.test.mjs"
 
