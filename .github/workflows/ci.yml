@@ -329,4 +329,12 @@ jobs:
       # range is pinned in pnpm-workspace.yaml's overrides, each with the
       # reason it is safe here; an advisory with no fixed version at all is
       # listed under its `auditConfig`, with what was checked.
-      - run: pnpm audit --audit-level moderate
+      #
+      # What blocks is what SHIPS (`--prod`: the `dependencies` of every
+      # project, which is what the images and the editor's bundle are made
+      # of). An advisory in a build or test tool is in no image and must not
+      # stop a fix that has nothing to do with it: it stopped three pull
+      # requests in one day (handlebars through ts-jest, the MCP sdk through
+      # shadcn, undici through nx). The whole workspace is audited every
+      # week by audit-all.yml, which opens an issue instead.
+      - run: pnpm audit --prod --audit-level moderate
