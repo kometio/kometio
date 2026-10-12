@@ -38,12 +38,19 @@ jobs:
 
       # One open issue at a time: a second run with the same findings adds a
       # comment to it instead of another issue.
+      #
+      # The issue is found by its label, not by its title: anyone may open an
+      # issue with a title of their choosing, and the output would have been
+      # commented onto theirs. Only somebody with triage rights on the
+      # repository can put a label on an issue, so one that carries it is ours.
       - name: Say so in an issue
         if: steps.audit.outputs.status != '0'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           title="Dependency audit: advisories in the workspace"
+          label="dependency-audit"
+          gh label create "$label" --description "Found by the weekly audit of the whole workspace" --color D93F0B || true
           {
             echo "Found by the weekly audit of the whole workspace (build and test tools included) at $(git rev-parse --short HEAD)."
             echo
@@ -51,11 +58,11 @@ jobs:
             head -c 60000 audit.txt
             echo '```'
           } > body.md
-          existing="$(gh issue list --state open --search "in:title ${title}" --json number --jq '.[0].number // empty')"
+          existing="$(gh issue list --state open --label "$label" --json number --jq '.[0].number // empty')"
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --body-file body.md
           else
-            gh issue create --title "$title" --body-file body.md
+            gh issue create --title "$title" --label "$label" --body-file body.md
           fi
 
       - name: Fail the run too
