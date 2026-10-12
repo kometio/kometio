@@ -1,71 +1,32 @@
-// `pnpm audit --prod` is what blocks a pull request (ci.yml, job `audit`):
-// the `dependencies` of every project, taken to be what ships. That holds
-// only while nothing that ships is declared as a `devDependency`. A library
-// that is imported by a project's source and named only among its
-// `devDependencies` would be bundled into an image or the editor's bundle
-// and never audited by the blocking job.
+// Fails when a project's source imports a library that is declared only as
+// a `devDependency`: the narrowing of the blocking audit to `--prod` is
+// sound only while that never happens (tools/runtime-dependency-violations.mjs
+// says what counts, and why).
 //
-// This is the check that makes the narrowing safe: it fails naming the
-// import. It reads every workspace project's `package.json` and its source
-// files that are not tests, configuration, scripts or fixtures.
+//   node tools/check-runtime-dependencies.mjs [repository-root]
 //
-//   node tools/check-runtime-dependencies.mjs
+// The repository is the one this file is in unless a root is given. A check
+// that found nothing to look at has not passed, so it fails.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { dirname } from 'node:path';
-
-/** Source files that do not ship: tests, their setup and fixtures, tool configuration, scripts. */
-const NOT_SHIPPED =
-  /(\.spec\.|\.test\.|\.test-fixture\.|\/test-setup\.|\/jest\.setup\.|vitest\.config|playwright|\/e2e\/|\/tests?\/|eslint\.config|\/scripts\/|\.config\.)/;
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { violations } from './runtime-dependency-violations.mjs';
 
 const SOURCE = /\.(ts|tsx|mjs|js|astro)$/;
 
-const IMPORT =
-  /(?:from|import)\s*\(?\s*['"]((?:@[a-z0-9._-]+\/)?[a-z0-9._-]+)(?:\/[^'"]*)?['"]/gi;
-
-/**
- * A theme is compiled into the public site, which provides `astro` to it:
- * it names it as a dev dependency to be able to type-check on its own.
- */
-const PROVIDED = { themes: new Set(['astro']) };
-
-/**
- * @param {{ directory: string, packageJson: object, files: Record<string, string> }[]} projects
- * @returns {{ file: string, package: string }[]}
- */
-export function violations(projects) {
-  const found = [];
-  for (const { directory, packageJson, files } of projects) {
-    const declaredForDevelopmentOnly = new Set(
-      Object.keys(packageJson.devDependencies ?? {}).filter(
-        (name) => !name.startsWith('@kometio/') && !name.startsWith('@types/'),
-      ),
-    );
-    for (const name of [
-      ...Object.keys(packageJson.dependencies ?? {}),
-      ...Object.keys(packageJson.peerDependencies ?? {}),
-      ...Object.keys(packageJson.optionalDependencies ?? {}),
-    ]) {
-      declaredForDevelopmentOnly.delete(name);
-    }
-    if (declaredForDevelopmentOnly.size === 0) continue;
-    const provided = PROVIDED[directory.split('/')[0]] ?? new Set();
-    for (const [file, text] of Object.entries(files)) {
-      if (!SOURCE.test(file) || NOT_SHIPPED.test(file)) continue;
-      for (const match of text.matchAll(IMPORT)) {
-        const name = match[1];
-        if (declaredForDevelopmentOnly.has(name) && !provided.has(name)) {
-          found.push({ file, package: name });
-        }
-      }
-    }
-  }
-  return found;
-}
+const root = resolve(
+  process.argv[2] ?? join(dirname(fileURLToPath(import.meta.url)), '..'),
+);
 
 function workspaceProjects() {
-  const tracked = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
-    .split('\n')
+  // `-z`: a path is whatever bytes a file is called, newlines included.
+  const tracked = execFileSync('git', ['ls-files', '-z'], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
+    .split('\0')
     .filter(Boolean);
   return tracked
     .filter((file) => file.endsWith('/package.json'))
@@ -75,27 +36,35 @@ function workspaceProjects() {
       const files = {};
       for (const file of tracked) {
         if (file.startsWith(prefix) && SOURCE.test(file)) {
-          files[file] = readFileSync(file, 'utf8');
+          files[file] = readFileSync(join(root, file), 'utf8');
         }
       }
       return {
         directory,
-        packageJson: JSON.parse(readFileSync(manifest, 'utf8')),
+        packageJson: JSON.parse(readFileSync(join(root, manifest), 'utf8')),
         files,
       };
     });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const found = violations(workspaceProjects());
-  for (const { file, package: name } of found) {
-    console.error(`${file} imports ${name}, which is only a devDependency`);
-  }
-  if (found.length > 0) {
-    console.error(
-      '\nA library the code imports belongs in `dependencies`, or `pnpm audit --prod` does not look at it.',
-    );
-    process.exit(1);
-  }
-  console.log('Every library a project imports is one it ships with.');
+const projects = workspaceProjects();
+if (projects.length === 0) {
+  console.error(
+    `No project found under ${root}: nothing was checked, which is not the same as nothing being wrong.`,
+  );
+  process.exit(1);
 }
+
+const found = violations(projects);
+for (const { file, package: name } of found) {
+  console.error(`${file} imports ${name}, which is only a devDependency`);
+}
+if (found.length > 0) {
+  console.error(
+    '\nA library the code imports belongs in `dependencies`, or `pnpm audit --prod` does not look at it.',
+  );
+  process.exit(1);
+}
+console.log(
+  `Every library the ${projects.length} projects import is one they ship with.`,
+);
