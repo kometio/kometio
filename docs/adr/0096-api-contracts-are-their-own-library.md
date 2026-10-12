@@ -1,6 +1,6 @@
 # 0096 — The wire shapes of the HTTP API are their own library
 
-**Status**: Accepted — 2026-09-30
+**Status**: Accepted — 2026-09-30. Amended 2026-10-12 by [0111](0111-request-bodies-are-contracts-too.md): the request bodies are contracts too.
 
 ## Context
 
