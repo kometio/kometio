@@ -1,19 +1,18 @@
 ---
 import type { ProfileCardProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import { resolveThemeBlockOverride } from '../../lib/resolve-theme-block-override';
 import { telHref } from '../../lib/contact-links';
 import TeamMemberCore from './TeamMember.astro';
 
 type Props = ProfileCardProps & {
-  locale: string;
+  i18n: Translator;
   themeName: string;
   instanceClass?: string | null;
 };
 
-const { photo, name, role, bio, email, phone, locale, themeName, instanceClass } =
+const { photo, name, role, bio, email, phone, i18n, themeName, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 // The theme's Team member card when it has one, so a profile and a team
 // on the same site are the same card.
 const TeamMember = resolveThemeBlockOverride(

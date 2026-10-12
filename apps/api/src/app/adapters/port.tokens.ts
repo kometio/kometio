@@ -60,6 +60,8 @@ export const PREVIEW_TOKEN_PORT = Symbol('PREVIEW_TOKEN_PORT');
 
 // Files.
 export const MEDIA_STORAGE = Symbol('MEDIA_STORAGE');
+/** What a picture becomes before it is stored (ADR-0013): not the store's to do, so not the store's to be given. */
+export const IMAGE_OPTIMIZER = Symbol('IMAGE_OPTIMIZER');
 export const MEDIA_USAGE_PORT = Symbol('MEDIA_USAGE_PORT');
 export const ATTACHMENT_STORAGE = Symbol('ATTACHMENT_STORAGE');
 export const THEME_CATALOG = Symbol('THEME_CATALOG');

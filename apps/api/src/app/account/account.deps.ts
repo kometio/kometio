@@ -2,6 +2,7 @@ import type {
   AuthPort,
   DeploymentLocalePort,
   EmailPort,
+  ImageOptimizerPort,
   MediaStoragePort,
   UserRepositoryPort,
   VerificationTokenPort,
@@ -11,6 +12,7 @@ import type {
 export interface AccountDeps {
   userRepository: UserRepositoryPort;
   mediaStorage: MediaStoragePort;
+  imageOptimizer: ImageOptimizerPort;
   authPort: AuthPort;
   verificationTokenPort: VerificationTokenPort;
   emailPort: EmailPort;

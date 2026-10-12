@@ -3,6 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { noErrorReporter, type ErrorReporterPort } from '@kometio/ports';
+import { createErrorReporter } from '@kometio/sentry-error-reporter';
 import { AppModule } from './app/app.module';
 import { HttpExceptionFilter } from './app/http-exception.filter';
 import { mountMediaStatic } from './app/media-static';
@@ -20,16 +22,29 @@ import { rejectCrossSiteWrites } from './app/cross-site-writes.middleware';
 // those two events (the same reason Node 15+ terminates by default on an
 // unhandled unhandledRejection) — so log and exit, rather than carry on
 // serving requests in a potentially corrupted state.
+//
+// Reported too, when the deployment has somewhere to report to (docs/adr/0114):
+// a process that ended is the error most worth hearing about, and it is the
+// one that cannot say so after the fact. `errorReporter` is set once the
+// environment is validated; before that, nowhere.
+let errorReporter: ErrorReporterPort = noErrorReporter;
+
+function exitAfterReporting(error: unknown): void {
+  errorReporter.captureException(error, { fatal: true });
+  // Two seconds at most: a report is not worth a process that will not die.
+  void errorReporter.flush(2000).finally(() => process.exit(1));
+}
+
 process.on('unhandledRejection', (reason) => {
   Logger.error(
     'Unhandled promise rejection',
     reason instanceof Error ? reason.stack : String(reason),
   );
-  process.exit(1);
+  exitAfterReporting(reason);
 });
 process.on('uncaughtException', (error) => {
   Logger.error('Uncaught exception', error.stack);
-  process.exit(1);
+  exitAfterReporting(error);
 });
 
 async function bootstrap() {
@@ -37,6 +52,7 @@ async function bootstrap() {
   // wiring starts — see env-schema.ts. What it returns is the environment
   // every module reads too (API_ENV), so this and they cannot disagree.
   const env = validateApiEnv();
+  errorReporter = createErrorReporter(env, 'api');
   const app = await NestFactory.create(AppModule);
   // `docker stop`/`docker-compose down` send SIGTERM — without
   // enableShutdownHooks(), Nest never runs OnModuleDestroy (the Postgres
@@ -76,7 +92,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(rejectCrossSiteWrites(env.EDITOR_APP_URL));
   app.use(requestIdMiddleware);
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(errorReporter));
   // Credentialed cookies can't use a wildcard origin — must be the exact
   // editor-app origin, see docs/adr/0010-session-based-auth-foundations.md.
   app.enableCors({ origin: env.EDITOR_APP_URL, credentials: true });

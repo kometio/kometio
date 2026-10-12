@@ -1,16 +1,15 @@
 ---
 import type { WhatsAppButtonProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = WhatsAppButtonProps & {
-  locale: string;
+  i18n: Translator;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
 };
 
-const { phoneNumber, message, visibility, locale, instanceClass } =
+const { phoneNumber, message, visibility, i18n, instanceClass } =
   Astro.props;
-const i18n = new Translator(locale);
 
 // `message` is optional pre-filled text — omit `?text=` entirely rather
 // than sending an empty one when the editor left it blank.

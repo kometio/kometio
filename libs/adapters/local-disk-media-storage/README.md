@@ -1,40 +1,37 @@
 # local-disk-media-storage
 
-`MediaStoragePort` implementation for the curated media library —
-processes every upload and writes it to the local filesystem. The default
-backend; see
-[ADR-0013](../../../docs/adr/0013-media-pipeline-local-serving-upload-time-resize.md)
-for the upload-time-resize design and why it's a fixed-quality WebP
-conversion rather than a size ladder. Its sibling
-[`@kometio/s3-media-storage`](../s3-media-storage/README.md) is the
-S3-compatible alternative — **both implement the exact same
-`MediaStoragePort` interface** and are given the same image optimizer, so the storage backend is a pure deployment config choice.
+`MediaStoragePort` implementation for the curated media library — writes
+what it is given to the local filesystem. The default backend. What a file
+is and what becomes of it (a picture re-encoded to WebP, a download kept
+under its own name) is the application's rule, not this adapter's
+([ADR-0113](../../../docs/adr/0113-the-upload-policy-is-the-applications-not-the-stores.md);
+the pipeline itself is
+[ADR-0013](../../../docs/adr/0013-media-pipeline-local-serving-upload-time-resize.md)).
+Its sibling [`@kometio/s3-media-storage`](../s3-media-storage/README.md) is
+the S3-compatible alternative — **both implement the exact same
+`MediaStoragePort` interface**, so the storage backend is a pure
+deployment config choice.
 
 ## Implements
 
 `MediaStoragePort` (`libs/ports/src/lib/media-storage.port.ts`) —
-`upload`, `getUrl`, `delete`, plus a `readonly provider` field (`'local'`)
+`put`, `getUrl`, `delete`, plus a `readonly provider` field (`'local'`)
 so callers can record which backend actually stored a given `Media` row
 without needing their own separate config.
 
 ## How it works
 
-The bytes decide what a file is (`classifyUpload`, ADR-0054/0070). A file
-the bytes cannot vouch for is kept under `files/` with the name it was
-uploaded as, to be downloaded and never opened; a video or audio file is
-written as it is. A picture goes through the `ImageOptimizerPort` it was
-given (`@kometio/sharp-image-optimizer`): turned the right way up, scaled
-down to at most 1600 px and re-encoded to WebP. The returned
-`mimeType`/`width`/`height` are those of the stored file, never the
-caller's. A file that starts like a picture and cannot be decoded is
-refused with `UnreadableImageError` (a 400) and nothing is written.
+`put()` writes the bytes under the key it is given, making the
+directories the key has in it, and refuses a key that would leave
+`MEDIA_UPLOAD_DIR`: that one rule is the disk's own. It decides nothing
+about the file — not its type, not its name, not whether a browser may
+open it: the application did (`storeUpload`, `@kometio/application`), and
+`StoredObject.downloadName` is the only trace of it a disk keeps, which a
+disk has no use for (`media-static.ts` serves a `files/` key as a download).
 
-One optimized version per upload, not a thumbnail ladder — deliberately
-scoped down for now (see ADR-0013 for the rationale and the note on
-revisiting if multiple rendition sizes become a real need later).
 `delete()` treats an already-missing file (`ENOENT`) as success, matching
 `PageRepositoryPort.delete`'s idempotent-from-the-caller's-view semantics
-elsewhere in the codebase.
+elsewhere in the codebase, and removes the directory a key had to itself.
 
 ## Configuration
 

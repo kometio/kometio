@@ -184,7 +184,7 @@ const errorPageTranslations =
       ancestors={[]}
       route="error"
     >
-      <NotFound locale={locale} />
+      <NotFound locale={locale} siteDefaultLocale={chrome.site.defaultLocale} />
     </PageLayout>
   ) : (
     <ErrorPageShell title="404" locale={locale}>

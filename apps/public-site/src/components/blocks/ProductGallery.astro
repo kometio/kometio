@@ -1,16 +1,15 @@
 ---
 import type { PickedMedia, ProductGalleryProps } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 
 type Props = ProductGalleryProps & {
-  locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
 
-const { images, aspectRatio, locale, editable, instanceClass } = Astro.props;
-const i18n = new Translator(locale);
+const { images, aspectRatio, i18n, editable, instanceClass } = Astro.props;
 
 type ShownImage = ProductGalleryProps['images'][number] & { media: PickedMedia };
 const shown = images.filter(

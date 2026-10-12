@@ -20,18 +20,17 @@
  * container that genuinely takes anything (Container, Column), where
  * there is no single answer to give.
  */
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 export interface Props {
   show: boolean;
-  /** The locale the editor is showing this page in. */
-  locale?: string | undefined;
+  /** The strings of the language the editor is showing this page in. */
+  i18n: Translator;
   /** The translated name of the only child type allowed, when there is one. */
   childLabel?: string | null | undefined;
 }
 
-const { show, locale, childLabel } = Astro.props;
-const i18n = new Translator(locale ?? 'en');
+const { show, i18n, childLabel } = Astro.props;
 const message = childLabel
   ? i18n.t('emptyContainer.hintNamed', { child: childLabel })
   : i18n.t('emptyContainer.hint');

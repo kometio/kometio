@@ -2,12 +2,13 @@
 import type { ContactDetailsProps } from '@kometio/shared-types';
 import type { PublishedSite } from '@kometio/api-contracts';
 import { formatBusinessAddressLines } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import { mapSearchHref, telHref } from '../../lib/contact-links';
 
 type Props = ContactDetailsProps & {
   site: PublishedSite;
   locale?: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
@@ -19,11 +20,11 @@ const {
   showMapLink,
   site,
   locale,
+  i18n,
   editable,
   instanceClass,
 } =
   Astro.props;
-const i18n = new Translator(locale ?? '');
 
 // The lines you would write on an envelope, in the page's own language —
 // the country comes out of the stored ISO code (docs/adr/0081), so the

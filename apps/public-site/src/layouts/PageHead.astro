@@ -1,0 +1,172 @@
+---
+import type { SeoMeta } from '@kometio/shared-types';
+import { buildCookieConsentBootstrap } from '../components/cookie-consent-bootstrap';
+import {
+	renderGatedScripts,
+	renderUngatedScripts,
+	type PartitionedTrackerScripts,
+} from '../lib/consent-script-blocking';
+import { injectScriptNonce } from '../lib/content-security-policy';
+import type { PageSeo } from '../lib/page-seo';
+import type { PageThemeStyles } from '../lib/page-theme-styles';
+import { CASCADE_LAYER_ORDER_CSS } from '../lib/cascade-layers';
+
+/**
+ * The content of the page's `<head>`, in the order it has always been in:
+ * the layer order first, then the theme's tokens, the favicon, the font, the
+ * site's overrides, the block styles, the SEO, the structured data and the
+ * scripts. PageLayout.astro draws the `<head>` element itself and puts this
+ * in it; what to say was worked out there (`resolvePageSeo`,
+ * `resolvePageThemeStyles`), and this only writes it down.
+ */
+interface Props {
+	seoMeta: SeoMeta;
+	locale: string;
+	siteName: string;
+	seo: PageSeo;
+	styles: PageThemeStyles;
+	/** The site's switch AND this page's own: kept out of search engines. */
+	hideFromSearchEngines: boolean;
+	headScript: string | null;
+	headTrackerScripts: PartitionedTrackerScripts;
+	/** The editor's embedded canvas has no visitor, so no consent banner to bootstrap. */
+	isEditorCanvas: boolean;
+}
+
+const {
+	seoMeta,
+	locale,
+	siteName,
+	seo,
+	styles,
+	hideFromSearchEngines,
+	headScript,
+	headTrackerScripts,
+	isEditorCanvas,
+} = Astro.props;
+---
+
+	<meta charset="utf-8" />
+	{/* Before any other style: see cascade-layers.ts. */}
+	<style set:html={CASCADE_LAYER_ORDER_CSS} />
+	{
+		styles.themeBaseTokenDeclarations && (
+			<style set:html={`:root { ${styles.themeBaseTokenDeclarations} }`} />
+		)
+	}
+	{
+		styles.theme.faviconUrl ? (
+			<link rel="icon" href={styles.theme.faviconUrl} />
+		) : (
+			<>
+				<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+				<link rel="icon" href="/favicon.ico" />
+			</>
+		)
+	}
+	<meta name="viewport" content="width=device-width" />
+	{
+		styles.themeFont && (
+			<>
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link
+					rel="preconnect"
+					href="https://fonts.gstatic.com"
+					crossorigin
+				/>
+				<link
+					rel="stylesheet"
+					href={`https://fonts.googleapis.com/css2?family=${styles.themeFont.googleFontsFamily}&display=swap`}
+				/>
+			</>
+		)
+	}
+	{
+		styles.themeOverrideDeclarations && (
+			<style set:html={`:root { ${styles.themeOverrideDeclarations} }`} />
+		)
+	}
+	{
+		styles.blockStyleCss && <style set:html={styles.blockStyleCss} />
+	}
+	<meta name="generator" content={Astro.generator} />
+	<title>{seoMeta.title}</title>
+	<meta name="description" content={seoMeta.description} />
+	<link rel="canonical" href={seo.canonicalUrl} />
+	{/* How a reader's app finds the feed without being told it exists:
+	    every page of a language points at that language's feed. */}
+	<link
+		rel="alternate"
+		type="application/rss+xml"
+		title={`${siteName} — ${locale}`}
+		href={`/${locale}/rss.xml`}
+	/>
+	{
+		hideFromSearchEngines && (
+			<meta name="robots" content="noindex, nofollow" />
+		)
+	}
+	{
+		seo.alternates.map((alternate) => (
+			<link
+				rel="alternate"
+				hreflang={alternate.locale}
+				href={alternate.href}
+			/>
+		))
+	}
+	{
+		seo.xDefaultHref && (
+			<link rel="alternate" hreflang="x-default" href={seo.xDefaultHref} />
+		)
+	}
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={seoMeta.title} />
+	<meta property="og:description" content={seoMeta.description} />
+	<meta property="og:url" content={seo.pageUrl} />
+	{seo.ogImage && <meta property="og:image" content={seo.ogImage} />}
+
+	<meta
+		name="twitter:card"
+		content={seo.ogImage ? 'summary_large_image' : 'summary'}
+	/>
+	<meta name="twitter:title" content={seoMeta.title} />
+	<meta name="twitter:description" content={seoMeta.description} />
+	{seo.ogImage && <meta name="twitter:image" content={seo.ogImage} />}
+
+	<script is:inline type="application/ld+json" set:html={seo.schemaOrgJson} />
+
+	{
+		// Raw injection, admin-trusted (docs/adr/0021) — same trust level as
+		// anyone who already edits pages/blocks. theme.customCss/headScript
+		// are never escaped or sanitized; headScript additionally gets a
+		// per-request nonce injected into each of its own <script> tags
+		// (see content-security-policy.ts) since ADR-0025's CSP is strict
+		// on script-src — style-src still allows 'unsafe-inline', so
+		// customCss needs no such treatment.
+		styles.theme.customCss && <style set:html={styles.theme.customCss} />
+	}
+	{
+		headScript && (
+			<Fragment
+				set:html={injectScriptNonce(headScript, Astro.locals.cspNonce)}
+			/>
+		)
+	}
+	<Fragment
+		set:html={renderUngatedScripts(
+			headTrackerScripts.ungated,
+			Astro.locals.cspNonce,
+		)}
+	/>
+	<Fragment set:html={renderGatedScripts(headTrackerScripts.gated)} />
+	{
+		!isEditorCanvas && (
+			<script
+				is:inline
+				nonce={Astro.locals.cspNonce}
+				set:html={buildCookieConsentBootstrap(Astro.locals.cspNonce)}
+			/>
+		)
+	}

@@ -1,12 +1,13 @@
 ---
 import type { AuthorBoxProps, PickedMedia } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 import { fixedSizes } from '../../lib/image-sizes';
 import { absoluteSchemaUrl } from '../../lib/schema-org';
 
 type Props = AuthorBoxProps & {
   locale: string;
+  i18n: Translator;
   editable?: boolean;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
@@ -18,10 +19,10 @@ const {
   author,
   isProfilePage,
   locale,
+  i18n,
   editable,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 
 const name = author?.name.trim() ?? '';
 const bio = showBio ? (author?.bio.trim() ?? '') : '';

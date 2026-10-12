@@ -4,10 +4,11 @@ import OptimizedImage from '../OptimizedImage.astro';
 import { resolveImageAlt } from '../../lib/image-alt';
 import { GRID_ITEM_SIZES } from '../../lib/image-sizes';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = CardProps & {
-  /** The locale this page renders in — see EmptyContainerHint. */
-  locale?: string;
+  /** This page's strings, for the hint an empty container shows — see EmptyContainerHint. */
+  i18n: Translator;
   /** The only child type this container accepts, already translated. */
   emptyChildLabel?: string | null;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
@@ -28,7 +29,7 @@ const {
   variantClass,
   hasChildren,
   editable,
-  locale,
+  i18n,
   emptyChildLabel,
 } = Astro.props;
 // Exactly as in Image.astro: a decorative picture gets alt="" per WCAG
@@ -68,7 +69,7 @@ const resolvedAlt = resolveImageAlt({ alt, isDecorative, media });
       <slot />
       <EmptyContainerHint
   show={!hasChildren && Boolean(editable)}
-  locale={locale}
+  i18n={i18n}
   childLabel={emptyChildLabel}
 />
     </div>

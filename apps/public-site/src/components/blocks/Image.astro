@@ -1,11 +1,11 @@
 ---
 import type { ImageProps } from '@kometio/shared-types';
-import { Translator, resolveLinkHref } from '@kometio/theme-runtime';
+import { type Translator, resolveLinkHref } from '@kometio/theme-runtime';
 import OptimizedImage from '../OptimizedImage.astro';
 import { resolveImageAlt } from '../../lib/image-alt';
 
 type Props = ImageProps & {
-  locale: string;
+  i18n: Translator;
   instanceClass?: string | null;
 };
 
@@ -20,10 +20,9 @@ const {
   lightbox,
   alignment,
   aspectRatio,
-  locale,
+  i18n,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 // Authoritative regardless of what's saved in `alt` — a decorative image
 // gets alt="" per WCAG even if a value was typed there before this flag
 // existed (see imagePropsSchema's own comment). Otherwise the block's own

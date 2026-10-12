@@ -1,4 +1,5 @@
 import type {
+  ImageOptimizerPort,
   MediaRepositoryPort,
   MediaStoragePort,
   MediaUsagePort,
@@ -10,5 +11,6 @@ export interface MediaDeps {
   siteRepository: SiteRepositoryPort;
   mediaRepository: MediaRepositoryPort;
   mediaStorage: MediaStoragePort;
+  imageOptimizer: ImageOptimizerPort;
   mediaUsage: MediaUsagePort;
 }

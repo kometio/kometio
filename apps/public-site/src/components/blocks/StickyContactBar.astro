@@ -2,7 +2,7 @@
 import type { StickyContactBarProps } from '@kometio/shared-types';
 import type { PublishedSite } from '@kometio/api-contracts';
 import { formatBusinessAddress } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 import {
   mapSearchHref,
   telHref,
@@ -12,6 +12,7 @@ import {
 type Props = StickyContactBarProps & {
   site: PublishedSite;
   locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
@@ -23,10 +24,10 @@ const {
   showEmail,
   site,
   locale,
+  i18n,
   editable,
   instanceClass,
 } = Astro.props;
-const i18n = new Translator(locale);
 
 const phone = showCall ? site.businessPhone?.trim() : '';
 // One line here, not the envelope's three: it is only ever handed to a map

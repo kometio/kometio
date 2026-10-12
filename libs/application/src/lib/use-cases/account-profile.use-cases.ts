@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import {
   AvatarNotAnImageError,
   classifyUpload,
@@ -8,15 +7,21 @@ import {
   UserSlugAlreadyExistsError,
   type User,
 } from '@kometio/domain-core';
-import type { MediaStoragePort, UserRepositoryPort } from '@kometio/ports';
+import type {
+  ImageOptimizerPort,
+  MediaStoragePort,
+  UserRepositoryPort,
+} from '@kometio/ports';
 import { isCanonicalSlug, type InterfaceLanguage } from '@kometio/shared-types';
 import { type AccountProfile } from '@kometio/api-contracts';
 import { chooseAuthorSlug } from './author-profile';
+import { storeUpload } from './store-upload';
 import { MAX_UPLOAD_BYTES_BY_KIND } from './upload-media.use-case';
 
 export interface AccountProfileDeps {
   userRepository: UserRepositoryPort;
   mediaStorage: MediaStoragePort;
+  imageOptimizer: ImageOptimizerPort;
 }
 
 interface AccountRef {
@@ -164,16 +169,14 @@ export async function changeAccountAvatar(
   if (input.data.byteLength > MAX_UPLOAD_BYTES_BY_KIND.image) {
     throw new MediaTooLargeError('image', MAX_UPLOAD_BYTES_BY_KIND.image);
   }
-  const uploaded = await deps.mediaStorage.upload({
-    tenantId: input.tenantId,
-    // A person's picture, not a site's: the same on every site they write for.
-    siteId: null,
-    // The person's name is not written into storage: the key is all
-    // anyone needs, and a filename can carry more than it should.
-    filename: `avatar-${randomUUID()}.${classified.extension}`,
-    mimeType: classified.mimeType,
-    data: input.data,
-  });
+  // A person's picture, not a site's: the same on every site they write
+  // for. Their file's name is not what is stored: the key is all anyone
+  // needs, and a filename can carry more than it should.
+  const uploaded = await storeUpload(
+    deps,
+    { filename: `avatar.${classified.extension}`, data: input.data },
+    classified,
+  );
   const previous = user.changeAvatar({
     storageKey: uploaded.storageKey,
     width: uploaded.width,

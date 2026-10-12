@@ -1,16 +1,17 @@
 ---
 import type { FeatureGridProps } from '@kometio/shared-types';
 import CollectionLayout from '../CollectionLayout.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 export type Props = FeatureGridProps & {
   editable?: boolean;
   hasChildren?: boolean;
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
-  locale: string;
+  i18n: Translator;
 };
 
-const { display, editable, hasChildren, instanceClass, locale } =
+const { display, editable, hasChildren, instanceClass, i18n } =
   Astro.props;
 ---
 
@@ -20,7 +21,7 @@ const { display, editable, hasChildren, instanceClass, locale } =
   editable={editable}
   hasChildren={hasChildren}
   instanceClass={instanceClass}
-  locale={locale}
+  i18n={i18n}
 >
   <slot />
 </CollectionLayout>

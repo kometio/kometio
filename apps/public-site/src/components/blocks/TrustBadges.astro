@@ -4,19 +4,18 @@ import {
   type PaymentMethod,
   type TrustBadgesProps,
 } from '@kometio/shared-types';
-import { Translator } from '@kometio/theme-runtime';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = TrustBadgesProps & {
   /** Each method's logo, resolved by BlockRenderer from the brand set (ADR-0053). */
   paymentIcons?: Partial<Record<PaymentMethod, string | null>>;
-  locale: string;
+  i18n: Translator;
   editable?: boolean;
   instanceClass?: string | null;
 };
 
 const props = Astro.props;
-const { text, paymentIcons = {}, locale, editable, instanceClass } = props;
-const i18n = new Translator(locale);
+const { text, paymentIcons = {}, i18n, editable, instanceClass } = props;
 
 // A logo the brand set does not have is left out rather than drawn as an
 // empty box: a blank tile beside "Visa" reads as a broken image.

@@ -3,7 +3,6 @@ import { LocalDiskMediaStorageAdapter } from '@kometio/local-disk-media-storage'
 import type { AttachmentStoragePort, MediaStoragePort } from '@kometio/ports';
 import { S3AttachmentStorageAdapter } from '@kometio/s3-attachment-storage';
 import { S3MediaStorageAdapter } from '@kometio/s3-media-storage';
-import { SharpImageOptimizer } from '@kometio/sharp-image-optimizer';
 import { requiredIn, type ApiEnv } from '../../env-schema';
 
 /*
@@ -15,14 +14,9 @@ import { requiredIn, type ApiEnv } from '../../env-schema';
  */
 
 export function createMediaStorage(env: ApiEnv): MediaStoragePort {
-  // The one thing both backends do the same with a picture, given to either.
-  const imageOptimizer = new SharpImageOptimizer();
   return env.MEDIA_STORAGE_PROVIDER === 's3'
-    ? new S3MediaStorageAdapter({ ...s3Settings(env), imageOptimizer })
-    : new LocalDiskMediaStorageAdapter({
-        ...localSettings(env),
-        imageOptimizer,
-      });
+    ? new S3MediaStorageAdapter(s3Settings(env))
+    : new LocalDiskMediaStorageAdapter(localSettings(env));
 }
 
 export function createAttachmentStorage(env: ApiEnv): AttachmentStoragePort {

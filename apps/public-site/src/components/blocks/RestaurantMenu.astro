@@ -1,16 +1,17 @@
 ---
 import type { RestaurantMenuProps } from '@kometio/shared-types';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = RestaurantMenuProps & {
-  locale?: string;
+  i18n: Translator;
   editable?: boolean;
   hasChildren?: boolean;
   emptyChildLabel?: string | null;
   instanceClass?: string | null;
 };
 
-const { columns, locale, editable, hasChildren, emptyChildLabel, instanceClass } =
+const { columns, i18n, editable, hasChildren, emptyChildLabel, instanceClass } =
   Astro.props;
 ---
 
@@ -25,7 +26,7 @@ const { columns, locale, editable, hasChildren, emptyChildLabel, instanceClass }
   <slot />
   <EmptyContainerHint
     show={!hasChildren && Boolean(editable)}
-    locale={locale}
+    i18n={i18n}
     childLabel={emptyChildLabel}
   />
 </div>

@@ -1,10 +1,11 @@
 ---
 import { columnsGridTemplate, type ColumnsProps } from '@kometio/shared-types';
 import EmptyContainerHint from '../EmptyContainerHint.astro';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = ColumnsProps & {
-  /** The locale this page renders in — see EmptyContainerHint. */
-  locale?: string;
+  /** This page's strings, for the hint an empty container shows — see EmptyContainerHint. */
+  i18n: Translator;
   /** The only child type this container accepts, already translated. */
   emptyChildLabel?: string | null;
   editable?: boolean;
@@ -27,7 +28,7 @@ const {
   hasChildren,
   instanceClass,
   columnSpans = [],
-  locale,
+  i18n,
   emptyChildLabel,
 } = Astro.props;
 
@@ -52,7 +53,7 @@ const gridTemplate =
 </div>
 <EmptyContainerHint
   show={!hasChildren && Boolean(editable)}
-  locale={locale}
+  i18n={i18n}
   childLabel={emptyChildLabel}
 />
 
