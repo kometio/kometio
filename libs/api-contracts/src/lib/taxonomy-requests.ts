@@ -12,8 +12,10 @@ import {
  */
 const segmentSchema = z.string().trim().min(1).max(120);
 
-export const listQuerySchema = z.object({ siteId: z.string().uuid() });
-export type ListQuery = z.infer<typeof listQuerySchema>;
+export const listTaxonomiesQuerySchema = z.object({
+  siteId: z.string().uuid(),
+});
+export type ListTaxonomiesQuery = z.infer<typeof listTaxonomiesQuerySchema>;
 
 export const createTaxonomyBodySchema = z.object({
   siteId: z.string().uuid(),

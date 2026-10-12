@@ -26,6 +26,8 @@ export * from './lib/reusable-section-record';
 export * from './lib/setup-requests';
 export * from './lib/site-layout-section-record';
 export * from './lib/site-record';
+export * from './lib/site-requests';
 export * from './lib/taxonomy-record';
+export * from './lib/taxonomy-requests';
 export * from './lib/user-record';
 export * from './lib/user-requests';

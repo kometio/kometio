@@ -1,12 +1,15 @@
 import { z } from 'zod';
 import {
-  type LocalizedSeoMeta,
-  type LocalizedText,
-} from '@kometio/shared-types';
-import {
+  type CreateTaxonomyBody,
+  type CreateTermBody,
+  type MoveTermBody,
   type PageGroupTerms,
+  type PageGroupTermsBody,
+  type ReorderTermsBody,
   type TaxonomyRecord,
   type TermRecord,
+  type UpdateTaxonomyBody,
+  type UpdateTermBody,
   pageGroupTermsSchema,
   taxonomyRecordSchema,
   termRecordSchema,
@@ -30,17 +33,12 @@ export async function listTerms(taxonomyId: string): Promise<TermRecord[]> {
     .parse(await request(`/taxonomies/${taxonomyId}/terms`));
 }
 
-export interface CreateTaxonomyInput {
-  siteId: string;
-  name: LocalizedText;
-  /**
-   * Absent = derive one from the name, `null` = mount the terms at the
-   * site root. Three states, and the API can only tell them apart if the
-   * key is genuinely absent — see the ADR-0064 note on the body schema.
-   */
-  prefix?: string | null;
-  hierarchical?: boolean;
-}
+/**
+ * `prefix`: absent = derive one from the name, `null` = mount the terms at
+ * the site root. Three states, and the API can only tell them apart if the
+ * key is genuinely absent — see the ADR-0064 note on the body schema.
+ */
+export type CreateTaxonomyInput = CreateTaxonomyBody;
 
 export async function createTaxonomy(
   input: CreateTaxonomyInput,
@@ -53,11 +51,7 @@ export async function createTaxonomy(
   );
 }
 
-export interface UpdateTaxonomyInput {
-  name?: LocalizedText;
-  prefix?: string | null;
-  hierarchical?: boolean;
-}
+export type UpdateTaxonomyInput = UpdateTaxonomyBody;
 
 export async function updateTaxonomy(
   id: string,
@@ -75,11 +69,7 @@ export function deleteTaxonomy(id: string): Promise<void> {
   return send(`/taxonomies/${id}`, { method: 'DELETE' });
 }
 
-export interface CreateTermInput {
-  name: LocalizedText;
-  slugs?: Record<string, string>;
-  parentId?: string | null;
-}
+export type CreateTermInput = CreateTermBody;
 
 export async function createTerm(
   taxonomyId: string,
@@ -93,16 +83,12 @@ export async function createTerm(
   );
 }
 
-export interface UpdateTermInput {
-  name?: LocalizedText;
-  description?: LocalizedText;
-  seoMeta?: LocalizedSeoMeta;
-  noindex?: boolean;
-  /** Replaces the whole map: a language left out loses its address. */
-  slugs?: Record<string, string>;
-  /** `null` detaches the landing page; the term's URL keeps working on the default layout. */
-  landingPageGroupId?: string | null;
-}
+/**
+ * `slugs` replaces the whole map: a language left out loses its address.
+ * `landingPageGroupId: null` detaches the landing page; the term's URL keeps
+ * working on the default layout.
+ */
+export type UpdateTermInput = UpdateTermBody;
 
 export async function updateTerm(
   termId: string,
@@ -120,20 +106,17 @@ export async function moveTerm(
   termId: string,
   parentId: string | null,
 ): Promise<TermRecord> {
+  const body: MoveTermBody = { parentId };
   return termRecordSchema.parse(
     await request(`/taxonomies/terms/${termId}/parent`, {
       method: 'PATCH',
-      body: JSON.stringify({ parentId }),
+      body: JSON.stringify(body),
     }),
   );
 }
 
-export interface ReorderTermsInput {
-  /** Whose children are put in order; `null` for the top of the dimension. */
-  parentId: string | null;
-  /** All of them, in the order wanted. */
-  orderedTermIds: string[];
-}
+/** `parentId`: whose children are put in order, `null` for the top of the dimension; `orderedTermIds`: all of them, in the order wanted. */
+export type ReorderTermsInput = ReorderTermsBody;
 
 /** The terms that share one parent, put in order in one call; answers with the dimension's terms as they now read. */
 export async function reorderTerms(
@@ -165,10 +148,11 @@ export async function setPageGroupTerms(
   pageGroupId: string,
   termIds: string[],
 ): Promise<PageGroupTerms> {
+  const body: PageGroupTermsBody = { termIds };
   return pageGroupTermsSchema.parse(
     await request(`/page-groups/${pageGroupId}/terms`, {
       method: 'PATCH',
-      body: JSON.stringify({ termIds }),
+      body: JSON.stringify(body),
     }),
   );
 }

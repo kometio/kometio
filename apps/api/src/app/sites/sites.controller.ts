@@ -53,7 +53,7 @@ import {
   updateCookieBannerSettingsBodySchema,
   type UpdateThemePackageBody,
   updateThemePackageBodySchema,
-} from './sites.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { SitesDeps } from './sites.deps';

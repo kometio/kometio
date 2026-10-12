@@ -39,7 +39,7 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   pageGroupTermsBodySchema,
   type PageGroupTermsBody,
-} from '../taxonomies/taxonomies.schemas';
+} from '@kometio/api-contracts';
 import {
   type CreatePageGroupBody,
   createPageGroupBodySchema,

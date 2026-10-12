@@ -24,7 +24,7 @@ export type UpdateBusinessInfoBody = z.infer<
   typeof updateBusinessInfoBodySchema
 >;
 
-// Same hostname validation as the public read path (public-pages.schemas.ts)
+// Same hostname validation as the public read path (public-page-requests.ts)
 // — a site's own `domain` must be a plausible hostname for the exact same
 // reason a request's Host header is validated there, just checked at write
 // time here instead of read time.
