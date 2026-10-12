@@ -6,7 +6,7 @@ import {
   InMemorySiteRepository,
 } from '@kometio/testing';
 import { LegalDocumentsController } from './legal-documents.controller';
-import type { GenerateLegalDocumentsBody } from './legal-documents.schemas';
+import type { GenerateLegalDocumentsBody } from '@kometio/api-contracts';
 
 const answers: GenerateLegalDocumentsBody['answers'] = {
   legalEntityName: 'Acme Srl',

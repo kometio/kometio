@@ -1,4 +1,5 @@
-import { generateLegalDocumentsBodySchema } from './legal-documents.schemas';
+import { describe, expect, it } from 'vitest';
+import { generateLegalDocumentsBodySchema } from './legal-documents';
 
 const answers = {
   legalEntityName: 'Acme Srl',

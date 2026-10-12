@@ -4,14 +4,14 @@ import {
   LEGAL_DOCUMENT_TEMPLATES,
   resolveTemplateLocale,
 } from '@kometio/application';
-import { SessionAuthGuard } from '../auth/session-auth.guard';
-import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   generateLegalDocumentsBodySchema,
   generateLegalDocumentsResponseSchema,
   previewLegalDocumentsResponseSchema,
   type GenerateLegalDocumentsBody,
-} from './legal-documents.schemas';
+} from '@kometio/api-contracts';
+import { SessionAuthGuard } from '../auth/session-auth.guard';
+import { ZodValidationPipe } from '../zod-validation.pipe';
 import { UuidParam } from '../uuid-param.decorator';
 import type { LegalDocumentsDeps } from './legal-documents.deps';
 import { LEGAL_DOCUMENTS_DEPS } from './legal-documents.tokens';
