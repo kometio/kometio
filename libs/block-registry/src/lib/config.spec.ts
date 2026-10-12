@@ -156,11 +156,12 @@ describe('stylableProperties / BLOCK_STYLE_DEFAULTS alignment', () => {
 
 // Same session: search-text.ts used to be a plain `switch` with a silent
 // `default: return []` — a new block with real prose (again, Heading)
-// could ship invisible to on-site search with nothing failing. Now
-// `PROSE_FIELD_EXTRACTORS`' keys (exposed as `SEARCHABLE_BLOCK_TYPES`) and
-// the explicit `BLOCKS_WITHOUT_SEARCHABLE_TEXT` allowlist must together
-// account for every real block type, with no leftovers either way — an
-// unlisted type fails loudly instead of silently indexing nothing.
+// could ship invisible to on-site search with nothing failing. Now every
+// contract declares what search reads of its block or why it reads nothing
+// (ADR-0115), and the two lists that come out — `SEARCHABLE_BLOCK_TYPES`
+// and `BLOCKS_WITHOUT_SEARCHABLE_TEXT` — must together account for every
+// block type the registry offers, with no leftovers either way: a type no
+// contract declares fails loudly instead of silently indexing nothing.
 describe('search-text.ts prose-field coverage', () => {
   it('accounts for every registered block type as either searchable or explicitly excluded', () => {
     const allTypes = new Set([

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { pickedPageSchema } from './block-values';
+import { defineBlockContract } from './block-contract';
+import { asString } from './search-prose';
 
 /**
  * Shared by every site-chrome block that can be scoped to a breakpoint
@@ -36,6 +38,19 @@ export const navPropsSchema = z.object({
   visibility: visibilitySchema.default('always'),
 });
 export type NavProps = z.infer<typeof navPropsSchema>;
+export const navBlockContract = defineBlockContract({
+  type: 'Nav',
+  props: navPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '1rem',
+  },
+  search: { none: 'navigation furniture: no prose of its own' },
+});
 
 /**
  * Shared by every block that can land inside a Nav's flex row (NavLink,
@@ -71,12 +86,41 @@ export const hamburgerMenuPropsSchema = navItemPositionSchema.extend({
   visibility: visibilitySchema.default('mobile-only'),
 });
 export type HamburgerMenuProps = z.infer<typeof hamburgerMenuPropsSchema>;
+export const hamburgerMenuBlockContract = defineBlockContract({
+  type: 'HamburgerMenu',
+  props: hamburgerMenuPropsSchema,
+  style: {
+    backgroundColor: 'var(--background)',
+    textColor: 'inherit',
+    borderRadius: '8px',
+    paddingX: '1rem',
+    paddingY: '1rem',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    boxShadow: '0 8px 24px rgb(0 0 0 / 12%)',
+  },
+  search: { none: 'navigation furniture: no prose of its own' },
+});
 
 /** No other editor-time config: the real links depend on which page the visitor is looking at (site.enabledLocales/translations of THAT page), a runtime fact the editor canvas doesn't have — see LanguageSwitcher.astro. */
 export const languageSwitcherPropsSchema = navItemPositionSchema.extend({
   visibility: visibilitySchema.default('always'),
 });
 export type LanguageSwitcherProps = z.infer<typeof languageSwitcherPropsSchema>;
+export const languageSwitcherBlockContract = defineBlockContract({
+  type: 'LanguageSwitcher',
+  props: languageSwitcherPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.5rem',
+  },
+  search: { none: 'navigation furniture: no prose of its own' },
+});
 
 export const navLinkPropsSchema = navItemPositionSchema.extend({
   label: z.string(),
@@ -88,6 +132,19 @@ export const navLinkPropsSchema = navItemPositionSchema.extend({
   visibility: visibilitySchema.default('always'),
 });
 export type NavLinkProps = z.infer<typeof navLinkPropsSchema>;
+export const navLinkBlockContract = defineBlockContract({
+  type: 'NavLink',
+  props: navLinkPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'var(--primary)',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.4em',
+  },
+  search: (props) => [asString(props['label'])],
+});
 
 /**
  * A dropdown trigger for a one-level submenu (Nav > NavDropdown > NavLink)
@@ -105,6 +162,24 @@ export const navDropdownPropsSchema = navItemPositionSchema.extend({
   visibility: visibilitySchema.default('always'),
 });
 export type NavDropdownProps = z.infer<typeof navDropdownPropsSchema>;
+export const navDropdownBlockContract = defineBlockContract({
+  type: 'NavDropdown',
+  props: navDropdownPropsSchema,
+  style: {
+    backgroundColor: 'var(--background)',
+    textColor: 'inherit',
+    borderRadius: '8px',
+    paddingX: '0.75rem',
+    paddingY: '0.75rem',
+    gap: '0.25rem',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+    boxShadow: '0 8px 24px rgb(0 0 0 / 12%)',
+  },
+  search: (props) => [asString(props['label'])],
+});
+
 /**
  * "Back to top" — no props beyond `visibility`. Its scroll-threshold
  * show/hide and smooth-scroll-to-top behavior live entirely in
@@ -116,6 +191,17 @@ export const backToTopPropsSchema = z.object({
   visibility: visibilitySchema.default('always'),
 });
 export type BackToTopProps = z.infer<typeof backToTopPropsSchema>;
+export const backToTopBlockContract = defineBlockContract({
+  type: 'BackToTop',
+  props: backToTopPropsSchema,
+  style: {
+    backgroundColor: 'var(--primary)',
+    textColor: 'var(--primary-foreground)',
+    borderRadius: '50%',
+    boxShadow: '0 4px 12px rgb(0 0 0 / 20%)',
+  },
+  search: { none: 'furniture: no prose of its own' },
+});
 
 /**
  * Floating "chat on WhatsApp" button. `phoneNumber`/`message` build the
@@ -130,6 +216,16 @@ export const whatsAppButtonPropsSchema = z.object({
   visibility: visibilitySchema.default('always'),
 });
 export type WhatsAppButtonProps = z.infer<typeof whatsAppButtonPropsSchema>;
+export const whatsAppButtonBlockContract = defineBlockContract({
+  type: 'WhatsAppButton',
+  props: whatsAppButtonPropsSchema,
+  style: {
+    backgroundColor: '#25d366',
+    borderRadius: '50%',
+    boxShadow: '0 4px 12px rgb(0 0 0 / 20%)',
+  },
+  search: (props) => [asString(props['message'])],
+});
 
 /**
  * "Home > ancestor > ... > current page" trail. No `content` prop: the
@@ -145,6 +241,21 @@ export const breadcrumbPropsSchema = z.object({
   visibility: visibilitySchema.default('always'),
 });
 export type BreadcrumbProps = z.infer<typeof breadcrumbPropsSchema>;
+export const breadcrumbBlockContract = defineBlockContract({
+  type: 'Breadcrumb',
+  props: breadcrumbPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.4rem',
+  },
+  search: {
+    none: 'furniture, not the page\'s words: the trail\'s "Home" reads the same on every page that draws it, so indexing it would answer "home" with the whole site',
+  },
+});
 
 /**
  * Dismissible announcement bar. Reuses NavLink's `linkType`/`page`/`url`
@@ -165,9 +276,50 @@ export const promoBarPropsSchema = z.object({
   visibility: visibilitySchema.default('always'),
 });
 export type PromoBarProps = z.infer<typeof promoBarPropsSchema>;
+export const promoBarBlockContract = defineBlockContract({
+  type: 'PromoBar',
+  props: promoBarPropsSchema,
+  style: {
+    backgroundColor: 'var(--primary)',
+    textColor: 'var(--primary-foreground)',
+    borderRadius: '0',
+    paddingX: '2.5rem',
+    paddingY: '0.75rem',
+  },
+  search: (props) => [asString(props['message'])],
+});
 
 export const searchBoxPropsSchema = z.object({
   placeholder: z.string().default('Cerca nel sito...'),
   visibility: visibilitySchema.default('always'),
 });
 export type SearchBoxProps = z.infer<typeof searchBoxPropsSchema>;
+export const searchBoxBlockContract = defineBlockContract({
+  type: 'SearchBox',
+  props: searchBoxPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: '0',
+    paddingX: '0',
+    paddingY: '0',
+    gap: '0.5rem',
+  },
+  search: {
+    none: "furniture, not the page's words: the search field's placeholder reads the same on every page that draws it",
+  },
+});
+
+/** Every block this file declares, in the order the picker draws them. */
+export const NAVIGATION_BLOCK_CONTRACTS = [
+  navLinkBlockContract,
+  languageSwitcherBlockContract,
+  breadcrumbBlockContract,
+  searchBoxBlockContract,
+  navBlockContract,
+  hamburgerMenuBlockContract,
+  navDropdownBlockContract,
+  promoBarBlockContract,
+  backToTopBlockContract,
+  whatsAppButtonBlockContract,
+] as const;

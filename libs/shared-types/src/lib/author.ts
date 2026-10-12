@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { pickedMediaSchema } from './content-model';
+import { defineBlockContract } from './block-contract';
 
 /**
  * The first segment of an author's address, by language:
@@ -101,6 +102,23 @@ export const authorBoxPropsSchema = z.object({
 });
 
 export type AuthorBoxProps = z.infer<typeof authorBoxPropsSchema>;
+export const authorBoxBlockContract = defineBlockContract({
+  type: 'AuthorBox',
+  props: authorBoxPropsSchema,
+  style: {
+    backgroundColor: 'transparent',
+    textColor: 'inherit',
+    borderRadius: 'var(--radius)',
+    paddingX: '1.25rem',
+    paddingY: '1.25rem',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
+  },
+  search: {
+    none: "a person's name and bio, from their profile: indexing them would file the author's biography under every article they wrote",
+  },
+});
 
 /** What a person may do in the editor — the one list the domain, the wire and the `user_role` enum read. */
 export const USER_ROLES = ['admin', 'publisher', 'editor'] as const;
@@ -108,3 +126,6 @@ export const USER_ROLES = ['admin', 'publisher', 'editor'] as const;
 export const userRoleSchema = z.enum(USER_ROLES);
 
 export type UserRole = (typeof USER_ROLES)[number];
+
+/** Every block this file declares, in the order the picker draws them. */
+export const AUTHOR_BLOCK_CONTRACTS = [authorBoxBlockContract] as const;

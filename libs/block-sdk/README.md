@@ -105,19 +105,31 @@ built with `defineBlock()` — not a standalone, unregistered sample — so you
 can trace every step against actual code instead of a hypothetical. To add
 a block of your own, in order:
 
-1. **Schema** — a `z.object({...})` + inferred type, in
-   the file of its family in `libs/shared-types/src/lib/` (see
-   `calloutPropsSchema` in `marketing-blocks.ts`),
-   and its entry in `BLOCK_PROPS_SCHEMAS`
-   (`libs/shared-types/src/lib/block-props-schemas.ts`), which is what the
-   API and the site validate a saved block's props against.
+1. **Contract** — in the file of its family in `libs/shared-types/src/lib/`:
+   a `z.object({...})` + inferred type, and a `defineBlockContract({...})`
+   beside it (see `calloutPropsSchema` and `calloutBlockContract` in
+   `marketing-blocks.ts`), named in that file's `*_BLOCK_CONTRACTS` list. A
+   contract is everything the site, the API and the tooling share about the
+   block, in one place:
+   - `props` — its schema, which the API and the site validate a saved
+     block's props against;
+   - `style` — what its component falls back to for each stylable property,
+     copied from its CSS (omit it for a block that takes no style);
+   - `search` — the function that returns its prose, or
+     `{ none: 'why it has none' }`; it is required, so a block cannot be
+     added without deciding;
+   - `variants` — the looks it ships beyond its own, if any.
+
+   `BLOCK_PROPS_SCHEMAS`, `BLOCK_TYPES`, `BLOCK_STYLE_DEFAULTS`, the search
+   lists and this package's `CORE_BLOCK_TYPES` / `CORE_BLOCK_VARIANTS` are
+   derived from the contracts: there is no list to add the block to. A new
+   family file adds its own list to `block-contracts.ts`.
+
 2. **Descriptor** — a `.block.ts` file calling `defineBlock()` (see
    `callout.block.ts`), registered in `libs/block-registry/src/lib/config.ts`:
    add the import and add it to the `pageBlocks` array. Its `category` says
    which drawer of the picker it is in, and its place in `pageBlocks` says
-   where in that drawer — there is no second list of types to edit. If it
-   ships with core, its `type` also goes in `CORE_BLOCK_TYPES`
-   (`libs/block-sdk/src/lib/core-block-types.ts`).
+   where in that drawer — there is no second list of types to edit.
 3. **Render component** — `apps/public-site/src/components/blocks/<Type>.astro`
    (see `Callout.astro`), named exactly like the `type`. It is found by that
    name: there is no import to add and no dispatch table to extend. It is the
@@ -133,24 +145,21 @@ a block of your own, in order:
    not a block goes in `components/parts/`, not `blocks/`.
 4. **Labels** — `blocks.<type>.label` and `blocks.<type>.fields.*` keys in
    `apps/editor-app/src/locales/en.json` and `it.json`.
-5. **Style defaults** — if it lists `stylableProperties`, its entry in
-   `BLOCK_STYLE_DEFAULTS` (`libs/shared-types/src/lib/block-style-defaults.ts`).
-6. **Search text** — `libs/shared-types/src/lib/search-text.ts`: either the
-   fields that carry prose, or an explicit exclusion (see its own doc
-   comment for why this is an allowlist, not automatic).
-7. Optional: an entry in `GENERATION_CATALOG`
+5. Optional: an entry in `GENERATION_CATALOG`
    (`libs/application/src/lib/page-generation/generation-catalog.ts`) if a
    page generated from a prompt may use it.
 
 Nothing on that list is left to memory: a step that is missed fails a spec
 that names it.
 
-| Declaration                                      | Failing spec                                        |
+| Declaration                                      | Failing check                                       |
 | ------------------------------------------------ | --------------------------------------------------- |
-| props schema, and `defaultProps` that satisfy it | `libs/block-registry/.../block-declaration.spec.ts` |
-| `CORE_BLOCK_TYPES`                               | `libs/block-registry/.../core-block-types.spec.ts`  |
+| search text or its exclusion (`search`)          | the compiler: `search` is a required field          |
+| a contract named in its family's list            | `libs/shared-types/.../block-contracts.spec.ts`     |
+| a contract for each descriptor, and back         | `libs/block-registry/.../core-block-types.spec.ts`  |
+| `defaultProps` that satisfy the contract's props | `libs/block-registry/.../block-declaration.spec.ts` |
 | listed in `pageBlocks` / `headerFooterBlocks`    | `libs/block-registry/.../config.spec.ts`            |
-| search text or exclusion; style defaults         | `libs/block-registry/.../config.spec.ts`            |
+| `stylableProperties` matching its `style`        | `libs/block-registry/.../config.spec.ts`            |
 | an icon of its own                               | `libs/block-registry/.../block-icons.spec.ts`       |
 | a component named for it                         | `apps/public-site/.../block-components.spec.ts`     |
 | a nesting the generation catalogue allows        | `apps/api/.../generation-catalog-registry.spec.ts`  |
@@ -270,11 +279,14 @@ spec is evidence about the loader and not merely about the spec:
 | `validateThemeVariantExtensions` | names, labels, a theme repeating itself          | anywhere                                         |
 | `checkVariantsAgainstCore`       | the type exists; no look core already ships      | needs `CORE_BLOCK_VARIANTS` + `CORE_BLOCK_TYPES` |
 
-Both constants live in this package rather than being derived from
-`@kometio/block-registry`, for the reason at the top of this file: that
-package is React and editor UI, and depending on it is what used to make
-a theme undevelopable outside the monorepo. `block-registry`'s own
-`core-block-types.spec.ts` fails, naming what to fix, when either drifts.
+Both constants are read from the blocks' contracts in
+`@kometio/shared-types` ([ADR-0115](../../docs/adr/0115-a-block-is-declared-once-as-a-contract.md))
+rather than from `@kometio/block-registry`, for the reason at the top of
+this file: that package is React and editor UI, and depending on it is what
+used to make a theme undevelopable outside the monorepo. This package
+already depends on `shared-types`, which a theme has anyway.
+`block-registry`'s own `core-block-types.spec.ts` fails, naming what to fix,
+when the registry's descriptors and the contracts disagree.
 
 ## Adding a style property core does not have
 
@@ -306,8 +318,8 @@ The theme's CSS reads the variable derived from the key —
 | `checkStylePropertiesAgainstCore` | the type exists; no key core already ships       | needs `CORE_BLOCK_TYPES` |
 
 `CORE_STYLE_PROPERTY_KEYS` is read from `blockStyleOverrideSchema` itself
-rather than repeated, so unlike `CORE_BLOCK_TYPES` it has no anti-drift
-spec to keep: it **is** the source.
+rather than repeated, and `CORE_BLOCK_TYPES` from the contracts: neither
+has a copy to keep in step. They **are** the source.
 
 **Reach for this only when the agency should tune the value.** If it is
 the theme's own design decision, write it in CSS — simpler, and nobody
