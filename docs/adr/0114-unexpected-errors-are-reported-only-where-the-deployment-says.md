@@ -32,14 +32,18 @@ not choose.
   a domain rule that said no and the 503 of an installation not yet set up are
   the application working, and are in the log. In the public site, what a route
   throws.
-- **What leaves is a list of what to keep**, not of what to drop: the error
-  (type, message, frames without variables), level, environment, release and the
+- **What leaves is a list of what to keep**, not of what to drop, field by
+  field down to an exception and a frame: the error (type, message, how it was
+  caught, the places in the code), level, environment, release and the
   application's own tags. No request, headers, cookies, body, query string,
   user, machine name, extra data or breadcrumbs, and the SDK is started without
   its default integrations, so it learns none of those to begin with. The
-  words of the error are redacted for an email address, the query of an
-  address, a bearer token and the values a failed query was run with (Drizzle
-  writes them after the SQL).
+  words of the error and the tags are redacted by an ordered list of rules, for
+  what such messages have been seen to carry: the values a failed query was run
+  with (Drizzle writes them after the SQL), the credentials of a connection
+  string, the query of an address, an email address, an Authorization value, a
+  token, a password hash, a session cookie; and they are cut at 1000
+  characters.
 - **The SDK is `@sentry/node-core/light`.** `@sentry/node` 11 depends on the
   bundler plugins, which depend on Sentry's command-line client (15 MB) and a
   native parser: nothing a server that only reports errors needs to install.

@@ -19,15 +19,22 @@ sent.
   instrumentation, no console capture, no breadcrumbs, no tracing, no
   profiling, no sessions. Two integrations are named: the `cause` chain
   (`linkedErrors`) and de-duplication.
-- **A list of what to keep, not of what to drop** (`scrubEvent`). What leaves
-  is the error (type, message, stack frames without their variables), the
-  level, the environment, the release, and the tags the application set:
+- **A list of what to keep, not of what to drop** (`scrubEvent`), field by
+  field down to the fields of an exception and of a stack frame. What leaves
+  is the error (type, message, how it was caught, the places in the code),
+  the level, the environment, the release, and the tags the application set:
   `service`, `request_id`, `http_method`, `http_path`. No request, no user,
-  no machine name, no `extra`, no breadcrumbs: a field an SDK learns to attach
-  later does not travel until somebody adds it here.
-- **The words of the error are redacted** (`redact`) for what they commonly
-  name: an email address, the query of an address, a bearer token and the
-  values a failed query was run with. The
+  no machine name, no `extra`, no breadcrumbs, no source lines, no variables:
+  a field an SDK learns to attach later does not travel until somebody adds
+  it here.
+- **The words of the error, and the tags, are redacted** (`redact`, an
+  ordered list of rules, each a thing seen or to be expected in such a
+  message): the values a failed query was run with (to the end of the
+  message), the credentials of a connection string, the query of an address
+  (absolute or not), an email address (whatever follows the `@`, in any
+  alphabet), an Authorization value of any scheme, a JSON web token, a
+  password hash, a long hexadecimal secret, a session written as a cookie. A
+  text is cut at 1000 characters, after it has been redacted. The
   application also never reports an error it handled (a refused request, a
   missing page, a rule that said no): only what nobody expected.
 - **A DSN is validated** (`assertSentryDsn`): one that is not a DSN is

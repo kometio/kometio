@@ -67,6 +67,80 @@ describe('redact', () => {
     );
   });
 
+  describe('what the first version of this let through', () => {
+    it.each([
+      [
+        'the values of a failed query when they run over several lines',
+        'Failed query: update "pages" set "content" = $1\nparams: line one\nline two with ana@x.test\n$argon2id$v=19$abc',
+        'Failed query: update "pages" set "content" = $1\nparams: [values]',
+      ],
+      [
+        'credentials inside a connection string',
+        'connect failed: postgres://kometio_app:s3cret@db.internal:5432/kometio',
+        'connect failed: postgres://[credentials]@db.internal:5432/kometio',
+      ],
+      [
+        'the query of an address that is not absolute',
+        'GET /api/public/pages/p1/preview?token=abc.def&x=1 failed',
+        'GET /api/public/pages/p1/preview?[query] failed',
+      ],
+      [
+        'the query of an address written in capitals',
+        'HTTPS://x.test/p?token=abc',
+        'HTTPS://x.test/p?[query]',
+      ],
+      [
+        'an email address that has no top-level domain, or is not ASCII',
+        'for ana@localhost and for andré@exämple.test',
+        'for [email] and for [email]',
+      ],
+      [
+        'an Authorization header of another scheme',
+        'rejected: Authorization: Basic YW5hOnMzY3JldA==',
+        'rejected: Authorization: Basic [token]',
+      ],
+      [
+        'a JSON web token',
+        'bad token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJl',
+        'bad token [token]',
+      ],
+      [
+        'a password hash',
+        'saved $argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$aGFzaGhhc2g and went on',
+        'saved [hash] and went on',
+      ],
+      [
+        'a long hexadecimal secret',
+        'secret 3f9a1c5e7b2d4f6a8c0e1b3d5f7a9c2e4b6d8f0a1c3e5b7d9f1a3c5e7b9d1f3a',
+        'secret [token]',
+      ],
+      [
+        'a session cookie as it is written in a header',
+        'cookie: kometio_session=abc123def456; theme=dark',
+        'cookie: kometio_session=[token]; theme=dark',
+      ],
+    ])('redacts %s', (_name, text, expected) => {
+      expect(redact(text)).toBe(expected);
+    });
+
+    it('keeps what is not a secret: an id, a status, a plain question', () => {
+      const text =
+        'page 3f9a1c5e-7b2d-4f6a-8c0e-1b3d5f7a9c2e not found (404): which one?';
+
+      expect(redact(text)).toBe(text);
+    });
+
+    it('cuts a very long message, after redacting it, not before', () => {
+      const long = `${'x'.repeat(5000)} ana@example.test`;
+
+      const redacted = redact(long);
+
+      expect(redacted.length).toBeLessThanOrEqual(1001);
+      const secretAtTheEdge = `${'y'.repeat(990)} Bearer abcdefghijklmnopqrstuvwxyz`;
+      expect(redact(secretAtTheEdge)).not.toContain('abcdefghij');
+    });
+  });
+
   it('leaves what carries nothing alone', () => {
     expect(redact('Cannot read properties of undefined (reading id)')).toBe(
       'Cannot read properties of undefined (reading id)',
@@ -110,6 +184,61 @@ describe('scrubEvent', () => {
     expect(value).toBe(
       'duplicate key (email)=([email]) from https://x.test/p?[query] Bearer [token]',
     );
+  });
+
+  it('redacts the tags too: a path or a request id is whatever the caller said', () => {
+    const event = richEvent();
+    event.tags = {
+      service: 'api',
+      http_path: '/api/users/ana@example.test',
+      request_id: 'Bearer abcdefghijklmnop',
+    };
+
+    expect(scrubEvent(event).tags).toEqual({
+      service: 'api',
+      http_path: '/api/users/[email]',
+      request_id: 'Bearer [token]',
+    });
+  });
+
+  it('keeps of an exception only its type, its text and the places in the code', () => {
+    const event = richEvent();
+    const [value] = event.exception?.values ?? [];
+    if (!value) throw new Error('fixture');
+    Object.assign(value, {
+      mechanism: { type: 'generic', handled: false, data: { body: 'x' } },
+      module: 'user-module',
+      thread_id: 1,
+    });
+    const frame = value.stacktrace?.frames?.[0];
+    if (!frame) throw new Error('fixture');
+    Object.assign(frame, {
+      context_line: 'const password = "hunter2";',
+      pre_context: ['const a = 1;'],
+      post_context: ['const b = 2;'],
+      abs_path: '/app/dist/main.js',
+      function: 'handle',
+      in_app: true,
+      colno: 7,
+    });
+
+    const [kept] = scrubEvent(event).exception?.values ?? [];
+
+    expect(Object.keys(kept ?? {}).sort()).toEqual([
+      'mechanism',
+      'stacktrace',
+      'type',
+      'value',
+    ]);
+    expect(kept?.mechanism).toEqual({ type: 'generic', handled: false });
+    expect(kept?.stacktrace?.frames?.[0]).toEqual({
+      filename: 'app.js',
+      abs_path: '/app/dist/main.js',
+      function: 'handle',
+      lineno: 3,
+      colno: 7,
+      in_app: true,
+    });
   });
 
   it('is a list of what to keep: a field it does not know does not travel', () => {

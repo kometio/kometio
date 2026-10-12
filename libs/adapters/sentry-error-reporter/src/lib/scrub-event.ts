@@ -1,60 +1,116 @@
-import type { ErrorEvent, StackFrame } from '@sentry/node-core/light';
+import type {
+  ErrorEvent,
+  Exception,
+  StackFrame,
+} from '@sentry/node-core/light';
 
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
-/** What follows the `?` of an address in a message: a token, an id, a person's search. */
-const QUERY = /(https?:\/\/[^\s?#"')]+)\?[^\s#"')]*/g;
-const BEARER = /\bBearer\s+[A-Za-z0-9._~+/=-]+/gi;
-/**
- * The values a failed query was run with. Drizzle writes them after the SQL
- * (`Failed query: insert into … values ($1, $2)\nparams: <values>`), and they
- * are a person's email, a password hash, a token.
- */
-const QUERY_PARAMS = /(\bparams:)[^\n]*/g;
+/** How much of an error's words is kept, after redacting them. */
+const MAX_TEXT_LENGTH = 1000;
+
+/** A character that cannot be part of the name or the host of an email address, written in a message. */
+const NOT_ADDRESS = String.raw`\s@<>()\[\]{}"'` + '`' + String.raw`,;:/\\`;
 
 /**
- * What an error's own words may carry out with them: the text of an error
- * is whatever the code that threw it put there, and a failed query or a
- * failed fetch names its values.
+ * What an error's own words may carry out with them: the text of an error is
+ * whatever the code that threw it put there, and a failed query, a failed
+ * fetch or a failed connection names its values. Each rule is a thing that
+ * has been seen in such a message or that one would expect to be; the order
+ * is the order they are applied in.
  */
+const RULES: readonly (readonly [RegExp, string])[] = [
+  // The values a failed query was run with. Drizzle writes them after the
+  // SQL (`Failed query: insert … values ($1, $2)\nparams: <values>`): a
+  // person's email, a password hash, a page's text. To the end of the
+  // message, because a value can have a line break in it.
+  [/\bparams:[\s\S]*$/, 'params: [values]'],
+  // What stands before the `@` of an address with a scheme: a connection
+  // string with its password.
+  [/\b([a-z][a-z0-9+.-]*:\/\/)[^\s/@?#]+@/gi, '$1[credentials]@'],
+  // The query of an address, absolute or not: a token, an id, a search.
+  [/\?[\w.~%+-]+=[^\s#"'`)>]*/g, '?[query]'],
+  // An email address, whatever is after the `@` (`ana@localhost`) and
+  // whatever alphabet it is written in.
+  [new RegExp(`[^${NOT_ADDRESS}]+@[^${NOT_ADDRESS}]+`, 'g'), '[email]'],
+  // An Authorization header's value, and a JSON web token on its own.
+  [/\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]+/gi, '$1 [token]'],
+  [/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/g, '[token]'],
+  // A password hash.
+  [/\$argon2[a-z]*\$[^\s"'`)]+/g, '[hash]'],
+  // A secret written in hexadecimal (a UUID is not: its runs are shorter).
+  [/\b[0-9a-f]{32,}\b/gi, '[token]'],
+  // A session written as a cookie, or as a parameter.
+  [/\b(kometio_[a-z_]+|[a-z_]*session[a-z_]*|sid)=[^;\s]+/gi, '$1=[token]'],
+];
+
 export function redact(text: string): string {
-  return text
-    .replace(EMAIL, '[email]')
-    .replace(QUERY, '$1?[query]')
-    .replace(BEARER, 'Bearer [token]')
-    .replace(QUERY_PARAMS, '$1 [values]');
+  const redacted = RULES.reduce(
+    (current, [pattern, replacement]) => current.replace(pattern, replacement),
+    text,
+  );
+  // After, not before: a secret cut in half at the limit would no longer
+  // look like one.
+  return redacted.length > MAX_TEXT_LENGTH
+    ? `${redacted.slice(0, MAX_TEXT_LENGTH)}…`
+    : redacted;
 }
 
-function withoutVars(frame: StackFrame): StackFrame {
-  const copy = { ...frame };
-  delete copy.vars;
-  return copy;
+/** Only where in the code it was: no source lines, no variables, nothing an integration may add later. */
+function keepFrame(frame: StackFrame): StackFrame {
+  const kept: StackFrame = {};
+  if (frame.filename !== undefined) kept.filename = frame.filename;
+  if (frame.abs_path !== undefined) kept.abs_path = frame.abs_path;
+  if (frame.function !== undefined) kept.function = frame.function;
+  if (frame.module !== undefined) kept.module = frame.module;
+  if (frame.lineno !== undefined) kept.lineno = frame.lineno;
+  if (frame.colno !== undefined) kept.colno = frame.colno;
+  if (frame.in_app !== undefined) kept.in_app = frame.in_app;
+  return kept;
+}
+
+function keepException(value: Exception): Exception {
+  const kept: Exception = {};
+  if (value.type !== undefined) kept.type = value.type;
+  if (value.value !== undefined) kept.value = redact(value.value);
+  if (value.mechanism) {
+    // How it was caught, and whether it was handled; its `data` is free-form.
+    kept.mechanism = { type: value.mechanism.type };
+    if (value.mechanism.handled !== undefined) {
+      kept.mechanism.handled = value.mechanism.handled;
+    }
+  }
+  if (value.stacktrace?.frames) {
+    kept.stacktrace = { frames: value.stacktrace.frames.map(keepFrame) };
+  }
+  return kept;
+}
+
+function redactTags(
+  tags: ErrorEvent['tags'],
+): { tags: NonNullable<ErrorEvent['tags']> } | Record<string, never> {
+  if (!tags) return {};
+  return {
+    tags: Object.fromEntries(
+      Object.entries(tags).map(([name, value]) => [
+        name,
+        typeof value === 'string' ? redact(value) : value,
+      ]),
+    ),
+  };
 }
 
 /**
  * The least an event may carry out: the error, where in the code it was,
  * and the tags the reporter put on it.
  *
- * Removed whatever the SDK attached about the request (headers and cookies
- * carry the session, the body carries what somebody typed), the person, the
- * machine, and anything free-form (`extra`, breadcrumbs). What remains of the
- * error's text is redacted for what it commonly names. This is a list of
- * what to keep, not a list of what to drop: an SDK that learns to attach one
- * more thing does not start sending it.
+ * A list of what to keep, field by field and down to the fields of an
+ * exception and of a frame, not a list of what to drop: the request (its
+ * headers and cookies carry the session, its body what somebody typed), the
+ * person, the machine, `extra`, breadcrumbs, a frame's source lines and
+ * variables are absent because nothing here names them, and an SDK that
+ * learns to attach one more thing does not start sending it. What is kept
+ * of text is redacted.
  */
 export function scrubEvent(event: ErrorEvent): ErrorEvent {
-  const exception = event.exception?.values?.map((value) => ({
-    ...value,
-    ...(value.value === undefined ? {} : { value: redact(value.value) }),
-    // Variables a frame was captured with are the visitor's data too.
-    ...(value.stacktrace
-      ? {
-          stacktrace: {
-            ...value.stacktrace,
-            frames: value.stacktrace.frames?.map(withoutVars),
-          },
-        }
-      : {}),
-  }));
   return {
     event_id: event.event_id,
     timestamp: event.timestamp,
@@ -62,10 +118,12 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
     level: event.level,
     environment: event.environment,
     release: event.release,
-    tags: event.tags,
     sdk: event.sdk,
+    ...redactTags(event.tags),
     ...(event.message === undefined ? {} : { message: redact(event.message) }),
-    ...(exception ? { exception: { values: exception } } : {}),
+    ...(event.exception?.values
+      ? { exception: { values: event.exception.values.map(keepException) } }
+      : {}),
     type: undefined,
   };
 }
