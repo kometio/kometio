@@ -27,7 +27,7 @@ import {
   type CreateCollectionBody,
   type ListCollectionsQuery,
   type UpdateCollectionBody,
-} from './collections.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { CollectionsDeps } from './collections.deps';

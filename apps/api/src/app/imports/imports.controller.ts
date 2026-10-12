@@ -38,7 +38,7 @@ import {
   listImportJobsQuerySchema,
   type StartWordPressAnalysisBody,
   startWordPressAnalysisBodySchema,
-} from './imports.schemas';
+} from '@kometio/api-contracts';
 import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { ImportsDeps } from './imports.deps';

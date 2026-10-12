@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { MEDIA_KINDS } from '@kometio/shared-types';
 
+/** The longest search the library takes: what a field that feeds it has to stop at. */
+export const MEDIA_SEARCH_MAX_LENGTH = 200;
+
 export const listMediaQuerySchema = z.object({
   siteId: z.string().uuid(),
   page: z.coerce.number().int().min(1).default(1),
@@ -10,7 +13,7 @@ export const listMediaQuerySchema = z.object({
    * answered here and not by the caller filtering what came back — that
    * would be a search that only ever looked at the newest page.
    */
-  search: z.string().trim().max(200).optional(),
+  search: z.string().trim().max(MEDIA_SEARCH_MAX_LENGTH).optional(),
   kind: z.enum(MEDIA_KINDS).optional(),
 });
 export type ListMediaQuery = z.infer<typeof listMediaQuerySchema>;

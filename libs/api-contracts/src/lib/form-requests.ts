@@ -42,3 +42,6 @@ export const listFormSubmissionsQuerySchema = z.object({
 export type ListFormSubmissionsQuery = z.infer<
   typeof listFormSubmissionsQuerySchema
 >;
+
+/** What a client sends: steps and notification addresses may be left out. */
+export type UpdateFormRequest = z.input<typeof updateFormBodySchema>;

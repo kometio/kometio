@@ -1,10 +1,12 @@
-import { type FormField, type FormStep } from '@kometio/shared-types';
 import {
+  type CreateFormBody,
+  type DuplicateFormBody,
   type FormRecord,
   type FormSubmissionRecord,
   type PaginatedFormSubmissions,
   type PaginatedForms,
   type SubmissionOriginPageRecord,
+  type UpdateFormRequest,
   formRecordSchema,
   paginatedFormSubmissionsSchema,
   paginatedFormsSchema,
@@ -38,10 +40,7 @@ export async function getForm(id: string): Promise<FormRecord> {
   return formRecordSchema.parse(await request(`/forms/${id}`));
 }
 
-export interface CreateFormInput {
-  siteId: string;
-  name: string;
-}
+export type CreateFormInput = CreateFormBody;
 
 export async function createForm(input: CreateFormInput): Promise<FormRecord> {
   return formRecordSchema.parse(
@@ -54,20 +53,16 @@ export async function duplicateForm(
   formId: string,
   name: string,
 ): Promise<FormRecord> {
+  const body: DuplicateFormBody = { name };
   return formRecordSchema.parse(
     await request(`/forms/${formId}/duplicate`, {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(body),
     }),
   );
 }
 
-export interface UpdateFormInput {
-  name: string;
-  fields: FormField[];
-  steps: FormStep[];
-  notificationEmails: string[];
-}
+export type UpdateFormInput = UpdateFormRequest;
 
 export async function updateForm(
   id: string,

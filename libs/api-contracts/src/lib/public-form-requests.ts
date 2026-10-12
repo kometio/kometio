@@ -7,3 +7,6 @@ export const submitFormBodySchema = z.object({
   captchaToken: z.string().default(''),
 });
 export type SubmitFormBody = z.infer<typeof submitFormBodySchema>;
+
+/** What a client sends: the page, the honeypot and the captcha token may be left out. */
+export type SubmitFormRequest = z.input<typeof submitFormBodySchema>;

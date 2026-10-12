@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { z } from 'zod';
+import { MEDIA_SEARCH_MAX_LENGTH } from '@kometio/api-contracts';
 import { MEDIA_KINDS } from '@kometio/shared-types';
 import {
   mediaKindCountsQueryOptions,
@@ -18,10 +19,10 @@ const mediaListSearchSchema = z.object({
   // In the URL rather than in component state, for the same reason as the
   // page number above it: a search worth doing is a search worth reloading
   // into and sending to somebody.
-  // The same 200 the API enforces (media.schemas.ts): without it, pasting
-  // something longer turned a search into a 400 in the error boundary
-  // instead of "nothing matches".
-  search: z.string().max(200).optional().catch(undefined),
+  // The same length the API enforces, which the contract says: without it,
+  // pasting something longer turned a search into a 400 in the error
+  // boundary instead of "nothing matches".
+  search: z.string().max(MEDIA_SEARCH_MAX_LENGTH).optional().catch(undefined),
   kind: z.enum(MEDIA_KINDS).optional().catch(undefined),
   // The file whose details panel is open. In the address so the panel has a
   // link of its own and Back closes it; it is not part of what the loader

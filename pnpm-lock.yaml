@@ -1172,6 +1172,9 @@ importers:
 
   libs/api-contracts:
     dependencies:
+      '@kometio/domain-core':
+        specifier: workspace:*
+        version: link:../domain-core
       '@kometio/shared-types':
         specifier: workspace:*
         version: link:../shared-types
