@@ -151,6 +151,12 @@ docker stop -t 30 kometio && docker rm kometio
 
 Do not use `docker rm -f` for this: it kills the database instead of stopping it.
 
+**Going back.** The migrations only go forward, so an older image does not start
+on a volume a newer one has opened: it stops at the start, says that the volume was
+made by a newer Kometio, and leaves it as it was. To be on the older version again,
+open the export (or the backup) made before the update into a new volume with that
+version's image, as in [Move a site](#move-a-site-to-another-installation).
+
 ## If it does not start
 
 ```sh

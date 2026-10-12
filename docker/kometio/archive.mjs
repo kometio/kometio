@@ -65,6 +65,25 @@ export function appliedMigrationTags(journal, appliedWhen) {
   });
 }
 
+/**
+ * Refuses to start on a database that a newer version has already migrated.
+ *
+ * Migrations only go forward. An older image started on that volume would run
+ * its older code against a schema it does not know, which does not fail at
+ * once: it writes what the newer one then reads wrongly. `docker run` of the
+ * old tag after an update is how this happens, and the README's "update" is
+ * what makes it likely. The refusal says what to do instead.
+ */
+export function assertDatabaseIsNotNewer(journal, appliedWhen) {
+  const known = new Set(journal.entries.map((entry) => entry.when));
+  const unknown = appliedWhen.filter((when) => !known.has(Number(when)));
+  if (unknown.length > 0) {
+    throw new Refusal(
+      `this volume was made by a newer Kometio than this image: its database has ${unknown.length} migration${unknown.length === 1 ? '' : 's'} that this version does not know, and migrations only go forward. Start the version that made it (or a newer one) on this volume; to be on this version again, open the export (or the backup) made before the update into a new volume (docker run … import, see the README, "Move a site")`,
+    );
+  }
+}
+
 export function buildManifest({ createdAt, site, migrations, uploads }) {
   return {
     format: ARCHIVE_FORMAT,
