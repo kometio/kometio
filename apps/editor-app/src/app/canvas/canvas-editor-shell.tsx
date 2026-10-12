@@ -1,18 +1,8 @@
-import {
-  type MutableRefObject,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import { type Block, type ExposedFields } from '@kometio/shared-types';
-import type { BlockDescriptor } from '@kometio/block-registry';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { PUBLIC_SITE_URL } from '../../lib/public-site-url';
 import { useTranslation } from '../../lib/use-translation';
-import { useToast } from '../shell/toast-provider';
 import { usePageList } from '../pages/page-list-context';
 import { useIconList } from '../style/icon-list-context';
 import { findMissingThemeIcons } from '../style/missing-theme-icons';
@@ -20,33 +10,22 @@ import { useUnsavedChangesGuard } from '../common/use-unsaved-changes-guard';
 import { ConfirmActionDialog } from '../common/confirm-action-dialog';
 import { useApplySavedInterfaceLanguage } from '../account/use-interface-language';
 import { useCurrentSession } from '../auth/use-current-session';
-import { BlockPicker, type BlockPickerCategory } from './block-picker';
-import { TemplatePicker } from './template-picker';
 import { BlockToolbarOverlay } from './block-toolbar-overlay';
 import type { Breakpoint } from './breakpoint-selector';
-import {
-  buildPreviewUrl,
-  CanvasFrame,
-  type EditingSection,
-} from './canvas-frame';
+import { CanvasFrame } from './canvas-frame';
 import { describeSelection } from './canvas-selection';
-import { CanvasTopBar, type CanvasPageMenuItem } from './canvas-top-bar';
+import { CanvasTopBar } from './canvas-top-bar';
 import { CanvasRail, LEFT_PANEL_ID } from './canvas-rail';
-import {
-  buildCommandItems,
-  canvasCommandGroups,
-  runCommand,
-} from './canvas-commands';
+import type { CanvasEditorShellProps } from './canvas-editor-shell-props';
+import { CanvasInsertContent } from './canvas-insert-content';
+import { CanvasPropertiesContent } from './canvas-properties-content';
 import { CollapsibleSidePanel } from './collapsible-side-panel';
 import { CanvasLayersTab } from './canvas-layers-tab';
-import { BlockBreadcrumb } from './block-breadcrumb';
 import { CommandMenu } from '../common/command-menu';
 import { EmptyPagePrompt } from './empty-page-prompt';
 import { KeyboardShortcutsDialog } from './keyboard-shortcuts-dialog';
 import { MobilePanelBar, MobileSheetPanel } from './mobile-panel-sheet';
-import { NoSelectionPanel } from './no-selection-panel';
 import { SectionFocusOverlay } from './section-focus-overlay';
-import { PropertiesPanel } from './properties-panel';
 import { buildSectionEditing } from './section-editing';
 import { useCanvasPanels } from './use-canvas-panels';
 import { siblingDropRects } from './compute-drop-target';
@@ -59,105 +38,16 @@ import { useCanvasDragReorder } from './use-canvas-drag-reorder';
 import { useCanvasPreviewToken } from './use-canvas-preview-token';
 import { useCanvasShortcuts } from './use-canvas-shortcuts';
 import { useMakeReusableSection } from './use-make-reusable-section';
-import {
-  usePageGenerationEntry,
-  type PageGenerationConfig,
-} from './use-page-generation-entry';
+import { usePageGenerationEntry } from './use-page-generation-entry';
+import { useCanvasCommandMenu } from './use-canvas-command-menu';
+import { usePlacementRefusedNotice } from './use-placement-refused-notice';
 import { usePublishFlow } from './use-publish-flow';
 import { useSelectedBlockEditing } from './use-selected-block-editing';
 import { usePreviewBridge } from './use-preview-bridge';
 import { useSidebarDrag } from './use-sidebar-drag';
 import { useTextEdit } from './use-text-edit';
 
-export interface CanvasEditorShellProps {
-  backLink: ReactNode;
-  /** Dropdown for switching to another page without leaving the editor (top bar, next to `backLink`) — only the page editor passes it; the Header/Footer editor does not (it has no notion of "other pages to choose between"). */
-  pageSwitcher?: ReactNode;
-  /** Field-level i18n (see the plan) — dropdown for switching to another language of the SAME PageGroup without leaving the editor, next to `pageSwitcher`. Only PageGroupEditorView passes it. */
-  languageSwitcher?: ReactNode;
-  /**
-   * Field-level i18n — present only while editing a LINKED (not diverged)
-   * PageTranslation of a PageGroup: it decides whether a changed
-   * `translatable` field is written to the active translation's
-   * `fieldValues` overlay instead of to the shared structure. Absent for
-   * the old Page editor, for the Header/Footer editor, and for an already
-   * unlinked translation (which behaves like the old model: always
-   * `onChange`, never a separate overlay).
-   */
-  translationRouting?: {
-    activeLocale: string;
-    defaultLocale: string;
-    onSaveFieldValue: (blockId: string, field: string, value: string) => void;
-  };
-  /** When present, and the person may configure the site, the rail offers the Style page — both editors (page, header/footer) have a site to apply styles to. */
-  siteId?: string;
-  /** What is being edited, in words — the middle of the top bar used to be empty. */
-  title?: string;
-  /** Page editor only: whether visitors can see the page at all, shown as a badge beside its name. */
-  publicationState?: 'draft' | 'published';
-  /** Page-level actions, drawn as a labelled menu rather than a row of unlabelled icons. */
-  pageMenu?: CanvasPageMenuItem[];
-  statusText: string;
-  /**
-   * Whether a write this editor's own hook owns is on the wire. It joins
-   * the canvas's debounce window to decide when leaving the BROWSER is
-   * worth interrupting somebody over (see useUnsavedChangesGuard) — the
-   * shell can see the debounce, only the caller can see the request.
-   */
-  isSaving?: boolean;
-  actions?: ReactNode;
-  /** Shown in the Properties panel while no block is selected — the header's own settings, next to the blocks'. See NoSelectionPanel. */
-  noSelectionExtra?: ReactNode;
-  registry: BlockDescriptor[];
-  categories: BlockPickerCategory[];
-  blocks: Block[];
-  /** Called with the updated tree on every change (property, text, insert, reorder, removal) — the caller owns the real draft save. */
-  onChange: (blocks: Block[]) => void;
-  /**
-   * Resolves when every draft save the caller has queued has landed.
-   *
-   * The canvas asks before it reads the draft back — reloading the iframe,
-   * or rendering a block whose content lives on the server (a reusable
-   * section). Without it the iframe could fetch the draft from before the
-   * change that caused the reload.
-   */
-  whenSaved?: () => Promise<void>;
-  onPublish: (blocks: Block[]) => unknown;
-  /**
-   * Always the id of ONE PageTranslation (field-level i18n), even while
-   * editing the header/footer (see canvas-frame.tsx) — the caller picks
-   * which translation to use as context when `editingSection` is present
-   * (site-layout-section-editor-view.tsx uses the "representative"
-   * translation from use-representative-page.ts).
-   */
-  pageId: string;
-  editingSection?: EditingSection;
-  /** Present only in the reusable-section editor — see CanvasFrame's own prop. */
-  sectionPreview?: { sectionId: string; locale: string };
-  /**
-   * Also section-editor only (docs/adr/0059): it puts an "a page may
-   * change this" checkbox beside every field, which is how the agency
-   * decides what a client may touch on an instance.
-   */
-  sectionEditing?: {
-    exposedFields: ExposedFields;
-    onToggleField: (blockId: string, field: string) => void;
-  };
-  /** Bumped only on an explicit rollback: it is part of the canvas's `key`, so the editor is mounted again over the restored content. */
-  restoredAt?: number;
-  /**
-   * Filled with the shell's own flush: it sends at once any change still
-   * waiting out the debounce. For the actions a view draws outside the
-   * shell (its history dialog) that must not be overtaken by one — a
-   * restore waits for the saves already queued, and a change still in
-   * the debounce is not queued yet: it would land after the restore and
-   * undo it. The page menu's items are flushed by the shell itself.
-   */
-  flushRef?: MutableRefObject<(() => void) | null>;
-  /** Page editor only: "Generate with AI", written by the site's own provider. */
-  pageGeneration?: PageGenerationConfig;
-  children?: ReactNode;
-}
+export type { CanvasEditorShellProps } from './canvas-editor-shell-props';
 
 /**
  * The shell shared by the page editor and the Header/Footer editor: the
@@ -198,7 +88,6 @@ export function CanvasEditorShell({
   // The canvas is not inside the shell, so the language the person saved is
   // applied here too: a reload on a page of the editor opens it in English.
   useApplySavedInterfaceLanguage();
-  const { toast } = useToast();
   const { pick: pickPage } = usePageList();
   const { isMissingFromTheme } = useIconList();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -331,30 +220,7 @@ export function CanvasEditorShell({
     registry,
     isMissingFromTheme,
   );
-  /**
-   * A block that belongs inside one kind of container (a Column, a Tab) can
-   * be aimed somewhere that will not have it — pasted with only the page
-   * around it, say. Saying so beats a click that does nothing.
-   */
-  function notifyPlacementRefused(blockTypes: string[]): void {
-    const refused = blockTypes
-      .map((type) => registry.find((d) => d.type === type))
-      .find((descriptor) => descriptor?.allowedParentTypes?.length);
-    if (!refused?.allowedParentTypes) {
-      return;
-    }
-    toast(
-      t('canvas.placement.refused', {
-        block: tLabel(refused.label),
-        parents: refused.allowedParentTypes
-          .map((type) =>
-            tLabel(registry.find((d) => d.type === type)?.label ?? type),
-          )
-          .join(', '),
-      }),
-      'destructive',
-    );
-  }
+  const notifyPlacementRefused = usePlacementRefusedNotice(registry);
 
   // Before the mutations, which send it too: a copy of a styled block is
   // a new id, and its rule has to reach the iframe with it.
@@ -502,99 +368,59 @@ export function CanvasEditorShell({
     },
   });
 
-  /*
-   * A change still waiting out the debounce is sent the moment any page
-   * action is chosen, rather than up to 300ms later. Sending is all this
-   * does: an action that needs the server to HOLD the edit before it runs
-   * waits for the save itself — "Save as template" does, with `whenSaved`,
-   * because it copies the page on the server. The others (history, SEO,
-   * languages, fork) only start the save sooner; they do not wait for it.
-   */
-  const flushedPageMenu = pageMenu?.map(({ onSelect, ...item }) => ({
-    ...item,
-    ...(onSelect
-      ? {
-          onSelect: () => {
-            flushAll();
-            onSelect();
-          },
-        }
-      : {}),
-  }));
-
-  /** The same `token` already in state for `usePropertyPatch` — opens the preview URL in a new tab, available even for a draft that was never published (unlike a direct link to the public site). */
-  function handleOpenPreview(): void {
-    if (!token) {
-      return;
-    }
-    window.open(
-      buildPreviewUrl(pageId, token, editingSection),
-      '_blank',
-      'noopener,noreferrer',
-    );
-  }
-
-  const commandSources = {
-    canvasReady: bridge.isReady,
+  const commandMenu = useCanvasCommandMenu({
+    pageMenu,
+    flushAll,
+    token,
+    pageId,
+    editingSection,
+    bridge,
     categories,
     registry,
     blocks: localBlocks,
-    pageMenu: flushedPageMenu,
     canInsertType,
-    tLabel,
-    labels: {
-      styles: t('canvas.rail.styles'),
-      shortcuts: t('canvas.shortcuts.open'),
-      preview: t('canvas.preview'),
-      publish: t('canvas.publish'),
-    },
-    offers: {
-      styles: Boolean(siteId) && configuresSite,
-      publish: changesLiveSite,
-    },
-  };
-  const commandItems = buildCommandItems(commandSources);
+    siteId,
+    configuresSite,
+    changesLiveSite,
+    handleInsert,
+    requestPublish,
+    openShortcuts: () => setIsShortcutsOpen(true),
+  });
+  const { flushedPageMenu, handleOpenPreview } = commandMenu;
 
   // Off until the canvas has loaded: a block inserted before the page
   // listens is saved but never drawn, until a reload. The canvas says why
   // meanwhile (canvas-frame.tsx), and the changes themselves wait too
   // (useBlockTreeMutations).
   const insertContent = (
-    <>
-      <BlockPicker
-        categories={categories}
-        registry={registry}
-        onInsert={(descriptor) => {
-          handleInsert(descriptor);
-          // On a phone the sheet covers the canvas: the block you just
-          // added is what you want to see next.
-          if (isNarrow) setMobileSheet(null);
-        }}
-        canInsert={(descriptor) => canInsertType(descriptor.type)}
-        // Dragging onto the canvas needs the canvas beside the palette,
-        // which a sheet over it is not.
-        drag={
-          isNarrow
-            ? undefined
-            : {
-                onDragStart: handleSidebarDragStart,
-                onDragMove: handleSidebarDragMove,
-                onDragEnd: handleSidebarDragEnd,
-              }
-        }
-        disabled={!bridge.isReady}
-      />
-      {/* Not inside the section editor: a template dropped into a
-          section would be a copy inside a thing that already IS the
-          shared original, which is a muddle rather than a feature. */}
-      {siteId && !sectionPreview && (
-        <TemplatePicker
-          siteId={siteId}
-          onInsert={handleInsertBlocks}
-          disabled={!bridge.isReady}
-        />
-      )}
-    </>
+    <CanvasInsertContent
+      categories={categories}
+      registry={registry}
+      ready={bridge.isReady}
+      canInsertType={canInsertType}
+      onInsert={(descriptor) => {
+        handleInsert(descriptor);
+        // On a phone the sheet covers the canvas: the block you just
+        // added is what you want to see next.
+        if (isNarrow) setMobileSheet(null);
+      }}
+      // Dragging onto the canvas needs the canvas beside the palette,
+      // which a sheet over it is not.
+      drag={
+        isNarrow
+          ? undefined
+          : {
+              onDragStart: handleSidebarDragStart,
+              onDragMove: handleSidebarDragMove,
+              onDragEnd: handleSidebarDragEnd,
+            }
+      }
+      templates={
+        siteId && !sectionPreview
+          ? { siteId, onInsert: handleInsertBlocks }
+          : undefined
+      }
+    />
   );
 
   const layersContent = (
@@ -617,58 +443,31 @@ export function CanvasEditorShell({
   );
 
   const propertiesContent = (
-    /* Where "Properties" in the toolbar puts the keyboard: `tabIndex={-1}`
-       so it can take focus without joining the tab order. Inert while the
-       canvas loads, like the palette: a property changed now would be
-       drawn by a message to a page that is not listening yet. */
-    <div
-      ref={propertiesPanelRef}
-      tabIndex={-1}
-      inert={!bridge.isReady}
-      className={
-        bridge.isReady
-          ? 'flex min-h-0 flex-1 flex-col gap-2 outline-none'
-          : 'flex min-h-0 flex-1 flex-col gap-2 opacity-60 outline-none'
+    <CanvasPropertiesContent
+      panelRef={propertiesPanelRef}
+      ready={bridge.isReady}
+      selectedBlock={selectedBlock}
+      selectedDescriptor={selectedDescriptor}
+      selectedAncestry={selectedAncestry}
+      isRootLevel={isSelectedRootLevel}
+      onSelectBlock={bridge.selectBlock}
+      onChangeProp={handleChangeProp}
+      onChangeVariant={handleChangeVariant}
+      onChangeAlign={
+        // Root level, and the page's own content: the header and footer
+        // lists have no per-block wrapper to carry the attribute (they
+        // space their blocks with a flex `gap`), and a nested block's
+        // width is its container's business.
+        isSelectedRootLevel && !editingSection ? handleAlignSelected : undefined
       }
-    >
-      {selectedBlock && selectedDescriptor ? (
-        <>
-          <BlockBreadcrumb
-            ancestry={selectedAncestry}
-            onSelect={bridge.selectBlock}
-          />
-          <PropertiesPanel
-            block={selectedBlock}
-            descriptor={selectedDescriptor}
-            isRootLevel={isSelectedRootLevel}
-            onChangeProp={handleChangeProp}
-            onChangeVariant={handleChangeVariant}
-            onChangeAlign={
-              // Root level, and the page's own content: the header and
-              // footer lists have no per-block wrapper to carry the
-              // attribute (they space their blocks with a flex `gap`),
-              // and a nested block's width is its container's business.
-              isSelectedRootLevel && !editingSection
-                ? handleAlignSelected
-                : undefined
-            }
-            onChangeInstanceStyle={handleChangeStyleOverride}
-            typeStyle={typeStyle}
-            breakpoint={breakpoint}
-            sectionEditing={buildSectionEditing(
-              sectionEditing,
-              selectedBlock.id,
-            )}
-          />
-        </>
-      ) : (
-        <NoSelectionPanel
-          onAddBlock={openInsert}
-          pageActions={flushedPageMenu}
-          extra={noSelectionExtra}
-        />
-      )}
-    </div>
+      onChangeInstanceStyle={handleChangeStyleOverride}
+      typeStyle={typeStyle}
+      breakpoint={breakpoint}
+      sectionEditing={buildSectionEditing(sectionEditing, selectedBlock?.id)}
+      onAddBlock={openInsert}
+      pageActions={flushedPageMenu}
+      noSelectionExtra={noSelectionExtra}
+    />
   );
 
   const mobileSheetTitle =
@@ -873,30 +672,9 @@ export function CanvasEditorShell({
         onOpenChange={setIsCommandMenuOpen}
         title={t('canvas.command.title')}
         placeholder={t('canvas.command.placeholder')}
-        groups={canvasCommandGroups({
-          insert: t('canvas.command.insert'),
-          layers: t('canvas.command.layers'),
-          page: t('canvas.command.page'),
-          editor: t('canvas.command.editor'),
-        })}
-        items={commandItems}
-        onRun={(item) =>
-          runCommand(item, {
-            registry,
-            pageMenu: flushedPageMenu,
-            insert: handleInsert,
-            selectLayer: (blockId) => {
-              bridge.selectBlock(blockId);
-              bridge.scrollToBlock(blockId);
-            },
-            // Its own tab: the same page the rail's Styles opens.
-            openStyles: () =>
-              window.open('/style', '_blank', 'noopener,noreferrer'),
-            openShortcuts: () => setIsShortcutsOpen(true),
-            openPreview: handleOpenPreview,
-            publish: requestPublish,
-          })
-        }
+        groups={commandMenu.groups}
+        items={commandMenu.items}
+        onRun={commandMenu.run}
       />
       <KeyboardShortcutsDialog
         open={isShortcutsOpen}
