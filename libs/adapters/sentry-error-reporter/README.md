@@ -42,9 +42,12 @@ sent.
   logs it and runs unreported), not silently ignored by the SDK. The value is
   never written into the message, and plain `http` is refused unless it points
   at this machine.
-- **Bounded.** The rules run over at most 4000 characters of a message (several
-  of them scan forward from every position, so their time is the square of the
-  length), and a process sends at most 20 reports a minute, a fatal one
+- **Bounded, and never cut through a word.** A message is read up to 16,000
+  characters and cut at a word, not in the middle of one (half of a secret is
+  still half a secret); each word of it is at most 256 characters, and a longer
+  run is data and is replaced whole (`[long]`), so that the rules, which scan
+  forward from every position, run over a constant; the worst message measured
+  takes 4 ms. A process sends at most 20 reports a minute, a fatal one
   excepted.
 
 ## Configuration

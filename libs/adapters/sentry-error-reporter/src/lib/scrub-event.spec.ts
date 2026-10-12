@@ -1,6 +1,6 @@
 import type { ErrorEvent } from '@sentry/node-core/light';
 import { describe, expect, it } from 'vitest';
-import { redact, scrubEvent } from './scrub-event';
+import { MAX_REDACTED_INPUT_LENGTH, redact, scrubEvent } from './scrub-event';
 
 /** What the SDK would hand over for an error in a request: everything it might attach. */
 function richEvent(): ErrorEvent {
@@ -142,14 +142,50 @@ describe('redact', () => {
       expect(Date.now() - started).toBeLessThan(1000);
     });
 
-    it('cuts a very long message, after redacting it, not before', () => {
-      const long = `${'x'.repeat(5000)} ana@example.test`;
+    it('cuts a very long message after redacting it, at a word, and keeps the start', () => {
+      const long = `${'word '.repeat(600)}ana@example.test`;
 
       const redacted = redact(long);
 
       expect(redacted.length).toBeLessThanOrEqual(1001);
-      const secretAtTheEdge = `${'y'.repeat(990)} Bearer abcdefghijklmnopqrstuvwxyz`;
-      expect(redact(secretAtTheEdge)).not.toContain('abcdefghij');
+      expect(redacted.startsWith('word word')).toBe(true);
+      // At the end of a word, never in the middle of one.
+      expect(redacted).toMatch(/word…$/);
+    });
+
+    it('never leaves half a secret where the input is cut: the word at the cut is dropped whole', () => {
+      const secret =
+        '3f9a1c5e7b2d4f6a8c0e1b3d5f7a9c2e4b6d8f0a1c3e5b7d9f1a3c5e7b9d1f3a';
+      // Long unbroken runs shrink to six characters each, so what comes
+      // before the cut is short enough for a fragment to stay in the output.
+      // The secret begins ten characters before the limit and runs past it.
+      const run = `${'x'.repeat(300)} `;
+      const before = run.repeat(
+        Math.floor((MAX_REDACTED_INPUT_LENGTH - 11) / run.length),
+      );
+      const padding = 'w '.repeat(
+        Math.floor((MAX_REDACTED_INPUT_LENGTH - 11 - before.length) / 2),
+      );
+      const input = `${before}${padding} ${secret} tail`;
+
+      const redacted = redact(input);
+
+      expect(redacted).not.toMatch(/[0-9a-f]{8}/);
+      expect(redacted).toContain('[long]');
+    });
+
+    it('does not keep a run that is longer than any word of a message: it is data', () => {
+      const blob = 'x'.repeat(5000);
+
+      expect(redact(`failed to parse ${blob} at line 3`)).toBe(
+        'failed to parse [long] at line 3',
+      );
+    });
+
+    it('does not leave a long address with a query in it half-redacted', () => {
+      const url = `https://x.test/${'a'.repeat(300)}?token=abc`;
+
+      expect(redact(`fetch ${url} failed`)).toBe('fetch [long] failed');
     });
   });
 

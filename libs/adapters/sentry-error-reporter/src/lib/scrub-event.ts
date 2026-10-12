@@ -8,14 +8,19 @@ import type {
 const MAX_TEXT_LENGTH = 1000;
 
 /**
- * How much of it the rules are run over. Several of them scan forward from
- * every position, so their time is the square of the length: 80,000
- * characters took four seconds, and a message is whatever the code that threw
- * it put there, a request's body included. Four times what is kept: a secret
- * that straddles this cut is a fragment, and is past the final cut anyway
- * unless the text before it shrank to nothing.
+ * How much of a message is read at all. A message is whatever the code that
+ * threw it put there, a request's body included; a text this long is not a
+ * message, and what is past it is not read.
  */
-const MAX_INPUT_LENGTH = 4 * MAX_TEXT_LENGTH;
+export const MAX_REDACTED_INPUT_LENGTH = 16_000;
+
+/**
+ * The longest run of non-space characters that is still a word of a message.
+ * A longer one is data (a body, a blob, an address with a long query), and is
+ * replaced whole: a rule that found part of a secret in it would leave the
+ * rest, and the rules below are only safe to run on a run this short.
+ */
+const MAX_WORD_LENGTH = 256;
 
 /** A character that cannot be part of the name or the host of an email address, written in a message. */
 const NOT_ADDRESS = String.raw`\s@<>()\[\]{}"'` + '`' + String.raw`,;:/\\`;
@@ -24,15 +29,14 @@ const NOT_ADDRESS = String.raw`\s@<>()\[\]{}"'` + '`' + String.raw`,;:/\\`;
  * What an error's own words may carry out with them: the text of an error is
  * whatever the code that threw it put there, and a failed query, a failed
  * fetch or a failed connection names its values. Each rule is a thing that
- * has been seen in such a message or that one would expect to be; the order
- * is the order they are applied in.
+ * has been seen in such a message or that one would expect to be.
+ *
+ * Applied to ONE WORD at a time (a run of non-space characters, at most
+ * `MAX_WORD_LENGTH` long): several of these scan forward from every position,
+ * and over a whole message their time is the square of its length (80,000
+ * characters took four seconds). Over a word of 256 it is a constant.
  */
-const RULES: readonly (readonly [RegExp, string])[] = [
-  // The values a failed query was run with. Drizzle writes them after the
-  // SQL (`Failed query: insert … values ($1, $2)\nparams: <values>`): a
-  // person's email, a password hash, a page's text. To the end of the
-  // message, because a value can have a line break in it.
-  [/\bparams:[\s\S]*$/, 'params: [values]'],
+const WORD_RULES: readonly (readonly [RegExp, string])[] = [
   // What stands before the `@` of an address with a scheme: a connection
   // string with its password.
   [/\b([a-z][a-z0-9+.-]*:\/\/)[^\s/@?#]+@/gi, '$1[credentials]@'],
@@ -41,8 +45,7 @@ const RULES: readonly (readonly [RegExp, string])[] = [
   // An email address, whatever is after the `@` (`ana@localhost`) and
   // whatever alphabet it is written in.
   [new RegExp(`[^${NOT_ADDRESS}]+@[^${NOT_ADDRESS}]+`, 'g'), '[email]'],
-  // An Authorization header's value, and a JSON web token on its own.
-  [/\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]+/gi, '$1 [token]'],
+  // A JSON web token on its own.
   [/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/g, '[token]'],
   // A password hash.
   [/\$argon2[a-z]*\$[^\s"'`)]+/g, '[hash]'],
@@ -52,19 +55,55 @@ const RULES: readonly (readonly [RegExp, string])[] = [
   [/\b(kometio_[a-z_]+|[a-z_]*session[a-z_]*|sid)=[^;\s]+/gi, '$1=[token]'],
 ];
 
+/**
+ * The values a failed query was run with. Drizzle writes them after the SQL
+ * (`Failed query: insert … values ($1, $2)\nparams: <values>`): a person's
+ * email, a password hash, a page's text. From there to the end of the
+ * message, because a value can have a line break in it.
+ */
+const QUERY_PARAMS = /\bparams:/;
+
+/** An Authorization value is two words, the scheme and the credential. */
+const AUTHORIZATION = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]+/gi;
+
 /** What Sentry keeps of a tag's value: more is dropped on the other side. */
 const MAX_TAG_LENGTH = 200;
 
-export function redact(text: string): string {
-  const redacted = RULES.reduce(
+/**
+ * `text` cut to at most `max` characters, between two words. The word the cut
+ * would split is dropped whole: half of a secret is no more a secret to the
+ * rules, and is still half a secret. A text that is one word longer than
+ * `max` has no place to be cut, and is not kept.
+ */
+function cutAtWord(text: string, max: number): string {
+  if (text.length <= max) return text;
+  if (/\s/.test(text.charAt(max))) return text.slice(0, max);
+  for (let at = max - 1; at > 0; at -= 1) {
+    if (/\s/.test(text.charAt(at))) return text.slice(0, at);
+  }
+  return '';
+}
+
+function redactWord(word: string): string {
+  if (word.length > MAX_WORD_LENGTH) return '[long]';
+  return WORD_RULES.reduce(
     (current, [pattern, replacement]) => current.replace(pattern, replacement),
-    // Bounded before the rules, which are not linear; cut again after them,
-    // so that a secret cut in half at the final limit is not left written.
-    text.length > MAX_INPUT_LENGTH ? text.slice(0, MAX_INPUT_LENGTH) : text,
+    word,
   );
-  return redacted.length > MAX_TEXT_LENGTH
-    ? `${redacted.slice(0, MAX_TEXT_LENGTH)}…`
-    : redacted;
+}
+
+export function redact(text: string): string {
+  const read = cutAtWord(text, MAX_REDACTED_INPUT_LENGTH);
+  const paramsAt = read.search(QUERY_PARAMS);
+  const head = paramsAt === -1 ? read : read.slice(0, paramsAt);
+  const redacted = head
+    .split(/(\s+)/)
+    .map((part, index) => (index % 2 === 1 ? part : redactWord(part)))
+    .join('')
+    .replace(AUTHORIZATION, '$1 [token]');
+  const withParams = paramsAt === -1 ? redacted : `${redacted}params: [values]`;
+  const kept = cutAtWord(withParams, MAX_TEXT_LENGTH);
+  return kept.length < withParams.length ? `${kept}…` : kept;
 }
 
 /** Only where in the code it was: no source lines, no variables, nothing an integration may add later. */
