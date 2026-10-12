@@ -28,6 +28,7 @@ export class DeploymentController {
       // Whether the launcher of the single image is there to make the archive
       // (docs/adr/0105): the same fact SITE_ARCHIVE is wired from.
       siteArchive: this.env.KOMETIO_CONTROL_SOCKET !== undefined,
+      demo: this.env.KOMETIO_DEMO === 'true',
     };
   }
 }

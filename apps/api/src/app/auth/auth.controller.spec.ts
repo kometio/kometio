@@ -474,4 +474,62 @@ describe('AuthController', () => {
       ).rejects.toThrow('db exploded');
     });
   });
+
+  describe('currentSession', () => {
+    function controllerFor(demo: 'true' | undefined) {
+      const env = testApiEnv({
+        EDITOR_APP_URL: editorAppUrl,
+        KOMETIO_DEMO: demo,
+      });
+      return new AuthController(
+        {
+          userRepository,
+          authPort,
+          verificationTokenPort,
+          emailPort,
+          deploymentLocale: { defaultLocale: async () => 'it' },
+          captchaPort,
+          tenant: { require: async () => tenantId } as DeploymentTenantResolver,
+        },
+        env,
+        new SessionCookies(env),
+        new UndeliveredEmailLog(),
+      );
+    }
+
+    function signedInAdmin() {
+      const user = User.create({
+        id: 'user-1',
+        tenantId,
+        email: 'admin@esempio.test',
+        passwordHash: 'hash',
+        role: 'admin',
+        displayName: 'Admin',
+      });
+      userRepository.findById.mockResolvedValue(user);
+    }
+
+    it('says who is asking, with the role the person has', async () => {
+      signedInAdmin();
+
+      const answer = await controllerFor(undefined).currentSession(
+        tenantId,
+        'user-1',
+      );
+
+      expect(answer.role).toBe('admin');
+    });
+
+    it('says a publisher where the deployment is a demo, which is what its guard enforces', async () => {
+      signedInAdmin();
+
+      const answer = await controllerFor('true').currentSession(
+        tenantId,
+        'user-1',
+      );
+
+      expect(answer.role).toBe('publisher');
+      expect(answer.email).toBe('admin@esempio.test');
+    });
+  });
 });

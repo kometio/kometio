@@ -1,10 +1,19 @@
 ---
 import sanitizeHtml from 'sanitize-html';
 import type { EmbedHtmlProps } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
+import { isDemoDeployment } from '../../lib/demo-mode';
 
-type Props = EmbedHtmlProps & { instanceClass?: string | null };
+type Props = EmbedHtmlProps & {
+  i18n: Translator;
+  instanceClass?: string | null;
+};
 
-const { html, instanceClass } = Astro.props;
+const { html, i18n, instanceClass } = Astro.props;
+// In a demo (docs/adr/0118) the account everybody signs in with can paste
+// anything here, and a frame that may open forms and popups, at the demo's
+// own address, is a phishing page with a good name. It is not run there.
+const inDemo = isDemoDeployment();
 
 // Permissive policy (confirmed with the user, 2026-08-19): script/iframe
 // stay allowed — that's what a free-embed block is for (YouTube, Calendly,
@@ -74,13 +83,19 @@ ${safeHtml}
     this page, since the frame never had allow-same-origin. allow-forms
     is what a pasted newsletter form needs to submit.
   */}
-  <iframe
-    class="kometio-embed-html__frame"
-    sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
-    loading="lazy"
-    title="Contenuto incorporato"
-    srcdoc={srcDoc}
-  />
+  {
+    inDemo ? (
+      <p class="kometio-embed-html__demo">{i18n.t('embedHtml.demo')}</p>
+    ) : (
+      <iframe
+        class="kometio-embed-html__frame"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
+        loading="lazy"
+        title="Contenuto incorporato"
+        srcdoc={srcDoc}
+      />
+    )
+  }
 </div>
 
 <script>
@@ -101,6 +116,13 @@ ${safeHtml}
     background: var(--kometio-override-bg, transparent);
     border-radius: var(--kometio-override-radius, 0);
     padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  .kometio-embed-html__demo {
+    margin: 0;
+    padding: 1rem;
+    border: 1px dashed currentColor;
+    text-align: center;
+    opacity: 0.7;
   }
   .kometio-embed-html__frame {
     display: block;

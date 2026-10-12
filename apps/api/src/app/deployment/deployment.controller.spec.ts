@@ -6,7 +6,17 @@ describe('DeploymentController (unit)', () => {
     expect(new DeploymentController(testApiEnv()).get()).toEqual({
       emailConfigured: true,
       siteArchive: false,
+      demo: false,
     });
+  });
+
+  it('says it is a demo only when KOMETIO_DEMO says `true`', () => {
+    const demo = (value: 'true' | 'false' | undefined) =>
+      new DeploymentController(testApiEnv({ KOMETIO_DEMO: value })).get().demo;
+
+    expect(demo('true')).toBe(true);
+    expect(demo('false')).toBe(false);
+    expect(demo(undefined)).toBe(false);
   });
 
   it('says the site can be exported when the launcher of the single image is there to make the archive', () => {
@@ -27,6 +37,7 @@ describe('DeploymentController (unit)', () => {
     expect(new DeploymentController(noMailServer).get()).toEqual({
       emailConfigured: false,
       siteArchive: false,
+      demo: false,
     });
   });
 });

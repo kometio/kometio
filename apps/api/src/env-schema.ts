@@ -95,6 +95,10 @@ const apiEnvBaseSchema = z.object({
   // archive of the site (docs/adr/0105). Set by that launcher, not by hand: unset,
   // this deployment cannot export its site from the editor, and says so.
   KOMETIO_CONTROL_SOCKET: emptyIsUnset(z.string().min(1).optional()),
+  // This deployment is a public demo (docs/adr/0118): the account everybody
+  // signs in with cannot configure the site, upload, or be taken over. Off
+  // unless it says `true`.
+  KOMETIO_DEMO: emptyIsUnset(z.enum(['true', 'false']).optional()),
   // Both or neither (docs/adr/0103): a site's own Cloudflare Turnstile keys, or
   // none, and then the captcha is the one built into Kometio. The site key is
   // read by the editor and the public site, which draw the widget; the API
