@@ -48,6 +48,12 @@ hosted editor. The first was chosen. This is that mode.
   `EmbedHtml` shows a line saying so. Settings that put scripts on every page
   are `configureSite`, so closed already; what the editor pastes into a block
   is what is left.
+- **Nothing is mailed and nobody is added to a list.** Whoever signs in can
+  make a form notify an address of their choosing, so a demo that had a mail
+  server would let strangers use it: the demo writes its emails to the log
+  (like a deployment with no mail server) and its newsletter is a no-op,
+  whatever the environment says; `GET /deployment` says `emailConfigured:
+false`.
 - **The editor is told** by `demo` in `GET /deployment`, which is open to
   anyone like the rest of that record.
 

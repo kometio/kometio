@@ -327,6 +327,9 @@ minus the few things that are not the demo's to give:
   the next person to sign in would otherwise read it.
 - **No embed runs.** An `EmbedHtml` block shows a line saying so, instead of the
   pasted HTML.
+- **Nothing is mailed, and nobody is added to a newsletter**, though the
+  environment has a mail server or a provider: whoever signs in could make a form
+  notify an address of their choosing.
 - **Search engines are kept out**, whatever the site's own setting says.
 
 What it does not do is start over: that is `demo-reset.sh`, which makes the demo

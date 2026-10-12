@@ -24,7 +24,9 @@ export class DeploymentController {
   @Get()
   get(): DeploymentRecord {
     return {
-      emailConfigured: this.env.SMTP_HOST !== undefined,
+      // A demo mails nothing, whatever it is configured with (docs/adr/0118).
+      emailConfigured:
+        this.env.SMTP_HOST !== undefined && this.env.KOMETIO_DEMO !== 'true',
       // Whether the launcher of the single image is there to make the archive
       // (docs/adr/0105): the same fact SITE_ARCHIVE is wired from.
       siteArchive: this.env.KOMETIO_CONTROL_SOCKET !== undefined,

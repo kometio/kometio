@@ -10,6 +10,15 @@ describe('DeploymentController (unit)', () => {
     });
   });
 
+  it('says no email goes out in a demo, though it has a mail server: it writes them to the log', () => {
+    const demo = testApiEnv({ KOMETIO_DEMO: 'true' });
+
+    expect(new DeploymentController(demo).get()).toMatchObject({
+      emailConfigured: false,
+      demo: true,
+    });
+  });
+
   it('says it is a demo only when KOMETIO_DEMO says `true`', () => {
     const demo = (value: 'true' | 'false' | undefined) =>
       new DeploymentController(testApiEnv({ KOMETIO_DEMO: value })).get().demo;
