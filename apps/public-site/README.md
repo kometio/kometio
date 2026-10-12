@@ -98,9 +98,10 @@ per-request.
 browser had not seen a picture made the server make it again — measured on
 two CPUs, some 6 to 9 requests a second, against some 300 for a page of 23
 blocks. `server.mjs` puts `image-cache.mjs` in front of Astro's handler: the
-first answer of each request (status 200, an image type, at most 8 MB) is
-written under `IMAGE_CACHE_DIR` (default: a folder in the system's temporary
-directory) and given back for the same address and Host, and requests that
+first answer of each request (status 200, a raster type — never an SVG — at
+most 8 MB) is written under `IMAGE_CACHE_DIR` (default: a folder in the
+system's temporary directory, made private to this process) and given back for
+the same address, Host and forwarded headers, and requests that
 arrive while it is being made wait for it instead of making it again. The
 directory is held to `IMAGE_CACHE_MAX_MB` (default 256; `0` turns the cache
 off), the oldest-used entries going first, and is not migrated: a restart that

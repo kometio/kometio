@@ -39,7 +39,24 @@ installations have: it is a thing a person self-hosts on one machine.
   first; it lives in the container's filesystem and is made again after a
   restart. A directory that cannot be used is a warning, not an outage.
 - **Nothing of the request is kept**: not the CSP (its nonce is that
-  request's), not the date or the length.
+  request's), not the date or the length. A hit says what it is itself:
+  `nosniff` and a CSP that allows nothing.
+- **Rasters only** (webp, avif, jpeg, png, gif). An SVG is a document: one
+  with a script in it, opened by its address, would run in the site's origin,
+  which the CSP of the page's own answer prevented and a copy would not have.
+- **The key is everything that can change where a path is fetched from**:
+  the Host and the `X-Forwarded-*` and `Forwarded` headers Astro builds the
+  origin of a relative address from, and the whole URL. Two requests that
+  differ in any are two entries, so one visitor cannot put an image of his
+  choosing under the key of another's.
+- **The directory is this process's own**: created `0700`, and if it was
+  there it must be a real directory of this user, not a link and not open to
+  others — a path in a shared temporary directory is predictable, and other
+  services in the container run there; otherwise a private one is made beside
+  it. What is found in it on start is believed only if its headers are plain
+  text and its type one that is served.
+- **At most sixteen are held in memory while being made**; the rest are made
+  and not kept.
 - **A CDN stays an addition**, not a precondition. With one in front, the
   origin makes each size once and the edge keeps it; without one, the origin
   does both.
@@ -50,8 +67,10 @@ installations have: it is a thing a person self-hosts on one machine.
   would make the first view cheap too. It touches the media pipeline and the
   `srcset` the blocks write; this is the part that needs no change to either.
 - Admission: a visitor can ask for any width, and so fill the cache with
-  sizes nobody uses; they are bounded by the directory's limit and each costs
-  its own resize, which is what it costs today.
+  sizes nobody uses, pushing out the ones that are used; they are bounded by
+  the directory's limit and each costs its own resize, which is what it costs
+  today. Whether to let only the widths a page can ask for in is a question
+  for the day this is seen to happen.
 
 ## Consequences
 

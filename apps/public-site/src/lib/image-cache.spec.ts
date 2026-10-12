@@ -1,4 +1,11 @@
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import {
   createServer,
   request,
@@ -66,6 +73,7 @@ async function start(
     directory,
     calls: () => calls.n,
     close: async () => {
+      server.closeAllConnections();
       await new Promise((resolve) => server.close(resolve));
       rmSync(directory, { recursive: true, force: true });
     },
@@ -99,13 +107,14 @@ describe('createImageCache', () => {
     expect(second.headers.get('etag')).toBe('"abc"');
   });
 
-  it('does not keep the CSP of the request that made it, whose nonce is that request’s own', async () => {
+  it('does not give back the CSP of the request that made it, whose nonce is that request’s own', async () => {
     const { base } = await start();
 
-    await fetch(`${base}${IMAGE}`);
-    const second = await fetch(`${base}${IMAGE}`);
+    const miss = await fetch(`${base}${IMAGE}`);
+    const hit = await fetch(`${base}${IMAGE}`);
 
-    expect(second.headers.get('content-security-policy')).toBeNull();
+    expect(miss.headers.get('content-security-policy')).toContain('nonce-');
+    expect(hit.headers.get('content-security-policy')).not.toContain('nonce-');
   });
 
   it('answers 304 to a request that already has it', async () => {
@@ -259,10 +268,145 @@ describe('createImageCache', () => {
 
     const first = await fetch(`${base}${IMAGE}`);
     const second = await fetch(`${base}${IMAGE}`);
+    server.closeAllConnections();
     await new Promise((resolve) => server.close(resolve));
 
     expect(first.status).toBe(200);
     expect(second.status).toBe(200);
     expect(calls.n).toBe(2);
+  });
+
+  it('keeps no SVG: an answer that is a document is not given back without the CSP it had', async () => {
+    const { base, calls, directory } = await start({}, (_req, res) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Content-Security-Policy', "default-src 'self'");
+      res.end('<svg xmlns="http://www.w3.org/2000/svg"/>');
+    });
+
+    await fetch(`${base}${IMAGE}`);
+    await fetch(`${base}${IMAGE}`);
+
+    expect(calls()).toBe(2);
+    expect(readdirSync(directory)).toEqual([]);
+  });
+
+  it('says on a hit that it is a picture and nothing a browser may run', async () => {
+    const { base } = await start();
+    await fetch(`${base}${IMAGE}`);
+
+    const hit = await fetch(`${base}${IMAGE}`);
+
+    expect(hit.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(hit.headers.get('content-security-policy')).toBe(
+      "default-src 'none'; sandbox",
+    );
+  });
+
+  it('keeps an image per forwarded host, which is what a relative address is resolved against', async () => {
+    const { base, calls } = await start();
+    const get = (headers: Record<string, string>) =>
+      new Promise<void>((resolve, reject) => {
+        const url = new URL(`${base}${IMAGE}`);
+        request(
+          {
+            host: url.hostname,
+            port: url.port,
+            path: url.pathname + url.search,
+            headers,
+          },
+          (response) => {
+            response.resume();
+            response.on('end', resolve);
+          },
+        )
+          .on('error', reject)
+          .end();
+      });
+
+    await get({});
+    await get({ 'X-Forwarded-Host': 'elsewhere.test' });
+    await get({
+      'X-Forwarded-Host': 'elsewhere.test',
+      'X-Forwarded-Proto': 'https',
+    });
+    await get({});
+
+    expect(calls()).toBe(3);
+  });
+
+  it('does not use a directory that is a link to somewhere else: it makes its own', async () => {
+    const parent = mkdtempSync(join(tmpdir(), 'kometio-image-cache-parent-'));
+    const elsewhere = join(parent, 'elsewhere');
+    mkdirSync(elsewhere);
+    const linked = join(parent, 'cache');
+    symlinkSync(elsewhere, linked);
+    const calls = { n: 0 };
+    const cache = createImageCache({ directory: linked });
+    const server = createServer((req, res) => {
+      void cache.handle(req, res, () => {
+        calls.n += 1;
+        image(1000)(req, res);
+      });
+    });
+    await new Promise<void>((resolve) =>
+      server.listen(0, '127.0.0.1', resolve),
+    );
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+
+    await fetch(`${base}${IMAGE}`);
+    const second = await fetch(`${base}${IMAGE}`);
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    const written = readdirSync(parent);
+    rmSync(parent, { recursive: true, force: true });
+
+    expect(second.headers.get('x-kometio-image-cache')).toBe('hit');
+    expect(
+      written.filter((name) => name.startsWith('kometio-image-cache-')),
+    ).toHaveLength(1);
+  });
+
+  it('does not take for an entry what was left in its directory with a type it does not serve', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'kometio-image-cache-'));
+    const key = 'a'.repeat(64);
+    writeFileSync(
+      join(directory, `${key}.json`),
+      JSON.stringify({ 'content-type': 'text/html' }),
+    );
+    writeFileSync(join(directory, `${key}.body`), '<script>alert(1)</script>');
+    const cache = createImageCache({ directory });
+    const server = createServer((req, res) => {
+      void cache.handle(req, res, () => image(1000)(req, res));
+    });
+    await new Promise<void>((resolve) =>
+      server.listen(0, '127.0.0.1', resolve),
+    );
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+
+    await fetch(`${base}${IMAGE}`);
+    await fetch(`${base}${IMAGE}`); // a hit, so the first has been kept
+    server.closeAllConnections();
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    const count = cache.count();
+    rmSync(directory, { recursive: true, force: true });
+
+    expect(count).toBe(1); // the one just made; the planted pair is not one
+  });
+
+  it('makes, without keeping, what is asked beyond the number it holds in memory at once', async () => {
+    const { base, calls } = await start();
+
+    const responses = await Promise.all(
+      Array.from({ length: 24 }, (_, i) =>
+        fetch(`${base}/_image?href=%2F${i}.png&w=1`),
+      ),
+    );
+
+    expect(responses.every((r) => r.status === 200)).toBe(true);
+    expect(calls()).toBe(24);
+    const again = await fetch(`${base}/_image?href=%2F23.png&w=1`);
+    expect(again.headers.get('x-kometio-image-cache')).toBe('miss');
   });
 });

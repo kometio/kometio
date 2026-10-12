@@ -16,26 +16,56 @@
 // site to stand.
 //
 // What is kept is bounded (the whole directory, and each entry), is only an
-// answer the endpoint gave with status 200 and an image type, and goes when
-// the server restarts with its directory: it is made again, never migrated.
+// answer the endpoint gave with status 200 and a raster type (never an SVG, a
+// document), and goes when the server restarts with its directory: it is made
+// again, never migrated. What a hit says about itself is fixed here — it is a
+// picture, `nosniff`, with a CSP that allows nothing — and not what the answer
+// that made it carried.
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import {
+  lstat,
   mkdir,
+  mkdtemp,
   readFile,
   readdir,
   rename,
   rm,
-  stat,
   writeFile,
 } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 export const IMAGE_ENDPOINT = '/_image';
 
 const DEFAULT_MAX_BYTES = 256 * 1024 * 1024;
 /** A photograph at a sensible width is a few hundred kilobytes; this is what is not worth a place. */
 const DEFAULT_MAX_ENTRY_BYTES = 8 * 1024 * 1024;
+/**
+ * Only what a browser cannot be made to run: an SVG is a document, and one
+ * with a script in it, opened by its address, would run in the site's origin
+ * — which the CSP of the page's own answer was what prevented, and a cached
+ * copy does not carry. Rasters only.
+ */
+const CACHEABLE_TYPE = /^image\/(webp|avif|jpeg|png|gif)$/;
+/**
+ * What a request says that can change where the endpoint fetches a path
+ * from: Astro makes the origin of a relative `href` from these. Two requests
+ * that differ in them are two requests.
+ */
+const ORIGIN_HEADERS = [
+  'host',
+  'x-forwarded-host',
+  'x-forwarded-proto',
+  'x-forwarded-port',
+  'forwarded',
+];
+/** More than this being made at once are made but not kept: each is held in memory until it is done. */
+const MAX_IN_FLIGHT = 16;
+/** What a hit says about itself: it is a picture and nothing else, whatever the file it was made from. */
+const HIT_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'Content-Security-Policy': "default-src 'none'; sandbox",
+};
 /** Evicting down to this, not to the limit, so that it is not done on every store. */
 const EVICT_TO = 0.8;
 /**
@@ -57,10 +87,11 @@ const KEPT_HEADERS = [
  * @param {number} [options.maxEntryBytes] the most one entry may be
  */
 export function createImageCache({
-  directory,
+  directory: wanted,
   maxBytes = DEFAULT_MAX_BYTES,
   maxEntryBytes = DEFAULT_MAX_ENTRY_BYTES,
 }) {
+  let directory = wanted;
   /** key -> { bytes, usedAt, headers } */
   const entries = new Map();
   /** key -> Promise, resolved once the request that is making it has finished */
@@ -69,25 +100,71 @@ export function createImageCache({
   const ready = prepare();
   let warned = false;
 
+  /**
+   * The directory is this process's own: made with 0700, and if it was
+   * there already it must be a real directory of this user and nobody
+   * else's. A path in a shared temporary directory is predictable, and
+   * another user of the machine (the API, a theme's code) could have put a
+   * link or a file of its own there.
+   */
+  async function trusted() {
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+    const found = await lstat(directory);
+    const owner =
+      typeof process.getuid === 'function' ? process.getuid() : found.uid;
+    if (
+      found.isDirectory() &&
+      found.uid === owner &&
+      (found.mode & 0o077) === 0
+    ) {
+      return directory;
+    }
+    return mkdtemp(join(dirname(directory), 'kometio-image-cache-'));
+  }
+
+  /** A header value with one of these cannot be given back: it would end the header, or the response. */
+  function hasControlCharacter(text) {
+    return [...text].some((character) => {
+      const code = character.charCodeAt(0);
+      return code < 0x20 || code === 0x7f;
+    });
+  }
+
+  /** What an entry's saved headers may be: the ones this module keeps, as plain text and a type it serves. */
+  function validHeaders(value) {
+    if (typeof value !== 'object' || value === null) return null;
+    const headers = {};
+    for (const name of KEPT_HEADERS) {
+      const header = value[name];
+      if (header === undefined) continue;
+      if (typeof header !== 'string' || hasControlCharacter(header))
+        return null;
+      headers[name] = header;
+    }
+    return CACHEABLE_TYPE.test(headers['content-type'] ?? '') ? headers : null;
+  }
+
   async function prepare() {
     try {
-      await mkdir(directory, { recursive: true, mode: 0o700 });
+      directory = await trusted();
       for (const name of await readdir(directory)) {
-        if (!name.endsWith('.json')) continue;
+        if (!/^[0-9a-f]{64}\.json$/.test(name)) continue;
         const key = name.slice(0, -'.json'.length);
         try {
-          const headers = JSON.parse(
-            await readFile(join(directory, name), 'utf8'),
+          const headers = validHeaders(
+            JSON.parse(await readFile(join(directory, name), 'utf8')),
           );
-          const { size, mtimeMs } = await stat(join(directory, `${key}.body`));
-          entries.set(key, { bytes: size, usedAt: mtimeMs, headers });
-          total += size;
+          const body = await lstat(join(directory, `${key}.body`));
+          if (!headers || !body.isFile() || body.size > maxEntryBytes) continue;
+          entries.set(key, { bytes: body.size, usedAt: body.mtimeMs, headers });
+          total += body.size;
         } catch {
           // A half-written pair: not an entry.
         }
       }
     } catch (error) {
       warn(error);
+      directory = null;
     }
   }
 
@@ -101,7 +178,12 @@ export function createImageCache({
 
   function keyOf(req) {
     return createHash('sha256')
-      .update(`${req.headers.host ?? ''}\n${req.url}`)
+      .update(
+        [
+          ...ORIGIN_HEADERS.map((name) => String(req.headers[name] ?? '')),
+          req.url,
+        ].join('\n'),
+      )
       .digest('hex');
   }
 
@@ -115,6 +197,9 @@ export function createImageCache({
     const entry = entries.get(key);
     entry.usedAt = Date.now();
     for (const [name, value] of Object.entries(entry.headers)) {
+      res.setHeader(name, value);
+    }
+    for (const [name, value] of Object.entries(HIT_HEADERS)) {
       res.setHeader(name, value);
     }
     res.setHeader('X-Kometio-Image-Cache', 'hit');
@@ -211,7 +296,7 @@ export function createImageCache({
           if (
             complete &&
             res.statusCode === 200 &&
-            contentType.startsWith('image/') &&
+            CACHEABLE_TYPE.test(contentType) &&
             chunks.length > 0
           ) {
             const headers = {};
@@ -257,6 +342,7 @@ export function createImageCache({
     }
 
     res.setHeader('X-Kometio-Image-Cache', 'miss');
+    if (!directory || making.size >= MAX_IN_FLIGHT) return next();
     const made = makeAndKeep(res, key, next).finally(() => making.delete(key));
     making.set(key, made);
     return made;
