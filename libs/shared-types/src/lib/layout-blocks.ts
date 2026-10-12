@@ -57,6 +57,9 @@ export type ColumnsProps = z.infer<typeof columnsPropsSchema>;
 export const columnsBlockContract = defineBlockContract({
   type: 'Columns',
   props: columnsPropsSchema,
+  // `gap` on top of the standard set (ADR-0050): the space between columns
+  // was a hardcoded 1.5rem, which made a row of tight cards and a row of
+  // full sections the same distance apart.
   style: {
     backgroundColor: 'transparent',
     textColor: 'inherit',
@@ -145,6 +148,12 @@ export type ContainerProps = z.infer<typeof containerPropsSchema>;
 export const containerBlockContract = defineBlockContract({
   type: 'Container',
   props: containerPropsSchema,
+  // background/padding are in this list now (ADR-0050). They used to be
+  // left out to avoid "two mechanisms for the same property" — but the
+  // preset and the override were never two mechanisms, they were one
+  // declaration and a Tailwind class that always beat it. The preset is
+  // the fallback of the override now, so setting either does what it
+  // says, and setting the free value wins.
   style: {
     // The preset's own value at the block's default (`padding: 'md'`) and
     // `background: 'none'` — the editor opens showing what a Container

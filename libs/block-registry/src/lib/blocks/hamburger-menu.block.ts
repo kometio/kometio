@@ -1,6 +1,5 @@
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
+import { hamburgerMenuBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { positionField } from '../fields/position-field';
 import { visibilityField } from '../fields/visibility-field';
 
@@ -9,11 +8,7 @@ import { visibilityField } from '../fields/visibility-field';
 // within the Nav) with its own visibility, exactly like
 // hamburgerMenuPropsSchema in navigation-blocks.ts. Block.children is real, so
 // no extra type is needed for it here.
-export const hamburgerMenuBlock: BlockDescriptor<{
-  position: 'left' | 'right';
-  visibility: 'always' | 'desktop-only' | 'mobile-only';
-}> = {
-  type: 'HamburgerMenu',
+export const hamburgerMenuBlock = coreBlock(hamburgerMenuBlockContract, {
   label: 'blocks.hamburgerMenu.label',
   category: 'navigation',
   icon: 'align-justify',
@@ -21,12 +16,4 @@ export const hamburgerMenuBlock: BlockDescriptor<{
   fields: [positionField, visibilityField],
   isContainer: true,
   allowedChildTypes: ['NavLink', 'LanguageSwitcher'],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.HamburgerMenu,
-};
+});

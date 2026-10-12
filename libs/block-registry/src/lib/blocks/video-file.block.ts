@@ -1,15 +1,12 @@
-import {
-  BLOCK_STYLE_DEFAULTS,
-  type VideoFileProps,
-} from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { videoFileBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 // Distinct from VideoEmbed, and both are worth having (ADR-0054): an
 // embed costs no bandwidth but brings a third party, its player and its
 // cookies — which is why VideoEmbed sits behind a consent gate. This one
 // has none of that, and is the right answer for a short clip.
-export const videoFileBlock: BlockDescriptor<VideoFileProps> = {
-  type: 'VideoFile',
+export const videoFileBlock = coreBlock(videoFileBlockContract, {
   label: 'blocks.videoFile.label',
   category: 'media',
   icon: 'video',
@@ -58,11 +55,4 @@ export const videoFileBlock: BlockDescriptor<VideoFileProps> = {
       group: 'advanced',
     },
   ],
-  stylableProperties: [
-    'borderRadius',
-    'boxShadow',
-    'maxWidth',
-    'backgroundColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.VideoFile,
-};
+});

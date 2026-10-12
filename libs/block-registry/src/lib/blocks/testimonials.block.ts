@@ -1,11 +1,8 @@
-import type { TestimonialsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { testimonialsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { displayField } from '../fields/display-field';
 
-export const testimonialsBlock: BlockDescriptor<TestimonialsProps> = {
-  type: 'Testimonials',
+export const testimonialsBlock = coreBlock(testimonialsBlockContract, {
   label: 'blocks.testimonials.label',
   category: 'socialProof',
   icon: 'message-square-quote',
@@ -13,6 +10,4 @@ export const testimonialsBlock: BlockDescriptor<TestimonialsProps> = {
   fields: [displayField],
   isContainer: true,
   allowedChildTypes: ['Testimonial'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Testimonials,
-};
+});

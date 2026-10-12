@@ -1,10 +1,7 @@
-import type { NewsletterSignupProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { newsletterSignupBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const newsletterSignupBlock: BlockDescriptor<NewsletterSignupProps> = {
-  type: 'NewsletterSignup',
+export const newsletterSignupBlock = coreBlock(newsletterSignupBlockContract, {
   label: 'blocks.newsletterSignup.label',
   category: 'conversion',
   icon: 'mail',
@@ -28,6 +25,4 @@ export const newsletterSignupBlock: BlockDescriptor<NewsletterSignupProps> = {
       inlineEditable: true,
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'maxWidth'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.NewsletterSignup,
-};
+});

@@ -1,11 +1,9 @@
-import type { PricingPlanProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { pricingPlanBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { ctaLinkFields } from '../fields/link-type-field';
 
-export const pricingPlanBlock: BlockDescriptor<PricingPlanProps> = {
-  type: 'PricingPlan',
+export const pricingPlanBlock = coreBlock(pricingPlanBlockContract, {
   label: 'blocks.pricingPlan.label',
   category: 'socialProof',
   icon: 'tag',
@@ -62,6 +60,4 @@ export const pricingPlanBlock: BlockDescriptor<PricingPlanProps> = {
     },
     ...ctaLinkFields(),
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.PricingPlan,
-};
+});

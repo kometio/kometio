@@ -1,9 +1,8 @@
-import type { ImageSliderProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { imageSliderBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const imageSliderBlock: BlockDescriptor<ImageSliderProps> = {
-  type: 'ImageSlider',
+export const imageSliderBlock = coreBlock(imageSliderBlockContract, {
   label: 'blocks.imageSlider.label',
   category: 'media',
   icon: 'gallery-horizontal-end',
@@ -17,6 +16,4 @@ export const imageSliderBlock: BlockDescriptor<ImageSliderProps> = {
       'gallery',
     ),
   ],
-  stylableProperties: ['borderRadius', 'boxShadow', 'maxWidth'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ImageSlider,
-};
+});

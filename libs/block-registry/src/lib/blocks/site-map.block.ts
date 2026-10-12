@@ -1,11 +1,8 @@
-import type { SiteMapProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { siteMapBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /** Every published page, nested as the page tree nests them. */
-export const siteMapBlock: BlockDescriptor<SiteMapProps> = {
-  type: 'SiteMap',
+export const siteMapBlock = coreBlock(siteMapBlockContract, {
   label: 'blocks.siteMap.label',
   category: 'content',
   icon: 'network',
@@ -19,6 +16,4 @@ export const siteMapBlock: BlockDescriptor<SiteMapProps> = {
       max: 6,
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.SiteMap,
-};
+});

@@ -1,10 +1,8 @@
-import type { FeatureProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { featureBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const featureBlock: BlockDescriptor<FeatureProps> = {
-  type: 'Feature',
+export const featureBlock = coreBlock(featureBlockContract, {
   label: 'blocks.feature.label',
   category: 'interactive',
   icon: 'badge-check',
@@ -42,10 +40,4 @@ export const featureBlock: BlockDescriptor<FeatureProps> = {
     { value: 'inline', label: 'blocks.feature.variants.inline' },
     { value: 'start', label: 'blocks.feature.variants.start' },
   ],
-  // STANDARD plus `gap`: the `inline` variant makes this block a flex
-  // row, so the distance between the icon and the words is now a real
-  // thing to set — offering it before the variant existed would have been
-  // a control that did nothing.
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Feature,
-};
+});

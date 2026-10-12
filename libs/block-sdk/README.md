@@ -125,11 +125,17 @@ a block of your own, in order:
    derived from the contracts: there is no list to add the block to. A new
    family file adds its own list to `block-contracts.ts`.
 
-2. **Descriptor** — a `.block.ts` file calling `defineBlock()` (see
-   `callout.block.ts`), registered in `libs/block-registry/src/lib/config.ts`:
-   add the import and add it to the `pageBlocks` array. Its `category` says
-   which drawer of the picker it is in, and its place in `pageBlocks` says
-   where in that drawer — there is no second list of types to edit.
+2. **Descriptor** — a `.block.ts` file calling `coreBlock(contract, {...})`
+   (see `hero.block.ts`), registered in
+   `libs/block-registry/src/lib/config.ts`: add the import and add it to the
+   `pageBlocks` array. It writes what the editor adds — label, category,
+   icon, `defaultProps`, `fields`, containment; the `type`, the style
+   defaults and the stylable properties are the contract's. Its `category`
+   says which drawer of the picker it is in, and its place in `pageBlocks`
+   says where in that drawer — there is no second list of types to edit.
+   (A block of a theme has no contract in `shared-types` and is built with
+   `defineBlock()`, which takes its schema and style beside it:
+   `callout.block.ts` is the worked example of that surface.)
 3. **Render component** — `apps/public-site/src/components/blocks/<Type>.astro`
    (see `Callout.astro`), named exactly like the `type`. It is found by that
    name: there is no import to add and no dispatch table to extend. It is the
@@ -159,7 +165,7 @@ that names it.
 | a contract for each descriptor, and back         | `libs/block-registry/.../core-block-types.spec.ts`  |
 | `defaultProps` that satisfy the contract's props | `libs/block-registry/.../block-declaration.spec.ts` |
 | listed in `pageBlocks` / `headerFooterBlocks`    | `libs/block-registry/.../config.spec.ts`            |
-| `stylableProperties` matching its `style`        | `libs/block-registry/.../config.spec.ts`            |
+| a stylable property that has a default           | `libs/block-registry/.../config.spec.ts`            |
 | an icon of its own                               | `libs/block-registry/.../block-icons.spec.ts`       |
 | a component named for it                         | `apps/public-site/.../block-components.spec.ts`     |
 | a nesting the generation catalogue allows        | `apps/api/.../generation-catalog-registry.spec.ts`  |

@@ -1,10 +1,8 @@
-import type { FormBlockProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { formBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const formBlock: BlockDescriptor<FormBlockProps> = {
-  type: 'Form',
+export const formBlock = coreBlock(formBlockContract, {
   label: 'blocks.form.label',
   category: 'conversion',
   icon: 'clipboard-list',
@@ -14,6 +12,4 @@ export const formBlock: BlockDescriptor<FormBlockProps> = {
   fields: [
     FieldBuilder.custom('form', 'blocks.form.fields.form.fieldLabel', 'form'),
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Form,
-};
+});

@@ -1,10 +1,7 @@
-import type { StepProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { stepBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const stepBlock: BlockDescriptor<StepProps> = {
-  type: 'Step',
+export const stepBlock = coreBlock(stepBlockContract, {
   label: 'blocks.step.label',
   category: 'content',
   icon: 'footprints',
@@ -27,6 +24,4 @@ export const stepBlock: BlockDescriptor<StepProps> = {
   ],
   // An <li> counted by its list: outside one it has no number and no list.
   allowedParentTypes: ['Steps'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Step,
-};
+});

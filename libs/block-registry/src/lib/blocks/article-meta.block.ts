@@ -1,7 +1,5 @@
-import type { ArticleMetaProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { articleMetaBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The line an article carries: when it went out, and who wrote it.
@@ -15,8 +13,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * What IS a choice is whether to show each of them — a newsroom wants
  * both, a documentation site often wants neither.
  */
-export const articleMetaBlock: BlockDescriptor<ArticleMetaProps> = {
-  type: 'ArticleMeta',
+export const articleMetaBlock = coreBlock(articleMetaBlockContract, {
   label: 'blocks.articleMeta.label',
   category: 'content',
   icon: 'calendar',
@@ -39,6 +36,4 @@ export const articleMetaBlock: BlockDescriptor<ArticleMetaProps> = {
       label: 'blocks.articleMeta.fields.showAuthor.fieldLabel',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ArticleMeta,
-};
+});

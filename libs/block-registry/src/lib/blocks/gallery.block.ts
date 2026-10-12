@@ -1,11 +1,9 @@
-import type { GalleryProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { galleryBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { aspectRatioField } from '../fields/aspect-ratio-field';
-import { BlockStyleRegistry } from '../block-style-registry';
 
-export const galleryBlock: BlockDescriptor<GalleryProps> = {
-  type: 'Gallery',
+export const galleryBlock = coreBlock(galleryBlockContract, {
   label: 'blocks.gallery.label',
   category: 'content',
   icon: 'images',
@@ -42,6 +40,4 @@ export const galleryBlock: BlockDescriptor<GalleryProps> = {
       label: 'blocks.image.fields.lightbox.fieldLabel',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Gallery,
-};
+});

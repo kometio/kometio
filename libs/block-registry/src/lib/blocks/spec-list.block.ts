@@ -1,11 +1,8 @@
-import type { SpecListProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { specListBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /** Specifications: weight, size, material — a label and a value per line. */
-export const specListBlock: BlockDescriptor<SpecListProps> = {
-  type: 'SpecList',
+export const specListBlock = coreBlock(specListBlockContract, {
   label: 'blocks.specList.label',
   category: 'content',
   icon: 'scroll-text',
@@ -24,6 +21,4 @@ export const specListBlock: BlockDescriptor<SpecListProps> = {
   ],
   isContainer: true,
   allowedChildTypes: ['SpecItem'],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.SpecList,
-};
+});

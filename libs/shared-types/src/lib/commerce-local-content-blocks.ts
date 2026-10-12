@@ -494,6 +494,8 @@ export type StickyContactBarProps = z.infer<typeof stickyContactBarPropsSchema>;
 export const stickyContactBarBlockContract = defineBlockContract({
   type: 'StickyContactBar',
   props: stickyContactBarPropsSchema,
+  // No radius: a bar running edge to edge of the screen has no corners
+  // to round, and a site-wide one (a theme sets it at :root) rounded them.
   style: {
     backgroundColor: 'var(--background)',
     textColor: 'var(--foreground)',
@@ -619,6 +621,8 @@ export type SpecItemProps = z.infer<typeof specItemPropsSchema>;
 export const specItemBlockContract = defineBlockContract({
   type: 'SpecItem',
   props: specItemPropsSchema,
+  // No radius: a row is drawn by one rule under it, and a site-wide
+  // radius (a theme sets one at :root) bent that rule's ends.
   style: {
     backgroundColor: 'transparent',
     textColor: 'inherit',
@@ -638,6 +642,8 @@ export const progressBarBlockContract = defineBlockContract({
   type: 'ProgressBar',
   props: progressBarPropsSchema,
   // The bar is the block: its colour is the fill, its radius the track's, its min height the thickness.
+  // The fill's colour, the track's rounding and the bar's thickness — the
+  // three things a bar is made of.
   style: {
     backgroundColor: 'var(--primary)',
     textColor: 'inherit',
@@ -759,6 +765,8 @@ export const pullQuoteBlockContract = defineBlockContract({
   type: 'PullQuote',
   props: pullQuotePropsSchema,
   // A Quote, drawn by Quote.astro, with the room a pull quote stands in.
+  // No radius: the quote is framed by a rule above and below, and a
+  // site-wide radius (a theme sets one at :root) bent their ends.
   style: {
     backgroundColor: 'transparent',
     textColor: 'inherit',

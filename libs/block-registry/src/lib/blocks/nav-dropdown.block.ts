@@ -1,12 +1,9 @@
-import type { NavDropdownProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { navDropdownBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { positionField } from '../fields/position-field';
 import { visibilityField } from '../fields/visibility-field';
 
-export const navDropdownBlock: BlockDescriptor<NavDropdownProps> = {
-  type: 'NavDropdown',
+export const navDropdownBlock = coreBlock(navDropdownBlockContract, {
   label: 'blocks.navDropdown.label',
   category: 'navigation',
   icon: 'chevron-down-square',
@@ -30,13 +27,4 @@ export const navDropdownBlock: BlockDescriptor<NavDropdownProps> = {
   // another NavDropdown.
   isContainer: true,
   allowedChildTypes: ['NavLink'],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'gap',
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.NavDropdown,
-};
+});

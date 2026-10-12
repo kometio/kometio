@@ -1,10 +1,7 @@
-import type { AccordionProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { accordionBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const accordionBlock: BlockDescriptor<AccordionProps> = {
-  type: 'Accordion',
+export const accordionBlock = coreBlock(accordionBlockContract, {
   label: 'blocks.accordion.label',
   category: 'interactive',
   icon: 'chevrons-up-down',
@@ -12,6 +9,4 @@ export const accordionBlock: BlockDescriptor<AccordionProps> = {
   fields: [],
   isContainer: true,
   allowedChildTypes: ['AccordionItem'],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Accordion,
-};
+});

@@ -1,7 +1,5 @@
-import type { BuyButtonProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { buyButtonBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 import { currencyField } from '../fields/currency-field';
 
 /**
@@ -9,8 +7,7 @@ import { currencyField } from '../fields/currency-field';
  * payment link. Drawn by the Button block, so it looks like every other
  * button on the site; what it adds is the price on the label.
  */
-export const buyButtonBlock: BlockDescriptor<BuyButtonProps> = {
-  type: 'BuyButton',
+export const buyButtonBlock = coreBlock(buyButtonBlockContract, {
   label: 'blocks.buyButton.label',
   category: 'shop',
   icon: 'shopping-cart',
@@ -42,6 +39,4 @@ export const buyButtonBlock: BlockDescriptor<BuyButtonProps> = {
     },
     currencyField,
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.BuyButton,
-};
+});

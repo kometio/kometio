@@ -1,15 +1,13 @@
-import type { MasonryGalleryProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { masonryGalleryBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * Pictures in columns, each at its own height — the Gallery block's
  * pictures and component, laid out the way a portfolio of mixed
  * portraits and landscapes wants to be.
  */
-export const masonryGalleryBlock: BlockDescriptor<MasonryGalleryProps> = {
-  type: 'MasonryGallery',
+export const masonryGalleryBlock = coreBlock(masonryGalleryBlockContract, {
   label: 'blocks.masonryGallery.label',
   category: 'media',
   icon: 'layout-dashboard',
@@ -37,6 +35,4 @@ export const masonryGalleryBlock: BlockDescriptor<MasonryGalleryProps> = {
       label: 'blocks.image.fields.lightbox.fieldLabel',
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.MasonryGallery,
-};
+});

@@ -58,21 +58,32 @@ purely to contain, in one documented place, the single unavoidable
 `unknown`-cast a `kind: 'custom'` field needs — a heterogeneous
 `FieldDescriptor[]` array can't otherwise express "this component's value
 is really a `PickedPage`", so the alternative would be repeating that cast
-at every call site instead of once here. Every block below is still defined
-as a plain `BlockDescriptor` object literal, unchanged — `defineBlock()`
-(`@kometio/block-sdk`) is a validated-factory alternative available to new
-blocks (see `blocks/callout.block.ts` for this package's own one example),
-not a rewrite requirement for the existing ones.
+at every call site instead of once here. Every first-party block is built
+with `coreBlock(contract, { … })` (`define-core-block.ts`): its `type`, its
+`defaultStyle` and — unless it lists its own — its `stylableProperties` come
+from the block's contract in `@kometio/shared-types`
+([ADR-0115](../../docs/adr/0115-a-block-is-declared-once-as-a-contract.md),
+[ADR-0116](../../docs/adr/0116-a-core-blocks-descriptor-is-built-on-its-contract.md)),
+so what a descriptor writes is only what the editor adds: label, category,
+icon, defaults, fields, containment. Two files are not built that way, and
+say why: `blocks/section.block.ts` (its props type is declared by hand, the
+inference of its schema contradicts itself) and `blocks/callout.block.ts`
+(the worked example of `defineBlock()`, the surface a theme's own block
+gets).
 
 `stylableProperties` + `defaultStyle` are this block's opt-in to the
 component/instance style-override system
 ([ADR-0022](../../docs/adr/0022-component-and-instance-style-overrides.md))
 — absent or empty means no "Style" button/override popover for that type at
 all; the rollout across all the blocks is intentionally incremental, not
-mechanical. `BlockStyleRegistry.STANDARD` (`block-style-registry.ts`) is a
-shared preset (`backgroundColor`, `textColor`, `borderRadius`, `paddingX`,
-`paddingY`) most blocks reuse verbatim, added after one block was found to
-have silently drifted from a copy-pasted literal array.
+mechanical. For a first-party block both are derived: `defaultStyle` is the
+contract's `style`, and `stylableProperties` is that object's keys, so a
+block that declares a default for a property offers it and a block cannot
+offer one it has no default for. A block with defaults for the site and no
+style panel in the editor (Anchor's `maxWidth`) says `stylableProperties: []`.
+The preset this paragraph used to describe (`BlockStyleRegistry.STANDARD`,
+copied by 33 blocks) is gone with it: the five properties are each contract's
+own `style`.
 
 ## The two registries (`config.ts` / `layout-config.ts`)
 

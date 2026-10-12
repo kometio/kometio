@@ -1,11 +1,9 @@
-import type { ButtonProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { buttonBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { ctaLinkFields } from '../fields/link-type-field';
 
-export const buttonBlock: BlockDescriptor<ButtonProps> = {
-  type: 'Button',
+export const buttonBlock = coreBlock(buttonBlockContract, {
   label: 'blocks.button.label',
   category: 'conversion',
   icon: 'mouse-pointer-click',
@@ -64,9 +62,4 @@ export const buttonBlock: BlockDescriptor<ButtonProps> = {
     { value: 'ghost', label: 'blocks.button.variants.ghost' },
     { value: 'link', label: 'blocks.button.variants.link' },
   ],
-  // Color/borders/padding — editable for ALL Buttons on the site (the
-  // "Style" button in the toolbar) or only for this instance (popover on
-  // the selected block), docs/adr/0022. Replaces the old `colorOverride`.
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Button,
-};
+});

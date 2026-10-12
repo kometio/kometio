@@ -1,7 +1,6 @@
-import type { ProductCardProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { productCardBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 import { ctaLinkFields } from '../fields/link-type-field';
 import { currencyField } from '../fields/currency-field';
 
@@ -11,8 +10,7 @@ import { currencyField } from '../fields/currency-field';
  * There is no cart in Kometio, and the card does not pretend otherwise —
  * its link goes to the product's own page or to wherever it is sold.
  */
-export const productCardBlock: BlockDescriptor<ProductCardProps> = {
-  type: 'ProductCard',
+export const productCardBlock = coreBlock(productCardBlockContract, {
   label: 'blocks.productCard.label',
   category: 'shop',
   icon: 'shopping-bag',
@@ -86,11 +84,4 @@ export const productCardBlock: BlockDescriptor<ProductCardProps> = {
       group: 'advanced',
     },
   ],
-  stylableProperties: [
-    ...BlockStyleRegistry.STANDARD,
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ProductCard,
-};
+});

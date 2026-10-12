@@ -1,9 +1,7 @@
-import type { ComparisonRowProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
+import { comparisonRowBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
-export const comparisonRowBlock: BlockDescriptor<ComparisonRowProps> = {
-  type: 'ComparisonRow',
+export const comparisonRowBlock = coreBlock(comparisonRowBlockContract, {
   label: 'blocks.comparisonRow.label',
   category: 'content',
   icon: 'rows-2',
@@ -25,6 +23,4 @@ export const comparisonRowBlock: BlockDescriptor<ComparisonRowProps> = {
   ],
   // A row of cells outside its table has no columns to line up with.
   allowedParentTypes: ['ComparisonTable'],
-  stylableProperties: ['backgroundColor', 'textColor', 'paddingX', 'paddingY'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ComparisonRow,
-};
+});

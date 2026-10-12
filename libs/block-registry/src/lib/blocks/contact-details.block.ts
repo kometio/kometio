@@ -1,7 +1,5 @@
-import type { ContactDetailsProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { contactDetailsBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The site's address and phone number, from Business info.
@@ -9,8 +7,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * Read, never typed on the page: a phone number copied into six pages is
  * wrong on five of them the day it changes.
  */
-export const contactDetailsBlock: BlockDescriptor<ContactDetailsProps> = {
-  type: 'ContactDetails',
+export const contactDetailsBlock = coreBlock(contactDetailsBlockContract, {
   label: 'blocks.contactDetails.label',
   category: 'localBusiness',
   icon: 'contact',
@@ -43,6 +40,4 @@ export const contactDetailsBlock: BlockDescriptor<ContactDetailsProps> = {
       showWhen: { field: 'showAddress', equals: true },
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.ContactDetails,
-};
+});

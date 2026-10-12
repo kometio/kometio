@@ -1,9 +1,8 @@
-import type { CardProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import { FieldBuilder, type BlockDescriptor } from '../field-types';
+import { cardBlockContract } from '@kometio/shared-types';
+import { FieldBuilder } from '../field-types';
+import { coreBlock } from '../define-core-block';
 
-export const cardBlock: BlockDescriptor<CardProps> = {
-  type: 'Card',
+export const cardBlock = coreBlock(cardBlockContract, {
   label: 'blocks.card.label',
   category: 'layout',
   icon: 'square-stack',
@@ -50,20 +49,4 @@ export const cardBlock: BlockDescriptor<CardProps> = {
     { value: 'flat', label: 'blocks.card.variants.flat' },
     { value: 'horizontal', label: 'blocks.card.variants.horizontal' },
   ],
-  stylableProperties: [
-    'backgroundColor',
-    'textColor',
-    'borderRadius',
-    'borderWidth',
-    'borderStyle',
-    'borderColor',
-    'boxShadow',
-    'paddingX',
-    'paddingY',
-    'gap',
-    'contentAlign',
-    'maxWidth',
-    'minHeight',
-  ],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Card,
-};
+});

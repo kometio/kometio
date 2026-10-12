@@ -1,7 +1,5 @@
-import type { TermListProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { termListBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * The terms of one dimension, offered to a reader.
@@ -17,8 +15,7 @@ import { BlockStyleRegistry } from '../block-style-registry';
  * term's own page, which is a different promise made by the same row of
  * chips.
  */
-export const termListBlock: BlockDescriptor<TermListProps> = {
-  type: 'TermList',
+export const termListBlock = coreBlock(termListBlockContract, {
   label: 'blocks.termList.label',
   category: 'content',
   icon: 'tags',
@@ -79,6 +76,4 @@ export const termListBlock: BlockDescriptor<TermListProps> = {
       showWhen: { field: 'behaviour', equals: 'filter' },
     },
   ],
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.TermList,
-};
+});

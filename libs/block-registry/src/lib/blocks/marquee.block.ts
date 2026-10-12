@@ -1,15 +1,12 @@
-import type { MarqueeProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { marqueeBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 /**
  * Anything, scrolling sideways without end — a row of logos, a line of
  * text. The generic container the hundred-blocks plan named next to
  * Slider and Carousel.
  */
-export const marqueeBlock: BlockDescriptor<MarqueeProps> = {
-  type: 'Marquee',
+export const marqueeBlock = coreBlock(marqueeBlockContract, {
   label: 'blocks.marquee.label',
   category: 'interactive',
   icon: 'infinity',
@@ -50,6 +47,4 @@ export const marqueeBlock: BlockDescriptor<MarqueeProps> = {
     },
   ],
   isContainer: true,
-  stylableProperties: [...BlockStyleRegistry.STANDARD, 'gap'],
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Marquee,
-};
+});

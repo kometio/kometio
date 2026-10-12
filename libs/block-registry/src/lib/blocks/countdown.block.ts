@@ -1,12 +1,9 @@
-import type { CountdownProps } from '@kometio/shared-types';
-import { BLOCK_STYLE_DEFAULTS } from '@kometio/shared-types';
-import type { BlockDescriptor } from '../field-types';
-import { BlockStyleRegistry } from '../block-style-registry';
+import { countdownBlockContract } from '@kometio/shared-types';
+import { coreBlock } from '../define-core-block';
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-export const countdownBlock: BlockDescriptor<CountdownProps> = {
-  type: 'Countdown',
+export const countdownBlock = coreBlock(countdownBlockContract, {
   label: 'blocks.countdown.label',
   category: 'conversion',
   icon: 'timer',
@@ -34,6 +31,4 @@ export const countdownBlock: BlockDescriptor<CountdownProps> = {
       inlineEditable: true,
     },
   ],
-  stylableProperties: BlockStyleRegistry.STANDARD,
-  defaultStyle: BLOCK_STYLE_DEFAULTS.Countdown,
-};
+});
