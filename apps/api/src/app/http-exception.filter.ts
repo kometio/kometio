@@ -53,13 +53,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // (`?token=`), and a log line is no place for a credential.
     const path = request.originalUrl.split('?', 1)[0];
     const logLine = `${request.method} ${path} -> ${status} [${requestId}]`;
+    // Nest's own answer to a route that does not exist is `Cannot GET <url>`,
+    // with the query in it: the same credential, by the other door.
+    const message = httpException.message.split(request.originalUrl).join(path);
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(
-        `${logLine} ${httpException.message}`,
+        `${logLine} ${message}`,
         exception instanceof Error ? exception.stack : undefined,
       );
     } else if (status >= HttpStatus.BAD_REQUEST) {
-      this.logger.warn(`${logLine} ${httpException.message}`);
+      this.logger.warn(`${logLine} ${message}`);
     }
 
     // Only what nobody handled: a refused request, a missing page and a rule
