@@ -67,6 +67,11 @@ const apiEnvBaseSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   MEDIA_UPLOAD_DIR: z.string().min(1),
+  // How much room a local disk has to keep for the rest of the server, in MB:
+  // an upload that would leave less is refused (docs/adr/0120). The single
+  // image keeps its files on the volume its database writes to. 0 turns
+  // the check off.
+  MEDIA_MIN_FREE_MB: emptyIsUnset(z.coerce.number().int().min(0).optional()),
   API_PUBLIC_URL: z.string().url(),
   // docs/adr/0042 — where FilesystemThemeCatalogAdapter scans for bundled
   // themes; see libs/adapters/filesystem-theme-catalog's own README for why

@@ -202,6 +202,8 @@ check "DOMAIN is read as documented, and a mistake in it says what to write" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/server-mode.test.mjs"
 check "an archive is trusted as documented: its manifest, its migrations, what it may hold" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive.test.mjs"
+check "an archive that does not end, or that is larger than the volume has room for, is refused while it is read and not when the disk is full" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive-commands.test.mjs"
 check "the launcher's control socket answers as documented: one archive at a time, a refusal before it starts, a cut when it fails on its way" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/control-server.test.mjs"
 check "a site opened from an archive is stopped, restored and started again as documented" \

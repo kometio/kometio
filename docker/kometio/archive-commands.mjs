@@ -14,10 +14,12 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statfsSync,
   statSync,
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
+import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import { DATABASE_USER, SOCKET_DIR } from './embedded-postgres.mjs';
@@ -25,6 +27,7 @@ import { messageOf } from './error-message.mjs';
 import { ensureDir, ids, minimalEnv, once } from './processes.mjs';
 import {
   TRANSIENT_TABLES,
+  ARCHIVE_LIMITS,
   appliedMigrationTags,
   archiveFileName,
   buildManifest,
@@ -34,7 +37,31 @@ import {
   domainOfAddress,
   Refusal,
   parseManifest,
+  roomForArchive,
+  roomForUnpacked,
 } from './archive.mjs';
+
+/**
+ * A stream that passes what it is given and fails, with a `Refusal`, once more
+ * than `max` bytes have gone through (docs/adr/0120): the body of a request
+ * that has no end is not written to the disk until the disk is full.
+ */
+export function limitedBytes(max, what) {
+  let seen = 0;
+  return new Transform({
+    transform(chunk, _encoding, callback) {
+      seen += chunk.length;
+      if (seen > max) callback(new Refusal(what));
+      else callback(null, chunk);
+    },
+  });
+}
+
+/** What is left on the volume `dir` is on, for a process that is not root's. */
+const freeBytes = (dir) => {
+  const { bavail, bsize } = statfsSync(dir);
+  return bavail * bsize;
+};
 
 // The migrations the running code has, in the order it applies them.
 const JOURNAL =
@@ -289,7 +316,18 @@ export async function readArchive({ dataDir, input, say }) {
   const discard = () => rmSync(stage, { recursive: true, force: true });
   try {
     say('reading the archive');
-    await pipeline(input, createWriteStream(`${stage}/incoming.tar.gz`));
+    // Never more than the volume has room for, kept once as it came and once
+    // unpacked: a request that does not end is refused when it passes that, and
+    // what it wrote goes with the stage.
+    const incomingMax = roomForArchive(freeBytes(dataDir));
+    await pipeline(
+      input,
+      limitedBytes(
+        incomingMax,
+        `this archive is larger than this volume has room to open (${(incomingMax / 1024 ** 3).toFixed(1)} GiB, with room kept for the database and for it to be unpacked): it is refused`,
+      ),
+      createWriteStream(`${stage}/incoming.tar.gz`),
+    );
 
     // `maxBuffer`: the default, 1 MiB, is a listing of some eight thousand
     // files, and a site with more would be told that it is not a .tar.gz.
@@ -302,7 +340,11 @@ export async function readArchive({ dataDir, input, say }) {
         'this is not a Kometio site archive: it is not a .tar.gz',
       );
     }
-    checkEntries(listing.stdout);
+    // What it declares, against what the volume has left now that it is here.
+    checkEntries(listing.stdout, {
+      entries: ARCHIVE_LIMITS.entries,
+      bytes: roomForUnpacked(freeBytes(dataDir)),
+    });
 
     ensureDir(`${stage}/content`, 'root', 0o700);
     const unpacked = spawnSync(
