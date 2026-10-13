@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { isDemoDeployment } from '../lib/demo-mode';
 import { listPublishedPagesForSitemap } from '../lib/public-api-client';
 
 export const prerender = false;
@@ -16,13 +17,16 @@ export const GET: APIRoute = async ({ url }) => {
   // <meta name="robots" content="noindex, nofollow"> on top — belt and
   // braces, since respecting either signal is up to the crawler, not
   // enforced by this server.
-  const body = searchEngineIndexingEnabled
-    ? `User-agent: *
+  // A demo is never offered to them, whatever the site's own setting says
+  // (docs/adr/0118).
+  const body =
+    searchEngineIndexingEnabled && !isDemoDeployment()
+      ? `User-agent: *
 Allow: /
 
 Sitemap: ${url.origin}/sitemap.xml
 `
-    : `User-agent: *
+      : `User-agent: *
 Disallow: /
 `;
 

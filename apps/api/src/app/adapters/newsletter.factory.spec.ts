@@ -11,6 +11,17 @@ describe('createNewsletterPort', () => {
     );
   });
 
+  it('is a no-op in a demo, whatever provider it is configured with: its visitors are strangers', () => {
+    const demo = testApiEnv({
+      KOMETIO_DEMO: 'true',
+      NEWSLETTER_PROVIDER: 'mailchimp',
+      MAILCHIMP_API_KEY: 'an-invented-key-us1',
+      MAILCHIMP_AUDIENCE_ID: 'audience-1',
+    });
+
+    expect(createNewsletterPort(demo)).toBeInstanceOf(NoopNewsletterPort);
+  });
+
   it('builds the Mailchimp adapter, and fails loudly without its key', () => {
     const mailchimp = testApiEnv({
       NEWSLETTER_PROVIDER: 'mailchimp',

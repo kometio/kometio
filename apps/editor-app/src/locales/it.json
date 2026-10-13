@@ -79,6 +79,11 @@
     "title": "Questa installazione non può inviare email",
     "body": "Inviti, reset della password e notifiche dei moduli non vengono spediti: finiscono nel log del server, con i loro link. Imposta SMTP_HOST (e le altre impostazioni SMTP) sul server per inviarli."
   },
+  "demo": {
+    "notice": "Questa è una demo. Altre persone possono provarla nello stesso momento e ogni tanto ricomincia da capo: quello che fai qui non viene conservato. Il caricamento di file e l'account condiviso sono disattivati.",
+    "uploadsOff": "Nella demo il caricamento di file è disattivato.",
+    "accountShared": "Nella demo tutti accedono con questo account, quindi nome, immagine, indirizzo e password non si modificano da qui."
+  },
   "setup": {
     "title": "Benvenuto in Kometio",
     "description": "Questa installazione non è ancora configurata. Crea il tuo account amministratore per iniziare.",

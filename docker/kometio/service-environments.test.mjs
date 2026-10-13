@@ -169,6 +169,7 @@ describe('what the public site is told', () => {
       'EDITOR_APP_URL',
       'HOME',
       'IMAGE_CACHE_MAX_MB',
+      'KOMETIO_DEMO',
       'KOMETIO_THEME',
       'LANG',
       'PATH',
@@ -206,6 +207,7 @@ describe('what the public site is told', () => {
     assert.equal(environment.SENTRY_DSN, '');
     assert.equal(environment.KOMETIO_THEME, '');
     assert.equal(environment.S3_MEDIA_PUBLIC_BASE_URL, '');
+    assert.equal(environment.KOMETIO_DEMO, '');
     assert.equal(environment.IMAGE_CACHE_MAX_MB, '');
   });
 });

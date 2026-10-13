@@ -52,6 +52,7 @@ import { AUTH_DEPS } from './auth.tokens';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
+import { roleInDemo } from '../demo-mode';
 
 @Controller('auth')
 @UseFilters(AuthErrorsFilter)
@@ -115,7 +116,11 @@ export class AuthController {
   async currentSession(@TenantId() tenantId: string, @UserId() userId: string) {
     const user = await getSignedInUser(this.deps, { tenantId, userId });
     if (!user) throw new UnauthorizedException();
-    return user;
+    // In a demo nobody is above a publisher (docs/adr/0118): the editor reads
+    // its screens from this role, and it has to say what the guard enforces.
+    return this.env.KOMETIO_DEMO === 'true'
+      ? { ...user, role: roleInDemo(user.role) }
+      : user;
   }
 
   @UseGuards(SessionAuthGuard)

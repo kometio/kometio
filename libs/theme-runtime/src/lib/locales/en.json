@@ -176,5 +176,6 @@
   "blocks.fileDownload.label": "File download",
   "blocks.glossaryTerm.label": "Glossary term",
   "blocks.hotspot.label": "Hotspot",
-  "blocks.videoEmbed.label": "Video"
+  "blocks.videoEmbed.label": "Video",
+  "embedHtml.demo": "Embedded content is turned off in the demo."
 }
