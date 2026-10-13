@@ -3,7 +3,6 @@ import {
   boolean,
   index,
   integer,
-  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -29,25 +28,27 @@ import {
   USER_ROLES,
   VERIFICATION_TOKEN_PURPOSES,
 } from '@kometio/shared-types';
-import type {
-  ResponsiveBlockStyle,
-  BusinessAddress,
-  WordPressAnalysis,
-  CookieBannerSettings,
-  ExposedFields,
-  FieldValueOverlay,
-  FormerParentLocation,
-  FormField,
-  FormStep,
-  LocalizedSeoMeta,
-  LocalizedText,
-  OpeningHoursDay,
-  PageContent,
-  SeoMeta,
-  TrackerDomainEntry,
-  TrackerScriptEntry,
+import {
+  DEFAULT_COOKIE_BANNER_SETTINGS,
+  businessAddressSchema,
+  cookieBannerSettingsSchema,
+  exposedFieldsSchema,
+  fieldValueOverlaySchema,
+  formStepsSchema,
+  formSubmissionPayloadSchema,
+  formerParentLocationsSchema,
+  localizedSeoMetaSchema,
+  localizedTextSchema,
+  openingHoursSchema,
+  pageContentSchema,
+  responsiveBlockStyleSchema,
+  seoMetaSchema,
+  storedFormFieldsSchema,
+  trackerDomainEntriesSchema,
+  trackerScriptEntriesSchema,
+  wordPressAnalysisSchema,
 } from '@kometio/shared-types';
-import { DEFAULT_COOKIE_BANNER_SETTINGS } from '@kometio/shared-types';
+import { validatedJsonb } from './validated-jsonb';
 
 // One native Postgres enum type per domain string-union, reading its values
 // from the same tuple the domain type and the wire schema are built from
@@ -149,7 +150,7 @@ export const users = pgTable(
     // Postgres lets any number of NULLs through a unique constraint.
     slug: text('slug'),
     formerSlugs: text('former_slugs').array().notNull().default([]),
-    bio: jsonb('bio').$type<Record<string, string>>().notNull().default({}),
+    bio: validatedJsonb('bio', localizedTextSchema).notNull().default({}),
     avatarStorageKey: text('avatar_storage_key'),
     avatarWidth: integer('avatar_width'),
     avatarHeight: integer('avatar_height'),
@@ -196,11 +197,11 @@ export const sites = pgTable(
     // with none of them set renders plain WebSite/WebPage instead.
     // jsonb since docs/adr/0081 — the parts of an address, not a line of
     // prose. Nullable still means "no address at all".
-    businessAddress: jsonb('business_address').$type<BusinessAddress>(),
+    businessAddress: validatedJsonb('business_address', businessAddressSchema),
     businessPhone: text('business_phone'),
     businessEmail: text('business_email'),
     businessType: text('business_type'),
-    openingHours: jsonb('opening_hours').$type<OpeningHoursDay[]>(),
+    openingHours: validatedJsonb('opening_hours', openingHoursSchema),
     // Defaults to false (opt-in): a site mid-build shouldn't be indexed until
     // its owner deliberately decides it's ready — see Site.searchEngineIndexingEnabled.
     searchEngineIndexingEnabled: boolean('search_engine_indexing_enabled')
@@ -239,10 +240,12 @@ export const sites = pgTable(
     // hardcoded GTM/GA4/Meta Pixel allowlist. Independent of
     // themeOverridesEnabled above: a tracker script shouldn't stop running
     // just because someone toggled off color/font overrides.
-    themeAllowedTrackerDomains: jsonb('theme_allowed_tracker_domains')
+    themeAllowedTrackerDomains: validatedJsonb(
+      'theme_allowed_tracker_domains',
+      trackerDomainEntriesSchema,
+    )
       .notNull()
-      .default([])
-      .$type<TrackerDomainEntry[]>(),
+      .default([]),
     // GDPR/privacy: `null` (default) keeps every submission forever, same
     // behavior as before this column existed. A positive integer is the
     // number of days a form_submissions row survives past its createdAt
@@ -254,18 +257,22 @@ export const sites = pgTable(
     // the always-on themeHeadScript/themeBodyScript above. Lives under the
     // same admin-gated PATCH /sites/:id/theme-settings endpoint since it's
     // still admin-trusted raw HTML, unlike cookieBannerSettings below.
-    themeTrackerScripts: jsonb('theme_tracker_scripts')
+    themeTrackerScripts: validatedJsonb(
+      'theme_tracker_scripts',
+      trackerScriptEntriesSchema,
+    )
       .notNull()
-      .default([])
-      .$type<TrackerScriptEntry[]>(),
+      .default([]),
     // Cookie consent banner config (docs/adr/0039) — inert config (position/
     // copy/toggles), not raw HTML, so it lives behind its own endpoint with
     // no role gate. Defaults to disabled: an existing site never gains a
     // banner it didn't ask for just because this column exists.
-    cookieBannerSettings: jsonb('cookie_banner_settings')
+    cookieBannerSettings: validatedJsonb(
+      'cookie_banner_settings',
+      cookieBannerSettingsSchema,
+    )
       .notNull()
-      .default(DEFAULT_COOKIE_BANNER_SETTINGS)
-      .$type<CookieBannerSettings>(),
+      .default(DEFAULT_COOKIE_BANNER_SETTINGS),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -325,7 +332,7 @@ export const siteThemeBlockStyles = pgTable(
     // shape and are read as `{ base: … }` — see
     // `normalizeResponsiveBlockStyle`, and the one-off migration that
     // rewrites them.
-    style: jsonb('style').notNull().$type<ResponsiveBlockStyle>(),
+    style: validatedJsonb('style', responsiveBlockStyleSchema).notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.siteId, table.blockType, table.variant] }),
@@ -456,7 +463,7 @@ export const pageGroups = pgTable(
     // site's default language's, the fallback used until a pageTranslation
     // has an override of its own (see mergeTranslatedContent in
     // @kometio/shared-types).
-    content: jsonb('content').notNull().default([]).$type<PageContent>(),
+    content: validatedJsonb('content', pageContentSchema).notNull().default([]),
     // Sibling-scoped, and shared for the same reason as parentId — with the
     // same DB-level non-uniqueness as the old pages.order (a temporary
     // duplicate halfway through a reorder is harmless, see
@@ -558,29 +565,32 @@ export const pageTranslations = pgTable(
      * two parallel arrays: the pair is the unit public resolution asks
      * about, and splitting it would let the halves drift apart.
      */
-    formerParents: jsonb('former_parents')
+    formerParents: validatedJsonb('former_parents', formerParentLocationsSchema)
       .notNull()
-      .default(sql`'[]'::jsonb`)
-      .$type<FormerParentLocation[]>(),
-    seoMeta: jsonb('seo_meta').notNull().default({}).$type<SeoMeta>(),
+      .default(sql`'[]'::jsonb`),
+    // The column's default is `{}`, which is not a SeoMeta (a title and a
+    // description are required): nothing writes a translation without one, and
+    // the default is written as SQL so that the type does not claim it is.
+    seoMeta: validatedJsonb('seo_meta', seoMetaSchema)
+      .notNull()
+      .default(sql`'{}'::jsonb`),
     // Overrides for `translatable` fields ONLY, keyed by block — a field
     // that is absent inherits the shared value from pageGroups.content.
     // Ignored while isDiverged is true.
-    fieldValues: jsonb('field_values')
+    fieldValues: validatedJsonb('field_values', fieldValueOverlaySchema)
       .notNull()
-      .default({})
-      .$type<FieldValueOverlay>(),
+      .default({}),
     status: pageTranslationStatusEnum('status').notNull(),
     // The frozen merge (structure plus this language's fieldValues, or
     // divergedContent when unlinked) as of the last publish() — the same
     // shape and the same consumer (public resolution) as yesterday's
     // pages.publishedContent.
-    publishedSnapshot: jsonb('published_snapshot').$type<PageContent>(),
+    publishedSnapshot: validatedJsonb('published_snapshot', pageContentSchema),
     // "Unlinks" it: when true, this translation no longer receives the
     // structural changes propagated from pageGroups.content — it has a
     // structure and text of its own in divergedContent.
     isDiverged: boolean('is_diverged').notNull().default(false),
-    divergedContent: jsonb('diverged_content').$type<PageContent>(),
+    divergedContent: validatedJsonb('diverged_content', pageContentSchema),
     // Plain extracted text (SearchPort's indexPage, see
     // @kometio/postgres-search-repository) — never read/written by
     // PageTranslationRepositoryPort itself, kept here only so it lives on
@@ -654,7 +664,7 @@ export const pageGroupVersions = pgTable(
     pageGroupId: uuid('page_group_id')
       .notNull()
       .references(() => pageGroups.id, { onDelete: 'cascade' }),
-    content: jsonb('content').notNull().$type<PageContent>(),
+    content: validatedJsonb('content', pageContentSchema).notNull(),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -680,13 +690,16 @@ export const pageTranslationVersions = pgTable(
     pageTranslationId: uuid('page_translation_id')
       .notNull()
       .references(() => pageTranslations.id, { onDelete: 'cascade' }),
-    fieldValues: jsonb('field_values').notNull().$type<FieldValueOverlay>(),
-    seoMeta: jsonb('seo_meta').notNull().$type<SeoMeta>(),
+    fieldValues: validatedJsonb(
+      'field_values',
+      fieldValueOverlaySchema,
+    ).notNull(),
+    seoMeta: validatedJsonb('seo_meta', seoMetaSchema).notNull(),
     // The language's own tree when the version was taken while it was
     // unlinked, `null` otherwise (docs/adr/0075). Nullable rather than a
     // separate table: a version is one snapshot of one language, whichever
     // shape its content had at that moment.
-    divergedContent: jsonb('diverged_content').$type<PageContent>(),
+    divergedContent: validatedJsonb('diverged_content', pageContentSchema),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -718,8 +731,8 @@ export const siteLayoutSections = pgTable(
     locale: text('locale').notNull(),
     kind: siteLayoutSectionKindEnum('kind').notNull(),
     status: siteLayoutSectionStatusEnum('status').notNull(),
-    content: jsonb('content').notNull().default([]).$type<PageContent>(),
-    publishedContent: jsonb('published_content').$type<PageContent>(),
+    content: validatedJsonb('content', pageContentSchema).notNull().default([]),
+    publishedContent: validatedJsonb('published_content', pageContentSchema),
     // Meaningful for kind='header' only (stays pinned to the top of the
     // viewport on scroll) — no DB-level constraint tying it to kind, same
     // reasoning as the domain entity's own comment on SiteLayoutSection.sticky.
@@ -750,7 +763,7 @@ export const siteLayoutSectionVersions = pgTable(
     siteLayoutSectionId: uuid('site_layout_section_id')
       .notNull()
       .references(() => siteLayoutSections.id, { onDelete: 'cascade' }),
-    content: jsonb('content').notNull().$type<PageContent>(),
+    content: validatedJsonb('content', pageContentSchema).notNull(),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -788,16 +801,15 @@ export const reusableSections = pgTable(
     name: text('name').notNull(),
     kind: reusableSectionKindEnum('kind').notNull(),
     status: reusableSectionStatusEnum('status').notNull(),
-    content: jsonb('content').notNull().default([]).$type<PageContent>(),
-    publishedContent: jsonb('published_content').$type<PageContent>(),
+    content: validatedJsonb('content', pageContentSchema).notNull().default([]),
+    publishedContent: validatedJsonb('published_content', pageContentSchema),
     // Which fields of which inner blocks an instance may change. Lives on
     // the section and not on the instance on purpose: the agency that
     // built it decides what the client may touch, and the client cannot
     // grant themselves more.
-    exposedFields: jsonb('exposed_fields')
+    exposedFields: validatedJsonb('exposed_fields', exposedFieldsSchema)
       .notNull()
-      .default({})
-      .$type<ExposedFields>(),
+      .default({}),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -827,7 +839,7 @@ export const reusableSectionVersions = pgTable(
     reusableSectionId: uuid('reusable_section_id')
       .notNull()
       .references(() => reusableSections.id, { onDelete: 'cascade' }),
-    content: jsonb('content').notNull().$type<PageContent>(),
+    content: validatedJsonb('content', pageContentSchema).notNull(),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -952,7 +964,7 @@ export const importJobs = pgTable(
     fileBytes: integer('file_bytes').notNull(),
     status: importJobStatusEnum('status').notNull().default('analyzing'),
     /** Written when `status` is `analyzed` — the shape is `WordPressAnalysis`. */
-    report: jsonb('report').$type<WordPressAnalysis>(),
+    report: validatedJsonb('report', wordPressAnalysisSchema),
     /** Written when `status` is `failed`, and meant to be read by whoever uploaded the file. */
     failureReason: text('failure_reason'),
     createdBy: uuid('created_by').references(() => users.id, {
@@ -987,10 +999,12 @@ export const forms = pgTable(
     name: text('name').notNull(),
     // Sole source of truth for both public rendering and submission
     // validation (docs/adr/0015) — no separate schema anywhere else.
-    fields: jsonb('fields').notNull().default([]).$type<FormField[]>(),
+    fields: validatedJsonb('fields', storedFormFieldsSchema)
+      .notNull()
+      .default([]),
     // Empty by default — a plain single-step form, same shape every form
     // had before this column existed (docs/adr/0015's multi-step follow-up).
-    steps: jsonb('steps').notNull().default([]).$type<FormStep[]>(),
+    steps: validatedJsonb('steps', formStepsSchema).notNull().default([]),
     // Who is emailed each submission — empty means nobody. A list since
     // docs/adr/0086; the single address it replaced became its first entry.
     notificationEmails: text('notification_emails')
@@ -1035,7 +1049,7 @@ export const formSubmissions = pgTable(
     formId: uuid('form_id').references(() => forms.id, {
       onDelete: 'set null',
     }),
-    payload: jsonb('payload').notNull().$type<Record<string, unknown>>(),
+    payload: validatedJsonb('payload', formSubmissionPayloadSchema).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -1069,7 +1083,7 @@ export const taxonomies = pgTable(
     // address is the term-slug constraint, which is keyed on the prefix
     // rather than on the taxonomy.
     slug: text('slug'),
-    name: jsonb('name').notNull().default({}).$type<LocalizedText>(),
+    name: validatedJsonb('name', localizedTextSchema).notNull().default({}),
     // Whether terms may nest. A flat dimension ("Tag") says false and the
     // editor then offers no parent at all.
     hierarchical: boolean('hierarchical').notNull().default(true),
@@ -1119,14 +1133,15 @@ export const terms = pgTable(
     parentId: uuid('parent_id').references((): AnyPgColumn => terms.id, {
       onDelete: 'set null',
     }),
-    name: jsonb('name').notNull().default({}).$type<LocalizedText>(),
+    name: validatedJsonb('name', localizedTextSchema).notNull().default({}),
     // The introduction the default term layout prints above the list —
     // a different thing from the meta description inside `seoMeta`.
-    description: jsonb('description')
+    description: validatedJsonb('description', localizedTextSchema)
       .notNull()
-      .default({})
-      .$type<LocalizedText>(),
-    seoMeta: jsonb('seo_meta').notNull().default({}).$type<LocalizedSeoMeta>(),
+      .default({}),
+    seoMeta: validatedJsonb('seo_meta', localizedSeoMetaSchema)
+      .notNull()
+      .default({}),
     // Kept out of search engines by whoever publishes, one term at a
     // time — see Term.noindex. Not derived from how many pages carry the
     // term: a rule on a count hides a page that was growing.
