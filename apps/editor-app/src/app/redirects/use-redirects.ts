@@ -4,6 +4,7 @@ import {
   deleteRedirect,
   dismissMissingPath,
   importRedirects,
+  redirectsFromWordPress,
   updateRedirect,
 } from '../../lib/redirects-api-client';
 import type { RedirectFormBody } from './redirect-form';
@@ -43,6 +44,12 @@ export function useRedirects(siteId: string) {
     onSuccess: (report) => (report.applied ? refresh() : undefined),
   });
 
+  const fromWordPress = useMutation({
+    mutationFn: (input: { importJobId: string; dryRun: boolean }) =>
+      redirectsFromWordPress({ siteId, ...input }),
+    onSuccess: (plan) => (plan.report.applied ? refresh() : undefined),
+  });
+
   const dismiss = useMutation({
     mutationFn: (id: string) => dismissMissingPath(id),
     onSuccess: refresh,
@@ -56,6 +63,7 @@ export function useRedirects(siteId: string) {
     deleteRedirect: remove.mutateAsync,
     refresh,
     importList: importList.mutateAsync,
+    fromWordPress: fromWordPress.mutateAsync,
     dismissMissingPath: dismiss.mutateAsync,
   };
 }

@@ -398,6 +398,9 @@ export function RedirectsSection({
       )}
       {importing && (
         <ImportRedirectsDialog
+          siteId={siteId}
+          // Reading an export is the importer's, an administrator's.
+          withWordPress={can('configureSite')}
           onOpenChange={(open) => !open && setImporting(false)}
           onCheck={(csv) => importList({ csv, dryRun: true })}
           onApply={(csv) => importList({ csv, dryRun: false })}

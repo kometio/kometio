@@ -554,7 +554,7 @@ describe('RedirectsSection', () => {
         screen.getByRole('button', { name: 'Importa un elenco' }),
       );
       const dialog = await screen.findByRole('dialog', {
-        name: 'Importa un elenco di reindirizzamenti',
+        name: 'Importa reindirizzamenti',
       });
       fireEvent.change(
         within(dialog).getByLabelText('Oppure incolla qui l’elenco'),

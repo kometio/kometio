@@ -226,6 +226,43 @@ export class KometioApi {
     await this.ok(this.request.delete(`redirects/${id}`));
   }
 
+  /**
+   * Uploads a WordPress export and waits until it has been read: the job it
+   * made, which the Redirects screen then offers. The file is `xml`, the
+   * smallest export that says what the test is about.
+   */
+  async analyseWordPressExport(
+    siteId: string,
+    name: string,
+    xml: string,
+  ): Promise<string> {
+    const started = z.object({ id: z.string() }).parse(
+      await this.json(
+        this.request.post('imports/wordpress/analysis', {
+          multipart: {
+            siteId,
+            file: { name, mimeType: 'text/xml', buffer: Buffer.from(xml) },
+          },
+        }),
+      ),
+    );
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const job = z
+        .object({ status: z.string(), failureReason: z.string().nullable() })
+        .parse(await this.json(this.request.get(`imports/${started.id}`)));
+      if (job.status === 'analyzed') return started.id;
+      if (job.status === 'failed') {
+        throw new Error(`The export could not be read: ${job.failureReason}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    throw new Error('The export was not read in ten seconds');
+  }
+
+  async deleteImportJob(id: string): Promise<void> {
+    await this.ok(this.request.delete(`imports/${id}`));
+  }
+
   /** The rules of the site whose old address or destination holds `search`: what a test that made rules through the screen finds to remove. */
   async redirects(siteId: string, search: string) {
     const params = new URLSearchParams({ siteId, search, pageSize: '100' });
