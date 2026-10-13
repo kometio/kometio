@@ -9,5 +9,10 @@ import type { DeploymentRecord } from '@kometio/api-contracts';
 export function deploymentRecord(
   overrides: Partial<DeploymentRecord> = {},
 ): DeploymentRecord {
-  return { emailConfigured: true, siteArchive: false, ...overrides };
+  return {
+    emailConfigured: true,
+    siteArchive: false,
+    demo: false,
+    ...overrides,
+  };
 }

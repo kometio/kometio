@@ -9,6 +9,7 @@ import {
 	renderUngatedScripts,
 } from '../lib/consent-script-blocking';
 import { injectScriptNonce } from '../lib/content-security-policy';
+import { isDemoDeployment } from '../lib/demo-mode';
 import { editorAppUrl } from '../lib/editor-app-url';
 import { localeDirection } from '@kometio/theme-runtime';
 import { resolvePageSeo } from '../lib/page-seo';
@@ -191,7 +192,7 @@ const bodyTrackerScripts = partitionTrackerScripts(
 			siteName={site.name}
 			seo={seo}
 			styles={styles}
-			hideFromSearchEngines={!site.searchEngineIndexingEnabled || noindex}
+			hideFromSearchEngines={!site.searchEngineIndexingEnabled || noindex || isDemoDeployment()}
 			headScript={headScript}
 			headTrackerScripts={headTrackerScripts}
 			isEditorCanvas={isEditorCanvas}

@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AccountModule } from './account/account.module';
+import { ApiEnvModule } from './api-env.module';
+import { DemoModeGuard } from './demo-mode.guard';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { CaptchaModule } from './captcha/captcha.module';
@@ -29,6 +32,7 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
+    ApiEnvModule,
     DeploymentTenantModule,
     SetupModule,
     ScheduleModule.forRoot(),
@@ -57,5 +61,6 @@ import { UsersModule } from './users/users.module';
     SiteLayoutSectionsModule,
     UsersModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: DemoModeGuard }],
 })
 export class AppModule {}

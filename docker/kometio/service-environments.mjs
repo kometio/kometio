@@ -99,6 +99,9 @@ export function siteEnvironment({
     API_PUBLIC_URL: apiPublicUrl,
     PUBLIC_API_SERVICE_TOKEN: secrets.publicApiServiceToken,
     TURNSTILE_SITE_KEY: env.TURNSTILE_SITE_KEY ?? '',
+    // A public demo (docs/adr/0118): the site keeps search engines out of it
+    // and does not run what is pasted into an embed.
+    KOMETIO_DEMO: env.KOMETIO_DEMO ?? '',
     // Where it reports an error nobody expected, if the deployment has
     // somewhere to (docs/adr/0114): the API reads the same three, through its
     // own environment above. Empty is "report nowhere".

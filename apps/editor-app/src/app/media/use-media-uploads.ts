@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { mediaKindOfMime, type MediaKind } from '@kometio/shared-types';
 import { actionErrorMessage } from '../../lib/http-client';
 import { uploadMedia, type MediaRecord } from '../../lib/media-api-client';
+import { useIsDemo } from '../common/deployment-queries';
 import { useToast } from '../shell/toast-provider';
 import { MEDIA_KIND_LABEL } from './media-folders';
 
@@ -25,6 +26,12 @@ export interface MediaUploads {
   upload: (files: readonly File[]) => Promise<void>;
   /** Clears the lines. Only offered when nothing is on its way. */
   dismiss: () => void;
+  /**
+   * Whether this server takes no files at all, as a public demo does
+   * (docs/adr/0118): the button and the drop zone are not offered. Absent is
+   * "takes them".
+   */
+  turnedOff?: boolean;
 }
 
 export interface UseMediaUploadsOptions {
@@ -61,6 +68,7 @@ export function useMediaUploads({
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const turnedOff = useIsDemo();
   const [entries, setEntries] = useState<readonly UploadEntry[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const nextId = useRef(0);
@@ -148,5 +156,5 @@ export function useMediaUploads({
 
   const dismiss = useCallback(() => setEntries([]), []);
 
-  return { entries, isUploading, upload, dismiss };
+  return { entries, isUploading, upload, dismiss, turnedOff };
 }

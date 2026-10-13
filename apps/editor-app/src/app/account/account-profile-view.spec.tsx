@@ -4,6 +4,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import type { AccountProfile } from '@kometio/api-contracts';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import * as accountApi from '../../lib/account-api-client';
+import * as deploymentApi from '../../lib/deployment-api-client';
+import { deploymentRecord } from '../../test/deployment.test-fixture';
 import { ApiError } from '../../lib/http-client';
 import { PUBLIC_SITE_URL } from '../../lib/public-site-url';
 import { TooltipProvider } from '../../components/ui/tooltip';
@@ -30,6 +32,8 @@ vi.mock('../../lib/account-api-client', async (importOriginal) => {
     requestEmailChange: vi.fn(),
   };
 });
+
+vi.mock('../../lib/deployment-api-client', () => ({ getDeployment: vi.fn() }));
 
 const profile: AccountProfile = {
   id: 'user-1',
@@ -325,5 +329,25 @@ describe('AccountProfileView', () => {
     });
 
     expect(await screen.findByText('Foto aggiornata')).toBeTruthy();
+  });
+
+  /*
+   * The account of a demo is everybody's (docs/adr/0118): the server refuses
+   * every change to it, so the form that would only be refused is not offered.
+   */
+  it('offers no form on a demo, and says why', async () => {
+    vi.mocked(deploymentApi.getDeployment).mockResolvedValue(
+      deploymentRecord({ demo: true }),
+    );
+
+    renderView();
+
+    expect(
+      await screen.findByText(/nella demo tutti accedono con questo account/i),
+    ).toBeTruthy();
+    expect(screen.queryByLabelText('italiano')).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /cambia password/i }),
+    ).toBeNull();
   });
 });

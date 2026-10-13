@@ -17,12 +17,16 @@ import { requiredIn, type ApiEnv } from '../../env-schema';
  *
  * With SMTP_HOST set, the port and the sender are required (the schema checks
  * it), and `requiredIn` narrows them for the compiler.
+ *
+ * A demo (docs/adr/0118) sends nothing, whatever it is configured with: anybody
+ * who signs in to it can make a form notify an address of their choosing, and
+ * the mail server would be theirs to use. Its emails go to the log.
  */
 export function createEmailPort(
   env: ApiEnv,
   write: (entry: string) => void,
 ): EmailPort {
-  if (env.SMTP_HOST === undefined) {
+  if (env.SMTP_HOST === undefined || env.KOMETIO_DEMO === 'true') {
     return new LogEmailAdapter(write);
   }
   return new SmtpEmailAdapter({
