@@ -11,6 +11,8 @@ import { currentVisitorIp } from './request-context';
 import { pageContentSchema } from '@kometio/shared-types';
 import {
   publicFormSchema,
+  publicRedirectAnswerSchema,
+  type PublicRedirectAnswer,
   publishedAuthorSchema,
   publishedPageSchema,
   publishedSiteSchema,
@@ -617,4 +619,31 @@ export async function hasDeploymentBeenSetUp(): Promise<boolean> {
   } catch {
     return true;
   }
+}
+
+/**
+ * What to answer a visitor who asked for an address this site's routes did
+ * not have: a redirect, a "gone", or `null` for no rule (docs/adr/0127).
+ *
+ * Asked only after the routes have said "not found" — and for the front door
+ * with a query, which no route answers — so a page always wins over a rule.
+ * The API's 404 is "no rule", like the other lookups' 404.
+ */
+export async function resolveRedirect(
+  domain: string,
+  pathname: string,
+  search: string,
+): Promise<PublicRedirectAnswer | null> {
+  const params = new URLSearchParams({ domain, path: pathname, search });
+  const res = await timedFetcher.fetch(
+    `${apiUrl()}/public/redirects/resolve?${params.toString()}`,
+  );
+
+  if (res.status === 404) {
+    return null;
+  }
+  if (!res.ok) {
+    throw new Error(`Public redirects API error: ${res.status}`);
+  }
+  return publicRedirectAnswerSchema.parse(await res.json());
 }

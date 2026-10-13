@@ -92,3 +92,15 @@ export const layoutSectionVersionSchema = z.object({
 export const accountProfileSchema = z.object({
   language: z.string().nullable(),
 });
+
+export const redirectSchema = z.object({
+  id: z.string(),
+  from: z.string(),
+  kind: z.string(),
+  status: z.number(),
+  hits: z.number(),
+  target: z
+    .object({ kind: z.string(), path: z.string().nullable().optional() })
+    .passthrough()
+    .nullable(),
+});
