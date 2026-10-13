@@ -73,3 +73,5 @@ dependencies were already on.
 - Postgres 18 remains to be done deliberately, with a dump-and-restore
   procedure that is written down and tested, and the CI service moved in
   step.
+
+  _Done 2026-10-13: [ADR-0125](0125-the-image-carries-postgres-18.md)._

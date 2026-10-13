@@ -15,7 +15,8 @@ minutes, and later one object to put on a server.
 
 ## Decision
 
-- **`ghcr.io/kometio/kometio` holds all of it**: Postgres 16, the API, the
+- **`ghcr.io/kometio/kometio` holds all of it**: Postgres (16 when this was written,
+  18 since [0125](0125-the-image-carries-postgres-18.md)), the API, the
   public site and the editor's web server, started by `docker/kometio/launcher.mjs`
   in that order (the migrations between the database and the API), with
   everything that has to survive in **one volume**, `/data` — the database, the
