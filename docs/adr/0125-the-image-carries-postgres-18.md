@@ -79,8 +79,19 @@ On this branch, with the real thing and not by reading:
   the restore of "Restoring from a backup", the rows there, and the backup service
   (now 18, with `pg_dump` of its own major) writing a complete dump.
 
+- The whole test suite (53 projects, the integration specs of every Postgres
+  adapter and the API's included) against a scratch 18 with the repository's
+  migrations: one failure, below, and none after it.
+
 ## What it found
 
+- **18 reports a row that is still referenced, under `ON DELETE RESTRICT`, with
+  SQLSTATE `23001` (restrict_violation); 16 said `23503`.** The page repository
+  turned `23503` on the parent-page constraints into `PageGroupHasChildrenError`,
+  so on 18 deleting a page that has subpages, past the use case's own check,
+  would have been a 500. `isForeignKeyViolation` accepts both, with a spec; it is
+  the only place that reads a SQLSTATE of that class. The suite found it, which
+  is the reason the suite was run on 18 before the CI service was moved.
 - **`tools/dump-database.sh` looked for the container by image**
   (`ancestor=postgres:16-alpine`), which is the one thing that stops being true
   when the image changes, at the moment a dump is wanted. It asks compose for the
