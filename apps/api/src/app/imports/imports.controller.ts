@@ -166,10 +166,12 @@ export class ImportsController {
       filePath,
     })
       // A promise nobody awaits that rejects ends the process: what is left
-      // to fail here is the database not answering, and it is said in the log.
+      // to fail here is the database not answering, and it is said in the log
+      // — by its kind and not by its message, which for a failed query holds
+      // the query and with it what the site's own pages are called.
       .catch((error: unknown) =>
         this.logger.error(
-          `Reading import ${job.id} failed: ${error instanceof Error ? error.message : String(error)}`,
+          `Reading import ${job.id} failed (${error instanceof Error ? error.name : 'unknown error'})`,
         ),
       )
       .finally(() => unlink(filePath).catch(() => undefined));
