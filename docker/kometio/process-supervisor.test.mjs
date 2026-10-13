@@ -118,6 +118,24 @@ describe('starting a process', () => {
     ]);
     assert.deepEqual(seen.sort(), ['an error', 'first', 'second']);
   });
+
+  it('writes each line in the format it is given, told which of the two streams it came on', async () => {
+    const { supervisor, children, printed } = setup({
+      format: (name, line, stream) => `${name}|${stream}|${line}`,
+    });
+    const seen = [];
+    supervisor.start('db', 'postgres', [], {
+      onLine: (line) => seen.push(line),
+    });
+
+    children[0].stdout.write('out\n');
+    children[0].stderr.write('err\n');
+    await settle();
+
+    assert.deepEqual(printed.sort(), ['db|stderr|err', 'db|stdout|out']);
+    // The watcher sees what the part wrote, not how it is printed.
+    assert.deepEqual(seen.sort(), ['err', 'out']);
+  });
 });
 
 describe('a process that stops on its own', () => {

@@ -82,6 +82,11 @@ UPGRADE_VOLUME=kometio-check-upgrade-data
 UPGRADE_EDITOR_PORT=21200
 UPGRADE_API_PORT=21000
 UPGRADE_SITE_PORT=21322
+# The seventh, only to read its log: started with JSON logs and an access log
+# (docs/adr/0122), and asked one request.
+LOGJSON=kometio-check-logjson
+LOGJSON_VOLUME=kometio-check-logjson-data
+LOGJSON_API_PORT=22000
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -121,16 +126,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE"; do
+    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON"; do
       if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
         printf '\n== the last lines of the log of %s\n' "$other"
         docker logs --tail 40 "$other" 2>&1 || true
       fi
     done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$UPGRADE_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -207,6 +212,8 @@ check "the processes live and die together as documented: one that stops takes t
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/process-supervisor.test.mjs"
 check "each part is told what it reads and no more: the API never gets the database administrator, the site only its own variables" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/service-environments.test.mjs"
+check "a line of the log is written as text or as JSON, and a part that wrote a JSON object keeps it" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/log-format.test.mjs"
 check "every module the container starts on is copied into the image, so that a new file cannot be a container that does not start" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/image-contents.test.mjs"
 check "every page that tells a person which version of the image to run says the same one" \
@@ -786,6 +793,33 @@ check "and the control socket's result file says nothing of a failure" \
   sh -c "! docker exec '$IMPORTED' grep -q '\"ok\":false' /run/kometio/import-result.json"
 docker rm -fv "$IMPORTED" >/dev/null
 docker volume rm "$IMPORTED_VOLUME" >/dev/null 2>&1 || true
+
+# --- a log a collector can read ---------------------------------------------------
+
+# With KOMETIO_LOG_FORMAT=json, every line the container writes is one JSON
+# object, so that a collector never meets one it cannot parse; and with
+# KOMETIO_ACCESS_LOG=true a request is a line of the API's. The text format, which
+# is what every scenario above read, is the default and is not touched.
+step "the log as JSON, for a collector (docs/adr/0122)"
+docker run -d --name "$LOGJSON" \
+  -p "${LOGJSON_API_PORT}:3000" \
+  -e KOMETIO_LOG_FORMAT=json -e KOMETIO_ACCESS_LOG=true \
+  -e "API_PUBLIC_URL=http://localhost:${LOGJSON_API_PORT}/api" \
+  -v "${LOGJSON_VOLUME}:/data" "$IMAGE" >/dev/null
+wait_for_banners 1 "$LOGJSON" >/dev/null
+LOGJSON_REQUEST_ID="check-json-log-$(openssl rand -hex 4)"
+LOGJSON_QUERY_SECRET="query-secret-$(openssl rand -hex 8)"
+curl -s -o /dev/null -H "X-Request-Id: ${LOGJSON_REQUEST_ID}" \
+  "http://localhost:${LOGJSON_API_PORT}/api/does-not-exist?token=${LOGJSON_QUERY_SECRET}"
+# The access line is written when the response has gone: a moment, not none.
+sleep 1
+while IFS= read -r answer; do
+  case "$answer" in
+    ok:*) pass "${answer#ok: }" ;;
+    *) fail "${answer#FAIL: }" ;;
+  esac
+done < <(docker logs "$LOGJSON" 2>&1 | node "$(git rev-parse --show-toplevel)/docker/kometio/json-log-check.mjs" "$LOGJSON_REQUEST_ID" "$LOGJSON_QUERY_SECRET" || true)
+docker rm -fv "$LOGJSON" >/dev/null
 
 # --- the browser suite ----------------------------------------------------------
 
