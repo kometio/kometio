@@ -27,6 +27,18 @@ describe('printable', () => {
     expect(printable('a\u2028b')).toBe('"a\\u2028b"');
   });
 
+  // Not control characters, and no less able to make a line say what it does
+  // not: a right-to-left override reorders what follows it on the screen, a
+  // zero-width space and a byte order mark are not there at all, and a tag
+  // character is outside the plane and invisible.
+  it('escapes the characters that reorder or hide text', () => {
+    expect(printable('Image\u202Eevil')).toBe('"Image\\u202eevil"');
+    expect(printable('a\u200Bb')).toBe('"a\\u200bb"');
+    expect(printable('\uFEFFa')).toBe('"\\ufeffa"');
+    expect(printable('a\u{E0041}b')).toBe('"a\\u{e0041}b"');
+    expect(printable('Image\u2066\u2069')).toContain('\\u2066');
+  });
+
   it('cuts a long value', () => {
     expect(printable('x'.repeat(500))).toBe(`${'x'.repeat(120)}…`);
   });

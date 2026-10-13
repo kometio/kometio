@@ -8,19 +8,15 @@ const MAX_SHOWN = 120;
 const MAX_ISSUES = 5;
 
 /**
- * Whether a character ends a line or is read by a terminal as a command, not
- * as text: C0 (a newline, an escape), DEL, C1, and the two Unicode separators.
- * By code and not by a pattern, which the linter takes for a mistake.
+ * What a terminal or a reader can be made to do with a character that is not
+ * text: control characters (a newline, an escape, C1), format characters
+ * (right-to-left overrides and isolates that reorder what is shown after
+ * them, zero-width and joiner characters, the byte order mark, tag
+ * characters) and the line and paragraph separators. By property, so that a
+ * range is not forgotten.
  */
-function isControl(character: string): boolean {
-  const code = character.codePointAt(0) ?? 0;
-  return (
-    code < 0x20 ||
-    (code >= 0x7f && code <= 0x9f) ||
-    code === 0x2028 ||
-    code === 0x2029
-  );
-}
+const NOT_TEXT = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
+const NOT_TEXT_EVERYWHERE = new RegExp(NOT_TEXT.source, 'gu');
 
 /**
  * Text that came out of the database, made safe to put in a line of a report.
@@ -29,17 +25,22 @@ function isControl(character: string): boolean {
  * and the report is read in a terminal and pasted into tickets: a newline in a
  * type would start a line the script did not write ("0 blocks refused"), and
  * an escape sequence would be run by the terminal. Plain text is shown as it
- * is; text with a control character is shown quoted and escaped; either is cut
- * at a length.
+ * is; text with a character that is not text is shown quoted and escaped; either
+ * is cut at a length.
  */
 export function printable(text: string): string {
   const cut = text.length > MAX_SHOWN ? `${text.slice(0, MAX_SHOWN)}…` : text;
-  if (![...cut].some(isControl)) return cut;
-  return JSON.stringify(cut).replace(
-    /[\u007f-\u009f\u2028\u2029]/g,
-    (character) =>
-      `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`,
-  );
+  if (!NOT_TEXT.test(cut)) return cut;
+  // JSON.stringify escapes the C0 ones and the quote and the backslash; the
+  // rest of the characters above are written as their code point.
+  return JSON.stringify(cut).replace(NOT_TEXT_EVERYWHERE, (character) => {
+    const code = character.codePointAt(0) ?? 0;
+    return code < 0x20
+      ? character
+      : code > 0xffff
+        ? `\\u{${code.toString(16)}}`
+        : `\\u${code.toString(16).padStart(4, '0')}`;
+  });
 }
 
 /** One line for a block that did not pass, with where it is. */
