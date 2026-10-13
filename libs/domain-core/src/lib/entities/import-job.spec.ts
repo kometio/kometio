@@ -3,6 +3,8 @@ import type { WordPressAnalysis } from '@kometio/shared-types';
 import {
   ImportJob,
   ImportJobAlreadyFinishedError,
+  ImportJobHasNoPermalinksError,
+  ImportJobNotAnalyzedError,
   ImportJobNotFoundError,
 } from './import-job';
 
@@ -146,5 +148,25 @@ describe('ImportJob', () => {
     props.status = 'failed';
 
     expect(job.status).toBe('analyzing');
+  });
+});
+
+// What the editor reads when the redirects of a move cannot be made from a
+// file: a code, which it says in the person's language.
+describe('what a file cannot be asked for yet', () => {
+  it('says a file that is still being read, as a code with its id', () => {
+    const error = new ImportJobNotAnalyzedError('job-1');
+
+    expect(error.message).toBe('import:not-analyzed:job-1');
+    expect(error.jobId).toBe('job-1');
+    expect(error.name).toBe('ImportJobNotAnalyzedError');
+  });
+
+  it('says a file read before its addresses were kept, as a code with its id', () => {
+    const error = new ImportJobHasNoPermalinksError('job-1');
+
+    expect(error.message).toBe('import:no-permalinks:job-1');
+    expect(error.jobId).toBe('job-1');
+    expect(error.name).toBe('ImportJobHasNoPermalinksError');
   });
 });

@@ -11,6 +11,7 @@ import {
   InvalidCredentialsError,
   InvalidFormSubmissionError,
   InvalidOrExpiredTokenError,
+  InvalidRedirectError,
   PageGroupNotFoundError,
   PageGroupReorderMismatchError,
   PageGroupVersionNotFoundError,
@@ -20,6 +21,9 @@ import {
   PageTranslationLocaleAlreadyExistsError,
   PageTranslationNotDivergedError,
   PageTranslationVersionNotFoundError,
+  RedirectLimitReachedError,
+  RedirectNotFoundError,
+  RedirectSourceTakenError,
   PageTranslationNotFoundError,
   SiteLayoutSectionNotFoundError,
   SiteLayoutSectionVersionNotFoundError,
@@ -349,5 +353,49 @@ describe('ChildPageAddressTakenError', () => {
     expect(error.locale).toBe('it');
     expect(error.message).toContain('"riscaldamento" (it)');
     expect(error.message).toContain('already taken');
+  });
+});
+
+/*
+ * What the editor reads: a refusal of a redirect is a code, and the editor
+ * says it in the person's language. A message that changes is a sentence in
+ * English on a screen in Italian.
+ */
+describe('the refusals of a redirect', () => {
+  it('say a rule that is not there by its id', () => {
+    const error = new RedirectNotFoundError('rule-1');
+
+    expect(error.message).toBe('Redirect not found: rule-1');
+    expect(error.name).toBe('RedirectNotFoundError');
+  });
+
+  it('say an address that is taken as a code with the address in it', () => {
+    const error = new RedirectSourceTakenError('/old?p=1');
+
+    expect(error.message).toBe('redirect:source:taken:/old?p=1');
+    expect(error.address).toBe('/old?p=1');
+    expect(error).toBeInstanceOf(Error);
+  });
+
+  it('say a site that is full as a code with its size', () => {
+    const error = new RedirectLimitReachedError(10_000);
+
+    expect(error.message).toBe('redirect:site:limit:10000');
+    expect(error.limit).toBe(10_000);
+  });
+
+  it('say which side was wrong, and why, as a code', () => {
+    const error = new InvalidRedirectError('source', 'reserved', 'api');
+
+    expect(error.message).toBe('redirect:source:reserved:api');
+    expect(error.side).toBe('source');
+    expect(error.problem).toBe('reserved');
+    expect(error.detail).toBe('api');
+  });
+
+  it('leave the detail out of the code when there is none', () => {
+    expect(new InvalidRedirectError('target', 'loop').message).toBe(
+      'redirect:target:loop',
+    );
   });
 });
