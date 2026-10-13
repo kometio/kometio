@@ -23,6 +23,8 @@ import {
   PageGenerationFailedError,
   SecretUnreadableError,
   ThemeUploadRejectedError,
+  ImportJobHasNoPermalinksError,
+  ImportJobNotAnalyzedError,
   ImportJobNotFoundError,
   MediaNotFoundError,
   NotAPageTemplateError,
@@ -143,6 +145,10 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   ],
   [MediaNotFoundError, (m) => new NotFoundException(m)],
   [ImportJobNotFoundError, (m) => new NotFoundException(m)],
+  // 409, with a code as the message: the file is there, but not in the state
+  // the request needs (still being read; read before addresses were kept).
+  [ImportJobNotAnalyzedError, (m) => new ConflictException(m)],
+  [ImportJobHasNoPermalinksError, (m) => new ConflictException(m)],
   [PageSlugAlreadyExistsError, (m) => new ConflictException(m)],
   [ReusableSectionNameAlreadyExistsError, (m) => new ConflictException(m)],
   [PageTranslationLocaleAlreadyExistsError, (m) => new ConflictException(m)],

@@ -52,6 +52,16 @@ export const importRedirectsBodySchema = z.object({
 });
 export type ImportRedirectsBody = z.infer<typeof importRedirectsBodySchema>;
 
+export const wordPressRedirectsBodySchema = z.object({
+  siteId: z.string().uuid(),
+  /** A WordPress export that has been read (`/imports`). */
+  importJobId: z.string().uuid(),
+  dryRun: z.boolean().default(false),
+});
+export type WordPressRedirectsBody = z.infer<
+  typeof wordPressRedirectsBodySchema
+>;
+
 export const testRedirectBodySchema = z.object({
   siteId: z.string().uuid(),
   address,

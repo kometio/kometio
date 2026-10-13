@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AdaptersModule } from '../adapters/adapters.module';
 import {
+  IMPORT_JOB_REPOSITORY,
   MISSING_PATH_REPOSITORY,
   PAGE_GROUP_REPOSITORY,
   PAGE_TRANSLATION_REPOSITORY,
@@ -22,6 +23,7 @@ import { REDIRECT_RULE_SETS, REDIRECTS_DEPS } from './redirects.tokens';
     moduleDeps<RedirectsDeps>(REDIRECTS_DEPS, {
       redirectRepository: REDIRECT_REPOSITORY,
       missingPathRepository: MISSING_PATH_REPOSITORY,
+      importJobRepository: IMPORT_JOB_REPOSITORY,
       siteRepository: SITE_REPOSITORY,
       pageGroupRepository: PAGE_GROUP_REPOSITORY,
       pageTranslationRepository: PAGE_TRANSLATION_REPOSITORY,

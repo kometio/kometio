@@ -11,6 +11,7 @@ import {
   parseRedirectCsv,
   REDIRECT_LIMITS,
   redirectQueryPairs,
+  type ParsedRedirectCsv,
   type RedirectCsvRow,
   type RedirectOrigin,
 } from '@kometio/shared-types';
@@ -32,16 +33,24 @@ export type ImportRedirectsDeps = Pick<
   | 'ruleSets'
 >;
 
-export interface ImportRedirectsInput {
+export interface ApplyRedirectRowsInput {
   tenantId: string;
   siteId: string;
-  csv: string;
+  /** The rows to judge, as a file would have them: what a list and a WordPress export both come to. */
+  parsed: ParsedRedirectCsv;
   /** Read and judge every row, and write nothing. */
   dryRun: boolean;
   createdBy: string | null;
   origin?: RedirectOrigin;
   /** `false` where a rule may not leave the site (a public demo). Defaults to `true`. */
   allowExternalTargets?: boolean;
+}
+
+export interface ImportRedirectsInput extends Omit<
+  ApplyRedirectRowsInput,
+  'parsed'
+> {
+  csv: string;
 }
 
 export type RedirectImportOutcome =
@@ -83,16 +92,30 @@ const keyOf = (path: string, query: string): string => `${path}?${query}`;
  * A target that is a path of this site is stored as the page it names,
  * where it names one, as `createRedirect` does.
  */
-export async function importRedirects(
+export function importRedirects(
   deps: ImportRedirectsDeps,
   input: ImportRedirectsInput,
+): Promise<RedirectImportReport> {
+  const { csv, ...rest } = input;
+  return applyRedirectRows(deps, { ...rest, parsed: parseRedirectCsv(csv) });
+}
+
+/**
+ * The rows of a list, judged and written. A file is read into rows by
+ * `importRedirects`; a WordPress export arrives as rows already
+ * (`redirectsFromWordPress`), and a list of them is not a file, so it has
+ * none of a file's limits on its size.
+ */
+export async function applyRedirectRows(
+  deps: ImportRedirectsDeps,
+  input: ApplyRedirectRowsInput,
 ): Promise<RedirectImportReport> {
   const site = await requireSite(
     deps.siteRepository,
     input.tenantId,
     input.siteId,
   );
-  const parsed = parseRedirectCsv(input.csv);
+  const { parsed } = input;
 
   const [existing, published] = await Promise.all([
     deps.redirectRepository.listBySite(input.tenantId, site.id),
