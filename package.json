@@ -7,7 +7,8 @@
     "check:tsconfig": "node tools/check-tsconfig-conventions.mjs",
     "check:image-modules": "tsc -p docker/kometio",
     "verify": "pnpm run check:tsconfig && pnpm run check:image-modules && nx run-many -t typecheck && nx run-many -t lint && nx run-many -t test --coverage --parallel=1",
-    "e2e:block-samples": "tsx tools/dump-block-samples.mts"
+    "e2e:block-samples": "tsx tools/dump-block-samples.mts",
+    "theme:copies-reviewed": "node tools/theme-core-copies-reviewed.mts"
   },
   "private": true,
   "packageManager": "pnpm@10.30.3",

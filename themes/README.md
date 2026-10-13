@@ -251,6 +251,26 @@ Only replace a block to change what it IS. To change how it looks, the
 tokens and a variant are enough, and they keep up with core by
 themselves; a replacement has to follow core's fixes by hand.
 
+### Following core by hand, and the test that says when
+
+A replacement is a copy, and core's fixes do not reach a copy: the docs
+theme's Button once fell four props behind, and a button with an icon had
+none on the docs site. So a theme records, in `blocks/core-copies.json`, a
+fingerprint of the core file each replacement was last compared with, and
+`apps/public-site/src/lib/theme-core-copies.spec.ts` fails — naming the theme
+and the block — when core's file has moved since. It scans every folder of
+`themes/`, so a theme added tomorrow is covered without wiring.
+
+When it fails, in the pull request that changed core's block:
+
+1. read what changed in `apps/public-site/src/components/blocks/<Type>.astro`
+   (`git diff` of the pull request);
+2. bring over what applies to the replacement — a new prop, a fixed bug;
+3. record that you looked: `pnpm run theme:copies-reviewed <theme> <Type>`.
+
+The fingerprint does not say the copy is right; it says somebody has looked
+since core moved. A new replacement starts with the same command.
+
 ## Adding a look to a core block (variants)
 
 A block type offers named **variants** — looks the client picks from a
