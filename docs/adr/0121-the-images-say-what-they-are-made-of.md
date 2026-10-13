@@ -85,3 +85,21 @@ packages.
   architecture; they are not extra tags and are not pulled by `docker run`.
 - The two pinned digests (the SBOM generator in `docker-build.yml`, Trivy in
   `image-scan.yml`) are bumped by hand, with the same care as an action's commit.
+
+## Update, 2026-10-13: the `esbuild` entry, closed — and what the scan cannot see
+
+The workspace's `esbuild` override moved from `^0.25.12` to `^0.28.2`, the
+version `tsx` and `vite` ask for. The 0.25 binary was built with Go 1.23.12;
+0.28.2 is built with Go 1.26.5. Typecheck of the 54 projects, lint, the build of
+the six that build, the tests of the 53 that have them, `db:generate` (drizzle-kit
+goes through `@esbuild-kit`, which pinned 0.18) and the audit passed.
+
+**Trivy reads no Go version in the 0.27 and 0.28 binaries**: they carry no
+build information, and the scan reports nothing for them, which is not the same
+as nothing. Go 1.26.5 is itself behind the two newest releases of the line, and
+the advisories fixed in 1.26.6 and 1.26.9 are open in it. They are in packages
+that `esbuild` uses only to serve a development page on the local machine
+(`net/http`, `crypto/tls`), which nothing here starts. The scan is therefore
+quiet about `esbuild` by blindness and not by cleanliness, and a later
+`esbuild` built with a newer Go is what makes it true. The scan stays
+report-only for the reason above.
