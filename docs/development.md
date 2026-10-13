@@ -53,6 +53,31 @@ pnpm --filter @kometio/postgres-db run db:migrate
 pnpm --filter @kometio/postgres-db run db:seed
 ```
 
+#### A database made before Postgres 18
+
+The compose file moved from Postgres 16 to 18 on 2026-10-13
+([ADR-0125](adr/0125-the-image-carries-postgres-18.md)). A major version does not open the files
+of another, so the database is now in a new volume, `postgres18-data`, and starts
+empty; the old one, `postgres-data`, is untouched and keeps what it had until
+you remove it. To bring a database that matters (the documentation site's, say)
+across, take the dump **before** the new container is started, with the old one
+still running:
+
+```sh
+./tools/dump-database.sh before-18        # into _data/, which is not committed
+docker compose up -d postgres             # now 18, and empty: db/init makes the role
+gunzip -c _data/before-18-*.sql.gz | docker compose exec -T postgres \
+  sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+pnpm --filter @kometio/postgres-db run db:migrate   # if the branch has migrations the dump does not
+```
+
+If the new container is already up, the old data is still in the volume:
+`docker run --rm -d --name pg16 -v <project>_postgres-data:/var/lib/postgresql/data postgres:16-alpine`
+serves it for long enough to dump it
+(`docker exec pg16 pg_dump --no-owner --clean --if-exists -U kometio kometio | gzip > _data/before-18.sql.gz`,
+then `docker stop pg16`), and `docker volume rm <project>_postgres-data` is what
+removes it once you have checked what came across.
+
 After changing `libs/adapters/postgres-db/src/lib/schema.ts`, generate a new
 migration (review the generated SQL before committing it — Drizzle can't see
 RLS policies or grants, those stay hand-written in

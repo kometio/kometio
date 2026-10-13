@@ -30,7 +30,7 @@ import {
   type KometioTx,
 } from '../src/lib/client';
 import { siteThemeBlockStyles, tenants } from '../src/lib/schema';
-import { visitStoredContent } from './visit-stored-content';
+import { visitStoredContent } from '../src/lib/visit-stored-content';
 
 let migrated = 0;
 let untouched = 0;

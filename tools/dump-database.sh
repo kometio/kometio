@@ -42,7 +42,11 @@ DEST="$OUT/$NAME-$STAMP.sql.gz"
 # newer server, and the version on a developer's machine is whatever
 # Homebrew last installed. Falling back to a local pg_dump keeps the
 # script usable against a database that is not in Docker.
-CONTAINER="$(docker ps --filter ancestor=postgres:16-alpine --format '{{.Names}}' 2>/dev/null | head -1)"
+#
+# Found by the compose service and not by the image it was started from: the
+# image's version changes (16 to 18), and a database that is still the old one
+# is exactly when a dump is wanted.
+CONTAINER="$(cd "$REPO" && docker compose ps -q postgres 2>/dev/null | head -1)"
 
 # --no-owner so the dump restores into a database owned by whoever is
 # restoring it, not by the role that happened to create this one;

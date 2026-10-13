@@ -1,6 +1,6 @@
 #!/bin/sh
-# docs/adr/0042 — runs inside the postgres-backup service (postgres:16-alpine,
-# so pg_dump is already the right version to match the server). Loops
+# docs/adr/0042 — runs inside the postgres-backup service (the same postgres image
+# as the database, so pg_dump is already the right version to match the server). Loops
 # forever: dump, prune anything older than the retention window, sleep,
 # repeat. See docs/self-hosting.md for the restore runbook — a backup file
 # nobody has practiced restoring from isn't a real safety net.

@@ -35,7 +35,7 @@ x-logging: &logging
 services:
   postgres:
     logging: *logging
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     # Docker kills a container ten seconds after asking it to stop, and the
     # database needs a few more than that to stop cleanly when it has work to
@@ -47,7 +47,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-kometio}
       POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD in .env, see .env.prod.example}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      # The 18 image keeps its data in a folder named for the version, under the
+      # path it declares as its volume: /var/lib/postgresql, not .../data. The
+      # volume is named for the version too, because a major version of Postgres
+      # does not open the files of another: `postgres-data` is the 16's, still
+      # there with what it had, and this one starts empty (docs/self-hosting.md,
+      # "A new major version of Postgres", says how to move what is in it).
+      - postgres18-data:/var/lib/postgresql
       - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-kometio}']
@@ -313,7 +319,7 @@ services:
 
   postgres-backup:
     logging: *logging
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_HOST: postgres
@@ -331,7 +337,7 @@ services:
         condition: service_healthy
 
 volumes:
-  postgres-data:
+  postgres18-data:
   postgres-backups:
   media-uploads:
   caddy-data:

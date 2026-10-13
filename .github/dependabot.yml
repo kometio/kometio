@@ -83,8 +83,9 @@ updates:
       # a data directory written by 16 is not one 18 can open, so an
       # installation that pulled such a bump would find its database
       # refusing to start. It needs a dump-and-restore procedure, tested
-      # and documented, and the CI service pinned in step. Patches and
-      # minors still come through.
+      # and documented (docs/adr/0125 is the one that moved 16 to 18), a new
+      # volume name, and the CI service, the image's package and both compose
+      # files moved in step. Patches and minors still come through.
       - dependency-name: 'postgres'
         update-types:
           - 'version-update:semver-major'

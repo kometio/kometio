@@ -102,6 +102,29 @@ describe('isForeignKeyViolation', () => {
     ).toBe(true);
   });
 
+  // Postgres 18 says a row that is still referenced under RESTRICT with a code
+  // of its own; 16 said 23503 for it.
+  it('is true for a 23001 (restrict_violation) on one of them too', () => {
+    expect(
+      isForeignKeyViolation(
+        buildPostgresError({
+          code: '23001',
+          constraint_name: 'page_groups_parent_id_page_groups_id_fk',
+        }),
+        restricting,
+      ),
+    ).toBe(true);
+    expect(
+      isForeignKeyViolation(
+        buildPostgresError({
+          code: '23001',
+          constraint_name: 'media_site_id_sites_id_fk',
+        }),
+        restricting,
+      ),
+    ).toBe(false);
+  });
+
   it('is false for another foreign key, a unique violation, or a plain Error', () => {
     expect(
       isForeignKeyViolation(

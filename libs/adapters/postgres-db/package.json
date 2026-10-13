@@ -15,6 +15,7 @@
     "db:migrate-responsive-block-styles": "tsx --env-file-if-exists=../../../.env scripts/migrate-responsive-block-styles.ts",
     "db:migrate-variant-props": "tsx --env-file-if-exists=../../../.env scripts/migrate-variant-props.ts",
     "db:migrate-columns-layout": "tsx --env-file-if-exists=../../../.env scripts/migrate-columns-layout.ts",
+    "db:audit-block-props": "tsx --env-file-if-exists=../../../.env scripts/audit-block-props.ts",
     "db:normalize-rich-text": "tsx --env-file-if-exists=../../../.env scripts/normalize-rich-text.ts",
     "db:reindex-search": "tsx --env-file-if-exists=../../../.env scripts/reindex-search.ts"
   },

@@ -22,7 +22,7 @@ import { headerFooterBlocks, pageBlocks } from '@kometio/block-registry';
 import { migrateVariantProps } from '@kometio/shared-types';
 import { createAppDb, withTenant, type KometioDb } from '../src/lib/client';
 import { tenants } from '../src/lib/schema';
-import { visitStoredContent } from './visit-stored-content';
+import { visitStoredContent } from '../src/lib/visit-stored-content';
 
 const declaredVariants = Object.fromEntries(
   [...pageBlocks, ...headerFooterBlocks]
