@@ -13,6 +13,8 @@ module.exports = {
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   setupFiles: ['<rootDir>/jest.setup.ts'],
+  // After the environment, for `afterAll`: a folder of its own for uploads.
+  setupFilesAfterEnv: ['<rootDir>/jest.uploads.setup.ts'],
   transform: {
     '^.+\\.[tj]s$': ['@swc/jest', swcJestConfig],
   },

@@ -65,8 +65,9 @@ env:
   # real one. No live Turnstile script actually loads in CI.
   VITE_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
   # Needed for MediaModule to compile in apps/api's unit tests (see
-  # app.module.spec.ts) — see ADR-0013. No upload actually happens in CI, so
-  # MEDIA_UPLOAD_DIR is never written to.
+  # app.module.spec.ts) — see ADR-0013. The suites that do upload write into a
+  # folder of their own per test file (apps/api/jest.uploads.setup.ts), not
+  # into this one.
   MEDIA_UPLOAD_DIR: /tmp/kometio-ci-uploads
   API_PUBLIC_URL: http://localhost:3000/api
   # Needed for SitesModule to compile in apps/api's unit tests (see
