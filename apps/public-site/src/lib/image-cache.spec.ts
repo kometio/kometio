@@ -76,15 +76,11 @@ async function start(
       server.closeAllConnections();
       await new Promise((resolve) => server.close(resolve));
       // The cache writes an entry after it has answered, and evicts after
-      // that: a write that lands while the folder is being removed leaves it
-      // not empty (ENOTEMPTY), which happened under load. Removing it again
-      // is what `maxRetries` is for.
-      rmSync(directory, {
-        recursive: true,
-        force: true,
-        maxRetries: 10,
-        retryDelay: 50,
-      });
+      // that: removing the folder while that is going on leaves it not empty
+      // (ENOTEMPTY), which happened under load, twice, with a retry in place.
+      // It is waited for, not retried.
+      await cache.settled();
+      rmSync(directory, { recursive: true, force: true });
     },
   };
   servers.push(harness);
