@@ -73,11 +73,17 @@ costs a page that was readable, the switch to log-and-pass is one function.
 
 - **A page's blocks are checked as a tree, not block by block.** `blockSchema`
   has `props` as a record of unknowns: the tree's shape is what is verified, and
-  what each block type's props must be is the API's check on the way in
-  (`BLOCK_PROPS_SCHEMAS`). Holding stored props to those schemas would be the
+  what each block type's props must be is held to `BLOCK_PROPS_SCHEMAS` by
+  nothing on the way in. Holding stored props to those schemas would be the
   next step and would read every block of every page; the offline script that
   already walks stored content (`scripts/visit-stored-content.ts`) is where it
   would start.
+
+  _Updated 2026-10-13:_ this said the API checks props on the way in, and it
+  does not — only a page generated from a prompt is. The offline audit is
+  ADR-0124, which also says what the write path does and does not do; the
+  visitor moved to `src/lib/visit-stored-content.ts`.
+
 - **The cost is that of the parse**, measured on a generated page (blocks with
   text, a fifth of them containers of three): 0.04 ms for 20 root blocks,
   0.10 ms for 100, 0.39 ms for 400, on top of the JSON parse. On the public
