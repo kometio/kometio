@@ -88,6 +88,7 @@ describe('what an archive says about itself', () => {
     assert.deepEqual([...TRANSIENT_TABLES].sort(), [
       'form_submissions',
       'import_jobs',
+      'missing_paths',
       'sessions',
       'verification_tokens',
     ]);

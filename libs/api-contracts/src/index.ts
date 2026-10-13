@@ -8,6 +8,8 @@ export * from './lib/collection-requests';
 export * from './lib/dashboard-requests';
 export * from './lib/deployment-record';
 export * from './lib/form-record';
+export * from './lib/redirect-record';
+export * from './lib/redirect-requests';
 export * from './lib/form-requests';
 export * from './lib/import-job-record';
 export * from './lib/import-requests';

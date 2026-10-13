@@ -75,6 +75,10 @@ import {
   LastActiveAdminError,
   UserNotFoundError,
   FormNotFoundError,
+  InvalidRedirectError,
+  RedirectLimitReachedError,
+  RedirectNotFoundError,
+  RedirectSourceTakenError,
   FormSubmissionNotFoundError,
 } from '@kometio/domain-core';
 import { DeploymentNotSetUpError } from './deployment-tenant.resolver';
@@ -116,6 +120,14 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   [PageTranslationNotFoundError, (m) => new NotFoundException(m)],
   [PageTranslationVersionNotFoundError, (m) => new NotFoundException(m)],
   [FormNotFoundError, (m) => new NotFoundException(m)],
+  [RedirectNotFoundError, (m) => new NotFoundException(m)],
+  // 409: the request is well formed and the address is taken — change that
+  // rule instead. The message names the address.
+  [RedirectSourceTakenError, (m) => new ConflictException(m)],
+  [RedirectLimitReachedError, (m) => new ConflictException(m)],
+  // 400, with the reason's code as the message (`redirect:target:loop`): the
+  // editor says it in words, in the person's language.
+  [InvalidRedirectError, (m) => new BadRequestException(m)],
   [FormSubmissionNotFoundError, (m) => new NotFoundException(m)],
   [ReusableSectionNotFoundError, (m) => new NotFoundException(m)],
   [ReusableSectionVersionNotFoundError, (m) => new NotFoundException(m)],

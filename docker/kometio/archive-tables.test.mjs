@@ -31,6 +31,9 @@ const SITE_TABLES = [
   'terms',
   'term_slugs',
   'page_group_terms',
+  // The old addresses and where they go: a site's own content, so that a
+  // moved site keeps the links it kept (docs/adr/0127).
+  'redirects',
 ];
 
 const SCHEMA = resolve(
