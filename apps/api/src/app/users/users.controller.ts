@@ -30,6 +30,7 @@ import {
   userRecordSchema,
 } from '@kometio/api-contracts';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
+import { InvitationsPerHour } from '../auth/per-user-limit.guard';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   type InviteUserBody,
@@ -82,6 +83,7 @@ export class UsersController {
   }
 
   @Post('invite')
+  @UseGuards(InvitationsPerHour)
   async invite(
     @TenantId() tenantId: string,
     @Body(new ZodValidationPipe(inviteUserBodySchema)) body: InviteUserBody,
@@ -113,6 +115,7 @@ export class UsersController {
    * would make no sense.
    */
   @Post(':id/resend-invite')
+  @UseGuards(InvitationsPerHour)
   @HttpCode(200)
   async resend(
     @TenantId() tenantId: string,

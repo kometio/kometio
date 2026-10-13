@@ -249,6 +249,15 @@ setup token from `docker logs kometio`, open the editor, create your account.
   browser had not seen the picture. The cache is in the container's own
   filesystem, not the volume: a new container makes them again, and nothing is
   lost.
+- **A disk that is nearly full stops taking uploads, so that the database can go on
+  writing.** The uploaded files are on the same volume as the database, and a
+  library that fills it is a site that cannot save a page. An upload that would
+  leave less than 1 GB free is refused, and the editor says the server is short of
+  room (`-e MEDIA_MIN_FREE_MB=…` changes the 1024; `0` turns the check off).
+- **Invitations and generated pages have a limit for each person**, not only for
+  each address: an administrator may send twenty invitations an hour (a re-sent
+  one counts), and a person may generate fifty pages a day. The counts are kept in
+  memory, and start again when the server does.
 
 ## Move a site to another installation
 
@@ -321,7 +330,12 @@ What you should know:
   account in the site with a password it chose, change every page, and run commands
   as the database's own user. What it cannot do is run anything as root, or publish
   a file that is not its own.
-- It needs room for the archive, unpacked, next to the data.
+- **It needs room for the archive twice, next to the data**: as it came and
+  unpacked, and 1 GB is kept for the database. A file larger than the volume can
+  take is refused while it is being read, with the size it was allowed, and a file
+  that declares more unpacked than there is room for (or more than 512 GB, or a
+  million entries, which is not a site) is refused before anything is unpacked.
+  Nothing is left on the volume.
 
 ## Run a public demo
 

@@ -23,6 +23,7 @@ import {
 } from '@kometio/api-contracts';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { TenantId } from '../auth/session-identity.decorator';
+import { GenerationsPerDay } from '../auth/per-user-limit.guard';
 import { UuidParam } from '../uuid-param.decorator';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import type { PageGenerationDeps } from './page-generation.deps';
@@ -71,7 +72,7 @@ export class GeneratePageController {
    * a person, and a wall against a script.
    */
   @Post()
-  @UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard, GenerationsPerDay)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   async generate(
     @TenantId() tenantId: string,

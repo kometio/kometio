@@ -34,6 +34,14 @@ RUN apk add --no-cache postgresql16 postgresql16-contrib nginx tini caddy libcap
  && setcap cap_net_bind_service=+ep /usr/sbin/caddy \
  && apk del libcap-utils
 
+# Nothing here installs a package: the apps are built and their dependencies
+# installed in their own images, and what runs is `node`. npm is only what the
+# base image ships, and it ships its own copies of tar, undici and others, which
+# the image scan (docs/adr/0121) reads as the image's. One less thing to patch.
+# The files stay in the base image's layer and are hidden by this one: the image
+# is no smaller, and nothing in it can run them.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
 # One user per half, so that the public site (which can run code from a theme)
 # cannot read the API's files, and neither of them the database's.
 RUN addgroup -S kometio && adduser -S kometio -G kometio \
