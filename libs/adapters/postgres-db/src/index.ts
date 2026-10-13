@@ -1,4 +1,5 @@
 export * from './lib/schema';
+export * from './lib/validated-jsonb';
 export * from './lib/client';
 export * from './lib/postgres-constraint-violation';
 export * from './lib/answered-row';

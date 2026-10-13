@@ -47,6 +47,9 @@ export const formFieldFileValueSchema = z.object({
 });
 export type FormFieldFileValue = z.infer<typeof formFieldFileValueSchema>;
 
+/** A submission's payload as the column holds it: an answer for each field, keyed by the field's id. */
+export const formSubmissionPayloadSchema = z.record(z.string(), z.unknown());
+
 /** The url of every file a submission's payload names: one per `file` answer. */
 export function fileUrlsOf(
   payload: Readonly<Record<string, unknown>>,
@@ -91,6 +94,13 @@ export const formFieldSchema = z.object({
   showWhen: formFieldConditionSchema.nullable().optional(),
 });
 export type FormField = z.infer<typeof formFieldSchema>;
+
+/**
+ * A form's fields as the column holds them (docs/adr/0123): the shape and
+ * nothing more. `formFieldsSchema` below adds the rules a save is held to, and
+ * a form saved before one of them existed is still a form.
+ */
+export const storedFormFieldsSchema = z.array(formFieldSchema);
 
 /** A form's fields as it may be saved: every condition names an earlier field, and an option that exists. */
 export const formFieldsSchema = z

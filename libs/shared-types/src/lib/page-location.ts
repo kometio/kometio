@@ -19,3 +19,5 @@ export const formerParentLocationSchema = z.object({
   slug: z.string(),
 });
 export type FormerParentLocation = z.infer<typeof formerParentLocationSchema>;
+/** The list as the page translation's column holds it (docs/adr/0123). */
+export const formerParentLocationsSchema = z.array(formerParentLocationSchema);
