@@ -11,6 +11,11 @@ name: Docker build
 # rebuilds them and runs the end-to-end suite against the result, and on a
 # push the published ones are put together and smoke-tested before the image
 # is given its tags.
+#
+# What is published carries its own bill of materials (SBOM) and how it was
+# built (provenance), attached to each image by digest and kept by `merge`;
+# docs/adr/0121. image-scan.yml reads the published image for known
+# vulnerabilities.
 on:
   push:
     branches:
@@ -34,6 +39,11 @@ on:
 permissions:
   contents: read
   packages: write
+
+env:
+  # BuildKit's SBOM scanner, by digest, so that what makes the bill of
+  # materials is not whatever its `stable-1` tag points at on the day.
+  SBOM_GENERATOR: docker/buildkit-syft-scanner@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9
 
 # One run per branch at a time. On main this keeps the tags in commit
 # order: two merges a minute apart used to build side by side, and whichever
@@ -112,6 +122,9 @@ jobs:
           target: ${{ matrix.target }}
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Only on what is pushed: a cache-only build has no image to attach to.
+          provenance: ${{ github.event_name != 'pull_request' && 'mode=max' || '' }}
+          attests: ${{ github.event_name != 'pull_request' && format('type=sbom,generator={0}', env.SBOM_GENERATOR) || '' }}
           outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) }}
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
@@ -361,6 +374,8 @@ jobs:
             PUBLIC_SITE_IMAGE=${{ env.IMAGE }}-public-site:${{ env.APPS_TAG }}
             EDITOR_IMAGE=${{ env.IMAGE }}-editor-app:${{ env.APPS_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          attests: type=sbom,generator=${{ env.SBOM_GENERATOR }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=single-image-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=single-image-${{ matrix.arch }}
