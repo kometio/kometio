@@ -21,6 +21,7 @@ import {
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import { DATABASE_USER, SOCKET_DIR } from './embedded-postgres.mjs';
+import { messageOf } from './error-message.mjs';
 import { ensureDir, ids, minimalEnv, once } from './processes.mjs';
 import {
   TRANSIENT_TABLES,
@@ -407,7 +408,9 @@ function resetToNew(uploadsDir, say) {
       }
     }
   } catch (error) {
-    say(`the installation could not be put back as it was: ${error.message}`);
+    say(
+      `the installation could not be put back as it was: ${messageOf(error)}`,
+    );
   }
 }
 

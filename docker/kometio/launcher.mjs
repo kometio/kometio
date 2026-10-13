@@ -36,6 +36,7 @@ import {
   restoreArchive,
 } from './archive-commands.mjs';
 import { CONTROL_SOCKET, startControlServer } from './control-server.mjs';
+import { messageOf } from './error-message.mjs';
 import {
   DATABASE_USER,
   SOCKET_DIR,
@@ -85,7 +86,7 @@ const OWN_DATABASE = !env.POSTGRES_HOST;
 try {
   output.format = logFormatOf(env);
 } catch (error) {
-  console.error(`[kometio] ${error.message}`);
+  console.error(`[kometio] ${messageOf(error)}`);
   process.exit(1);
 }
 
@@ -97,7 +98,7 @@ let addresses;
 try {
   addresses = resolveAddresses(env);
 } catch (error) {
-  printLine('kometio', error.message, 'stderr');
+  printLine('kometio', messageOf(error), 'stderr');
   process.exit(1);
 }
 // Where the browser reaches each half. Defaults suit `docker run -p
@@ -443,7 +444,7 @@ if (process.argv[2] !== undefined) {
   }
 
   main().catch((error) => {
-    printLine('kometio', error.message, 'stderr');
+    printLine('kometio', messageOf(error), 'stderr');
     void supervisor.shutdown(1);
   });
 }

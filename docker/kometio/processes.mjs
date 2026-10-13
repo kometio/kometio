@@ -31,12 +31,31 @@ export const minimalEnv = {
   LANG: 'C.UTF-8',
 };
 
-/** Drops what is `undefined`, which a child process would otherwise receive as the text "undefined". */
-export const defined = (values) =>
-  Object.fromEntries(
-    Object.entries(values).filter(([, value]) => value !== undefined),
-  );
+/**
+ * Drops what is `undefined`, which a child process would otherwise receive as the text "undefined".
+ * @param {Record<string, string | undefined>} values
+ * @returns {Record<string, string>}
+ */
+export function defined(values) {
+  /** @type {Record<string, string>} */
+  const kept = {};
+  for (const [key, value] of Object.entries(values)) {
+    if (value !== undefined) kept[key] = value;
+  }
+  return kept;
+}
 
+/**
+ * How a program is run: as `user` (a name in /etc/passwd), with `childEnv` as
+ * its whole environment (nothing is inherited), in `cwd`, with `input` on its stdin.
+ * @typedef {object} RunOptions
+ * @property {string} [user]
+ * @property {Record<string, string | undefined>} [childEnv]
+ * @property {string} [cwd]
+ * @property {string} [input]
+ */
+
+/** @param {string} user */
 export function ids(user) {
   const line = readFileSync('/etc/passwd', 'utf8')
     .split('\n')
@@ -54,7 +73,13 @@ export function ensureDir(path, user, mode) {
   chmodSync(path, mode);
 }
 
-/** A step that must finish before the next one starts. Its output is the log's, line by line. */
+/**
+ * A step that must finish before the next one starts. Its output is the log's, line by line.
+ * @param {string} name
+ * @param {string} command
+ * @param {string[]} args
+ * @param {RunOptions} [options]
+ */
 export function once(
   name,
   command,

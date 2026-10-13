@@ -77,6 +77,10 @@ export class ProcessSupervisor {
    * Starts a process that is meant to run for as long as the launcher does.
    * `stop` is the signal that stops it politely (Postgres's "fast" shutdown is
    * SIGINT); `onLine` sees each line it writes, as the launcher prints it.
+   * @param {string} name
+   * @param {string} command
+   * @param {string[]} args
+   * @param {import('./processes.mjs').RunOptions & { stop?: NodeJS.Signals, onLine?: (line: string) => void }} [options]
    */
   start(
     name,

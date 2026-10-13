@@ -13,6 +13,7 @@ import { createServer } from 'node:http';
 import { chmodSync, chownSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Refusal } from './archive.mjs';
+import { messageOf } from './error-message.mjs';
 
 export const CONTROL_SOCKET = '/run/kometio/control.sock';
 
@@ -43,6 +44,13 @@ function refuseUnused(request, response, status, message) {
  * `openArchive` is what `createSiteImport` makes: it reads the archive that comes
  * in and judges it, and says what to do once the answer has gone.
  * Resolves with the server, once it is listening.
+ *
+ * @param {object} options
+ * @param {string} options.socketPath
+ * @param {{ uid: number, gid: number }} [options.owner]
+ * @param {() => Promise<{ fileName: string, write: (out: import('node:http').ServerResponse) => Promise<void>, discard: () => void }>} options.prepare
+ * @param {(input: import('node:http').IncomingMessage) => Promise<{ discard: () => void, run: () => Promise<void> }>} options.openArchive
+ * @param {(message: string) => void} [options.say]
  */
 export async function startControlServer({
   socketPath,
@@ -86,13 +94,13 @@ export async function startControlServer({
     } catch (error) {
       if (response.headersSent) {
         // Already on its way: an archive cut short must look cut short, not whole.
-        say(`the export failed after it had started: ${error.message}`);
-        response.destroy(error);
+        say(`the export failed after it had started: ${messageOf(error)}`);
+        response.destroy(error instanceof Error ? error : undefined);
       } else if (error instanceof Refusal) {
         reply(response, 409, error.message);
       } else {
-        say(`the export failed: ${error.message}`);
-        reply(response, 500, error.message);
+        say(`the export failed: ${messageOf(error)}`);
+        reply(response, 500, messageOf(error));
       }
     } finally {
       archive?.discard();
@@ -121,8 +129,8 @@ export async function startControlServer({
           error.message,
         );
       } else {
-        say(`the archive could not be read: ${error.message}`);
-        refuseUnused(request, response, 500, error.message);
+        say(`the archive could not be read: ${messageOf(error)}`);
+        refuseUnused(request, response, 500, messageOf(error));
       }
       return;
     }
@@ -131,7 +139,7 @@ export async function startControlServer({
     reply(response, 202, 'accepted');
     void opened
       .run()
-      .catch((error) => say(`the import did not finish: ${error.message}`))
+      .catch((error) => say(`the import did not finish: ${messageOf(error)}`))
       .finally(() => {
         opened.discard();
         busyWith = null;
@@ -162,7 +170,7 @@ export async function startControlServer({
   rmSync(socketPath, { force: true });
   await new Promise((resolve, reject) => {
     server.once('error', reject);
-    server.listen(socketPath, resolve);
+    server.listen(socketPath, () => resolve(undefined));
   });
   if (owner) chownSync(socketPath, owner.uid, owner.gid);
   chmodSync(socketPath, 0o600);
