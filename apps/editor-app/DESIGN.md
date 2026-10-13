@@ -180,6 +180,20 @@ text-muted-foreground` below, error in `text-destructive` below and tied
   `applyApiFieldErrors` (`lib/http-client.ts`) puts its sentence under
   that field, and only what names none is said at the foot of the form. Every control has a name: `inspector-
 accessibility.spec.tsx` checks it for every block type.
+- **A hint and its error share one slot** (the redirect dialog's old
+  address). What a field says about itself as it is typed — its hint, or
+  what the value will be kept as — is replaced by the error when there is
+  one, in the same place, not followed by it. A field that is judged when it
+  is left has its error appear on the mousedown that blurs it; an error
+  added below pushed the control the person was pressing out from under the
+  pointer, and the click was lost. Nothing is judged before the field is
+  left or the form submitted.
+- **A sentence, not a rule** (`DestinationCheck`): where a value cannot be
+  wrong for the server but can be wrong for the person (a destination path
+  that no page answers), the form asks the same function the site answers
+  with while it is typed and says what it found under the field — a
+  `warning` icon and words, `role="status"`, never blocking, and nothing
+  for what is not ours to know (another site's address).
 - **SaveBar** (`app/settings/save-bar.tsx`): the one way a screen that
   saves as a whole saves. Nothing sits at the foot of the form until
   something has changed; then a `sticky bottom-4` bar says "Unsaved

@@ -8,6 +8,7 @@ import {
   Languages,
   Plug,
   Search,
+  Signpost,
   Sparkles,
   Users,
   type LucideIcon,
@@ -37,8 +38,8 @@ export interface SettingsSectionDefinition {
  * another. The words are `settings.nav.items.<id>` and
  * `settings.nav.groups.<group>`.
  *
- * A collection goes live without a publish (docs/roles.md), so it is a
- * publisher's; the rest of the site's own settings are an admin's.
+ * A collection and a redirect go live without a publish (docs/roles.md), so
+ * they are a publisher's; the rest of the site's own settings are an admin's.
  */
 export const SETTINGS_SECTIONS = [
   {
@@ -73,6 +74,13 @@ export const SETTINGS_SECTIONS = [
     id: 'collections',
     to: '/settings/collections',
     icon: FolderTree,
+    group: 'site',
+    permission: 'changeLiveSite',
+  },
+  {
+    id: 'redirects',
+    to: '/settings/redirects',
+    icon: Signpost,
     group: 'site',
     permission: 'changeLiveSite',
   },

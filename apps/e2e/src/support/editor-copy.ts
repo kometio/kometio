@@ -55,7 +55,8 @@ export class EditorCopy {
 
   /** The text of a key. A key the editor does not have, or a value it needs and was not given, is an error here, not a text nobody finds. */
   t(key: string, values: Record<string, string | number> = {}): string {
-    if (!this.translator.exists(key)) {
+    // With the values: a text that has a plural is there under `key_one` and `key_other`, and only a `count` finds it.
+    if (!this.translator.exists(key, values)) {
       throw new Error(
         `The editor has no text "${key}" (apps/editor-app/src/locales)`,
       );

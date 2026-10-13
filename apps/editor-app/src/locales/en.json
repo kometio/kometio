@@ -3389,6 +3389,245 @@
     "nameRequired": "Enter a name for the collection.",
     "emptyExplainer": "No collections yet. A collection keeps pages of one kind together, like News or Events, and has an entry of its own in the menu."
   },
+  "redirects": {
+    "title": "Redirects",
+    "description": "When someone opens an address that moved or no longer exists, send them to the right place instead of a dead end. This keeps links from search engines and other sites working.",
+    "actions": {
+      "add": "Add redirect",
+      "import": "Import a list",
+      "test": "Check an address"
+    },
+    "tabs": {
+      "label": "Redirects sections",
+      "rules": "Redirects",
+      "missing": "Not found",
+      "missingCount": "Not found ({{count}})"
+    },
+    "search": {
+      "label": "Search redirects",
+      "placeholder": "Search by address…"
+    },
+    "filter": {
+      "label": "Show",
+      "all": "All redirects",
+      "needsTarget": "Without a destination",
+      "manual": "Added here",
+      "list": "Imported from a list",
+      "wordpress": "From WordPress"
+    },
+    "empty": {
+      "title": "No redirects yet",
+      "body": "Add one when a page moves or is removed, so old links lead somewhere. Moving from another site? Import a list, or look at “Not found” a few days after the move to see which addresses visitors still ask for.",
+      "filtered": "No redirect matches this search.",
+      "showAll": "Show all"
+    },
+    "loadFailed": "The redirects could not be loaded.",
+    "row": {
+      "pattern": "Pattern",
+      "gone": "Gone",
+      "needsTarget": "Needs a destination",
+      "notPublished": "Page not published",
+      "goesTo": "Goes to",
+      "removed": "Removed for good (410)",
+      "pageDeleted": "The page this went to was deleted. Choose where it should go now.",
+      "pageDraft": "“{{title}}” isn’t published in this language yet, so visitors see “not found”.",
+      "status": {
+        "permanent": "Permanent",
+        "temporary": "Temporary",
+        "gone": "Removed"
+      },
+      "visits_one": "{{count}} visit",
+      "visits_other": "{{count}} visits",
+      "noVisits": "No visits yet",
+      "lastVisit": "last {{date}}",
+      "origin": {
+        "list": "Imported",
+        "wordpress": "From WordPress"
+      },
+      "edit": "Edit",
+      "editLabel": "Edit the redirect from {{from}}",
+      "select": "Select the redirect from {{from}}"
+    },
+    "selection": {
+      "label": "Actions on the selected redirects",
+      "count_one": "{{count}} selected",
+      "count_other": "{{count}} selected",
+      "delete": "Delete"
+    },
+    "delete": {
+      "title_one": "Delete this redirect?",
+      "title_other": "Delete these {{count}} redirects?",
+      "description": "Visitors who open {{names}} will see “not found” again.",
+      "done_one": "Redirect deleted",
+      "done_other": "{{count}} redirects deleted",
+      "failed": "The redirects could not be deleted."
+    },
+    "dialog": {
+      "addTitle": "Add a redirect",
+      "editTitle": "Edit redirect",
+      "from": {
+        "label": "Old address",
+        "placeholder": "/2019/05/old-post",
+        "hint": "Paste the old link or just its path. A part that changes is written :name (like /blog/:slug), and a * at the end means everything under it.",
+        "exact": "Visitors who open {{address}} are sent on.",
+        "pattern": "A pattern: it applies to every address of this shape.",
+        "placeholders": "Parts you can reuse in the destination: {{names}}"
+      },
+      "to": {
+        "legend": "Send visitors to",
+        "page": {
+          "label": "A page of this site",
+          "description": "Follows the page if it is renamed or moved.",
+          "language": "Language",
+          "choose": "Choose a page",
+          "change": "Change page",
+          "none": "No page chosen yet",
+          "missing": "Choose the page visitors should go to.",
+          "untitled": "Untitled page"
+        },
+        "url": {
+          "label": "Another address",
+          "description": "A path of this site, or a full address on another site.",
+          "descriptionDemo": "A path of this site.",
+          "field": "Address",
+          "placeholder": "/en/blog/new-post or https://new-site.com/page",
+          "hint": "In a pattern you can use the parts of the old address: /en/blog/:slug"
+        },
+        "gone": {
+          "label": "Nowhere: it was removed",
+          "description": "Tells visitors and search engines the address is gone for good, so it drops out of the results."
+        }
+      },
+      "type": {
+        "label": "Kind of redirect",
+        "permanent": "Permanent",
+        "temporary": "Temporary",
+        "permanentHint": "Search engines move the old address’s ranking to the new one. Use it unless the move is only for a while.",
+        "temporaryHint": "Search engines keep the old address. Use it while something is being rebuilt or tried out."
+      },
+      "check": {
+        "page": "A page answers at that address.",
+        "moved": "That page moved to {{location}}: visitors are sent there.",
+        "redirect": "That address is itself redirected, to {{location}}.",
+        "gone": "That address is marked as removed.",
+        "broken": "That address has a redirect to a page that isn’t published.",
+        "loop": "That address is part of a circle of redirects.",
+        "none": "No page answers at that address, so visitors would see “not found”. Check the spelling, or create the page first.",
+        "other": "An address on another site: it isn’t checked here."
+      },
+      "add": "Add redirect",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "created": "Redirect added",
+      "saved": "Redirect saved",
+      "failed": "The redirect could not be saved."
+    },
+    "test": {
+      "title": "Check an address",
+      "description": "See what a visitor gets when they open an address. It is the same answer the site gives.",
+      "label": "Address",
+      "placeholder": "/2019/05/old-post or https://old-site.com/old-post",
+      "run": "Check",
+      "checking": "Checking…",
+      "result": {
+        "page": "A page answers there: {{path}}. A page always comes before a redirect.",
+        "moved": "A page used to be there and moved. Visitors are sent to {{location}}.",
+        "redirect301": "Visitors are sent to {{location}} with a permanent redirect.",
+        "redirect302": "Visitors are sent to {{location}} with a temporary redirect.",
+        "gone": "The address is marked as removed: visitors get a “410 Gone” answer.",
+        "broken": "A redirect matches, but the page it points to isn’t published, so visitors see “not found”.",
+        "loop": "The redirects send visitors round in a circle. Change one of them.",
+        "none": "Nothing answers there: visitors see “not found”."
+      },
+      "addFor": "Add a redirect for it",
+      "failed": "The address could not be checked.",
+      "done": "Done"
+    },
+    "import": {
+      "title": "Import a list of redirects",
+      "description": "A spreadsheet or the export of an SEO tool: one old address and one new address per line, as a CSV file.",
+      "format": "Columns: old address, new address and, if you like, the kind (301, 302 or 410). The first line may be a header. A line whose address already has a redirect updates it, so importing the same list twice does no harm.",
+      "chooseFile": "Choose a CSV file",
+      "pasteLabel": "Or paste the list here",
+      "pastePlaceholder": "/old-page,/en/new-page",
+      "tooBig": "That file is larger than 2 MB. Split it into parts.",
+      "readFailed": "The file could not be read.",
+      "check": "Check the list",
+      "checking": "Checking…",
+      "back": "Back",
+      "apply_one": "Import {{count}} redirect",
+      "apply_other": "Import {{count}} redirects",
+      "nothingToImport": "Nothing to import",
+      "summary": {
+        "created_one": "{{count}} new",
+        "created_other": "{{count}} new",
+        "updated_one": "{{count}} changed",
+        "updated_other": "{{count}} changed",
+        "unchanged_one": "{{count}} already in place",
+        "unchanged_other": "{{count}} already in place",
+        "failed_one": "{{count}} with a problem",
+        "failed_other": "{{count}} with a problem"
+      },
+      "problemsTitle": "Lines that cannot be imported",
+      "problemsHint": "They are left out; the rest is imported.",
+      "line": "Line {{line}}",
+      "truncated": "Only the first {{max}} lines were read.",
+      "done": "Import finished. New: {{created}}, changed: {{updated}}.",
+      "failed": "The list could not be imported."
+    },
+    "missing": {
+      "description": "Addresses that visitors asked for and the site did not have, most asked first. Turn the ones that matter into redirects.",
+      "privacy": "Only the address is kept, never who asked or the rest of the link.",
+      "empty": "Nothing here. When a visitor opens an address the site does not have, it shows up here.",
+      "visits_one": "{{count}} visit",
+      "visits_other": "{{count}} visits",
+      "lastSeen": "last {{date}}",
+      "redirect": "Redirect…",
+      "redirectLabel": "Add a redirect for {{path}}",
+      "ignore": "Ignore",
+      "ignoreLabel": "Ignore {{path}}",
+      "ignored": "{{path}} taken off the list",
+      "failed": "That could not be done."
+    },
+    "problems": {
+      "unknown": "This redirect cannot be used.",
+      "source": {
+        "empty": "Write the old address.",
+        "too-long": "That address is too long.",
+        "too-deep": "That address has too many parts ({{max}} at most).",
+        "invalid": "That is not an address the site could be asked for.",
+        "reserved": "“/{{detail}}” is an address the site answers by itself, so a redirect there would never be used.",
+        "root-without-query": "The front page of the site cannot be redirected. For an old link to the front page, add its query, like /?p=123.",
+        "bad-pattern": "“{{detail}}” cannot be used in a pattern. A part that changes is written :name, and * is only allowed at the end.",
+        "bad-pattern-splat": "A * is only allowed as the last part of the address.",
+        "bad-pattern-twice": "{{detail}} is used twice: each part that changes needs its own name.",
+        "pattern-with-query": "A pattern cannot also look for a query (?…). Choose one of the two.",
+        "too-many-query-pairs": "At most {{pairs}} parameters can be looked for.",
+        "taken": "There is already a redirect for this address."
+      },
+      "target": {
+        "empty": "Say where visitors should go.",
+        "too-long": "The destination is too long.",
+        "invalid": "That is not an address visitors can be sent to.",
+        "invalid-start": "Start with / for a page of this site, or with https:// for another site.",
+        "unsafe": "That address cannot be used.",
+        "unsafe-scheme": "Only http and https addresses are allowed.",
+        "unsafe-credentials": "An address with a user name or password in it cannot be used.",
+        "unknown-placeholder": "“{{detail}}” is not in the old address, so there is nothing to fill it with.",
+        "same-as-source": "An address cannot be sent to itself.",
+        "loop": "This destination leads back here: visitors would go round in a circle.",
+        "external": "In this demo a redirect can only go to a page or a path of the site."
+      },
+      "file": {
+        "missing-from": "The old address is missing.",
+        "missing-to": "The new address is missing.",
+        "bad-status": "“{{detail}}” is not a kind of redirect: use 301, 302 or 410."
+      },
+      "site": {
+        "limit": "A site can hold at most {{limit}} redirects."
+      }
+    }
+  },
   "pageTemplates": {
     "blank": "Blank page"
   },
@@ -3570,6 +3809,7 @@
         "seo": "SEO",
         "business": "Business info",
         "collections": "Collections",
+        "redirects": "Redirects",
         "integrations": "Integrations",
         "ai": "AI generation",
         "cookies": "Cookies & privacy",

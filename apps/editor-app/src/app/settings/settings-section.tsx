@@ -34,7 +34,11 @@ export function SettingsSectionHeader({
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {/* Wrapping: a section with more than one action (Redirects has
+          three) must not push the last of them off a phone's edge. */}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
+      )}
     </div>
   );
 }

@@ -3389,6 +3389,245 @@
     "nameRequired": "Scrivi il nome della collezione.",
     "emptyExplainer": "Nessuna collezione. Una collezione tiene insieme pagine dello stesso tipo, come Notizie o Eventi, e ha una voce sua nel menu."
   },
+  "redirects": {
+    "title": "Reindirizzamenti",
+    "description": "Quando qualcuno apre un indirizzo che è stato spostato o non esiste più, mandalo nel posto giusto invece che in un vicolo cieco. Così i link dei motori di ricerca e degli altri siti continuano a funzionare.",
+    "actions": {
+      "add": "Aggiungi reindirizzamento",
+      "import": "Importa un elenco",
+      "test": "Verifica un indirizzo"
+    },
+    "tabs": {
+      "label": "Sezioni dei reindirizzamenti",
+      "rules": "Reindirizzamenti",
+      "missing": "Non trovati",
+      "missingCount": "Non trovati ({{count}})"
+    },
+    "search": {
+      "label": "Cerca nei reindirizzamenti",
+      "placeholder": "Cerca per indirizzo…"
+    },
+    "filter": {
+      "label": "Mostra",
+      "all": "Tutti i reindirizzamenti",
+      "needsTarget": "Senza destinazione",
+      "manual": "Aggiunti qui",
+      "list": "Importati da un elenco",
+      "wordpress": "Da WordPress"
+    },
+    "empty": {
+      "title": "Nessun reindirizzamento",
+      "body": "Aggiungine uno quando una pagina viene spostata o rimossa, così i vecchi link portano da qualche parte. Arrivi da un altro sito? Importa un elenco, oppure guarda «Non trovati» qualche giorno dopo il trasloco per vedere quali indirizzi i visitatori cercano ancora.",
+      "filtered": "Nessun reindirizzamento corrisponde alla ricerca.",
+      "showAll": "Mostra tutti"
+    },
+    "loadFailed": "Non è stato possibile caricare i reindirizzamenti.",
+    "row": {
+      "pattern": "Schema",
+      "gone": "Rimosso",
+      "needsTarget": "Serve una destinazione",
+      "notPublished": "Pagina non pubblicata",
+      "goesTo": "Porta a",
+      "removed": "Rimosso per sempre (410)",
+      "pageDeleted": "La pagina a cui portava è stata eliminata. Scegli dove deve portare ora.",
+      "pageDraft": "«{{title}}» non è ancora pubblicata in questa lingua, quindi i visitatori vedono «non trovato».",
+      "status": {
+        "permanent": "Permanente",
+        "temporary": "Temporaneo",
+        "gone": "Rimosso"
+      },
+      "visits_one": "{{count}} visita",
+      "visits_other": "{{count}} visite",
+      "noVisits": "Nessuna visita",
+      "lastVisit": "ultima {{date}}",
+      "origin": {
+        "list": "Importato",
+        "wordpress": "Da WordPress"
+      },
+      "edit": "Modifica",
+      "editLabel": "Modifica il reindirizzamento da {{from}}",
+      "select": "Seleziona il reindirizzamento da {{from}}"
+    },
+    "selection": {
+      "label": "Azioni sui reindirizzamenti selezionati",
+      "count_one": "{{count}} selezionato",
+      "count_other": "{{count}} selezionati",
+      "delete": "Elimina"
+    },
+    "delete": {
+      "title_one": "Eliminare questo reindirizzamento?",
+      "title_other": "Eliminare questi {{count}} reindirizzamenti?",
+      "description": "Chi apre {{names}} vedrà di nuovo «non trovato».",
+      "done_one": "Reindirizzamento eliminato",
+      "done_other": "{{count}} reindirizzamenti eliminati",
+      "failed": "Non è stato possibile eliminare i reindirizzamenti."
+    },
+    "dialog": {
+      "addTitle": "Aggiungi un reindirizzamento",
+      "editTitle": "Modifica reindirizzamento",
+      "from": {
+        "label": "Indirizzo vecchio",
+        "placeholder": "/2019/05/vecchio-articolo",
+        "hint": "Incolla il vecchio link o solo il suo percorso. Una parte che cambia si scrive :nome (come /blog/:slug) e un * alla fine vuol dire «tutto quello che c’è sotto».",
+        "exact": "Chi apre {{address}} viene mandato avanti.",
+        "pattern": "Uno schema: vale per ogni indirizzo di questa forma.",
+        "placeholders": "Parti che puoi riusare nella destinazione: {{names}}"
+      },
+      "to": {
+        "legend": "Manda i visitatori a",
+        "page": {
+          "label": "Una pagina di questo sito",
+          "description": "Segue la pagina se viene rinominata o spostata.",
+          "language": "Lingua",
+          "choose": "Scegli una pagina",
+          "change": "Cambia pagina",
+          "none": "Nessuna pagina scelta",
+          "missing": "Scegli la pagina a cui mandare i visitatori.",
+          "untitled": "Pagina senza titolo"
+        },
+        "url": {
+          "label": "Un altro indirizzo",
+          "description": "Un percorso di questo sito o un indirizzo completo su un altro sito.",
+          "descriptionDemo": "Un percorso di questo sito.",
+          "field": "Indirizzo",
+          "placeholder": "/it/blog/nuovo-articolo o https://nuovo-sito.it/pagina",
+          "hint": "In uno schema puoi usare le parti dell’indirizzo vecchio: /it/blog/:slug"
+        },
+        "gone": {
+          "label": "Da nessuna parte: è stato rimosso",
+          "description": "Dice ai visitatori e ai motori di ricerca che l’indirizzo non esiste più, così sparisce dai risultati."
+        }
+      },
+      "type": {
+        "label": "Tipo di reindirizzamento",
+        "permanent": "Permanente",
+        "temporary": "Temporaneo",
+        "permanentHint": "I motori di ricerca trasferiscono il posizionamento del vecchio indirizzo al nuovo. Usalo, a meno che lo spostamento non sia solo per un periodo.",
+        "temporaryHint": "I motori di ricerca tengono il vecchio indirizzo. Usalo mentre qualcosa è in rifacimento o in prova."
+      },
+      "check": {
+        "page": "A quell’indirizzo risponde una pagina.",
+        "moved": "Quella pagina è stata spostata in {{location}}: i visitatori vengono mandati lì.",
+        "redirect": "Quell’indirizzo è a sua volta reindirizzato, verso {{location}}.",
+        "gone": "Quell’indirizzo è segnato come rimosso.",
+        "broken": "Quell’indirizzo ha un reindirizzamento verso una pagina non pubblicata.",
+        "loop": "Quell’indirizzo fa parte di un giro di reindirizzamenti.",
+        "none": "A quell’indirizzo non risponde nessuna pagina, quindi i visitatori vedrebbero «non trovato». Controlla come è scritto, o crea prima la pagina.",
+        "other": "Un indirizzo di un altro sito: qui non viene controllato."
+      },
+      "add": "Aggiungi reindirizzamento",
+      "save": "Salva le modifiche",
+      "saving": "Salvataggio…",
+      "created": "Reindirizzamento aggiunto",
+      "saved": "Reindirizzamento salvato",
+      "failed": "Non è stato possibile salvare il reindirizzamento."
+    },
+    "test": {
+      "title": "Verifica un indirizzo",
+      "description": "Guarda cosa vede un visitatore che apre un indirizzo. È la stessa risposta che dà il sito.",
+      "label": "Indirizzo",
+      "placeholder": "/2019/05/vecchio-articolo o https://vecchio-sito.it/vecchio-articolo",
+      "run": "Verifica",
+      "checking": "Verifica in corso…",
+      "result": {
+        "page": "Lì risponde una pagina: {{path}}. Una pagina ha sempre la precedenza su un reindirizzamento.",
+        "moved": "Lì c’era una pagina, che è stata spostata. I visitatori vengono mandati a {{location}}.",
+        "redirect301": "I visitatori vengono mandati a {{location}} con un reindirizzamento permanente.",
+        "redirect302": "I visitatori vengono mandati a {{location}} con un reindirizzamento temporaneo.",
+        "gone": "L’indirizzo è segnato come rimosso: i visitatori ricevono la risposta «410 Gone».",
+        "broken": "Un reindirizzamento corrisponde, ma la pagina a cui porta non è pubblicata: i visitatori vedono «non trovato».",
+        "loop": "I reindirizzamenti mandano i visitatori in tondo. Modificane uno.",
+        "none": "Lì non risponde nulla: i visitatori vedono «non trovato»."
+      },
+      "addFor": "Aggiungi un reindirizzamento",
+      "failed": "Non è stato possibile verificare l’indirizzo.",
+      "done": "Fatto"
+    },
+    "import": {
+      "title": "Importa un elenco di reindirizzamenti",
+      "description": "Un foglio di calcolo o l’esportazione di uno strumento SEO: un indirizzo vecchio e uno nuovo per riga, in un file CSV.",
+      "format": "Colonne: indirizzo vecchio, indirizzo nuovo e, se vuoi, il tipo (301, 302 o 410). La prima riga può essere l’intestazione. Una riga il cui indirizzo ha già un reindirizzamento lo aggiorna, quindi importare due volte lo stesso elenco non fa danni.",
+      "chooseFile": "Scegli un file CSV",
+      "pasteLabel": "Oppure incolla qui l’elenco",
+      "pastePlaceholder": "/vecchia-pagina,/it/nuova-pagina",
+      "tooBig": "Il file supera i 2 MB. Dividilo in più parti.",
+      "readFailed": "Non è stato possibile leggere il file.",
+      "check": "Controlla l’elenco",
+      "checking": "Controllo in corso…",
+      "back": "Indietro",
+      "apply_one": "Importa {{count}} reindirizzamento",
+      "apply_other": "Importa {{count}} reindirizzamenti",
+      "nothingToImport": "Niente da importare",
+      "summary": {
+        "created_one": "{{count}} nuovo",
+        "created_other": "{{count}} nuovi",
+        "updated_one": "{{count}} modificato",
+        "updated_other": "{{count}} modificati",
+        "unchanged_one": "{{count}} già a posto",
+        "unchanged_other": "{{count}} già a posto",
+        "failed_one": "{{count}} con un problema",
+        "failed_other": "{{count}} con un problema"
+      },
+      "problemsTitle": "Righe che non si possono importare",
+      "problemsHint": "Vengono lasciate fuori; il resto viene importato.",
+      "line": "Riga {{line}}",
+      "truncated": "Sono state lette solo le prime {{max}} righe.",
+      "done": "Importazione completata. Nuovi: {{created}}, modificati: {{updated}}.",
+      "failed": "Non è stato possibile importare l’elenco."
+    },
+    "missing": {
+      "description": "Indirizzi che i visitatori hanno cercato e che il sito non ha, dal più cercato. Trasforma in reindirizzamenti quelli che contano.",
+      "privacy": "Si conserva solo l’indirizzo, mai chi l’ha chiesto né il resto del link.",
+      "empty": "Qui non c’è nulla. Quando un visitatore apre un indirizzo che il sito non ha, comparirà qui.",
+      "visits_one": "{{count}} visita",
+      "visits_other": "{{count}} visite",
+      "lastSeen": "ultima {{date}}",
+      "redirect": "Reindirizza…",
+      "redirectLabel": "Aggiungi un reindirizzamento per {{path}}",
+      "ignore": "Ignora",
+      "ignoreLabel": "Ignora {{path}}",
+      "ignored": "{{path}} tolto dall’elenco",
+      "failed": "Non è stato possibile completare l’azione."
+    },
+    "problems": {
+      "unknown": "Questo reindirizzamento non si può usare.",
+      "source": {
+        "empty": "Scrivi l’indirizzo vecchio.",
+        "too-long": "L’indirizzo è troppo lungo.",
+        "too-deep": "L’indirizzo ha troppe parti (al massimo {{max}}).",
+        "invalid": "Questo non è un indirizzo che il sito possa ricevere.",
+        "reserved": "«/{{detail}}» è un indirizzo che il sito gestisce da sé: un reindirizzamento lì non verrebbe mai usato.",
+        "root-without-query": "La home del sito non si può reindirizzare. Per un vecchio link alla home aggiungi la sua query, come /?p=123.",
+        "bad-pattern": "«{{detail}}» non si può usare in uno schema. Una parte che cambia si scrive :nome e * è ammesso solo alla fine.",
+        "bad-pattern-splat": "Un * è ammesso solo come ultima parte dell’indirizzo.",
+        "bad-pattern-twice": "{{detail}} è usato due volte: ogni parte che cambia ha bisogno di un nome suo.",
+        "pattern-with-query": "Uno schema non può cercare anche una query (?…). Scegline una delle due.",
+        "too-many-query-pairs": "Si possono cercare al massimo {{pairs}} parametri.",
+        "taken": "C’è già un reindirizzamento per questo indirizzo."
+      },
+      "target": {
+        "empty": "Dì dove mandare i visitatori.",
+        "too-long": "La destinazione è troppo lunga.",
+        "invalid": "Non è un indirizzo a cui si possano mandare i visitatori.",
+        "invalid-start": "Inizia con / per una pagina di questo sito, o con https:// per un altro sito.",
+        "unsafe": "Questo indirizzo non si può usare.",
+        "unsafe-scheme": "Sono ammessi solo indirizzi http e https.",
+        "unsafe-credentials": "Un indirizzo con nome utente o password non si può usare.",
+        "unknown-placeholder": "«{{detail}}» non c’è nell’indirizzo vecchio, quindi non c’è nulla con cui riempirlo.",
+        "same-as-source": "Un indirizzo non può essere mandato a sé stesso.",
+        "loop": "Questa destinazione rimanda qui: i visitatori girerebbero in tondo.",
+        "external": "In questa demo un reindirizzamento può andare solo a una pagina o a un percorso del sito."
+      },
+      "file": {
+        "missing-from": "Manca l’indirizzo vecchio.",
+        "missing-to": "Manca l’indirizzo nuovo.",
+        "bad-status": "«{{detail}}» non è un tipo di reindirizzamento: usa 301, 302 o 410."
+      },
+      "site": {
+        "limit": "Un sito può avere al massimo {{limit}} reindirizzamenti."
+      }
+    }
+  },
   "pageTemplates": {
     "blank": "Pagina vuota"
   },
@@ -3570,6 +3809,7 @@
         "seo": "SEO",
         "business": "Dati attività",
         "collections": "Collezioni",
+        "redirects": "Reindirizzamenti",
         "integrations": "Integrazioni",
         "ai": "Generazione AI",
         "cookies": "Cookie e privacy",
