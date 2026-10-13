@@ -124,7 +124,7 @@ let backups;
 try {
   backups = backupSettings(env);
 } catch (error) {
-  printLine('kometio', error.message, 'stderr');
+  printLine('kometio', messageOf(error), 'stderr');
   process.exit(1);
 }
 
