@@ -84,6 +84,10 @@ UPGRADE_VOLUME=kometio-check-upgrade-data
 UPGRADE_EDITOR_PORT=21200
 UPGRADE_API_PORT=21000
 UPGRADE_SITE_PORT=21322
+# The eighth, a volume that a newer version has migrated, started by this image
+# (docs/adr/0119's README, "Update to a newer version"): it has to refuse.
+DOWNGRADE=kometio-check-downgrade
+DOWNGRADE_VOLUME=kometio-check-downgrade-data
 # The seventh, only to read its log: started with JSON logs and an access log
 # (docs/adr/0122), and asked one request.
 LOGJSON=kometio-check-logjson
@@ -128,16 +132,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON"; do
+    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE"; do
       if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
         printf '\n== the last lines of the log of %s\n' "$other"
         docker logs --tail 40 "$other" 2>&1 || true
       fi
     done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -146,13 +150,13 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$DOWNGRADE"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -424,6 +428,44 @@ tokens_after="$(docker logs "$NAME" 2>&1 | grep -c 'enter this setup token' || t
 check "no new setup token is asked for" test "$tokens_after" = "$tokens_before"
 check "the same session is still valid" test "$(status_code -b "$COOKIES" "${API_URL}/auth/session")" = 200
 check "the site is still served" sh -c "curl -sL '${SITE_URL}/' | grep -q '<title>Check Site'"
+
+# --- an older image on a newer volume ---------------------------------------------
+#
+# Migrations only go forward, so an image that does not know a migration the
+# volume has must not start on it: it would run a schema it was not written for,
+# and the way back is a restore. The newer version is made here by a row in the
+# journal that no migration of this image has, which is what one that the image
+# does not know looks like to it. It has to stop, say so, and leave the database
+# alone (no migration run, no part started).
+step "a volume that a newer version has migrated is not started by this image"
+docker run -d --name "$DOWNGRADE" --stop-timeout 30 -v "${DOWNGRADE_VOLUME}:/data" "$IMAGE" >/dev/null
+wait_for_banners 1 "$DOWNGRADE" >/dev/null
+check "a volume the image made is opened by it" \
+  docker exec "$DOWNGRADE" psql -h /run/postgresql -U kometio -d kometio -Atc 'select 1 from drizzle.__drizzle_migrations limit 1'
+docker exec "$DOWNGRADE" psql -h /run/postgresql -U kometio -d kometio -Atc \
+  "insert into drizzle.__drizzle_migrations (hash, created_at) values ('made-by-a-newer-version', 4102444800000)" >/dev/null
+docker stop -t 30 "$DOWNGRADE" >/dev/null
+READY_BEFORE="$(banners "$DOWNGRADE")"
+UP_TO_DATE_BEFORE="$(docker logs "$DOWNGRADE" 2>&1 | grep -c 'migrations are up to date' || true)"
+docker start "$DOWNGRADE" >/dev/null
+# It stops by itself, which is a refusal and not a part that died: a container
+# that is still running after this long is the check failing.
+downgrade_waited=0
+until [ "$(docker inspect -f '{{.State.Status}}' "$DOWNGRADE")" != "running" ] || [ "$downgrade_waited" -ge 90 ]; do
+  sleep 1
+  downgrade_waited=$((downgrade_waited + 1))
+done
+check "an image that does not know a migration of the volume stops, with an error" \
+  test "$(docker inspect -f '{{.State.Status}} {{.State.ExitCode}}' "$DOWNGRADE")" = "exited 1"
+check "and says that the volume was made by a newer Kometio" \
+  sh -c "docker logs '$DOWNGRADE' 2>&1 | grep -q 'this volume was made by a newer Kometio than this image'"
+check "and tells what to do instead: start the version that made it, or open the export" \
+  sh -c "docker logs '$DOWNGRADE' 2>&1 | grep -q 'Start the version that made it'"
+check "it ran no migration" \
+  test "$(docker logs "$DOWNGRADE" 2>&1 | grep -c 'migrations are up to date' || true)" = "$UP_TO_DATE_BEFORE"
+check "and started nothing: no new banner" \
+  test "$(banners "$DOWNGRADE")" = "$READY_BEFORE"
+docker rm -fv "$DOWNGRADE" >/dev/null
 
 # --- a site made by the previous release ----------------------------------------
 #
