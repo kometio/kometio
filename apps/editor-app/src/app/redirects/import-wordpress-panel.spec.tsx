@@ -243,6 +243,36 @@ describe('the WordPress source of the import', () => {
   });
 });
 
+describe('leftOutAsCsv, of a file somebody else made', () => {
+  const labels = { type: 'T', title: 'Ti', address: 'A', note: 'N' };
+  const notes = { unmatched: 'u', ambiguous: 'a' };
+
+  // A title is the export's, and a spreadsheet runs what starts like a
+  // formula: `=HYPERLINK(...)` in a cell is a link somebody else chose.
+  it.each(['=1+1', '+1', '-1', '@SUM(A1)', '\tTab', '\rReturn'])(
+    'does not leave %j for a spreadsheet to read as a formula',
+    (title) => {
+      const csv = leftOutAsCsv(
+        [
+          {
+            id: 1,
+            type: 'post',
+            slug: 'a',
+            title,
+            link: 'https://old.example/a/',
+            parentId: null,
+          },
+        ],
+        [],
+        labels,
+        notes,
+      );
+
+      expect(csv.split('\n')[1]?.startsWith(`"post","'${title}"`)).toBe(true);
+    },
+  );
+});
+
 describe('leftOutAsCsv', () => {
   const labels = {
     type: 'Type',

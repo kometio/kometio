@@ -88,7 +88,9 @@ once had. Nothing could say what an address from before Kometio is.
   pass it keeps, for each _published_ page and post, its number, slug, title,
   parent and the address it answered at (`import_jobs.permalinks`, its own
   column and never in a listing: it is as long as the site, where a report is
-  a few hundred numbers; 20,000 at most). From that and the pages the site has
+  a few hundred numbers; each part of an entry and the whole are bounded, at
+  20,000 entries and eight million characters, because the file is somebody
+  else's). From that and the pages the site has
   now, each item becomes up to two rules: its address, and its number
   (`/?p=123`, `/?page_id=45`), both to the page that took its place. The page
   is found by its slug — the one thing an import keeps — narrowed by who it sat

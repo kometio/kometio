@@ -26,8 +26,17 @@ export interface ImportWordPressPanelProps {
 
 const CSV_FILE_NAME = 'wordpress-pages-without-a-page.csv';
 
-/** A spreadsheet's cell: quoted, with its quotes doubled, so that a title with a comma is one cell. */
-const cell = (value: string): string => `"${value.replace(/"/g, '""')}"`;
+/** What a spreadsheet reads as a formula when it opens a cell that starts with it. */
+const FORMULA_START = /^[=+\-@\t\r]/;
+
+/**
+ * A spreadsheet's cell: quoted, with its quotes doubled, so that a title with
+ * a comma is one cell — and never a formula. The titles are the export's,
+ * which is somebody else's file, and a cell that starts with `=` is run by the
+ * program that opens it; a leading apostrophe makes it text.
+ */
+const cell = (value: string): string =>
+  `"${(FORMULA_START.test(value) ? `'${value}` : value).replace(/"/g, '""')}"`;
 
 /** What has no page here, as a file to work from: the type, the title, and where it used to be. */
 export function leftOutAsCsv(

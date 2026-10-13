@@ -6,7 +6,7 @@ import type {
   WordPressExportReaderPort,
 } from '@kometio/ports';
 import {
-  MAX_WORDPRESS_PERMALINKS,
+  WORDPRESS_PERMALINK_LIMITS,
   type WordPressPermalink,
 } from '@kometio/shared-types';
 import { permalinkOf } from '../wordpress-import/permalink-of';
@@ -58,10 +58,11 @@ export async function startWordPressAnalysis(
 /**
  * Does the reading, and writes down how it went either way.
  *
- * Never throws: it runs detached from the request that started it, so a
- * rejection here has nowhere to go but an unhandled promise. The failure
- * belongs on the job, where the person who uploaded the file will look
- * for it.
+ * A file that cannot be read does not throw: it runs detached from the
+ * request that started it, so a rejection here has nowhere to go but an
+ * unhandled promise. The failure belongs on the job, where the person who
+ * uploaded the file will look for it. What can still reject is the database
+ * not answering, and the caller that detaches it says so in the log.
  */
 export async function runWordPressAnalysis(
   deps: ImportJobDeps,
@@ -78,15 +79,26 @@ export async function runWordPressAnalysis(
     // job says it is read: whoever sees "analysed" may ask for the redirects
     // at once.
     const permalinks: WordPressPermalink[] = [];
+    let characters = 0;
     const report = await analyzeWordPressExport(
       { exportReader: deps.exportReader },
       {
         filePath: input.filePath,
         onItem: (item) => {
           const found = permalinkOf(item);
-          if (found && permalinks.length < MAX_WORDPRESS_PERMALINKS) {
-            permalinks.push(found);
+          if (!found) return;
+          // Bounded by how many and by how much: each part of an entry is
+          // bounded already, and the file is somebody else's.
+          const size =
+            found.link.length + found.slug.length + found.title.length;
+          if (
+            permalinks.length >= WORDPRESS_PERMALINK_LIMITS.entries ||
+            characters + size > WORDPRESS_PERMALINK_LIMITS.characters
+          ) {
+            return;
           }
+          characters += size;
+          permalinks.push(found);
         },
       },
     );
@@ -105,7 +117,14 @@ export async function runWordPressAnalysis(
         : 'This file could not be read as a WordPress export.',
     );
   }
-  await deps.importJobRepository.save(job);
+  try {
+    await deps.importJobRepository.save(job);
+  } catch (error) {
+    // The attempt was forgotten while its file was being read
+    // (`deleteImportJob`): there is nobody left to tell. Anything else is a
+    // database that is not there, which the caller logs.
+    if (!(error instanceof ImportJobNotFoundError)) throw error;
+  }
 }
 
 export async function getImportJob(

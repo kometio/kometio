@@ -300,6 +300,103 @@ describe('redirectsFromWordPress', () => {
   });
 });
 
+describe('runWordPressAnalysis, when the attempt is not the same by the time it ends', () => {
+  const entry = (id: number, link = `https://old.example/${id}/`) => ({
+    postId: id,
+    postType: 'post',
+    status: 'publish',
+    title: `Post ${id}`,
+    slug: `post-${id}`,
+    parentId: 0,
+    menuOrder: 0,
+    link,
+    content: '<p>x</p>',
+    excerpt: '',
+    metaKeys: [],
+    metaValues: {},
+    terms: [],
+    attachmentUrl: '',
+  });
+
+  const channel = {
+    title: 'Old',
+    baseSiteUrl: 'https://old.example',
+    baseBlogUrl: 'https://old.example',
+    terms: [],
+    acfSchema: { groups: [], forBlock: () => [], forPostType: () => [] },
+  };
+
+  const newJob = async (deps: Deps) => {
+    const job = ImportJob.create({
+      id: 'job-1',
+      tenantId,
+      siteId,
+      source: 'wordpress',
+      fileName: 'export.xml',
+      fileBytes: 10,
+      createdBy: null,
+    });
+    await deps.importJobRepository.add(job);
+    return job;
+  };
+
+  // The attempt can be forgotten while it is being read (DELETE /imports/:id),
+  // and the reading runs detached from any request: a rejection here has
+  // nowhere to go but an unhandled promise, which ends the process.
+  it('does not throw when the job was forgotten while its file was being read', async () => {
+    const deps = setup();
+    await newJob(deps);
+    const forgetting: WordPressExportReaderPort = {
+      async read(_file, onItem) {
+        onItem(entry(1));
+        await deps.importJobRepository.delete(tenantId, 'job-1');
+        return channel;
+      },
+    };
+
+    await expect(
+      runWordPressAnalysis(
+        {
+          importJobRepository: deps.importJobRepository,
+          siteRepository: deps.siteRepository,
+          exportReader: forgetting,
+        },
+        { tenantId, jobId: 'job-1', filePath: 'export.xml' },
+      ),
+    ).resolves.toBeUndefined();
+  });
+
+  it('keeps no more of a file than a list of addresses is for, and still says it was read', async () => {
+    const deps = setup();
+    await newJob(deps);
+    // Each address at the longest one is kept: more of them than the budget
+    // for what is kept, whatever their number.
+    const longest = `https://old.example/${'a'.repeat(2000)}`;
+    const big: WordPressExportReaderPort = {
+      async read(_file, onItem) {
+        for (let id = 1; id <= 4500; id += 1) onItem(entry(id, longest));
+        return channel;
+      },
+    };
+
+    await runWordPressAnalysis(
+      {
+        importJobRepository: deps.importJobRepository,
+        siteRepository: deps.siteRepository,
+        exportReader: big,
+      },
+      { tenantId, jobId: 'job-1', filePath: 'export.xml' },
+    );
+
+    expect(
+      (await deps.importJobRepository.findById(tenantId, 'job-1'))?.status,
+    ).toBe('analyzed');
+    const kept = await deps.importJobRepository.permalinksOf(tenantId, 'job-1');
+    expect(kept?.length).toBeGreaterThan(1000);
+    expect(kept?.length).toBeLessThan(4500);
+  });
+});
+
 describe('runWordPressAnalysis keeps where the pages lived', () => {
   const item = (
     overrides: Partial<WordPressExportItem> = {},

@@ -62,6 +62,19 @@ describe('permalinkOf', () => {
     },
   );
 
+  // The file is somebody else's: what is kept of each entry has a size, so
+  // that the size of what is kept is a product of two bounds and not of a
+  // file's content.
+  it.each([
+    [
+      'an address no browser would send',
+      { link: `https://old.example/${'a'.repeat(3000)}` },
+    ],
+    ['a slug WordPress itself would not make', { slug: 'a'.repeat(300) }],
+  ] as const)('keeps nothing of %s', (_label, override) => {
+    expect(permalinkOf(item(override))).toBeNull();
+  });
+
   it('keeps a title to a length a list can show', () => {
     const long = 'x'.repeat(500);
 

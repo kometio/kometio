@@ -9,6 +9,7 @@ import {
   Get,
   HttpCode,
   Inject,
+  Logger,
   Post,
   Query,
   UploadedFile,
@@ -80,6 +81,8 @@ function toDto(job: ImportJob): ImportJobRecord {
 @Controller('imports')
 @UseGuards(SessionAuthGuard)
 export class ImportsController {
+  private readonly logger = new Logger(ImportsController.name);
+
   constructor(@Inject(IMPORTS_DEPS) private readonly deps: ImportsDeps) {}
 
   /**
@@ -161,7 +164,15 @@ export class ImportsController {
       tenantId,
       jobId: job.id,
       filePath,
-    }).finally(() => unlink(filePath).catch(() => undefined));
+    })
+      // A promise nobody awaits that rejects ends the process: what is left
+      // to fail here is the database not answering, and it is said in the log.
+      .catch((error: unknown) =>
+        this.logger.error(
+          `Reading import ${job.id} failed: ${error instanceof Error ? error.message : String(error)}`,
+        ),
+      )
+      .finally(() => unlink(filePath).catch(() => undefined));
 
     return toDto(job);
   }
