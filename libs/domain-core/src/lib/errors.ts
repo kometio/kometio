@@ -452,6 +452,22 @@ export class UnsupportedMediaTypeError extends Error {
 }
 
 /**
+ * The disk the files are kept on has too little room left for this one
+ * (docs/adr/0120). A single-image installation keeps its uploads on the
+ * volume that holds its database, so a library that fills the disk is a
+ * database that cannot write: the upload is refused while there is still
+ * room to answer it.
+ */
+export class StorageFullError extends Error {
+  constructor() {
+    super(
+      'There is not enough room left on this server to store the file; free some space, or ask whoever runs the server',
+    );
+    this.name = 'StorageFullError';
+  }
+}
+
+/**
  * Raised by uploadMedia when a file is larger than its kind allows
  * (ADR-0054) — the limits differ because one number cannot serve both a
  * photo and a video.

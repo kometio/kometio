@@ -1,0 +1,103 @@
+name: Image scan
+
+# docs/adr/0121. The image people run is Alpine, Node, Postgres, Caddy and
+# nginx around Kometio's own code. The audit (audit-all.yml) reads the
+# repository's dependencies and CodeQL its code; nothing else reads the
+# packages that are in the image. An advisory is published on any day, with
+# nothing changed on our side, so the published image is read every day and
+# not only when a build makes one.
+#
+# It reports and does not fail: what it finds is listed in the run's summary
+# and as code-scanning alerts. docs/adr/0121 says when that changes.
+on:
+  schedule:
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag of ghcr.io/kometio/kometio to read'
+        default: main
+        required: true
+  # This file is the only thing that makes the pull request run: it is the
+  # way a change to the scan is seen to work before it is on main.
+  pull_request:
+    paths:
+      - '.github/workflows/image-scan.yml'
+
+permissions:
+  contents: read
+  packages: read
+  # The alerts. A pull request from a fork is given a read-only token, so the
+  # job does not run for one.
+  security-events: write
+
+concurrency:
+  group: image-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Trivy 0.74.0, by digest: a scanner is run on every image and is not to be
+  # whatever a tag points at on the day.
+  TRIVY: ghcr.io/aquasecurity/trivy@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969
+
+jobs:
+  scan:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Image name
+        run: echo "IMAGE=ghcr.io/${OWNER,,}/kometio:${TAG}" >> "$GITHUB_ENV"
+        env:
+          OWNER: ${{ github.repository_owner }}
+          TAG: ${{ inputs.tag || 'main' }}
+
+      # Only what has a fix: a finding with nothing to update to is not
+      # something this report can ask anyone to do. High and critical only.
+      - name: Scan the image
+        run: |
+          mkdir -p "$RUNNER_TEMP/trivy"
+          docker run --rm -v "$RUNNER_TEMP/trivy:/out" "$TRIVY" image \
+            --quiet --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed \
+            --format json --output /out/report.json "$IMAGE"
+          docker run --rm -v "$RUNNER_TEMP/trivy:/out" "$TRIVY" convert \
+            --format sarif --output /out/trivy.sarif /out/report.json
+
+      # One row per package, not per advisory: a package with nine advisories
+      # is one update to make, and a table of every one overruns the summary.
+      - name: Summarize
+        run: |
+          {
+            echo "### $IMAGE"
+            echo
+            findings=$(jq '[.Results[]? | .Vulnerabilities[]?] | length' "$RUNNER_TEMP/trivy/report.json")
+            if [ "$findings" -eq 0 ]; then
+              echo "No high or critical advisory with a fix."
+            else
+              echo "$findings advisories with a fix, high or critical:"
+              echo
+              echo "| Package | Installed | Advisories | Worst | Where |"
+              echo "| --- | --- | ---: | --- | --- |"
+              jq -r '
+                [.Results[]? | .Target as $target | .Vulnerabilities[]? | . + {target: $target}]
+                | group_by(.PkgName + "@" + .InstalledVersion + "@" + .target)
+                | map({
+                    pkg: .[0].PkgName,
+                    version: .[0].InstalledVersion,
+                    count: length,
+                    worst: (if any(.[]; .Severity == "CRITICAL") then "CRITICAL" else "HIGH" end),
+                    where: (.[0].PkgPath // .[0].target)
+                  })
+                | sort_by(.worst, .pkg)
+                | .[]
+                | "| \(.pkg) | \(.version) | \(.count) | \(.worst) | `\(.where)` |"
+              ' "$RUNNER_TEMP/trivy/report.json"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
+        with:
+          sarif_file: ${{ runner.temp }}/trivy/trivy.sarif
+          category: trivy-image

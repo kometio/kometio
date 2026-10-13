@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 import {
   PageGenerationDisabledError,
   PageGenerationFailedError,
@@ -11,6 +12,7 @@ import {
   InMemorySiteAiSettingsRepository,
   InMemorySiteRepository,
 } from '@kometio/testing';
+import { GenerationsPerDay } from '../auth/per-user-limit.guard';
 import { GenerationSlots } from './generation-slots';
 import { GeneratePageController } from './generate-page.controller';
 import { PageGenerationDeps } from './page-generation.deps';
@@ -267,5 +269,14 @@ describe('GeneratePageController', () => {
       controller.generate('tenant-1', 'site-2', body, stream),
     ).rejects.toBeInstanceOf(SiteNotFoundError);
     expect(stream.statusCode).toBe(0);
+  });
+
+  it("is held to the person's daily limit as well as the address's: a provider bills for each page (docs/adr/0120)", () => {
+    const guards: unknown[] = Reflect.getMetadata(
+      GUARDS_METADATA,
+      GeneratePageController.prototype.generate,
+    );
+
+    expect(guards).toContain(GenerationsPerDay);
   });
 });

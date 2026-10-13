@@ -9,9 +9,10 @@
 // Reads the connection from POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER,
 // POSTGRES_PASSWORD (optional: the embedded database trusts its own socket)
 // and POSTGRES_DB, as the compose stack's `migrate` service does.
-import { readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import { Refusal, assertDatabaseIsNotNewer } from './archive.mjs';
 
 const API = '/opt/api';
 const store = join(API, 'node_modules/.pnpm');
@@ -46,6 +47,24 @@ const sql = postgres({
 });
 
 try {
+  // Before anything is changed: a volume that a newer version has migrated is
+  // not started by an older image (docs/adr/0119's README, "Update").
+  const journal = JSON.parse(
+    readFileSync(
+      join(
+        API,
+        'workspace_modules/@kometio/postgres-db/drizzle/meta/_journal.json',
+      ),
+      'utf8',
+    ),
+  );
+  const applied = await sql`select created_at from drizzle.__drizzle_migrations`
+    // A database that is new has no such table yet: nothing is newer.
+    .catch((error) => (error.code === '42P01' ? [] : Promise.reject(error)));
+  assertDatabaseIsNotNewer(
+    journal,
+    applied.map((row) => row.created_at),
+  );
   await migrate(drizzle(sql), {
     migrationsFolder: join(
       API,
@@ -53,6 +72,10 @@ try {
     ),
   });
   console.log('migrations are up to date');
+} catch (error) {
+  if (!(error instanceof Refusal)) throw error;
+  console.error(`[kometio] ${error.message}`);
+  process.exitCode = 1;
 } finally {
   await sql.end();
 }
