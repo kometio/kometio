@@ -19,6 +19,10 @@
  * are counted by type and not judged: their schemas live in the theme.
  */
 import { auditBlockProps } from '@kometio/shared-types';
+import {
+  describeInvalidBlock,
+  describeUnchecked,
+} from '../src/lib/block-props-audit-report';
 import { createAppDb, withTenant, type KometioDb } from '../src/lib/client';
 import { tenants } from '../src/lib/schema';
 import { visitStoredContent } from '../src/lib/visit-stored-content';
@@ -55,9 +59,7 @@ async function main(): Promise<void> {
         report.invalidCount += audit.invalid.length;
         for (const problem of audit.invalid) {
           if (report.invalid.length >= NAMED_PER_COLUMN) break;
-          report.invalid.push(
-            `  row ${where.id}, block ${problem.position} (${problem.type}${problem.id ? ` ${problem.id}` : ''}): ${problem.issues.join('; ')}`,
-          );
+          report.invalid.push(describeInvalidBlock(where, problem));
         }
         for (const [type, count] of audit.unchecked) {
           unchecked.set(type, (unchecked.get(type) ?? 0) + count);
@@ -84,12 +86,8 @@ async function main(): Promise<void> {
     }
   }
   if (unchecked.size > 0) {
-    const named = [...unchecked]
-      .sort(([, a], [, b]) => b - a)
-      .map(([type, count]) => `${type} ×${count}`)
-      .join(', ');
     console.log(
-      `Not checked, no schema here (a theme's own blocks are expected): ${named}`,
+      `Not checked, no schema here (a theme's own blocks are expected): ${describeUnchecked(unchecked)}`,
     );
   }
   console.log(

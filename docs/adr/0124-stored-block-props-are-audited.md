@@ -30,6 +30,9 @@ without being broken: it is served, and a block is not on it.
   content with the visitor the migrations use and prints, by table and column,
   how many blocks were checked and which were refused, with the row and the
   block's place. It rewrites nothing, and exits 1 when a block does not pass.
+  What it prints of stored text (a block's type, id and the keys in an issue) is
+  escaped when it holds a control character and cut at a length: a newline in a
+  type must not be able to start a line of the report.
 - **It is by column** because history is not the site: the versions of a page
   hold blocks as the schemas were when they were written, and a refused block in
   `page_group_versions` is an old version being old, where one in
