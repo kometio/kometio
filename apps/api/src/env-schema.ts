@@ -67,6 +67,11 @@ const apiEnvBaseSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   MEDIA_UPLOAD_DIR: z.string().min(1),
+  // How much room a local disk has to keep for the rest of the server, in MB:
+  // an upload that would leave less is refused (docs/adr/0120). The single
+  // image keeps its files on the volume its database writes to. 0 turns
+  // the check off.
+  MEDIA_MIN_FREE_MB: emptyIsUnset(z.coerce.number().int().min(0).optional()),
   API_PUBLIC_URL: z.string().url(),
   // docs/adr/0042 — where FilesystemThemeCatalogAdapter scans for bundled
   // themes; see libs/adapters/filesystem-theme-catalog's own README for why
@@ -99,6 +104,11 @@ const apiEnvBaseSchema = z.object({
   // signs in with cannot configure the site, upload, or be taken over. Off
   // unless it says `true`.
   KOMETIO_DEMO: emptyIsUnset(z.enum(['true', 'false']).optional()),
+  // How the log is written (docs/adr/0122): `text`, what a person reads, or
+  // `json`, one object a line for a log collector. And whether each request is
+  // a line of it. Unset: text, and only the requests that failed.
+  KOMETIO_LOG_FORMAT: emptyIsUnset(z.enum(['text', 'json']).optional()),
+  KOMETIO_ACCESS_LOG: emptyIsUnset(z.enum(['true', 'false']).optional()),
   // Both or neither (docs/adr/0103): a site's own Cloudflare Turnstile keys, or
   // none, and then the captcha is the one built into Kometio. The site key is
   // read by the editor and the public site, which draw the widget; the API

@@ -2,16 +2,22 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   ARCHIVE_FORMAT,
+  Refusal,
   ARCHIVE_FORMAT_VERSION,
+  ARCHIVE_LIMITS,
+  RESERVED_BYTES,
   TRANSIENT_TABLES,
   appliedMigrationTags,
   archiveFileName,
+  assertDatabaseIsNotNewer,
   buildManifest,
   checkCompatible,
   checkEntries,
   checkExtractedTree,
   domainOfAddress,
   parseManifest,
+  roomForArchive,
+  roomForUnpacked,
 } from './archive.mjs';
 
 const journal = {
@@ -100,6 +106,42 @@ describe('the migrations of a database, by name', () => {
     assert.throws(
       () => appliedMigrationTags(journal, [1000, 9999]),
       /newer one/,
+    );
+  });
+});
+
+describe('whether this image starts on a database', () => {
+  it('starts on one with exactly its migrations, an older one, and a new one with none', () => {
+    assert.doesNotThrow(() =>
+      assertDatabaseIsNotNewer(journal, [1000, 2000, 3000]),
+    );
+    assert.doesNotThrow(() => assertDatabaseIsNotNewer(journal, [1000]));
+    assert.doesNotThrow(() => assertDatabaseIsNotNewer(journal, []));
+  });
+
+  it('reads the times the database keeps as strings, as the driver gives them', () => {
+    assert.doesNotThrow(() =>
+      assertDatabaseIsNotNewer(journal, ['1000', '2000']),
+    );
+  });
+
+  it('refuses one a newer version has migrated, and says what to do instead', () => {
+    assert.throws(
+      () => assertDatabaseIsNotNewer(journal, [1000, 2000, 9999]),
+      (error) =>
+        error instanceof Refusal &&
+        /made by a newer Kometio than this image/.test(error.message) &&
+        /1 migration that this version does not know/.test(error.message) &&
+        /open the export \(or the backup\) made before the update into a new volume/.test(
+          error.message,
+        ),
+    );
+  });
+
+  it('counts them', () => {
+    assert.throws(
+      () => assertDatabaseIsNotNewer(journal, [8888, 9999]),
+      /2 migrations that this version does not know/,
     );
   });
 });
@@ -239,5 +281,82 @@ describe('the domain of an address', () => {
 
   it('is nothing for an address that is an IPv6 number', () => {
     assert.equal(domainOfAddress('http://[::1]:4322'), null);
+  });
+});
+
+describe('how big an archive may be (the sizes are declared in its listing)', () => {
+  const line = (size, name) =>
+    `-rw-r--r-- 0/0 ${size} 2026-10-12 10:00 ${name}`;
+  const small = [
+    line(1200, 'manifest.json'),
+    line(5000, 'database.sql.gz'),
+    line(70, 'uploads/a.webp'),
+  ].join('\n');
+
+  it('accepts what a site is, with the limits it has by default', () => {
+    assert.doesNotThrow(() => checkEntries(small));
+  });
+
+  it('refuses more entries than the limit, before it looks at one', () => {
+    const many = Array.from({ length: 6 }, (_, i) =>
+      line(1, `uploads/${i}`),
+    ).join('\n');
+
+    assert.throws(
+      () => checkEntries(many, { entries: 5, bytes: ARCHIVE_LIMITS.bytes }),
+      /holds 6 entries, more than a site archive does/,
+    );
+  });
+
+  it('refuses what declares more bytes than the volume has room for, and says so before any is unpacked', () => {
+    const big = [
+      line(1200, 'manifest.json'),
+      line(5000, 'database.sql.gz'),
+      line(3 * 1024 ** 3, 'uploads/video.mp4'),
+    ].join('\n');
+
+    assert.throws(
+      () => checkEntries(big, { entries: 100, bytes: 2 * 1024 ** 3 }),
+      /holds more than 2.0 GiB once unpacked/,
+    );
+    assert.doesNotThrow(() =>
+      checkEntries(big, { entries: 100, bytes: 4 * 1024 ** 3 }),
+    );
+  });
+
+  it('counts the sizes of the lines, and not a number that is in a name', () => {
+    const named = [
+      line(10, 'manifest.json'),
+      line(10, 'database.sql.gz'),
+      line(10, 'uploads/999999999999 final.pdf'),
+    ].join('\n');
+
+    assert.doesNotThrow(() =>
+      checkEntries(named, { entries: 10, bytes: 1000 }),
+    );
+  });
+});
+
+describe('what an archive may take of a volume', () => {
+  it('is half of what is free above the reserve, because it is kept twice, and never more than an archive may be', () => {
+    assert.equal(
+      roomForArchive(RESERVED_BYTES + 10 * 1024 ** 3),
+      5 * 1024 ** 3,
+    );
+    assert.equal(roomForArchive(10 * 1024 ** 5), ARCHIVE_LIMITS.bytes);
+  });
+
+  it('is nothing when the volume is nearly full', () => {
+    assert.equal(roomForArchive(RESERVED_BYTES - 1), 0);
+    assert.equal(roomForArchive(0), 0);
+  });
+
+  it('is, once unpacked, all of what is free above the reserve, and never more than an archive may be', () => {
+    assert.equal(
+      roomForUnpacked(RESERVED_BYTES + 10 * 1024 ** 3),
+      10 * 1024 ** 3,
+    );
+    assert.equal(roomForUnpacked(RESERVED_BYTES - 1), 0);
+    assert.equal(roomForUnpacked(10 * 1024 ** 5), ARCHIVE_LIMITS.bytes);
   });
 });

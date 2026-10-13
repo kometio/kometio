@@ -1,10 +1,11 @@
-import { Logger } from '@nestjs/common';
+import { ConsoleLogger, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { noErrorReporter, type ErrorReporterPort } from '@kometio/ports';
 import { createErrorReporter } from '@kometio/sentry-error-reporter';
+import { accessLog } from './app/access-log.middleware';
 import { AppModule } from './app/app.module';
 import { HttpExceptionFilter } from './app/http-exception.filter';
 import { mountMediaStatic } from './app/media-static';
@@ -53,7 +54,14 @@ async function bootstrap() {
   // every module reads too (API_ENV), so this and they cannot disagree.
   const env = validateApiEnv();
   errorReporter = createErrorReporter(env, 'api');
-  const app = await NestFactory.create(AppModule);
+  const logFormat = env.KOMETIO_LOG_FORMAT ?? 'text';
+  const app = await NestFactory.create(AppModule, {
+    // Nest's own JSON logger: the lines of the framework, and every `Logger`
+    // of ours, come out as one object each (docs/adr/0122).
+    ...(logFormat === 'json'
+      ? { logger: new ConsoleLogger({ json: true, colors: false }) }
+      : {}),
+  });
   // `docker stop`/`docker-compose down` send SIGTERM — without
   // enableShutdownHooks(), Nest never runs OnModuleDestroy (the Postgres
   // pool gets yanked instead of closed cleanly). enableShutdownHooks()
@@ -85,6 +93,16 @@ async function bootstrap() {
   trustProxyHops(app, Number(env.TRUSTED_PROXY_HOPS ?? 0));
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+  // First, so that a request a later middleware refuses is in it too.
+  if (env.KOMETIO_ACCESS_LOG === 'true') {
+    app.use(
+      accessLog({
+        format: logFormat,
+        // Docker asks every ten seconds, and on a quiet site that is the log.
+        skip: (path) => path === `/${globalPrefix}/health`,
+      }),
+    );
+  }
   // crossOriginResourcePolicy off: media/attachments are meant to be
   // embedded cross-origin by apps/public-site and apps/editor-app.
   app.use(helmet({ crossOriginResourcePolicy: false }));

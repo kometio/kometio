@@ -151,60 +151,11 @@ docker stop -t 30 kometio && docker rm kometio
 
 Do not use `docker rm -f` for this: it kills the database instead of stopping it.
 
-## Backups
-
-The server backs its site up on its own: **once a day, keeping the seven
-newest**, in `/data/backups` of the volume. A backup is the same archive that
-Settings → Export gives you (pages and their history, forms, settings, accounts
-and uploaded files), so it opens like any other
-([ADR-0119](../../docs/adr/0119-the-image-backs-itself-up.md)).
-
-```sh
-docker exec kometio sh -c 'ls -l /data/backups'            # what there is
-docker exec kometio node /opt/kometio/cli.mjs backup       # one now, before an update
-```
-
-| Variable                     | What it does                                                      |
-| ---------------------------- | ----------------------------------------------------------------- |
-| `KOMETIO_BACKUP_EVERY_HOURS` | Hours between backups; `24` if not set, `0` for none              |
-| `KOMETIO_BACKUP_KEEP`        | How many are kept, the newest; `7` if not set                     |
-| `KOMETIO_BACKUP_PING_URL`    | An address asked after each backup, `/fail` added when one failed |
-
-A backup is made soon after the start when there is none, then one interval
-after the last: a server that is restarted often does not make one each time. A
-value that is not a number stops the start and says which, so that a typo cannot
-switch backups off. Each backup is the size of the site and its uploads, times
-seven: look at the disk. A demo makes none.
-
-**What this does and does not protect.** The folder is on the same volume as the
-site, so it protects against a mistake — a page deleted, an import that went
-wrong, an update that should not have been made — and **not against losing the
-machine or the volume**. For that, copy the folder somewhere else on a schedule,
-from the host:
-
-```cron
-30 4 * * * docker cp kometio:/data/backups/. /srv/offsite/kometio-backups/ && rsync -a /srv/offsite/kometio-backups/ backup-host:kometio/
-```
-
-and have something tell you when it stops. `KOMETIO_BACKUP_PING_URL` is for that:
-give it the address a monitor such as healthchecks.io makes for you
-(`https://hc-ping.com/<uuid>`), set the monitor to expect a ping every day with
-a few hours of grace, and it will tell you by itself when a backup was not made.
-The address is not written in the log.
-
-**Restoring** is an import, into a volume that has never been used (stop the
-container first if it is the same machine):
-
-```sh
-docker run --rm -i -v kometio-restored:/data ghcr.io/kometio/kometio:0.1.0-beta.1 import < kometio-site-20261012-0400.tar.gz
-docker run -d --name kometio … -v kometio-restored:/data ghcr.io/kometio/kometio:0.1.0-beta.1
-```
-
-The accounts, pages and files are there; nobody is signed in, and the AI
-provider's key has to be entered again (see
-[Move a site](#move-a-site-to-another-installation)). A backup is a secret like
-any export: it holds the accounts' password hashes. The folder is root's alone
-inside the container, and the site's own user cannot list it.
+**Going back.** The migrations only go forward, so an older image does not start
+on a volume a newer one has opened: it stops at the start, says that the volume was
+made by a newer Kometio, and leaves it as it was. To be on the older version again,
+open the export (or the backup) made before the update into a new volume with that
+version's image, as in [Move a site](#move-a-site-to-another-installation).
 
 ## If it does not start
 
@@ -298,6 +249,54 @@ setup token from `docker logs kometio`, open the editor, create your account.
   browser had not seen the picture. The cache is in the container's own
   filesystem, not the volume: a new container makes them again, and nothing is
   lost.
+- **A disk that is nearly full stops taking uploads, so that the database can go on
+  writing.** The uploaded files are on the same volume as the database, and a
+  library that fills it is a site that cannot save a page. An upload that would
+  leave less than 1 GB free is refused, and the editor says the server is short of
+  room (`-e MEDIA_MIN_FREE_MB=…` changes the 1024; `0` turns the check off).
+- **Invitations and generated pages have a limit for each person**, not only for
+  each address: an administrator may send twenty invitations an hour (a re-sent
+  one counts), and a person may generate fifty pages a day. The counts are kept in
+  memory, and start again when the server does.
+
+## The log
+
+`docker logs kometio` is all of it: one stream, each line behind the name of the
+part that wrote it (`[kometio]` is the launcher, then `[postgres]`, `[api]`,
+`[site]`, `[editor]`, and `[caddy]` on a server).
+
+**It grows until you say where it stops.** Docker's default keeps every line for
+as long as the container exists. Give it a limit when you create it:
+
+```sh
+docker run … --log-opt max-size=10m --log-opt max-file=5 … ghcr.io/kometio/kometio:0.1.0-beta.1
+```
+
+(`docker-compose.prod.yml` already does, for each of its services.)
+
+**For a log collector, as JSON.** With `-e KOMETIO_LOG_FORMAT=json` every line the
+container writes is one JSON object, so that a collector (Loki, Datadog, a
+`jq` pipe) never meets a line it cannot read, and tells the parts apart by
+`service`:
+
+```json
+{"service":"api","level":"log","pid":41,"timestamp":1791881127287,"message":"Nest application successfully started","context":"NestApplication"}
+{"service":"postgres","level":"log","timestamp":1791881127301,"stream":"stderr","message":"2026-10-13 08:52:56.805 UTC [21] LOG:  database system is ready to accept connections"}
+```
+
+What a part writes as JSON itself (the API's, Caddy's) is kept as it is, with
+`service` added; what it writes as text (Postgres, nginx, the launcher's lines)
+is wrapped. The banner, with the setup token, is still there, one line at a time.
+The commands (`export`, `import`, `backup`) are always text: a person reads
+those.
+
+**One line for each request**, to the API's log, with `-e KOMETIO_ACCESS_LOG=true`:
+method, path (never the query), status, time, the request id the response carries
+and who was signed in; not the health check, which Docker asks every ten seconds.
+Not the address or the browser: a server that is asked for them has them in the
+proxy in front. It is off because it is the most
+frequent line there is; on a busy site it is the one that makes a rotating log
+forget an hour ago.
 
 ## Move a site to another installation
 
@@ -370,7 +369,12 @@ What you should know:
   account in the site with a password it chose, change every page, and run commands
   as the database's own user. What it cannot do is run anything as root, or publish
   a file that is not its own.
-- It needs room for the archive, unpacked, next to the data.
+- **It needs room for the archive twice, next to the data**: as it came and
+  unpacked, and 1 GB is kept for the database. A file larger than the volume can
+  take is refused while it is being read, with the size it was allowed, and a file
+  that declares more unpacked than there is room for (or more than 512 GB, or a
+  million entries, which is not a site) is refused before anything is unpacked.
+  Nothing is left on the volume.
 
 ## Run a public demo
 

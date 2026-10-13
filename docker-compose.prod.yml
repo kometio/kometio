@@ -108,6 +108,10 @@ services:
       EDITOR_APP_URL: ${EDITOR_APP_URL:-https://admin.${DOMAIN:?Set DOMAIN in .env}}
       API_PUBLIC_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
       MEDIA_UPLOAD_DIR: /app/uploads
+      # Room the disk keeps for the rest of the server (docs/adr/0120): an
+      # upload that would leave less than this many MB free is refused.
+      # Empty: 1024.
+      MEDIA_MIN_FREE_MB: ${MEDIA_MIN_FREE_MB:-}
       THEMES_DIR: /app/themes
       # Uploaded themes (docs/adr/0091): the volume the theme builder
       # watches. Remove this line, and the theme-builder service, to turn
@@ -125,6 +129,11 @@ services:
       # A public demo (docs/adr/0118): nobody there configures the site,
       # uploads, or changes the account. Empty is off.
       KOMETIO_DEMO: ${KOMETIO_DEMO:-}
+      # The log (docs/adr/0122): `json` is one object a line, for a log
+      # collector; `KOMETIO_ACCESS_LOG=true` adds a line for each request.
+      # Empty is text, and only the requests that failed.
+      KOMETIO_LOG_FORMAT: ${KOMETIO_LOG_FORMAT:-}
+      KOMETIO_ACCESS_LOG: ${KOMETIO_ACCESS_LOG:-}
     volumes:
       - media-uploads:/app/uploads
       - theme-data:/data/themes
