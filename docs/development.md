@@ -152,7 +152,13 @@ field, submission, notification emails in Mailpit), the canvas (Layers
 drag by mouse and keyboard, restoring a header version, a page that does
 not answer and Retry), and the
 accessibility gate (axe on every editor screen, both themes, 1440 and
-390px wide, plus any API error a screen runs into).
+390px wide, plus any API error a screen runs into), and the same gate on
+the public site: a published page of every block the picker offers, one
+for each category, plus the page that is not found and the search
+(`public-accessibility.e2e.ts`). The blocks come from
+`apps/e2e/src/fixtures/block-samples.json`, made from the registry —
+`pnpm run e2e:block-samples` rewrites it, and the registry's own spec
+fails, naming that command, when a block has been added and it has not.
 
 Locally it uses whatever is already running on the addresses in `.env`:
 the API on :3000, the editor on :4200 and the **built** public site on

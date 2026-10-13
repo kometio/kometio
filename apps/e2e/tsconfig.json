@@ -4,11 +4,13 @@
     "noUncheckedIndexedAccess": false,
     "outDir": "out-tsc",
     "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "resolveJsonModule": true,
     "lib": ["es2022", "dom"],
     "types": ["node"]
   },
   "include": [
     "src/**/*.ts",
+    "src/**/*.json",
     "playwright.config.ts",
     "playwright.image.config.ts",
     "playwright.first-run.config.ts"
