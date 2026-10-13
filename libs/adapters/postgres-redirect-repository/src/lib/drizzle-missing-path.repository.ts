@@ -1,6 +1,7 @@
 import { and, count, desc, eq, sql } from 'drizzle-orm';
 import {
   MAX_MISSING_PATHS,
+  MAX_MISSING_PATHS_HELD,
   type MissingPath,
   type MissingPathRepositoryPort,
   type PaginatedResult,
@@ -20,7 +21,7 @@ type Entry = Parameters<MissingPathRepositoryPort['record']>[0][number];
  * write: a delete that scans the site's rows after each flush is a cost a
  * quiet site would pay for nothing.
  */
-const TRIM_AT = Math.ceil(MAX_MISSING_PATHS * 1.1);
+const TRIM_AT = MAX_MISSING_PATHS_HELD;
 
 /** Connects as `kometio_app` — see docs/adr/0002-non-superuser-role-for-rls-enforcement.md. */
 export class DrizzleMissingPathRepository implements MissingPathRepositoryPort {

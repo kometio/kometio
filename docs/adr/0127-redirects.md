@@ -67,8 +67,11 @@ once had. Nothing could say what an address from before Kometio is.
 - **What was not found is counted and shown** (`missing_paths`): the path only,
   never the query, an address or a browser, capped per site, with the
   addresses only bots ask for (`/wp-login.php`, `/.env`) left out. This is the
-  list a person turns into rules after a migration — each row has "Redirect…" —
-  and a rule created for an address takes it off. The one query ever kept is
+  list a person turns into rules after a migration — each row has "Redirect…".
+  An address a rule answers (an exact one, or one pattern for hundreds) is not
+  on the list: it is judged against the rules when the list is read, since a
+  miss is written seconds after it happened and a rule made in between would
+  otherwise see its address come back. The one query ever kept is
   what a migrated site is asked at its front door (`/?p=123`), which is the
   whole of that address.
 - **Counts are batched.** A rule used and an address missed are added to

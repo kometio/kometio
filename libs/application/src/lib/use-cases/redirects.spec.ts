@@ -726,6 +726,68 @@ describe('missing paths', () => {
     });
     expect(after.items).toEqual([]);
   });
+
+  const unanswered = async (deps: Deps) =>
+    (
+      await listMissingPaths(deps, { tenantId, siteId, page: 1, pageSize: 50 })
+    ).items.map((item) => item.path);
+
+  // The count of a miss is written a few seconds after it, so a rule made in
+  // between must not leave the address on the list when it is: the list is
+  // what has no answer now.
+  it('does not list an address that has a rule, however it got there', async () => {
+    const deps = setup();
+    await rule(deps, '/old-a', toUrl('/en/a'));
+    await rule(deps, '/?p=77', toUrl('/en/seventy-seven'));
+    // Written after the rules were: the miss had been waiting for a flush.
+    await deps.missingPathRepository.record([
+      { tenantId, siteId, path: '/old-a', hits: 5, at: new Date() },
+      { tenantId, siteId, path: '/old-b', hits: 4, at: new Date() },
+      { tenantId, siteId, path: '/?p=77', hits: 3, at: new Date() },
+    ]);
+
+    expect(await unanswered(deps)).toEqual(['/old-b']);
+  });
+
+  it('does not list what a pattern answers, so that the list shrinks to what is still lost', async () => {
+    const deps = setup();
+    await deps.missingPathRepository.record([
+      { tenantId, siteId, path: '/2019/05/a-post', hits: 9, at: new Date() },
+      { tenantId, siteId, path: '/2020/01/another', hits: 8, at: new Date() },
+      { tenantId, siteId, path: '/about-us', hits: 7, at: new Date() },
+    ]);
+    await rule(deps, '/:year/:month/:slug', toUrl('/en/blog/:slug'));
+
+    expect(await unanswered(deps)).toEqual(['/about-us']);
+  });
+
+  it('pages what is left, and counts only that', async () => {
+    const deps = setup();
+    await deps.missingPathRepository.record(
+      Array.from({ length: 7 }, (_, index) => ({
+        tenantId,
+        siteId,
+        path: `/lost-${index}`,
+        hits: 100 - index,
+        at: new Date(),
+      })),
+    );
+    await rule(deps, '/lost-0', toUrl('/en/a'));
+
+    const second = await listMissingPaths(deps, {
+      tenantId,
+      siteId,
+      page: 2,
+      pageSize: 3,
+    });
+
+    expect(second.total).toBe(6);
+    expect(second.items.map((item) => item.path)).toEqual([
+      '/lost-4',
+      '/lost-5',
+      '/lost-6',
+    ]);
+  });
 });
 
 describe('importRedirects', () => {

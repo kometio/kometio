@@ -42,3 +42,10 @@ export interface MissingPathRepositoryPort {
 
 /** What a site keeps of the addresses it did not have. */
 export const MAX_MISSING_PATHS = 2000;
+
+/**
+ * What a site's table holds at most between two trims: it is cut back when it
+ * is this much over `MAX_MISSING_PATHS`, not at every write. A read that wants
+ * the whole list asks for this many.
+ */
+export const MAX_MISSING_PATHS_HELD = Math.ceil(MAX_MISSING_PATHS * 1.1);
