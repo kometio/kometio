@@ -14,11 +14,12 @@
 // What it needs of the machine is handed in, so that a test can give it a
 // child that does what it is told: `spawn`, `identify` (a user's uid and gid),
 // `sleep`, `say` (the launcher's own log line), `print` (a line of a child's
-// output) and `exit`.
+// output), `format` (how that line is written) and `exit`.
 import { spawn as nodeSpawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { setTimeout as delay } from 'node:timers/promises';
-import { defined, ids, log, minimalEnv } from './processes.mjs';
+import { formatLine } from './log-format.mjs';
+import { defined, ids, log, minimalEnv, output } from './processes.mjs';
 
 /**
  * @typedef {object} Entry
@@ -37,6 +38,7 @@ export class ProcessSupervisor {
   #sleep;
   #say;
   #print;
+  #format;
   #exit;
   #graceMs;
 
@@ -46,6 +48,8 @@ export class ProcessSupervisor {
     sleep = delay,
     say = log,
     print = console.log,
+    format = (name, line, stream) =>
+      formatLine(output.format, name, line, { stream }),
     exit = (code) => process.exit(code),
     graceMs = 30_000,
   } = {}) {
@@ -54,6 +58,7 @@ export class ProcessSupervisor {
     this.#sleep = sleep;
     this.#say = say;
     this.#print = print;
+    this.#format = format;
     this.#exit = exit;
     this.#graceMs = graceMs;
   }
@@ -87,8 +92,8 @@ export class ProcessSupervisor {
     });
     /** @type {Entry} */
     const entry = { name, child, stop, expectedToStop: false };
-    this.#relay(child.stdout, name, onLine);
-    this.#relay(child.stderr, name, onLine);
+    this.#relay(child.stdout, name, 'stdout', onLine);
+    this.#relay(child.stderr, name, 'stderr', onLine);
     child.on('exit', (code, signal) => {
       if (this.#stopping || entry.expectedToStop) return;
       this.#say(
@@ -134,9 +139,9 @@ export class ProcessSupervisor {
     }
   }
 
-  #relay(stream, name, onLine) {
+  #relay(stream, name, streamName, onLine) {
     createInterface({ input: stream }).on('line', (line) => {
-      this.#print(`[${name}] ${line}`);
+      this.#print(this.#format(name, line, streamName));
       onLine?.(line);
     });
   }

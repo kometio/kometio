@@ -50,6 +50,7 @@ import {
   prepareCluster,
   waitUntilReady,
 } from './embedded-postgres.mjs';
+import { logFormatOf, messageLines } from './log-format.mjs';
 import { ProcessSupervisor } from './process-supervisor.mjs';
 import {
   ensureDir,
@@ -57,6 +58,8 @@ import {
   log,
   minimalEnv,
   once,
+  output,
+  printLine,
   waitFor as waitForProcess,
 } from './processes.mjs';
 import {
@@ -83,6 +86,15 @@ const DATA = env.KOMETIO_DATA_DIR ?? '/data';
 // contract as the compose stack: docs/self-hosting.md).
 const OWN_DATABASE = !env.POSTGRES_HOST;
 
+// How every line of this container's log is written (docs/adr/0122). Read
+// first, so that what is said about a mistake in anything below is said in it.
+try {
+  output.format = logFormatOf(env);
+} catch (error) {
+  console.error(`[kometio] ${error.message}`);
+  process.exit(1);
+}
+
 // A server has a name (DOMAIN), and with it HTTPS: the site at the name, the
 // editor at admin. and the API at api., as in the compose stack. The three
 // addresses below follow from it; any of them can still be set by hand, as
@@ -91,7 +103,7 @@ let addresses;
 try {
   addresses = resolveAddresses(env);
 } catch (error) {
-  console.error(`[kometio] ${error.message}`);
+  printLine('kometio', error.message, 'stderr');
   process.exit(1);
 }
 // Where the browser reaches each half. Defaults suit `docker run -p
@@ -111,7 +123,7 @@ let backups;
 try {
   backups = backupSettings(env);
 } catch (error) {
-  console.error(`[kometio] ${error.message}`);
+  printLine('kometio', error.message, 'stderr');
   process.exit(1);
 }
 
@@ -295,23 +307,32 @@ async function startCaddy() {
   await waitFor('Caddy', () => answers('http://127.0.0.1:80/'), 30);
 }
 
+/** What a person reads once the server is up. In JSON each of its lines is a line of the log, so that a collector never meets one that is not. */
+function banner(text) {
+  if (output.format !== 'json') {
+    console.log(text);
+    return;
+  }
+  for (const line of text.split('\n')) {
+    if (line.trim()) printLine('kometio', line);
+  }
+}
+
 function announce() {
   const line = '─'.repeat(64);
-  console.log(`\n${line}\n  Kometio is ready\n`);
-  console.log(`  Editor      ${EDITOR_URL}`);
-  console.log(`  Your site   ${SITE_URL}`);
+  banner(`\n${line}\n  Kometio is ready\n`);
+  banner(`  Editor      ${EDITOR_URL}`);
+  banner(`  Your site   ${SITE_URL}`);
   if (domain) {
-    console.log(
+    banner(
       `\n  HTTPS: certificates are being obtained for ${domain}, www.${domain},\n  admin.${domain} and api.${domain}. If a browser warns, the DNS of those\n  names does not point at this machine yet; docker logs shows the attempts.`,
     );
   }
   if (setupToken) {
-    console.log(
-      '\n  First time here? Open the editor and enter this setup token:',
-    );
-    console.log(`\n      ${setupToken}\n`);
+    banner('\n  First time here? Open the editor and enter this setup token:');
+    banner(`\n      ${setupToken}\n`);
   }
-  console.log(`${line}\n`);
+  banner(`${line}\n`);
 }
 
 /** The API, and the wait until it answers. It is also what prints the setup token. */
@@ -332,18 +353,21 @@ async function startApi(s) {
       ownDatabase: OWN_DATABASE,
       controlSocket: CONTROL_SOCKET,
     }),
-    onLine: (line) => {
+    onLine: (written) => {
       // The API prints the first-run token once, in a box, and keeps it in
       // memory only: this is the one place it can be picked up and shown plainly.
-      if (line.includes('enter this setup token')) {
-        expectingToken = true;
-        return;
-      }
-      const token =
-        expectingToken && line.match(/^\s{4,}([A-Za-z0-9_-]{20,})\s*$/);
-      if (token) {
-        setupToken = token[1];
-        expectingToken = false;
+      // With JSON logs the whole box is the one message of one line.
+      for (const line of messageLines(written)) {
+        if (line.includes('enter this setup token')) {
+          expectingToken = true;
+          continue;
+        }
+        const token =
+          expectingToken && line.match(/^\s{4,}([A-Za-z0-9_-]{20,})\s*$/);
+        if (token) {
+          setupToken = token[1];
+          expectingToken = false;
+        }
       }
     },
   });
@@ -450,7 +474,7 @@ if (process.argv[2] !== undefined) {
   }
 
   main().catch((error) => {
-    console.error(`[kometio] ${error.message}`);
+    printLine('kometio', error.message, 'stderr');
     void supervisor.shutdown(1);
   });
 }

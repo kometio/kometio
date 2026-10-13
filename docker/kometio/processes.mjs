@@ -4,11 +4,25 @@
 import { spawnSync } from 'node:child_process';
 import { chmodSync, chownSync, mkdirSync, readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { formatLine } from './log-format.mjs';
 
-export const log = (message) => console.log(`[kometio] ${message}`);
+/**
+ * `quiet` keeps the output of the steps that succeed out of the log: a command
+ * that writes an archive has little to say, and what it says should be heard.
+ * `format` is how a line of the log is written (log-format.mjs): the launcher
+ * sets it once, from the environment, and the commands leave it as it is, since
+ * a person reads those.
+ */
+export const output = { quiet: false, format: 'text' };
 
-/** `quiet` keeps the output of the steps that succeed out of the log: a command that writes an archive has little to say, and what it says should be heard. */
-export const output = { quiet: false };
+/** One line of the log, from `service`, in the format the launcher was started with, on the stream it names. */
+export function printLine(service, text, stream = 'stdout') {
+  const line = formatLine(output.format, service, text, { stream });
+  if (stream === 'stderr') console.error(line);
+  else console.log(line);
+}
+
+export const log = (message) => printLine('kometio', message);
 
 /** An environment for a process that runs as another user: nothing of root's. */
 export const minimalEnv = {
@@ -58,7 +72,7 @@ export function once(
     for (const line of `${result.stdout ?? ''}${result.stderr ?? ''}`.split(
       '\n',
     )) {
-      if (line.trim()) console.log(`[${name}] ${line}`);
+      if (line.trim()) printLine(name, line);
     }
   }
   if (result.status !== 0)

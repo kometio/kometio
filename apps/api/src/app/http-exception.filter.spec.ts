@@ -68,6 +68,28 @@ describe('HttpExceptionFilter', () => {
     expect(line).not.toContain('segreto');
   });
 
+  it('does not carry the query into the log through the message either: Nest’s own 404 says "Cannot GET <url>"', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { host } = buildHost({
+      requestId: 'req-q',
+      method: 'GET',
+      originalUrl: '/api/no-such-route?token=segreto.firmato&x=1',
+    });
+
+    filter.catch(
+      new NotFoundException(
+        'Cannot GET /api/no-such-route?token=segreto.firmato&x=1',
+      ),
+      host,
+    );
+
+    const line = String(warn.mock.calls[0][0]);
+    expect(line).toContain('GET /api/no-such-route -> 404');
+    expect(line).toContain('Cannot GET /api/no-such-route');
+    expect(line).not.toContain('segreto');
+    expect(line).not.toContain('token=');
+  });
+
   it('maps a known domain error to its HTTP status via the shared mapping table', () => {
     const { host, status, json } = buildHost({
       requestId: 'req-2',

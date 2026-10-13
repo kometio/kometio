@@ -259,6 +259,45 @@ setup token from `docker logs kometio`, open the editor, create your account.
   one counts), and a person may generate fifty pages a day. The counts are kept in
   memory, and start again when the server does.
 
+## The log
+
+`docker logs kometio` is all of it: one stream, each line behind the name of the
+part that wrote it (`[kometio]` is the launcher, then `[postgres]`, `[api]`,
+`[site]`, `[editor]`, and `[caddy]` on a server).
+
+**It grows until you say where it stops.** Docker's default keeps every line for
+as long as the container exists. Give it a limit when you create it:
+
+```sh
+docker run … --log-opt max-size=10m --log-opt max-file=5 … ghcr.io/kometio/kometio:0.1.0-beta.1
+```
+
+(`docker-compose.prod.yml` already does, for each of its services.)
+
+**For a log collector, as JSON.** With `-e KOMETIO_LOG_FORMAT=json` every line the
+container writes is one JSON object, so that a collector (Loki, Datadog, a
+`jq` pipe) never meets a line it cannot read, and tells the parts apart by
+`service`:
+
+```json
+{"service":"api","level":"log","pid":41,"timestamp":1791881127287,"message":"Nest application successfully started","context":"NestApplication"}
+{"service":"postgres","level":"log","timestamp":1791881127301,"stream":"stderr","message":"2026-10-13 08:52:56.805 UTC [21] LOG:  database system is ready to accept connections"}
+```
+
+What a part writes as JSON itself (the API's, Caddy's) is kept as it is, with
+`service` added; what it writes as text (Postgres, nginx, the launcher's lines)
+is wrapped. The banner, with the setup token, is still there, one line at a time.
+The commands (`export`, `import`, `backup`) are always text: a person reads
+those.
+
+**One line for each request**, to the API's log, with `-e KOMETIO_ACCESS_LOG=true`:
+method, path (never the query), status, time, the request id the response carries
+and who was signed in; not the health check, which Docker asks every ten seconds.
+Not the address or the browser: a server that is asked for them has them in the
+proxy in front. It is off because it is the most
+frequent line there is; on a busy site it is the one that makes a rotating log
+forget an hour ago.
+
 ## Move a site to another installation
 
 One file carries a site — its pages and their history, forms, categories,
