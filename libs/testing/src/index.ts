@@ -6,5 +6,6 @@ export * from './lib/fake-deployment-locale.test-fixture';
 export * from './lib/fake-email-port.test-fixture';
 export * from './lib/fake-newsletter-port.test-fixture';
 export * from './lib/fake-verification-token-port.test-fixture';
+export * from './lib/in-memory-redirects.test-fixture';
 export * from './lib/in-memory-repositories.test-fixture';
 export * from './lib/page-list-state-cases.test-fixture';

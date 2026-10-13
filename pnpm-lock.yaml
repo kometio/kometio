@@ -290,6 +290,9 @@ importers:
       '@kometio/postgres-page-repository':
         specifier: workspace:*
         version: link:../../libs/adapters/postgres-page-repository
+      '@kometio/postgres-redirect-repository':
+        specifier: workspace:*
+        version: link:../../libs/adapters/postgres-redirect-repository
       '@kometio/postgres-reusable-section-repository':
         specifier: workspace:*
         version: link:../../libs/adapters/postgres-reusable-section-repository
@@ -915,6 +918,28 @@ importers:
       '@kometio/testing':
         specifier: workspace:*
         version: link:../../testing
+      dotenv:
+        specifier: ^18.0.6
+        version: 18.0.6
+
+  libs/adapters/postgres-redirect-repository:
+    dependencies:
+      '@kometio/domain-core':
+        specifier: workspace:*
+        version: link:../../domain-core
+      '@kometio/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@kometio/postgres-db':
+        specifier: workspace:*
+        version: link:../postgres-db
+      '@kometio/shared-types':
+        specifier: workspace:*
+        version: link:../../shared-types
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@opentelemetry/api@1.9.1)(postgres@3.4.9)
+    devDependencies:
       dotenv:
         specifier: ^18.0.6
         version: 18.0.6

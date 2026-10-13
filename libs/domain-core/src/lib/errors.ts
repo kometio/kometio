@@ -726,3 +726,45 @@ export class InvalidSiteArchiveError extends Error {
     this.name = 'InvalidSiteArchiveError';
   }
 }
+
+export class RedirectNotFoundError extends Error {
+  constructor(redirectId: string) {
+    super(`Redirect not found: ${redirectId}`);
+    this.name = 'RedirectNotFoundError';
+  }
+}
+
+/** One rule per old address (and query): a second would be the same question answered twice. */
+export class RedirectSourceTakenError extends Error {
+  constructor(readonly address: string) {
+    super(`There is already a redirect for ${address}`);
+    this.name = 'RedirectSourceTakenError';
+  }
+}
+
+/**
+ * A rule that cannot work, with which side and why.
+ *
+ * The message is the reason's code — `redirect:target:loop`,
+ * `redirect:source:reserved:api` — which the editor says in its own
+ * language, as it does for a theme upload that is refused. `side`,
+ * `problem` and `detail` are the same code, typed.
+ */
+export class InvalidRedirectError extends Error {
+  constructor(
+    readonly side: 'source' | 'target',
+    readonly problem: string,
+    readonly detail?: string,
+  ) {
+    super(`redirect:${side}:${problem}${detail ? `:${detail}` : ''}`);
+    this.name = 'InvalidRedirectError';
+  }
+}
+
+/** The set a site holds is read into memory to answer a request, so it has a size. */
+export class RedirectLimitReachedError extends Error {
+  constructor(readonly limit: number) {
+    super(`A site can hold ${limit} redirects`);
+    this.name = 'RedirectLimitReachedError';
+  }
+}
