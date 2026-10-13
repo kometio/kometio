@@ -16,6 +16,8 @@ export interface InvalidBlockProps {
   position: number;
   /** One line per issue: `level: Invalid option: …`. */
   issues: string[];
+  /** The props at fault, by key and in the order met: what a person is told to look at. */
+  fields: string[];
 }
 
 export interface BlockPropsAudit {
@@ -77,6 +79,13 @@ export function auditBlockProps(
           (issue) =>
             `${issue.path.length > 0 ? `${issue.path.join('.')}: ` : ''}${issue.message}`,
         ),
+        fields: [
+          ...new Set(
+            parsed.error.issues.flatMap((issue) =>
+              issue.path.length > 0 ? [String(issue.path[0])] : [],
+            ),
+          ),
+        ],
       });
     }
   }

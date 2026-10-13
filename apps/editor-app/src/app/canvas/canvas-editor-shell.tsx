@@ -41,6 +41,7 @@ import { useMakeReusableSection } from './use-make-reusable-section';
 import { usePageGenerationEntry } from './use-page-generation-entry';
 import { useCanvasCommandMenu } from './use-canvas-command-menu';
 import { usePlacementRefusedNotice } from './use-placement-refused-notice';
+import { skippedBlockNames } from './skipped-block-names';
 import { usePublishFlow } from './use-publish-flow';
 import { useSelectedBlockEditing } from './use-selected-block-editing';
 import { usePreviewBridge } from './use-preview-bridge';
@@ -151,6 +152,10 @@ export function CanvasEditorShell({
     placeholders,
     isPlaceholderConfirmOpen,
     setIsPlaceholderConfirmOpen,
+    skipped,
+    isSkippedConfirmOpen,
+    setIsSkippedConfirmOpen,
+    confirmSkipped,
     handlePublish,
     requestPublish,
   } = usePublishFlow({ localBlocks, localBlocksRef, flushAll, onPublish });
@@ -683,6 +688,18 @@ export function CanvasEditorShell({
       {generation.dialog}
       {makeReusable?.dialog}
       <ConfirmActionDialog
+        open={isSkippedConfirmOpen}
+        onOpenChange={setIsSkippedConfirmOpen}
+        title={t('canvas.publishSkipped.title')}
+        description={t('canvas.publishSkipped.body', {
+          count: skipped.length,
+          names: skippedBlockNames(skipped, registry, tLabel),
+        })}
+        actionLabel={t('canvas.publishSkipped.action')}
+        actionVariant="default"
+        onConfirm={confirmSkipped}
+      />
+      <ConfirmActionDialog
         open={isPlaceholderConfirmOpen}
         onOpenChange={setIsPlaceholderConfirmOpen}
         title={t('pageGeneration.publishPlaceholdersTitle')}
@@ -690,6 +707,7 @@ export function CanvasEditorShell({
           count: placeholders.size,
         })}
         actionLabel={t('pageGeneration.publishPlaceholdersAction')}
+        actionVariant="default"
         onConfirm={handlePublish}
       />
       {children}

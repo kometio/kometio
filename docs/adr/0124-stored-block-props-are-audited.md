@@ -77,6 +77,22 @@ without being broken: it is served, and a block is not on it.
   check at _publish_: the blocks the site would skip are named to the person
   publishing, who decides. It is a product decision (what a publish of a page
   with an unfinished block should do) and is not made here.
+
+  _Decided and done 2026-10-13:_ Publish asks first. When the tree about to be
+  published has a block the site would skip, a dialog says how many, by the name
+  each is picked by and the props at fault by the label they have in the
+  inspector ("Heading (Level)"), and offers "Publish anyway"; it does not refuse,
+  and a page with nothing to say publishes at once, as before. It is judged in
+  the editor with `auditBlockProps`, on the merged tree the canvas holds (a
+  translated field's value included), when Publish is pressed and not on every
+  keystroke; it runs in front of the generated page's placeholders question,
+  which keeps its place after it. Every canvas editor has it: pages, header and
+  footer, reusable sections. The API still takes props as they come, so a page
+  written by a script or an import can hold such a block; the question is for
+  the person who publishes it from the editor. A theme's own blocks have no
+  schema in the editor either and are not asked about. Checked in the real
+  stack: the published page is served and the block is not on it.
+
 - **No check on the way out.** Validating props at every read costs a parse of
   every block of every page on the site's hot path, and the renderer already
   does it, once, where the result is used.
