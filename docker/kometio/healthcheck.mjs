@@ -10,6 +10,7 @@
 // are not a 200, and a healthy server with no page yet is not unwell.
 import { get } from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { messageOf } from './error-message.mjs';
 import { innerPorts, resolveAddresses } from './server-mode.mjs';
 
 const EACH_MS = 4000;
@@ -51,7 +52,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     failed = await notAnswering(process.env);
   } catch (error) {
-    failed = [error.message];
+    failed = [messageOf(error)];
   }
   if (failed.length > 0) {
     console.error(`not answering: ${failed.join(', ')}`);

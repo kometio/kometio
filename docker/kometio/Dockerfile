@@ -58,7 +58,7 @@ COPY --from=editor /docker-entrypoint.d/10-kometio-runtime-config.envsh /opt/kom
 
 # The migrations are not copied here: they are already inside the API
 # artefact, so they are always those of the version of the code that starts.
-COPY docker/kometio/launcher.mjs docker/kometio/server-mode.mjs docker/kometio/healthcheck.mjs docker/kometio/processes.mjs docker/kometio/log-format.mjs docker/kometio/process-supervisor.mjs docker/kometio/service-environments.mjs docker/kometio/embedded-postgres.mjs docker/kometio/migrate.mjs docker/kometio/nginx.conf /opt/kometio/
+COPY docker/kometio/launcher.mjs docker/kometio/server-mode.mjs docker/kometio/healthcheck.mjs docker/kometio/processes.mjs docker/kometio/log-format.mjs docker/kometio/error-message.mjs docker/kometio/process-supervisor.mjs docker/kometio/service-environments.mjs docker/kometio/embedded-postgres.mjs docker/kometio/migrate.mjs docker/kometio/nginx.conf /opt/kometio/
 # `export` and `import` (docs/adr/0105): the image's two commands besides running.
 COPY docker/kometio/cli.mjs docker/kometio/archive.mjs docker/kometio/archive-commands.mjs docker/kometio/control-server.mjs docker/kometio/site-import.mjs docker/kometio/backups.mjs /opt/kometio/
 # The compose stack's own Caddyfile, so that the security headers and the

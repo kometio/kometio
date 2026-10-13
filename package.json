@@ -5,7 +5,8 @@
   "scripts": {
     "prepare": "husky",
     "check:tsconfig": "node tools/check-tsconfig-conventions.mjs",
-    "verify": "pnpm run check:tsconfig && nx run-many -t typecheck && nx run-many -t lint && nx run-many -t test --coverage --parallel=1"
+    "check:image-modules": "tsc -p docker/kometio",
+    "verify": "pnpm run check:tsconfig && pnpm run check:image-modules && nx run-many -t typecheck && nx run-many -t lint && nx run-many -t test --coverage --parallel=1"
   },
   "private": true,
   "packageManager": "pnpm@10.30.3",

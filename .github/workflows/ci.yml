@@ -120,6 +120,9 @@ jobs:
       # typecheck* half of that race; this flag still guards the remaining
       # *typecheck-vs-itself-across-projects* half.
       - run: pnpm exec nx run-many -t typecheck --parallel=1
+      # The image's own modules are plain JavaScript and belong to no Nx project:
+      # docker/kometio/tsconfig.json says what is checked and what is not.
+      - run: pnpm run check:image-modules
 
   lint:
     runs-on: ubuntu-latest

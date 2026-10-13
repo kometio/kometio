@@ -18,6 +18,7 @@ import {
   restoreArchive,
 } from './archive-commands.mjs';
 import { Refusal, archiveFileName } from './archive.mjs';
+import { messageOf } from './error-message.mjs';
 import {
   createRoles,
   isReady,
@@ -144,7 +145,7 @@ export async function run(command) {
       return;
     }
   } catch (error) {
-    console.error(`[kometio] ${error.message}`);
+    console.error(`[kometio] ${messageOf(error)}`);
     process.exitCode = 1;
   }
 }

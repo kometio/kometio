@@ -24,6 +24,7 @@ import {
 import { request } from 'node:http';
 import { pipeline } from 'node:stream/promises';
 import { archiveFileName } from './archive.mjs';
+import { messageOf } from './error-message.mjs';
 
 /** Where the backups are, under the data directory: root's, since an archive holds the accounts' password hashes. */
 export const BACKUPS_FOLDER = 'backups';
@@ -241,7 +242,7 @@ export function startBackupSchedule({
       await tell(pingUrl, 'ok');
       arm(everyMs);
     } catch (error) {
-      say(`backup failed: ${error.message}; trying again in 30 minutes`);
+      say(`backup failed: ${messageOf(error)}; trying again in 30 minutes`);
       await tell(pingUrl, 'fail');
       arm(RETRY_AFTER);
     }

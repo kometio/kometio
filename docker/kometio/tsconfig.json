@@ -1,0 +1,18 @@
+{
+  "$comment": "Type-checks the image's own modules, which are plain JavaScript run as they are written (no build step). Strict, except that a parameter nobody annotated is not an error: that is some three hundred places, and what this is for is a wrong property, a missing argument, an error read as an Error. The tests are left out: their doubles are written to be loose, and what they check is behaviour. Run: pnpm exec tsc -p docker/kometio",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": false
+  },
+  "include": ["*.mjs"],
+  "exclude": ["*.test.mjs"]
+}

@@ -9,6 +9,7 @@
 import { chownSync, rmSync, writeFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Refusal } from './archive.mjs';
+import { messageOf } from './error-message.mjs';
 
 /**
  * What the API reads, after it has started again, to tell the browser how the
@@ -90,7 +91,7 @@ export function createSiteImport({
         try {
           await restoreArchive({ dataDir, archive, siteUrl, say });
         } catch (error) {
-          say(`the import failed: ${error.message}`);
+          say(`the import failed: ${messageOf(error)}`);
           failure = describeFailure(error);
         }
         writeResult(failure);
