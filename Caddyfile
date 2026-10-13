@@ -15,6 +15,14 @@
 #       address. The compose stack sets it (docker-compose.prod.yml requires
 #       ACME_EMAIL); the single image does when ACME_EMAIL is given, and goes
 #       without it otherwise, which Let's Encrypt allows.
+#   KOMETIO_ACCESS_LOG  "true" or "false" (the image maps anything else to
+#       "false", and the API refuses it): a line for each request (see
+#       access_log_true below), or none. It is the variable the API reads for
+#       its own lines (docs/adr/0122), so that one setting is the whole log of a
+#       request, from the API and from the proxy in front of it. It is read as
+#       the name of a snippet, `access_log_<value>`: a value that is neither
+#       stops Caddy with "File to import not found", and an empty one does too,
+#       which is why the compose file says `${KOMETIO_ACCESS_LOG:-false}`.
 #   KOMETIO_CADDY_OPTIONS  "admin off" and "skip_install_trust", on two lines:
 #       the single image sets them. Caddy's admin API listens on localhost and,
 #       in the compose stack, nothing else shares that container; in the image
@@ -22,9 +30,50 @@
 #       able to reconfigure the proxy. And a server has no business putting a
 #       certificate authority into its own trust store, which Caddy tries to do
 #       for a local one.
+# What a request's line is allowed to carry (docs/adr/0126). It is what is left
+# after the rest is deleted, not after the secrets are:
+#
+#   - no request header, so no cookie, no Authorization, no token a client
+#     chose a header for, and no browser or Referer;
+#   - no response header, so no Set-Cookie;
+#   - no address of the client or the port it came from;
+#   - the URI without its query, where a preview link's token and a reset
+#     link's live.
+#
+# That leaves the time, method, host, path, status, size and duration, which is
+# what is asked of a log of this kind (what was slow, what was refused, what
+# was not found). A person who needs the address of a client (an abuse report)
+# has a proxy of their own to put it in: this is the one we ship.
+#
+# It is above the global options because a snippet is not found from inside a
+# block that comes before it.
+(request_log_format) {
+	format filter {
+		wrap json
+		request>headers delete
+		resp_headers delete
+		request>remote_ip delete
+		request>remote_port delete
+		request>client_ip delete
+		request>tls delete
+		request>uri regexp \?.* ""
+	}
+}
+
 {
 	{$KOMETIO_CADDY_OPTIONS:}
 	{$KOMETIO_ACME_EMAIL_LINE:}
+
+	# Caddy's own log, which is also where the line of a request goes when it
+	# is for a name that has no site here (the machine's address, a scanner's
+	# guess, the redirect from port 80), and where an error's line carries the
+	# request that caused it. Left as it comes, that is every header and the
+	# address, in a line the sites' own filter never sees; with a `log` in any
+	# site block it is on even when the access log is not asked for. The same
+	# format, so that nothing a request carried is in any line.
+	log {
+		import request_log_format
+	}
 }
 
 # Compression is the proxy's job, not the apps': neither the Astro node
@@ -51,20 +100,35 @@
 	header ?Referrer-Policy "strict-origin-when-cross-origin"
 }
 
+# One line for each request, to the proxy's output (docs/adr/0126). The switch
+# is the name of the snippet that is imported: with `false` there is no `log`
+# directive in any site, and Caddy writes no line of a request, as it never did.
+(access_log_true) {
+	log {
+		output stdout
+		import request_log_format
+	}
+}
+(access_log_false) {
+}
+
 {$DOMAIN}, www.{$DOMAIN} {
 	import security_headers
+	import access_log_{$KOMETIO_ACCESS_LOG:false}
 	import compressed
 	reverse_proxy {$SITE_UPSTREAM:public-site:4321}
 }
 
 admin.{$DOMAIN} {
 	import security_headers
+	import access_log_{$KOMETIO_ACCESS_LOG:false}
 	import compressed
 	reverse_proxy {$EDITOR_UPSTREAM:editor-app:80}
 }
 
 api.{$DOMAIN} {
 	import security_headers
+	import access_log_{$KOMETIO_ACCESS_LOG:false}
 	# The page generator's server-sent events pass through uncompressed and
 	# as they are written: `encode` leaves text/event-stream alone (checked
 	# on 2026-09-29 against caddy:2-alpine, audit B15).

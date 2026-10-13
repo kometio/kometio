@@ -133,6 +133,10 @@ export function caddyEnvironment({ env, dataDir, domain, ports }) {
     API_UPSTREAM: `127.0.0.1:${ports.api}`,
     KOMETIO_CADDY_OPTIONS: 'admin off\nskip_install_trust',
     KOMETIO_ACME_EMAIL_LINE: env.ACME_EMAIL ? `email ${env.ACME_EMAIL}` : '',
+    // The one switch for a line per request (docs/adr/0122, 0126): the API
+    // reads it for its own lines, and the Caddyfile for the proxy's, as the
+    // name of a snippet: so it is always one of the two, never empty.
+    KOMETIO_ACCESS_LOG: env.KOMETIO_ACCESS_LOG === 'true' ? 'true' : 'false',
   };
 }
 
