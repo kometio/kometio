@@ -151,6 +151,24 @@ docker stop -t 30 kometio && docker rm kometio
 
 Do not use `docker rm -f` for this: it kills the database instead of stopping it.
 
+**When the new version carries a newer Postgres.** A major version of Postgres
+does not open the files of another. `0.1.0-beta.1` carries Postgres 16 and the
+versions after it carry 18, so a volume made by the first is not opened by the
+others: the image stops at the start, says so, and leaves the volume as it was.
+For that update, steps 1 and 2 are the same, and step 3 opens the export into a
+**new** volume instead of starting on the old one (with the `-e DOMAIN=…`, or the
+three addresses, that you give `docker run`):
+
+```sh
+docker run --rm -i -v kometio-data-18:/data \
+  ghcr.io/kometio/kometio:<the new version> import < before-the-update.tar.gz
+# then start the new version as in step 1, with -v kometio-data-18:/data
+```
+
+The old volume, `kometio-data`, is not touched: remove it when you have looked at
+the site. Nobody is signed in afterwards, as with any import
+([Move a site](#move-a-site-to-another-installation)).
+
 **Going back.** The migrations only go forward, so an older image does not start
 on a volume a newer one has opened: it stops at the start, says that the volume was
 made by a newer Kometio, and leaves it as it was. To be on the older version again,
@@ -175,6 +193,13 @@ the ones to read. By what the log says:
   it, or a newer one, and do not remove the volume. To be on the older version,
   open the export or backup made before the update into a new volume
   ([Going back](#update-to-a-newer-version)).
+- **`this volume's database was made by PostgreSQL 16, and this image carries 18`**:
+  a major version of Postgres does not read the files of another, and the volume
+  was made by the older. It is as it was. Start the version that made it, export
+  the site, and open the export into a new volume with this image
+  ([When the new version carries a newer Postgres](#update-to-a-newer-version)).
+  The same message the other way round (`… is newer than the 18 this image
+carries`) means the volume was made by a newer version: start that one.
 - **`migrate failed (exit 1)`, with lines from `[migrate]` above it**: a migration
   could not be applied. They run in one transaction, so the database is as it was.
   Give the lines above it to whoever helps you, and start the previous version on
@@ -461,7 +486,7 @@ Give the image a `POSTGRES_HOST` and it runs no Postgres of its own: it uses tha
 one, and everything else is as above. The database has to hold, before the image
 starts, a role called `kometio_app` — a login role that is not a superuser, so
 that row level security applies to it — made the way
-[`db/init/000_roles.sh`](../../db/init/000_roles.sh) makes it. Postgres 16 is what
+[`db/init/000_roles.sh`](../../db/init/000_roles.sh) makes it. Postgres 18 is what
 it is tried with.
 
 ```sh
