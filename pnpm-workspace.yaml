@@ -43,7 +43,10 @@ overrides:
   # drizzle-kit 0.31.11, the latest, still loads the deprecated
   # @esbuild-kit/* pair, which pins esbuild ~0.18. Verified after the
   # override: drizzle-kit still reads the schema and generates migrations.
-  esbuild: ^0.25.12
+  # 0.28 and not 0.25: the 0.25 binary was built with Go 1.23.12 and carries
+  # twenty-five advisories of Go's standard library (docs/adr/0121); 0.28.2 is
+  # built with Go 1.26.5, which is what tsx 4.23 and vite 8.3 ask for.
+  esbuild: ^0.28.2
   # Three advisories against brace-expansion (GHSA-6j4f-fj2g-mc7p,
   # GHSA-qhr7-859c-m2p7, GHSA-q2hr-2g5m-vwhr, published 2026-09-29): a
   # stack-exhaustion DoS on a crafted pattern. Reached only through
