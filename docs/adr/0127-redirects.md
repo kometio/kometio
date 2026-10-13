@@ -35,7 +35,10 @@ once had. Nothing could say what an address from before Kometio is.
   segment each, `/category/*` takes the rest; a target uses what the source
   names (`/en/blog/:slug`). Whole segments only (`/post-:id` is refused, not
   stored to match nothing), no query on a pattern. Among patterns the one with
-  more literal segments wins, a `*` last, then the older.
+  more literal segments wins, a `*` last, then the older. A pattern may also go
+  to **one page** (`/old-shop/*` to the page that replaced the section): it
+  takes nothing from the address then, and it is what a reorganised site needs
+  most.
 - **A page always wins**, as a page does over a term (ADR-0064). Rules are not
   asked on the path of a page that exists: the public site asks the API only
   after its own routes have come back with "not found" — and for the front door

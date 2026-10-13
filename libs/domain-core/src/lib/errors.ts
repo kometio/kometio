@@ -734,10 +734,14 @@ export class RedirectNotFoundError extends Error {
   }
 }
 
-/** One rule per old address (and query): a second would be the same question answered twice. */
+/**
+ * One rule per old address (and query): a second would be the same question
+ * answered twice. The message is a code, like `InvalidRedirectError`'s, so
+ * that the editor says it in its own language.
+ */
 export class RedirectSourceTakenError extends Error {
   constructor(readonly address: string) {
-    super(`There is already a redirect for ${address}`);
+    super(`redirect:source:taken:${address}`);
     this.name = 'RedirectSourceTakenError';
   }
 }
@@ -761,10 +765,10 @@ export class InvalidRedirectError extends Error {
   }
 }
 
-/** The set a site holds is read into memory to answer a request, so it has a size. */
+/** The set a site holds is read into memory to answer a request, so it has a size. A code, like the one above. */
 export class RedirectLimitReachedError extends Error {
   constructor(readonly limit: number) {
-    super(`A site can hold ${limit} redirects`);
+    super(`redirect:site:limit:${limit}`);
     this.name = 'RedirectLimitReachedError';
   }
 }

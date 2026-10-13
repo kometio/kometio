@@ -496,6 +496,30 @@ describe('resolveRedirect', () => {
     });
   });
 
+  // Everything that was under an old section goes to one page: the common
+  // case of a site that was reorganised, and what the page picker does for a
+  // rule of any kind.
+  it('sends everything a pattern matches to one page, chosen or typed', async () => {
+    const shop = await seedPage(deps, 'shop');
+    await rule(deps, '/old-shop/*', {
+      kind: 'page',
+      pageGroupId: shop.group.id,
+      locale: 'en',
+    });
+    await rule(deps, '/webshop/:item', toUrl('/en/shop'));
+
+    expect(await ask(deps, '/old-shop/anything/at/all')).toEqual({
+      outcome: 'redirect',
+      status: 301,
+      location: '/en/shop',
+    });
+    expect(await ask(deps, '/webshop/chair')).toEqual({
+      outcome: 'redirect',
+      status: 301,
+      location: '/en/shop',
+    });
+  });
+
   // `/:year/:month/:slug` matches `/en/blog/x` too. Where x is a page the
   // site serves it and the rule is not asked; where it is not, sending the
   // visitor there would send them to the same rule, round and round.
@@ -789,6 +813,24 @@ describe('importRedirects', () => {
       problem: 'unsafe',
     });
     expect(report.created).toBe(1);
+  });
+
+  it('sends a whole section to a page, which is a path that a pattern may name', async () => {
+    const { group } = await seedPage(deps, 'shop');
+
+    const report = await run('from,to\n/old-shop/*,/en/shop\n');
+
+    expect(report).toMatchObject({ created: 1, failed: 0 });
+    const stored = await deps.redirectRepository.findBySource(
+      tenantId,
+      siteId,
+      { path: '/old-shop/*', query: '' },
+    );
+    expect(stored?.target).toEqual({
+      kind: 'page',
+      pageGroupId: group.id,
+      locale: 'en',
+    });
   });
 
   it('stores a path that is a page as that page', async () => {
