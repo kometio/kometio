@@ -52,6 +52,7 @@ import {
   trackerDomainEntriesSchema,
   trackerScriptEntriesSchema,
   wordPressAnalysisSchema,
+  wordPressPermalinksSchema,
 } from '@kometio/shared-types';
 import { validatedJsonb } from './validated-jsonb';
 
@@ -976,6 +977,14 @@ export const importJobs = pgTable(
     status: importJobStatusEnum('status').notNull().default('analyzing'),
     /** Written when `status` is `analyzed` — the shape is `WordPressAnalysis`. */
     report: validatedJsonb('report', wordPressAnalysisSchema),
+    /**
+     * Where each published page and post of the file used to live
+     * (`WordPressPermalink[]`), kept for the redirects of the move
+     * (docs/adr/0127). Its own column and never in a listing: it is as long
+     * as the site, where the report is a few hundred numbers. `null` for a
+     * job analysed before it was kept.
+     */
+    permalinks: validatedJsonb('permalinks', wordPressPermalinksSchema),
     /** Written when `status` is `failed`, and meant to be read by whoever uploaded the file. */
     failureReason: text('failure_reason'),
     createdBy: uuid('created_by').references(() => users.id, {

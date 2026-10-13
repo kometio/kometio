@@ -5,6 +5,11 @@ import type {
   SiteRepositoryPort,
   WordPressExportReaderPort,
 } from '@kometio/ports';
+import {
+  MAX_WORDPRESS_PERMALINKS,
+  type WordPressPermalink,
+} from '@kometio/shared-types';
+import { permalinkOf } from '../wordpress-import/permalink-of';
 import { analyzeWordPressExport } from './analyze-wordpress-export.use-case';
 import { requireSite } from './require-site';
 
@@ -69,9 +74,26 @@ export async function runWordPressAnalysis(
   if (!job) return;
 
   try {
+    // Where each page lived is gathered on the same pass, and kept BEFORE the
+    // job says it is read: whoever sees "analysed" may ask for the redirects
+    // at once.
+    const permalinks: WordPressPermalink[] = [];
     const report = await analyzeWordPressExport(
       { exportReader: deps.exportReader },
-      { filePath: input.filePath },
+      {
+        filePath: input.filePath,
+        onItem: (item) => {
+          const found = permalinkOf(item);
+          if (found && permalinks.length < MAX_WORDPRESS_PERMALINKS) {
+            permalinks.push(found);
+          }
+        },
+      },
+    );
+    await deps.importJobRepository.savePermalinks(
+      input.tenantId,
+      job.id,
+      permalinks,
     );
     job.succeed(report);
   } catch (error) {
@@ -98,6 +120,18 @@ export async function getImportJob(
     throw new ImportJobNotFoundError(input.jobId);
   }
   return job;
+}
+
+/**
+ * Forgets an attempt, and where its pages lived with it. A file that was
+ * read stays in the history until somebody says it is not wanted: the
+ * list of its addresses is as long as the site.
+ */
+export async function deleteImportJob(
+  deps: Pick<ImportJobDeps, 'importJobRepository'>,
+  input: { tenantId: string; jobId: string },
+): Promise<void> {
+  await deps.importJobRepository.delete(input.tenantId, input.jobId);
 }
 
 export function listImportJobs(

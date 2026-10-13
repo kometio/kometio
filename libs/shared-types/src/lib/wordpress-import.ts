@@ -145,3 +145,26 @@ export const wordPressAnalysisSchema = z.object({
   warnings: z.array(wordPressAnalysisWarningSchema),
 });
 export type WordPressAnalysis = z.infer<typeof wordPressAnalysisSchema>;
+
+/**
+ * Where a page or a post of the export used to live — all the redirects of a
+ * move need of it (docs/adr/0127), kept apart from the report because it is
+ * one entry per page and a report is a few hundred numbers.
+ */
+export const wordPressPermalinkSchema = z.object({
+  /** The number WordPress calls it by, which `/?p=123` and `/?page_id=45` ask for. */
+  id: z.number().int(),
+  type: z.enum(['page', 'post']),
+  slug: z.string(),
+  /** Enough to say which one it is in a list; not what it said. */
+  title: z.string(),
+  /** The address it answered at when the file was made: `https://old.example/2019/05/hello/`. */
+  link: z.string(),
+  /** The page it sat under, for telling two pages of one slug apart. */
+  parentId: z.number().int().nullable(),
+});
+export type WordPressPermalink = z.infer<typeof wordPressPermalinkSchema>;
+export const wordPressPermalinksSchema = z.array(wordPressPermalinkSchema);
+
+/** More than a site can hold rules for (`REDIRECT_LIMITS.rulesPerSite`, with two rules each) is not kept. */
+export const MAX_WORDPRESS_PERMALINKS = 20_000;

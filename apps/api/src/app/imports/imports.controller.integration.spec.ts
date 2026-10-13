@@ -165,6 +165,24 @@ ${body}
     expect([...dates].sort((a: number, b: number) => b - a)).toEqual(dates);
   });
 
+  it('forgets an attempt when it is told to, and is for the administrator', async () => {
+    const started = await agent
+      .post('/imports/wordpress/analysis')
+      .field('siteId', siteId)
+      .attach('file', wxrFile(''))
+      .expect(202);
+    await waitForReport(started.body.id);
+    const editor = await integration.login(
+      await integration.createUser({ role: 'editor' }),
+    );
+
+    await editor.delete(`/imports/${started.body.id}`).expect(403);
+    await agent.delete(`/imports/${started.body.id}`).expect(204);
+
+    await agent.get(`/imports/${started.body.id}`).expect(404);
+    await agent.delete(`/imports/${started.body.id}`).expect(404);
+  });
+
   it('404s a job that does not exist', async () => {
     await agent.get(`/imports/${randomUUID()}`).expect(404);
   });

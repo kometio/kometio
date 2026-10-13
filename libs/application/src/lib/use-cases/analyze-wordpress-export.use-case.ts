@@ -17,6 +17,13 @@ export interface AnalyzeWordPressExportDeps {
 
 export interface AnalyzeWordPressExportInput {
   filePath: string;
+  /**
+   * Told of every item as it is read, for a caller that keeps something of
+   * it (where each page lived, for the redirects of the move): the file is
+   * streamed once, and a second reading of three hundred megabytes for one
+   * more field is not what this is for.
+   */
+  onItem?: (item: WordPressExportItem) => void;
 }
 
 /** The post types the import brings across. Everything else is reported, not imported. */
@@ -125,6 +132,7 @@ export async function analyzeWordPressExport(
   const pending: { unmapped: Map<string, number>; empty: boolean }[] = [];
 
   const channel = await deps.exportReader.read(input.filePath, (item) => {
+    input.onItem?.(item);
     byType.set(item.postType, (byType.get(item.postType) ?? 0) + 1);
     notePlugins(item, pageBuilders, multilingual);
 
