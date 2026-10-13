@@ -70,6 +70,8 @@ export const trackerDomainEntrySchema = z.object({
   domain: trackerDomainSchema,
 });
 export type TrackerDomainEntry = z.infer<typeof trackerDomainEntrySchema>;
+/** The list as the site's column holds it (docs/adr/0123). */
+export const trackerDomainEntriesSchema = z.array(trackerDomainEntrySchema);
 
 export const themeSettingsSchema = z.object({
   primaryColor: hexColorSchema.nullable(),

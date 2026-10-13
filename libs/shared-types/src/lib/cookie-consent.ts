@@ -39,6 +39,8 @@ export const trackerScriptEntrySchema = z.object({
   html: z.string().min(1),
 });
 export type TrackerScriptEntry = z.infer<typeof trackerScriptEntrySchema>;
+/** The list as the site's column holds it (docs/adr/0123). */
+export const trackerScriptEntriesSchema = z.array(trackerScriptEntrySchema);
 // Same cap as themeAllowedTrackerDomains — see site-theme-settings.ts.
 export const MAX_TRACKER_SCRIPTS = 20;
 
