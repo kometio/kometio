@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   ARCHIVE_FORMAT,
+  Refusal,
   ARCHIVE_FORMAT_VERSION,
   TRANSIENT_TABLES,
   appliedMigrationTags,
   archiveFileName,
+  assertDatabaseIsNotNewer,
   buildManifest,
   checkCompatible,
   checkEntries,
@@ -100,6 +102,42 @@ describe('the migrations of a database, by name', () => {
     assert.throws(
       () => appliedMigrationTags(journal, [1000, 9999]),
       /newer one/,
+    );
+  });
+});
+
+describe('whether this image starts on a database', () => {
+  it('starts on one with exactly its migrations, an older one, and a new one with none', () => {
+    assert.doesNotThrow(() =>
+      assertDatabaseIsNotNewer(journal, [1000, 2000, 3000]),
+    );
+    assert.doesNotThrow(() => assertDatabaseIsNotNewer(journal, [1000]));
+    assert.doesNotThrow(() => assertDatabaseIsNotNewer(journal, []));
+  });
+
+  it('reads the times the database keeps as strings, as the driver gives them', () => {
+    assert.doesNotThrow(() =>
+      assertDatabaseIsNotNewer(journal, ['1000', '2000']),
+    );
+  });
+
+  it('refuses one a newer version has migrated, and says what to do instead', () => {
+    assert.throws(
+      () => assertDatabaseIsNotNewer(journal, [1000, 2000, 9999]),
+      (error) =>
+        error instanceof Refusal &&
+        /made by a newer Kometio than this image/.test(error.message) &&
+        /1 migration that this version does not know/.test(error.message) &&
+        /open the export \(or the backup\) made before the update into a new volume/.test(
+          error.message,
+        ),
+    );
+  });
+
+  it('counts them', () => {
+    assert.throws(
+      () => assertDatabaseIsNotNewer(journal, [8888, 9999]),
+      /2 migrations that this version does not know/,
     );
   });
 });
