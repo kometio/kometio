@@ -442,9 +442,14 @@ export function parseRedirectTarget(
   if (value.length > REDIRECT_LIMITS.addressLength) {
     return { ok: false, problem: 'too-long' };
   }
-  // A space or a control character in a Location header is how a response is split.
+  // A space or a control character in a Location header is how a response is
+  // split; and a backslash is a slash to a browser, so `/\evil.example` is
+  // `//evil.example` — another host, behind an address that looks like ours.
   if (
-    [...value].some((character) => character <= ' ' || character === '\u007f')
+    [...value].some(
+      (character) =>
+        character <= ' ' || character === '\u007f' || character === '\\',
+    )
   ) {
     return { ok: false, problem: 'unsafe' };
   }

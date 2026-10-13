@@ -278,6 +278,74 @@ describe('createRedirect', () => {
   });
 });
 
+describe('a deployment that does not let a rule leave the site', () => {
+  let deps: Deps;
+  beforeEach(() => {
+    deps = setup();
+  });
+
+  const inDemo = (from: string, to: string) =>
+    createRedirect(deps, {
+      tenantId,
+      siteId,
+      from,
+      to: toUrl(to),
+      status: 301,
+      createdBy: 'user-1',
+      allowExternalTargets: false,
+    });
+
+  it('refuses another site as a target, and takes a path of this one', async () => {
+    await expect(
+      inDemo('/a', 'https://phishing.example/login'),
+    ).rejects.toMatchObject({
+      name: 'InvalidRedirectError',
+      side: 'target',
+      problem: 'external',
+    });
+    // The scheme-less spelling is read as https, and refused as it.
+    await expect(inDemo('/b', 'phishing.example/login')).rejects.toMatchObject({
+      problem: 'external',
+    });
+
+    await expect(inDemo('/c', '/it/anything')).resolves.toBeDefined();
+  });
+
+  it('refuses a backslash, which a browser reads as a slash', async () => {
+    await expect(inDemo('/d', '/\\phishing.example')).rejects.toMatchObject({
+      problem: 'unsafe',
+    });
+  });
+
+  it('refuses it when a rule is changed to go there, and in a list', async () => {
+    const created = await inDemo('/e', '/it/ok');
+
+    await expect(
+      updateRedirect(deps, {
+        tenantId,
+        redirectId: created.id,
+        to: toUrl('https://phishing.example'),
+        status: 301,
+        allowExternalTargets: false,
+      }),
+    ).rejects.toMatchObject({ problem: 'external' });
+
+    const report = await importRedirects(deps, {
+      tenantId,
+      siteId,
+      csv: 'from,to\n/f,/it/f\n/g,https://phishing.example\n',
+      dryRun: false,
+      createdBy: 'user-1',
+      allowExternalTargets: false,
+    });
+    expect(report).toMatchObject({ created: 1, failed: 1 });
+    expect(report.rows[1]).toMatchObject({
+      side: 'target',
+      problem: 'external',
+    });
+  });
+});
+
 describe('updateRedirect and deleteRedirect', () => {
   let deps: Deps;
   beforeEach(() => {

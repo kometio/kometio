@@ -237,6 +237,9 @@ describe('a target', () => {
     ['data:text/html,x', 'unsafe'],
     ['//evil.example/path', 'unsafe'],
     ['/path with space', 'unsafe'],
+    // A backslash is a slash to a browser: `//evil.example`, behind a path.
+    ['/\\evil.example', 'unsafe'],
+    ['/a\\b', 'unsafe'],
     ['/a\r\nSet-Cookie: x=1', 'unsafe'],
     ['https://user:pass@host.test/', 'unsafe'],
     ['page', 'invalid'],

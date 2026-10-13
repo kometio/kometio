@@ -3,6 +3,7 @@ import type { RedirectStatus } from '@kometio/shared-types';
 import { assertNoLoop } from '../redirects/redirect-loops';
 import type { RedirectDeps } from '../redirects/redirect-deps';
 import {
+  assertTargetStaysOnSite,
   toRedirectTarget,
   type RedirectTargetInput,
 } from '../redirects/redirect-target-input';
@@ -25,6 +26,8 @@ export interface UpdateRedirectInput {
   /** Where to, and with which answer: always together, since each decides what the other may be. */
   to: RedirectTargetInput | null;
   status: RedirectStatus;
+  /** `false` where a rule may not leave the site (a public demo). Defaults to `true`. */
+  allowExternalTargets?: boolean;
 }
 
 export async function updateRedirect(
@@ -49,6 +52,7 @@ export async function updateRedirect(
       ? await toRedirectTarget(deps, input.tenantId, site, input.to)
       : null;
   redirect.redirectTo(target, input.status);
+  assertTargetStaysOnSite(redirect.target, input.allowExternalTargets ?? true);
 
   const siteRules = await deps.redirectRepository.listBySite(
     input.tenantId,

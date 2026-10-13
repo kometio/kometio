@@ -1,4 +1,5 @@
 import {
+  InvalidRedirectError,
   LocaleNotEnabledError,
   PageGroupNotFoundError,
   type RedirectTarget,
@@ -101,4 +102,23 @@ export async function pageAtAddress(
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * A deployment that everybody signs in to (a public demo, docs/adr/0118) must
+ * not hand out redirects to other sites: an address of the demo that sends a
+ * visitor anywhere is an address anybody can lend to a phishing message. There
+ * a rule may go to a page or a path of the site, and no further.
+ *
+ * Elsewhere the person who writes a rule is a publisher of the site, and
+ * where its old address goes is theirs to say.
+ */
+export function assertTargetStaysOnSite(
+  target: RedirectTarget | null,
+  allowExternalTargets: boolean,
+): void {
+  if (allowExternalTargets || target?.kind !== 'url') return;
+  if (/^https?:\/\//i.test(target.url)) {
+    throw new InvalidRedirectError('target', 'external');
+  }
 }

@@ -13,6 +13,7 @@ import {
 import { assertNoLoop } from '../redirects/redirect-loops';
 import type { RedirectDeps } from '../redirects/redirect-deps';
 import {
+  assertTargetStaysOnSite,
   toRedirectTarget,
   type RedirectTargetInput,
 } from '../redirects/redirect-target-input';
@@ -38,6 +39,8 @@ export interface CreateRedirectInput {
   status: RedirectStatus;
   origin?: RedirectOrigin;
   createdBy: string | null;
+  /** `false` where a rule may not leave the site (a public demo). Defaults to `true`. */
+  allowExternalTargets?: boolean;
 }
 
 /**
@@ -80,6 +83,7 @@ export async function createRedirect(
     origin: input.origin ?? 'manual',
     createdBy: input.createdBy,
   });
+  assertTargetStaysOnSite(redirect.target, input.allowExternalTargets ?? true);
   await assertNoLoop(deps, input.tenantId, site, redirect, siteRules);
 
   await deps.redirectRepository.add(redirect);

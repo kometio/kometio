@@ -7,6 +7,7 @@ import {
   REDIRECT_REPOSITORY,
   SITE_REPOSITORY,
 } from '../adapters/port.tokens';
+import { ApiEnvModule } from '../api-env.module';
 import { AuthModule } from '../auth/auth.module';
 import { moduleDeps } from '../module-deps';
 import { RedirectRuntimeModule } from './redirect-runtime.module';
@@ -15,7 +16,7 @@ import type { RedirectsDeps } from './redirects.deps';
 import { REDIRECT_RULE_SETS, REDIRECTS_DEPS } from './redirects.tokens';
 
 @Module({
-  imports: [AdaptersModule, AuthModule, RedirectRuntimeModule],
+  imports: [AdaptersModule, ApiEnvModule, AuthModule, RedirectRuntimeModule],
   controllers: [RedirectsController],
   providers: [
     moduleDeps<RedirectsDeps>(REDIRECTS_DEPS, {

@@ -16,6 +16,7 @@ import {
 } from '@kometio/shared-types';
 import { localePathFromAncestors } from '@kometio/theme-runtime';
 import { followRedirects } from '../redirects/follow-redirects';
+import { assertTargetStaysOnSite } from '../redirects/redirect-target-input';
 import type { RedirectDeps } from '../redirects/redirect-deps';
 import { pageTargetInfo } from '../redirects/published-page-path';
 import { listPublishedPagePaths } from './list-published-page-paths';
@@ -39,6 +40,8 @@ export interface ImportRedirectsInput {
   dryRun: boolean;
   createdBy: string | null;
   origin?: RedirectOrigin;
+  /** `false` where a rule may not leave the site (a public demo). Defaults to `true`. */
+  allowExternalTargets?: boolean;
 }
 
 export type RedirectImportOutcome =
@@ -159,6 +162,10 @@ export async function importRedirects(
         origin: input.origin ?? 'list',
         createdBy: input.createdBy,
       });
+      assertTargetStaysOnSite(
+        candidate.target,
+        input.allowExternalTargets ?? true,
+      );
       const key = keyOf(candidate.source.path, candidate.source.query);
       const known = working.get(key);
 

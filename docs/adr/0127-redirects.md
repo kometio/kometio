@@ -77,6 +77,13 @@ once had. Nothing could say what an address from before Kometio is.
   permanent/temporary/gone). Every row is judged on its own and a bad one is
   named by its line; a dry run answers in the shape of the real one; the same
   file twice is the same site (an address that has a rule is updated).
+- **A target is refused for what a browser would read as another host**: a
+  `javascript:` or `data:` address, a `//host`, a credential, a control
+  character and a backslash (`/\evil.example` is `//evil.example` to a
+  browser). And **a deployment everybody signs in to (the public demo,
+  ADR-0118) does not let a rule leave the site** (`redirect:target:external`):
+  an address of the demo that sends a visitor anywhere is one anybody could lend
+  to a phishing message. A page or a path of the site is still allowed there.
 - **Rules travel with the site** (the archive of ADR-0105 carries `redirects`)
   and **the count of what was not found does not** (`missing_paths` is a
   moment's, like submissions). It is a publisher's: `changeLiveSite` to write,

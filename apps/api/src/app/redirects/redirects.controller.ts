@@ -48,6 +48,8 @@ import {
   updateRedirectBodySchema,
 } from '@kometio/api-contracts';
 import { describeRedirectSource } from '@kometio/shared-types';
+import { API_ENV } from '../api-env.module';
+import type { ApiEnv } from '../../env-schema';
 import { Allowed } from '../auth/allowed.decorator';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { TenantId, UserId } from '../auth/session-identity.decorator';
@@ -119,7 +121,19 @@ function toTestRecord(result: RedirectTestResult): RedirectTestResultRecord {
 @Controller('redirects')
 @UseGuards(SessionAuthGuard)
 export class RedirectsController {
-  constructor(@Inject(REDIRECTS_DEPS) private readonly deps: RedirectsDeps) {}
+  constructor(
+    @Inject(REDIRECTS_DEPS) private readonly deps: RedirectsDeps,
+    @Inject(API_ENV) private readonly env: ApiEnv,
+  ) {}
+
+  /**
+   * A public demo's account is everybody's (docs/adr/0118): there, a rule
+   * may go to a page or a path of the site and not to another site, or the
+   * demo's address is one anybody can lend to a phishing message.
+   */
+  private get allowExternalTargets(): boolean {
+    return this.env.KOMETIO_DEMO !== 'true';
+  }
 
   @Get()
   @Allowed('changeLiveSite')
@@ -160,6 +174,7 @@ export class RedirectsController {
       to: body.to,
       status: body.status,
       createdBy: userId,
+      allowExternalTargets: this.allowExternalTargets,
     });
     return toRecord(await describeRedirect(this.deps, tenantId, redirect));
   }
@@ -183,6 +198,7 @@ export class RedirectsController {
       csv: body.csv,
       dryRun: body.dryRun,
       createdBy: userId,
+      allowExternalTargets: this.allowExternalTargets,
     });
     return redirectImportReportSchema.parse(report);
   }
@@ -253,6 +269,7 @@ export class RedirectsController {
       from: body.from,
       to: body.to,
       status: body.status,
+      allowExternalTargets: this.allowExternalTargets,
     });
     return toRecord(await describeRedirect(this.deps, tenantId, redirect));
   }
