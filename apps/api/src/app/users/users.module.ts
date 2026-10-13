@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AdaptersModule } from '../adapters/adapters.module';
 import {
   AUTH_PORT,
@@ -24,6 +25,9 @@ import { USERS_DEPS } from './users.tokens';
     ApiEnvModule,
     DeploymentSiteModule,
     EmailsModule,
+    // For the limit on invitations (per-user-limit.guard.ts): the storage its
+    // counts are kept in. Applied to those routes only, not as a global guard.
+    ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 60 }] }),
   ],
   controllers: [UsersController],
   providers: [
