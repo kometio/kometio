@@ -108,6 +108,10 @@ services:
       EDITOR_APP_URL: ${EDITOR_APP_URL:-https://admin.${DOMAIN:?Set DOMAIN in .env}}
       API_PUBLIC_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
       MEDIA_UPLOAD_DIR: /app/uploads
+      # Room the disk keeps for the rest of the server (docs/adr/0120): an
+      # upload that would leave less than this many MB free is refused.
+      # Empty: 1024.
+      MEDIA_MIN_FREE_MB: ${MEDIA_MIN_FREE_MB:-}
       THEMES_DIR: /app/themes
       # Uploaded themes (docs/adr/0091): the volume the theme builder
       # watches. Remove this line, and the theme-builder service, to turn

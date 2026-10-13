@@ -1,11 +1,12 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   PayloadTooLargeException,
   ConflictException,
   ForbiddenException,
   NotFoundException,
   ServiceUnavailableException,
-  type HttpException,
   type Type,
 } from '@nestjs/common';
 import {
@@ -56,6 +57,7 @@ import {
   TermNotFoundError,
   UnsupportedAttachmentTypeError,
   MediaTooLargeError,
+  StorageFullError,
   InvalidMediaFilenameError,
   UnsupportedMediaTypeError,
   UserAlreadyActiveError,
@@ -122,6 +124,11 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   [SiteNotFoundError, (m) => new NotFoundException(m)],
   [UserNotFoundError, (m) => new NotFoundException(m)],
   [CollectionNotFoundError, (m) => new NotFoundException(m)],
+  // 507: nothing about the file is wrong; the server has no room for it.
+  [
+    StorageFullError,
+    (m) => new HttpException(m, HttpStatus.INSUFFICIENT_STORAGE),
+  ],
   [MediaNotFoundError, (m) => new NotFoundException(m)],
   [ImportJobNotFoundError, (m) => new NotFoundException(m)],
   [PageSlugAlreadyExistsError, (m) => new ConflictException(m)],

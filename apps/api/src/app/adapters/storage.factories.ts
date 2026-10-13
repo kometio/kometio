@@ -1,9 +1,17 @@
 import { LocalDiskAttachmentStorageAdapter } from '@kometio/local-disk-attachment-storage';
 import { LocalDiskMediaStorageAdapter } from '@kometio/local-disk-media-storage';
-import type { AttachmentStoragePort, MediaStoragePort } from '@kometio/ports';
+import type {
+  AttachmentStoragePort,
+  MediaStoragePort,
+  StoredAttachment,
+  StoredObject,
+  UploadAttachmentInput,
+  UploadAttachmentResult,
+} from '@kometio/ports';
 import { S3AttachmentStorageAdapter } from '@kometio/s3-attachment-storage';
 import { S3MediaStorageAdapter } from '@kometio/s3-media-storage';
 import { requiredIn, type ApiEnv } from '../../env-schema';
+import { DEFAULT_MIN_FREE_MB, assertRoomFor } from './disk-room';
 
 /*
  * Media and form attachments live on the same storage, chosen once by
@@ -14,19 +22,90 @@ import { requiredIn, type ApiEnv } from '../../env-schema';
  */
 
 export function createMediaStorage(env: ApiEnv): MediaStoragePort {
-  return env.MEDIA_STORAGE_PROVIDER === 's3'
-    ? new S3MediaStorageAdapter(s3Settings(env))
-    : new LocalDiskMediaStorageAdapter(localSettings(env));
+  if (env.MEDIA_STORAGE_PROVIDER === 's3') {
+    return new S3MediaStorageAdapter(s3Settings(env));
+  }
+  const local = localSettings(env);
+  return new RoomGuardedMediaStorage(
+    new LocalDiskMediaStorageAdapter(local),
+    local.uploadDir,
+    reserveBytes(env),
+  );
 }
 
 export function createAttachmentStorage(env: ApiEnv): AttachmentStoragePort {
-  return env.MEDIA_STORAGE_PROVIDER === 's3'
-    ? new S3AttachmentStorageAdapter(s3Settings(env))
-    : new LocalDiskAttachmentStorageAdapter(localSettings(env));
+  if (env.MEDIA_STORAGE_PROVIDER === 's3') {
+    return new S3AttachmentStorageAdapter(s3Settings(env));
+  }
+  const local = localSettings(env);
+  return new RoomGuardedAttachmentStorage(
+    new LocalDiskAttachmentStorageAdapter(local),
+    local.uploadDir,
+    reserveBytes(env),
+  );
 }
 
 function localSettings(env: ApiEnv) {
   return { uploadDir: env.MEDIA_UPLOAD_DIR, publicBaseUrl: env.API_PUBLIC_URL };
+}
+
+const reserveBytes = (env: ApiEnv) =>
+  (env.MEDIA_MIN_FREE_MB ?? DEFAULT_MIN_FREE_MB) * 1024 * 1024;
+
+/**
+ * A local disk that does not take a file it has no room for (docs/adr/0120).
+ * The adapters write what they are given and keep it inside their folder; how
+ * much of the disk is left for the database that shares it is this
+ * deployment's concern, so it is said here, once, for both.
+ */
+class RoomGuardedMediaStorage implements MediaStoragePort {
+  readonly provider: MediaStoragePort['provider'];
+
+  constructor(
+    private readonly inner: MediaStoragePort,
+    private readonly directory: string,
+    private readonly reserve: number,
+  ) {
+    this.provider = inner.provider;
+  }
+
+  async put(object: StoredObject): Promise<void> {
+    await assertRoomFor(this.directory, object.data.length, this.reserve);
+    await this.inner.put(object);
+  }
+
+  getUrl(storageKey: string): string {
+    return this.inner.getUrl(storageKey);
+  }
+
+  delete(storageKey: string): Promise<void> {
+    return this.inner.delete(storageKey);
+  }
+}
+
+class RoomGuardedAttachmentStorage implements AttachmentStoragePort {
+  constructor(
+    private readonly inner: AttachmentStoragePort,
+    private readonly directory: string,
+    private readonly reserve: number,
+  ) {}
+
+  async upload(input: UploadAttachmentInput): Promise<UploadAttachmentResult> {
+    await assertRoomFor(this.directory, input.data.length, this.reserve);
+    return this.inner.upload(input);
+  }
+
+  urlPrefixFor(formId: string): string {
+    return this.inner.urlPrefixFor(formId);
+  }
+
+  listStored(): AsyncIterable<StoredAttachment> {
+    return this.inner.listStored();
+  }
+
+  delete(url: string): Promise<void> {
+    return this.inner.delete(url);
+  }
 }
 
 function s3Settings(env: ApiEnv) {
