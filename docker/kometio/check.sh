@@ -72,6 +72,8 @@ IMPORTED_VOLUME=kometio-check-imported-data
 # Two volumes for archives that are hostile (docs/adr/0108), each used once.
 HOSTILE_VOLUME=kometio-check-hostile-data
 LINKED_VOLUME=kometio-check-linked-data
+# One more, for a backup opened as a stranger would find it (docs/adr/0119).
+BACKUP_VOLUME=kometio-check-backup-data
 IMPORTED_EDITOR_PORT=20200
 IMPORTED_API_PORT=20000
 IMPORTED_SITE_PORT=20322
@@ -135,7 +137,7 @@ cleanup() {
   fi
   docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -150,7 +152,7 @@ for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$UPGRADE_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -527,6 +529,37 @@ check "the server exports its site while it runs" \
   sh -c "docker exec '$NAME' node /opt/kometio/cli.mjs export > '${WORK}/site.tar.gz'"
 check "the archive is a .tar.gz with its manifest, its database and its uploads" \
   sh -c "tar tzf '${WORK}/site.tar.gz' | grep -q 'manifest.json' && tar tzf '${WORK}/site.tar.gz' | grep -q 'database.sql.gz' && tar tzf '${WORK}/site.tar.gz' | grep -q 'uploads/'"
+
+# The backups (docs/adr/0119): the same archive, asked of the running server by
+# the command that the daily one does, kept in a folder of the volume that is
+# nobody else's, and opened like any other into a volume that has never been used.
+step "backups: made by the server, private, and restorable"
+backup_listing() { docker exec "$NAME" ls /data/backups; }
+backup_is_named_as_an_export() {
+  backup_listing | grep -Eq '^kometio-site-[0-9]{8}-[0-9]{4}\.tar\.gz$'
+}
+backup_folder_is_roots_alone() {
+  [ "$(docker exec "$NAME" stat -c '%a %U' /data/backups)" = "700 root" ] \
+    && ! docker exec -u kometio-site "$NAME" ls /data/backups
+}
+backup_leaves_no_half() {
+  docker exec "$NAME" node /opt/kometio/cli.mjs backup \
+    && ! docker exec "$NAME" ls -a /data/backups | grep -q '\.partial$'
+}
+check "the server says at its start that it backs itself up, and how" \
+  sh -c "docker logs '$NAME' 2>&1 | grep -q 'backups: every 24 hours, keeping 7'"
+check "a backup is made on request" \
+  docker exec "$NAME" node /opt/kometio/cli.mjs backup
+check "it is in /data/backups, under the name an export has" backup_is_named_as_an_export
+check "the folder is root's alone: the site's user cannot even list it" backup_folder_is_roots_alone
+BACKUP_FILE="$(backup_listing | grep -E '^kometio-site-' | tail -1)"
+check "the backup is the archive: a .tar.gz with its manifest, its database and its uploads" \
+  sh -c "docker exec '$NAME' cat '/data/backups/${BACKUP_FILE}' > '${WORK}/backup.tar.gz' && tar tzf '${WORK}/backup.tar.gz' | grep -q manifest.json && tar tzf '${WORK}/backup.tar.gz' | grep -q database.sql.gz && tar tzf '${WORK}/backup.tar.gz' | grep -q 'uploads/'"
+check "it is opened into a new volume, as every archive is" \
+  sh -c "docker run --rm -i -v '${BACKUP_VOLUME}:/data' '$IMAGE' import < '${WORK}/backup.tar.gz'"
+check "and what was opened is a site: it exports again, with its manifest" \
+  sh -c "docker run --rm -v '${BACKUP_VOLUME}:/data' '$IMAGE' export 2>/dev/null | tar tzf - | grep -q manifest.json"
+check "a second backup, in the same minute, leaves no half of one behind" backup_leaves_no_half
 
 # The same archive through the editor's door (Settings → Export, docs/adr/0105):
 # the API asks the launcher on a socket and streams what comes back. It is the one
