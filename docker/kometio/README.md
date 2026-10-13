@@ -163,14 +163,45 @@ version's image, as in [Move a site](#move-a-site-to-another-installation).
 docker logs --tail 50 kometio
 ```
 
-The launcher says what it was doing and why it stopped. Two things are common:
+The launcher says what it was doing and why it stopped, and the last lines are
+the ones to read. By what the log says:
 
-- **A port is taken** (`address already in use`, from Docker, when you start it):
-  change the left side of each `-p` as in [Use other ports](#use-other-ports).
-- **It starts, stops and starts again** (`docker ps` shows it restarting, with
-  `--restart unless-stopped`): read the last lines of the log above, and do not
-  remove the volume. Everything is in it. Give the log to whoever helps you, and
-  use the file from `export` to start a new installation if you need one.
+- **`address already in use`** (from Docker, when you start it): a port is taken.
+  Change the left side of each `-p`, as in [Use other ports](#use-other-ports).
+- **`DOMAIN=… is …: write the name alone`**: `DOMAIN` is not a bare name. Write it
+  as `example.com`: no `https://`, no port, no path.
+- **`this volume was made by a newer Kometio than this image`**: a newer version
+  opened this volume, and migrations only go forward. Start the version that made
+  it, or a newer one, and do not remove the volume. To be on the older version,
+  open the export or backup made before the update into a new volume
+  ([Going back](#update-to-a-newer-version)).
+- **`migrate failed (exit 1)`, with lines from `[migrate]` above it**: a migration
+  could not be applied. They run in one transaction, so the database is as it was.
+  Give the lines above it to whoever helps you, and start the previous version on
+  the same volume.
+- **`No space left on device`**: the disk is full, and the database cannot write.
+  Free room on the machine (`docker system df` shows what Docker holds), then
+  start it again; nothing is lost. The daily backups are in `/data/backups`,
+  seven kept.
+- **`Invalid or missing environment variables:` and a list**: a setting is missing
+  or wrong, and the list names it. Fix that variable and start again.
+- **`… did not come up within …s`**: a part did not answer in time. On a machine
+  with little memory the first start is slow, and a full disk or a swapping
+  machine does the same. Read the lines above it for the part's own message, and
+  give the machine at least 1 GB.
+- **`… stopped on its own (…): stopping everything`**: a part died, and the
+  launcher stops the rest so that Docker starts it clean. The part's own lines
+  are just above. If it starts and stops again (`docker ps` shows it restarting,
+  with `--restart unless-stopped`), do not remove the volume: everything is in it.
+- **`this volume is in use by a running Kometio, or was left by one that was not
+stopped cleanly`** (from `docker run … export` or `import`): another container
+  has the volume, or a stop was cut short. Stop that container
+  (`docker stop -t 30`); if it was left by a crash, start it and stop it once,
+  cleanly.
+
+If none of these is it, give the log to whoever helps you, and use the file from
+`export` (or the newest in `/data/backups`) to start a new installation if you
+need one: [Move a site](#move-a-site-to-another-installation).
 
 ## Use other ports
 
