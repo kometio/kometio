@@ -161,11 +161,23 @@ export function checkCompatible(manifest, knownMigrations) {
  * extracts it as a link to that target, an absolute path included. Anything with
  * an arrow is refused, and `checkExtractedTree` looks again at what came out.
  */
-export function checkEntries(listing) {
+export function checkEntries(listing, limits = ARCHIVE_LIMITS) {
   const lines = listing.split('\n').filter((line) => line.trim() !== '');
+  if (lines.length > limits.entries) {
+    throw new Refusal(
+      `this archive holds ${lines.length.toLocaleString('en')} entries, more than a site archive does (the limit is ${limits.entries.toLocaleString('en')}): it is refused`,
+    );
+  }
   const names = [];
+  let bytes = 0;
   for (const line of lines) {
     const type = line[0];
+    bytes += Number(/^\S+\s+\S+\s+(\d+)\s/.exec(line)?.[1] ?? 0);
+    if (bytes > limits.bytes) {
+      throw new Refusal(
+        `this archive holds more than ${gibibytes(limits.bytes)} once unpacked, more than a site archive does or than this volume has room for: it is refused`,
+      );
+    }
     const rest = line.replace(/^\S+\s+\S+\s+\d+\s+\S+\s+\S+\s+/, '');
     const arrow = rest.indexOf(' -> ');
     const name = arrow === -1 ? rest : rest.slice(0, arrow);
@@ -208,6 +220,41 @@ export function checkEntries(listing) {
       );
     }
   }
+}
+
+/**
+ * How big an archive may be (docs/adr/0120), whatever the person who sends it
+ * says: an import is the one thing on this server that writes what a stranger
+ * hands it to the disk where the database lives. A site with a hundred thousand
+ * uploaded files is large and real, and a million entries is not a site.
+ */
+export const ARCHIVE_LIMITS = Object.freeze({
+  entries: 1_000_000,
+  bytes: 512 * 1024 ** 3,
+});
+
+/** What a volume keeps for itself when an archive is opened: the database has to go on writing. */
+export const RESERVED_BYTES = 1024 ** 3;
+
+const gibibytes = (bytes) => `${(bytes / 1024 ** 3).toFixed(1)} GiB`;
+
+/** What is free on a volume, less what it keeps for itself. */
+const spare = (freeBytes) => Math.max(0, freeBytes - RESERVED_BYTES);
+
+/**
+ * What an archive may declare unpacked on a volume that has `freeBytes` left:
+ * all of it but what is reserved, and never more than an archive may be.
+ */
+export function roomForUnpacked(freeBytes) {
+  return Math.min(ARCHIVE_LIMITS.bytes, spare(freeBytes));
+}
+
+/**
+ * What an archive may take of the volume as it arrives. It is kept once as it
+ * came and once unpacked, so each is allowed the half.
+ */
+export function roomForArchive(freeBytes) {
+  return Math.min(ARCHIVE_LIMITS.bytes, Math.floor(spare(freeBytes) / 2));
 }
 
 /**
