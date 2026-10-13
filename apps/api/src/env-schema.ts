@@ -99,6 +99,11 @@ const apiEnvBaseSchema = z.object({
   // signs in with cannot configure the site, upload, or be taken over. Off
   // unless it says `true`.
   KOMETIO_DEMO: emptyIsUnset(z.enum(['true', 'false']).optional()),
+  // How the log is written (docs/adr/0122): `text`, what a person reads, or
+  // `json`, one object a line for a log collector. And whether each request is
+  // a line of it. Unset: text, and only the requests that failed.
+  KOMETIO_LOG_FORMAT: emptyIsUnset(z.enum(['text', 'json']).optional()),
+  KOMETIO_ACCESS_LOG: emptyIsUnset(z.enum(['true', 'false']).optional()),
   // Both or neither (docs/adr/0103): a site's own Cloudflare Turnstile keys, or
   // none, and then the captcha is the one built into Kometio. The site key is
   // read by the editor and the public site, which draw the widget; the API
