@@ -96,6 +96,13 @@ own `style`.
    `headerFooterBlocks` (`layout-config.ts`) — which is the order the picker
    shows and so a decision. A block that is in neither is a file nobody can
    reach, and the spec says so.
+4. Its look: the defaults in the contract's `style` (written once), and in the
+   block's own `<style>` in `apps/public-site/src/components/blocks/<Type>.astro`
+   one line saying which of its properties those are —
+   `@kometio-bridge background color border-radius padding;` (ADR-0133). The
+   build writes the declaration; a property the contract has no default for is
+   an error that says so. What a block does with a default that is not its
+   contract's (an inner element, a value from a theme variable) it writes itself.
 
 ## The two registries (`config.ts` / `layout-config.ts`)
 
