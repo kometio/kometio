@@ -35,7 +35,10 @@ once had. Nothing could say what an address from before Kometio is.
   segment each, `/category/*` takes the rest; a target uses what the source
   names (`/en/blog/:slug`). Whole segments only (`/post-:id` is refused, not
   stored to match nothing), no query on a pattern. Among patterns the one with
-  more literal segments wins, a `*` last, then the older.
+  more literal segments wins, a `*` last, then the older. A pattern may also go
+  to **one page** (`/old-shop/*` to the page that replaced the section): it
+  takes nothing from the address then, and it is what a reorganised site needs
+  most.
 - **A page always wins**, as a page does over a term (ADR-0064). Rules are not
   asked on the path of a page that exists: the public site asks the API only
   after its own routes have come back with "not found" — and for the front door
@@ -64,8 +67,11 @@ once had. Nothing could say what an address from before Kometio is.
 - **What was not found is counted and shown** (`missing_paths`): the path only,
   never the query, an address or a browser, capped per site, with the
   addresses only bots ask for (`/wp-login.php`, `/.env`) left out. This is the
-  list a person turns into rules after a migration — each row has "Redirect…" —
-  and a rule created for an address takes it off. The one query ever kept is
+  list a person turns into rules after a migration — each row has "Redirect…".
+  An address a rule answers (an exact one, or one pattern for hundreds) is not
+  on the list: it is judged against the rules when the list is read, since a
+  miss is written seconds after it happened and a rule made in between would
+  otherwise see its address come back. The one query ever kept is
   what a migrated site is asked at its front door (`/?p=123`), which is the
   whole of that address.
 - **Counts are batched.** A rule used and an address missed are added to

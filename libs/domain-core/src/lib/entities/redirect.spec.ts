@@ -95,12 +95,6 @@ describe('Redirect', () => {
       'target',
     ],
     ['an address sent to itself', '/old', toUrl('/old'), 'target'],
-    [
-      'a page for a pattern',
-      '/blog/:slug',
-      { kind: 'page' as const, pageGroupId: 'g', locale: 'en' },
-      'target',
-    ],
   ] as const)('refuses %s', (_label, from, to, side) => {
     expect(() => create(from, to)).toThrowError(InvalidRedirectError);
     try {
@@ -116,18 +110,23 @@ describe('Redirect', () => {
     ).not.toThrow();
   });
 
-  it('keeps itself as it was when a new address does not suit its target', () => {
-    const redirect = create('/old', {
-      kind: 'page',
-      pageGroupId: 'g',
-      locale: 'en',
-    });
+  it('may send a pattern to one page: everything under an old section to the page that replaced it', () => {
+    const target = { kind: 'page' as const, pageGroupId: 'g', locale: 'en' };
 
-    expect(() => redirect.changeSource('/blog/:slug')).toThrowError(
+    const redirect = create('/old-shop/*', target);
+
+    expect(redirect.kind).toBe('pattern');
+    expect(redirect.target).toEqual(target);
+  });
+
+  it('keeps itself as it was when a new address does not suit its target', () => {
+    const redirect = create('/blog/:slug', toUrl('/en/news/:slug'));
+
+    expect(() => redirect.changeSource('/blog')).toThrowError(
       InvalidRedirectError,
     );
-    expect(redirect.source.path).toBe('/old');
-    expect(redirect.kind).toBe('exact');
+    expect(redirect.source.path).toBe('/blog/:slug');
+    expect(redirect.kind).toBe('pattern');
   });
 
   it('counts the visits it was told of, and when the last was', () => {

@@ -69,6 +69,13 @@ test.beforeAll(async ({ playwright }) => {
   cleanup.add(() => api.deletePage(group.id));
   const form = await api.createForm(site.id, name);
   cleanup.add(() => api.deleteForm(form.id));
+  // A rule, so that the redirects screen has a row to audit.
+  const redirect = await api.createRedirect({
+    siteId: site.id,
+    from: `/${name}-old`,
+    to: { kind: 'url', url: `/${site.defaultLocale}/${name}` },
+  });
+  cleanup.add(() => api.deleteRedirect(redirect.id));
   const media = await api.uploadMedia(site.id, {
     name: `${name}.png`,
     mimeType: 'image/png',
@@ -127,6 +134,9 @@ function screens(): string[] {
     'settings/seo',
     'settings/business',
     'settings/collections',
+    // With a rule in it, so that a row is audited and not only the empty list.
+    'settings/redirects',
+    'settings/redirects?tab=missing',
     'settings/integrations',
     'settings/ai',
     'settings/cookies',

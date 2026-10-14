@@ -823,7 +823,7 @@ describe('router', () => {
       ).toBeTruthy();
     });
 
-    it('opens on the collections for a publisher, the one section that is theirs', async () => {
+    it('opens on the collections for a publisher, the first of the two sections that are theirs', async () => {
       vi.mocked(authApi.currentSession).mockResolvedValue({
         userId: 'user-3',
         email: 'publisher@example.test',
@@ -840,7 +840,7 @@ describe('router', () => {
       const menu = screen.getByRole('navigation', {
         name: 'Sezioni delle impostazioni',
       });
-      expect(menu.querySelectorAll('a')).toHaveLength(1);
+      expect(menu.querySelectorAll('a')).toHaveLength(2);
     });
 
     it("takes a publisher who types an admin's section back to the dashboard", async () => {

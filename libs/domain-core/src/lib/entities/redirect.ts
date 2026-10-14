@@ -209,10 +209,9 @@ export class Redirect {
       throw new InvalidRedirectError('target', 'empty');
     }
     if (target.kind === 'page') {
-      if (this.props.kind === 'pattern') {
-        // A pattern's target is a template, which is an address.
-        throw new InvalidRedirectError('target', 'page-for-a-pattern');
-      }
+      // A pattern may go to one page: everything under an old section to the
+      // page that replaced it. It takes nothing from the address then, which
+      // an address with `:name` parts is for.
       if (target.locale.trim() === '') {
         throw new InvalidRedirectError('target', 'empty');
       }

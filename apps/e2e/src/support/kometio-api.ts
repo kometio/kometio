@@ -226,6 +226,23 @@ export class KometioApi {
     await this.ok(this.request.delete(`redirects/${id}`));
   }
 
+  /** The rules of the site whose old address or destination holds `search`: what a test that made rules through the screen finds to remove. */
+  async redirects(siteId: string, search: string) {
+    const params = new URLSearchParams({ siteId, search, pageSize: '100' });
+    return z
+      .object({ items: z.array(redirectSchema) })
+      .parse(await this.json(this.request.get(`redirects?${params}`))).items;
+  }
+
+  /** What visitors asked for and the site did not have, most asked first. */
+  async missingPaths(siteId: string) {
+    const params = new URLSearchParams({ siteId, pageSize: '100' });
+    return z
+      .object({ items: z.array(z.object({ path: z.string() })) })
+      .parse(await this.json(this.request.get(`redirects/missing?${params}`)))
+      .items;
+  }
+
   private async json(pending: Promise<APIResponse>): Promise<unknown> {
     return (await this.ok(pending)).json();
   }

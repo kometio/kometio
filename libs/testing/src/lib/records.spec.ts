@@ -3,6 +3,8 @@ import {
   collectionRecordSchema,
   formRecordSchema,
   mediaRecordSchema,
+  missingPathRecordSchema,
+  redirectRecordSchema,
   reusableSectionListItemSchema,
   reusableSectionRecordSchema,
   siteLayoutSectionRecordSchema,
@@ -20,6 +22,8 @@ import {
   buildCollectionRecord,
   buildFormRecord,
   buildMediaRecord,
+  buildMissingPathRecord,
+  buildRedirectRecord,
   buildReusableSectionListItem,
   buildReusableSectionRecord,
   buildSiteLayoutSectionRecord,
@@ -65,6 +69,12 @@ describe('record builders', () => {
     );
     expect(mediaRecordSchema.parse(buildMediaRecord())).toEqual(
       buildMediaRecord(),
+    );
+    expect(redirectRecordSchema.parse(buildRedirectRecord())).toEqual(
+      buildRedirectRecord(),
+    );
+    expect(missingPathRecordSchema.parse(buildMissingPathRecord())).toEqual(
+      buildMissingPathRecord(),
     );
     expect(formRecordSchema.parse(buildFormRecord())).toEqual(
       buildFormRecord(),

@@ -3,6 +3,8 @@ import {
   type CollectionRecord,
   type FormRecord,
   type MediaRecord,
+  type MissingPathRecord,
+  type RedirectRecord,
   type ReusableSectionListItem,
   type ReusableSectionRecord,
   type SiteLayoutSectionRecord,
@@ -197,6 +199,41 @@ export function buildCollectionRecord(
     defaultTemplateId: null,
     createdAt: CREATED_AT,
     updatedAt: CREATED_AT,
+    ...overrides,
+  };
+}
+
+/** A rule that sends an old address to an address, permanently, as it was typed. */
+export function buildRedirectRecord(
+  overrides: Partial<RedirectRecord> = {},
+): RedirectRecord {
+  return {
+    id: 'redirect-1',
+    siteId: 'site-1',
+    from: '/old-page',
+    kind: 'exact',
+    target: { kind: 'url', url: '/it/new-page' },
+    status: 301,
+    origin: 'manual',
+    hits: 0,
+    lastHitAt: null,
+    needsATarget: false,
+    createdAt: CREATED_AT,
+    updatedAt: CREATED_AT,
+    ...overrides,
+  };
+}
+
+/** An address visitors asked for and the site did not have. */
+export function buildMissingPathRecord(
+  overrides: Partial<MissingPathRecord> = {},
+): MissingPathRecord {
+  return {
+    id: 'missing-1',
+    path: '/2019/05/old-post',
+    hits: 3,
+    firstSeenAt: CREATED_AT,
+    lastSeenAt: CREATED_AT,
     ...overrides,
   };
 }

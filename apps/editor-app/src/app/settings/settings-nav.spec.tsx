@@ -68,6 +68,7 @@ describe('SettingsNav', () => {
       ['SEO', '/settings/seo'],
       ['Dati attività', '/settings/business'],
       ['Collezioni', '/settings/collections'],
+      ['Reindirizzamenti', '/settings/redirects'],
       ['Integrazioni', '/settings/integrations'],
       ['Generazione AI', '/settings/ai'],
       ['Cookie e privacy', '/settings/cookies'],
@@ -76,9 +77,10 @@ describe('SettingsNav', () => {
     ]);
   });
 
-  // The collections go live without a publish (docs/roles.md), which makes
-  // them the one section a publisher owns; nothing else is theirs to open.
-  it('offers a publisher the collections and no group that would be empty', () => {
+  // The collections and the redirects go live without a publish
+  // (docs/roles.md), which makes them the sections a publisher owns; nothing
+  // else is theirs to open.
+  it('offers a publisher the collections and the redirects, and no group that would be empty', () => {
     renderNav('publisher');
 
     const menu = screen.getByRole('navigation', {
@@ -88,7 +90,7 @@ describe('SettingsNav', () => {
       within(menu)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Collezioni']);
+    ).toEqual(['Collezioni', 'Reindirizzamenti']);
     expect(
       within(menu)
         .getAllByRole('heading', { level: 2 })
@@ -125,7 +127,10 @@ describe('SettingsNav', () => {
 
       renderNav('publisher');
 
-      expect(linksOf().map(([name]) => name)).toEqual(['Collezioni']);
+      expect(linksOf().map(([name]) => name)).toEqual([
+        'Collezioni',
+        'Reindirizzamenti',
+      ]);
     });
   });
 
