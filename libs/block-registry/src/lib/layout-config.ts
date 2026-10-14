@@ -1,35 +1,5 @@
 import type { BlockDescriptor } from './field-types';
-import { backToTopBlock } from './blocks/back-to-top.block';
-import { hamburgerMenuBlock } from './blocks/hamburger-menu.block';
-import { languageSwitcherBlock } from './blocks/language-switcher.block';
-import { navDropdownBlock } from './blocks/nav-dropdown.block';
-import { navLinkBlock } from './blocks/nav-link.block';
-import { navBlock } from './blocks/nav.block';
-import { promoBarBlock } from './blocks/promo-bar.block';
-import { whatsAppButtonBlock } from './blocks/whatsapp-button.block';
-import { imageBlock } from './blocks/image.block';
-import { searchBoxBlock } from './blocks/search-box.block';
-import { textBlock } from './blocks/text.block';
-import { buttonBlock } from './blocks/button.block';
-import { containerBlock } from './blocks/container.block';
-import { columnsBlock } from './blocks/columns.block';
-import { columnBlock } from './blocks/column.block';
-import { socialLinksBlock } from './blocks/social-links.block';
-import { socialLinkBlock } from './blocks/social-link.block';
-import { dividerBlock } from './blocks/divider.block';
-import { spacerBlock } from './blocks/spacer.block';
-import { iconBlock } from './blocks/icon.block';
-
-export {
-  backToTopBlock,
-  hamburgerMenuBlock,
-  languageSwitcherBlock,
-  navDropdownBlock,
-  navLinkBlock,
-  navBlock,
-  promoBarBlock,
-  whatsAppButtonBlock,
-};
+import * as blocks from './blocks';
 
 /**
  * Shared by both the Header and Footer editors (docs/adr/0018): the
@@ -55,34 +25,34 @@ export {
  * shared section block.
  */
 export const headerFooterBlocks: BlockDescriptor[] = [
-  navBlock,
-  navLinkBlock,
-  languageSwitcherBlock,
-  hamburgerMenuBlock,
-  navDropdownBlock,
-  textBlock,
-  imageBlock,
-  promoBarBlock,
-  backToTopBlock,
-  whatsAppButtonBlock,
-  searchBoxBlock,
+  blocks.navBlock,
+  blocks.navLinkBlock,
+  blocks.languageSwitcherBlock,
+  blocks.hamburgerMenuBlock,
+  blocks.navDropdownBlock,
+  blocks.textBlock,
+  blocks.imageBlock,
+  blocks.promoBarBlock,
+  blocks.backToTopBlock,
+  blocks.whatsAppButtonBlock,
+  blocks.searchBoxBlock,
   // ADR-0056. A call to action in the header is something every site has,
   // and until now the palette had no button at all — the only way to get
   // one was a NavLink, which is a menu item and reads as one.
-  buttonBlock,
+  blocks.buttonBlock,
   // The header and footer stacked their blocks in a plain `flex-col` and
   // nothing else: two columns in a footer, or a row of links beside a
   // logo, were not expressible. These are the same layout blocks a page
   // has, and a footer is a layout problem like any other.
-  containerBlock,
-  columnsBlock,
-  columnBlock,
+  blocks.containerBlock,
+  blocks.columnsBlock,
+  blocks.columnBlock,
   // A row of social icons is a footer's most common single element.
-  socialLinksBlock,
-  socialLinkBlock,
+  blocks.socialLinksBlock,
+  blocks.socialLinkBlock,
   // A rule between the footer's sections, deliberate space, and a
   // standalone icon — all three belong wherever content does.
-  dividerBlock,
-  spacerBlock,
-  iconBlock,
+  blocks.dividerBlock,
+  blocks.spacerBlock,
+  blocks.iconBlock,
 ];
