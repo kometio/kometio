@@ -75,9 +75,8 @@ describe('ColorPickerField', () => {
   it('shows no clear button when value is undefined (a never-customized property, not the same as null)', () => {
     render(
       <ColorPickerField
-        // A property never customised has no value at all, which the field's
-        // type (`null` for none) does not say: that is what is being tested.
-        // @ts-expect-error -- undefined, not null
+        // A property never customised has no value at all, which is not the
+        // same as `null`: that is what is being tested.
         value={undefined}
         onChange={vi.fn()}
       />,

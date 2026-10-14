@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { AcfField } from '@kometio/ports';
 import type { PickedMedia, PickedPage } from '@kometio/shared-types';
 import type { AcfConversionResolvers } from './acf-conversion';
