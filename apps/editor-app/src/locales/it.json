@@ -2159,6 +2159,15 @@
       "fields": {
         "html": {
           "fieldLabel": "Codice HTML"
+        },
+        "consentCategory": {
+          "fieldLabel": "Parte quando il visitatore accetta",
+          "options": {
+            "experience": "Esperienza (video, mappe, widget)",
+            "functionality": "Funzionalità (preferenze, chat)",
+            "measurement": "Misurazione (statistiche)",
+            "necessary": "Niente: parte sempre"
+          }
         }
       }
     },

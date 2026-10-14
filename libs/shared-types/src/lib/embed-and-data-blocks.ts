@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { defineBlockContract } from './block-contract';
+import { consentCategorySchema } from './cookie-consent';
 import { asString } from './search-prose';
 
 /**
@@ -41,9 +42,17 @@ export const formBlockContract = defineBlockContract({
  * since that's the whole point of a free-embed block — YouTube/Calendly/
  * chat widgets are all script- or iframe-based — but any `on*` inline
  * event-handler attribute is stripped).
+ *
+ * `consentCategory` (docs/adr/0131) is what a visitor must have agreed to
+ * before it runs: its scripts and frames are third parties', and nothing of
+ * it is requested until the banner has been answered for that category.
+ * Optional in what is stored — a block made before it existed has none, and
+ * a stored page must keep reading — and `experience` when it is not said.
+ * `necessary` is the way to say that no consent is needed.
  */
 export const embedHtmlPropsSchema = z.object({
   html: z.string(),
+  consentCategory: consentCategorySchema.optional(),
 });
 export type EmbedHtmlProps = z.infer<typeof embedHtmlPropsSchema>;
 export const embedHtmlBlockContract = defineBlockContract({

@@ -179,5 +179,7 @@
   "blocks.glossaryTerm.label": "Voce di glossario",
   "blocks.hotspot.label": "Punto",
   "blocks.videoEmbed.label": "Video",
-  "embedHtml.demo": "I contenuti incorporati sono disattivati nella demo."
+  "embedHtml.demo": "I contenuti incorporati sono disattivati nella demo.",
+  "embedHtml.consent.message": "Questo contenuto viene caricato quando accetti i cookie corrispondenti.",
+  "embedHtml.consent.button": "Preferenze sui cookie"
 }

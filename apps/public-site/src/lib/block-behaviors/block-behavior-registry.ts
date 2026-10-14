@@ -58,7 +58,8 @@ export const BLOCK_BEHAVIOR_REGISTRY: Record<string, BlockBehavior[]> = {
   NewsletterSignup: captchaBehaviors,
   VideoEmbed: consentGatedEmbedBehaviors,
   MapEmbed: consentGatedEmbedBehaviors,
-  EmbedHtml: embedHtmlBehaviors,
+  // Its note, while it waits for the banner, offers the preferences too.
+  EmbedHtml: [...embedHtmlBehaviors, ...cookiePreferencesBehaviors],
   // Its links work without this; the behaviour only spares the round
   // trip, and re-runs after a live canvas insert like every other.
   TermList: termListBehaviors,

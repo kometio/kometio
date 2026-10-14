@@ -50,11 +50,19 @@ export function buildCookieConsentBootstrap(nonce: string): string {
 
   function activateMatching(record) {
     var templates = document.querySelectorAll('template[data-kometio-consent]');
+    var activated = 0;
     for (var i = 0; i < templates.length; i++) {
       var tpl = templates[i];
       if (has(record, tpl.getAttribute('data-kometio-consent'))) {
         activate(tpl);
+        activated++;
       }
+    }
+    // What was inert is live now, and any behaviour it needs (an embed that
+    // resizes itself) was looked for before it was there: this is the cue to
+    // look again (docs/adr/0131).
+    if (activated > 0) {
+      document.dispatchEvent(new CustomEvent('kometio-consent-activated'));
     }
   }
 

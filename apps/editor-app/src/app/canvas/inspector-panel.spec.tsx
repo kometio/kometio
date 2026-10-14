@@ -186,6 +186,46 @@ describe('InspectorPanel', () => {
     expect(onChangeProp).toHaveBeenCalledWith('layout', 'three-equal');
   });
 
+  // A block saved before a choice existed has no value for it, and the page
+  // is drawn as if it had the type's default: the select says which, instead
+  // of showing nothing chosen where something is in force.
+  it('shows the default for a select whose value was never saved', () => {
+    const block: Block = {
+      id: 'embed-1',
+      type: 'EmbedHtml',
+      props: { html: '<p>x</p>' },
+    };
+    const descriptor: BlockDescriptor = {
+      type: 'EmbedHtml',
+      label: 'Embed',
+      category: 'content',
+      defaultProps: { html: '', consentCategory: 'experience' },
+      fields: [
+        {
+          kind: 'select',
+          key: 'consentCategory',
+          label: 'Parte quando',
+          options: [
+            { label: 'Esperienza', value: 'experience' },
+            { label: 'Misurazione', value: 'measurement' },
+          ],
+        },
+      ],
+    };
+    render(
+      <InspectorPanel
+        block={block}
+        descriptor={descriptor}
+        onChangeProp={vi.fn()}
+        onChangeVariant={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole('combobox', { name: 'Parte quando' }).textContent,
+    ).toContain('Esperienza');
+  });
+
   // A custom field names its control; the map in custom-field-controls.tsx
   // turns that name into a component. Mocked here so this stays a test of
   // the INDIRECTION — that the right control is picked and its onChange

@@ -30,3 +30,17 @@ function wireEmbedHtmlResize(frame: HTMLElement): void {
 export const embedHtmlBehaviors: BlockBehavior[] = [
   { selector: '.kometio-embed-html__frame', wire: wireEmbedHtmlResize },
 ];
+
+/**
+ * An embed that waits for the banner shows a note where it will be, with a
+ * way to open the preferences. Once the embed itself is there the note is
+ * gone: it had nothing left to say (docs/adr/0131).
+ */
+export function settleEmbeds(root: ParentNode): void {
+  for (const note of root.querySelectorAll('.kometio-embed-html__consent')) {
+    const embed = note.closest('.kometio-embed-html');
+    if (embed?.querySelector('.kometio-embed-html__frame')) {
+      note.remove();
+    }
+  }
+}

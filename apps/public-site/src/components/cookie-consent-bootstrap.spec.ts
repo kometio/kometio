@@ -59,6 +59,33 @@ describe('buildCookieConsentBootstrap', () => {
     expect(document.getElementById('marker')).not.toBeNull();
   });
 
+  it('says so when it has activated something, so what was inert can be wired', () => {
+    document.body.innerHTML =
+      '<template data-kometio-consent="experience"><span id="marker">activated</span></template>';
+    setCookie({ v: 1, id: 'x', ts: 'now', cats: { experience: true } });
+    let activations = 0;
+    document.addEventListener('kometio-consent-activated', () => {
+      activations += 1;
+    });
+
+    runBootstrap();
+
+    expect(activations).toBeGreaterThan(0);
+  });
+
+  it('is quiet when there was nothing to activate', () => {
+    document.body.innerHTML =
+      '<template data-kometio-consent="experience"><span id="marker">x</span></template>';
+    let activations = 0;
+    document.addEventListener('kometio-consent-activated', () => {
+      activations += 1;
+    });
+
+    runBootstrap();
+
+    expect(activations).toBe(0);
+  });
+
   it('does not activate a template for a category not yet consented', () => {
     document.body.innerHTML =
       '<template data-kometio-consent="measurement" data-kometio-id="a1"><span id="marker">activated</span></template>';
