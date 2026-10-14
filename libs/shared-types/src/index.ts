@@ -2,6 +2,7 @@ export * from './lib/backfill-block-ids';
 export * from './lib/migrate-responsive-block-styles';
 export * from './lib/migrate-columns-layout';
 export * from './lib/migrate-variant-props';
+export * from './lib/audit-block-props';
 export * from './lib/business-info';
 export * from './lib/country-codes';
 export * from './lib/wordpress-import';

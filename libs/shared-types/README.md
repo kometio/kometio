@@ -184,6 +184,12 @@ scripts on the page) that must be silently ignored, not throw.
   `parseSearchExcerpt` turns Postgres `ts_headline`'s control-character
   match markers into `{ text, matched }` segments a UI can render safely
   without ever treating a search excerpt as trusted HTML.
+- `audit-block-props.ts` — `auditBlockProps` holds every block of a tree
+  to the schema of its type, as the public site does when it draws it, and
+  says which blocks it would skip and why
+  ([ADR-0124](../../docs/adr/0124-stored-block-props-are-audited.md)). It
+  rewrites nothing; `pnpm --filter @kometio/postgres-db run db:audit-block-props`
+  runs it over everything that is stored.
 - `migrate-variant-props.ts` — moves a block's LOOK out of its props and
   onto `Block.variant` (`pnpm db:migrate-variant-props`). Unlike the two
   below it this one has to run: `buttonPropsSchema` no longer declares
