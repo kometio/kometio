@@ -81,12 +81,15 @@ describe('AuthController', () => {
       invalidateSession: jest.fn(),
       invalidateAllSessionsForUser: jest.fn(),
       invalidateOtherSessionsForUser: jest.fn(),
+      listSessionsForUser: jest.fn(),
+      invalidateSessionOfUser: jest.fn(),
     };
     verificationTokenPort = {
       createToken: jest.fn(),
       consumeToken: jest.fn(),
     };
     emailPort = {
+      delivers: true,
       sendEmail: jest.fn(),
     };
     // Passes by default — the captcha-specific tests below override it.

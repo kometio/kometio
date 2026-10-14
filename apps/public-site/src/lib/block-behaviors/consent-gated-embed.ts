@@ -1,3 +1,7 @@
+import {
+  CONSENT_CATEGORIES,
+  type ConsentCategory,
+} from '@kometio/shared-types';
 import type { BlockBehavior } from './types';
 
 // Idempotency guard: `{ once: true }` on the click listener already stops
@@ -12,10 +16,10 @@ const INITIALIZED_ATTR = 'data-kometio-consent-embed-initialized';
  * without being asked (docs/adr/0131). A video, a map and a booking calendar
  * are third parties' pages: the same category the banner calls experience.
  */
-const DEFAULT_CATEGORY = 'experience';
+const DEFAULT_CATEGORY: ConsentCategory = 'experience';
 
 /** Whether the banner has been answered, for `category`, with a yes. No consent API (the canvas, a page with no banner) is no. */
-function hasAgreedTo(category: string): boolean {
+function hasAgreedTo(category: ConsentCategory): boolean {
   const consent: Partial<Window['kometioConsent']> | undefined =
     window.kometioConsent;
   return typeof consent?.has === 'function' && consent.has(category) === true;
@@ -47,7 +51,10 @@ function wireConsentGatedEmbed(button: HTMLElement): void {
   // The visitor who has already agreed — now, or when they answer the banner
   // — is not asked a second time. With no banner nobody can have agreed, and
   // the embed stays behind its button as it always did.
-  const category = button.dataset.embedCategory ?? DEFAULT_CATEGORY;
+  const category =
+    CONSENT_CATEGORIES.find(
+      (candidate) => candidate === button.dataset.embedCategory,
+    ) ?? DEFAULT_CATEGORY;
   if (hasAgreedTo(category)) {
     load();
     return;

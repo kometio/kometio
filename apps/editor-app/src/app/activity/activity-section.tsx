@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { ActivityEntry } from '@kometio/api-contracts';
-import { AUDIT_RETENTION_DAYS } from '@kometio/shared-types';
+import { AUDIT_RETENTION_DAYS, USER_ROLES } from '@kometio/shared-types';
 import { useFormatDate } from '../../lib/use-format-date';
 import { Pagination } from '../common/pagination';
 import { SettingsSectionHeader } from '../settings/settings-section';
@@ -48,6 +48,8 @@ export function ActivitySection({
           {items.map((entry) => {
             const sentence = activitySentence(entry);
             const { role, section, reason } = sentence.values;
+            // A role the editor has a word for; anything else is left unsaid.
+            const roleName = USER_ROLES.find((candidate) => candidate === role);
             const when = formatDate(entry.at);
             return (
               <li
@@ -60,7 +62,7 @@ export function ActivitySection({
                       ...sentence.values,
                       // The facts that are words of their own are said in the
                       // person's language, not as the server names them.
-                      role: role ? t(`users.role.${role}`) : '',
+                      role: roleName ? t(`users.role.${roleName}`) : '',
                       section: section
                         ? t(`activity.sections.${section}`, {
                             defaultValue: section,
