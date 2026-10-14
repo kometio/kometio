@@ -1,22 +1,19 @@
 import { ForbiddenException } from '@nestjs/common';
-import type { ExecutionContext } from '@nestjs/common';
-import type { Reflector } from '@nestjs/core';
+import { Reflector } from '@nestjs/core';
 import { testApiEnv } from '../test/api-env.test-fixture';
+import { executionContextOf } from '../test/http-doubles.test-fixture';
+import { ROLES_KEY } from './auth/roles.decorator';
 import { DemoModeGuard } from './demo-mode.guard';
 
 function contextOf(
   request: { method: string; route: { path: string } },
   roles: string[] | undefined,
 ) {
-  const reflector = {
-    getAllAndOverride: jest.fn().mockReturnValue(roles),
-  } as unknown as Reflector;
-  const context = {
-    switchToHttp: () => ({ getRequest: () => request }),
-    getHandler: () => undefined,
-    getClass: () => undefined,
-  } as unknown as ExecutionContext;
-  return { context, reflector };
+  const context = executionContextOf({
+    request,
+    metadata: roles === undefined ? {} : { [ROLES_KEY]: roles },
+  });
+  return { context, reflector: new Reflector() };
 }
 
 function guardFor(

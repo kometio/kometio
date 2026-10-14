@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { AcfField } from '@kometio/ports';
 import type { PickedMedia, PickedPage } from '@kometio/shared-types';
 import type { AcfConversionResolvers } from './acf-conversion';
@@ -302,10 +302,7 @@ describe('convertAcfFields', () => {
     const unknown = convertAcfFields(
       [field({ name: 'strano', type: 'text' })],
       { strano: 'qualcosa' },
-      {
-        resolveMedia: vi.fn(),
-        resolvePage: vi.fn(),
-      } as unknown as AcfConversionResolvers,
+      NOTHING,
     );
     expect(unknown.blocks).toHaveLength(1);
   });

@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DeploymentAlreadySetUpError } from '@kometio/domain-core';
-import type { AuthPort, DeploymentBootstrapPort } from '@kometio/ports';
 import {
   bootstrapDeployment,
   getSetupStatus,
@@ -32,8 +31,8 @@ function deps(hasBeenSetUp: boolean) {
       deploymentBootstrapPort: {
         hasBeenSetUp: vi.fn().mockResolvedValue(hasBeenSetUp),
         bootstrap,
-      } as DeploymentBootstrapPort,
-      authPort: { hashPassword, createSession } as unknown as AuthPort,
+      },
+      authPort: { hashPassword, createSession },
     },
     bootstrap,
     hashPassword,

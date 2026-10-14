@@ -12,6 +12,10 @@ module.exports = {
   displayName: '@kometio/api',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
+  // An integration suite starts a Nest application against a real Postgres
+  // and logs in, and several suites run at once: five seconds (the default)
+  // failed them under load for the machine and not for the code.
+  testTimeout: 15_000,
   setupFiles: ['<rootDir>/jest.setup.ts'],
   // After the environment, for `afterAll`: a folder of its own for uploads.
   setupFilesAfterEnv: ['<rootDir>/jest.uploads.setup.ts'],

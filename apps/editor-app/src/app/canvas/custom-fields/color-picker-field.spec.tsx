@@ -75,7 +75,9 @@ describe('ColorPickerField', () => {
   it('shows no clear button when value is undefined (a never-customized property, not the same as null)', () => {
     render(
       <ColorPickerField
-        value={undefined as unknown as null}
+        // A property never customised has no value at all, which is not the
+        // same as `null`: that is what is being tested.
+        value={undefined}
         onChange={vi.fn()}
       />,
     );

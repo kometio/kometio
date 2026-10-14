@@ -12,13 +12,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import {
   bootstrapDeployment,
   getSetupStatus,
   openSiteArchive,
 } from '@kometio/application';
-import { SessionCookies } from '../auth/session-cookies';
+import { SessionCookies, type CookieWriter } from '../auth/session-cookies';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
   bootstrapDeploymentBodySchema,
@@ -53,9 +53,15 @@ const SETUP_TOKEN_REFUSED =
 export class SetupController {
   constructor(
     @Inject(SETUP_DEPS) private readonly deps: SetupDeps,
-    private readonly setupToken: SetupTokenRegistry,
+    // By class, as Nest injects them, and typed by what is asked of them.
+    @Inject(SetupTokenRegistry)
+    private readonly setupToken: Pick<SetupTokenRegistry, 'verify' | 'clear'>,
     private readonly cookies: SessionCookies,
-    private readonly requestTimeout: RequestTimeoutPolicy,
+    @Inject(RequestTimeoutPolicy)
+    private readonly requestTimeout: Pick<
+      RequestTimeoutPolicy,
+      'forInstallation'
+    >,
   ) {}
 
   /**
@@ -101,8 +107,8 @@ export class SetupController {
   async bootstrap(
     @Body(new ZodValidationPipe(bootstrapDeploymentBodySchema))
     body: BootstrapDeploymentBody,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
+    @Req() request: Pick<Request, 'headers'>,
+    @Res({ passthrough: true }) response: CookieWriter,
   ): Promise<{ tenantId: string; siteId: string; userId: string }> {
     // Before anything else, and before any password hashing: whoever is
     // asking has to prove they can read this server's logs. See

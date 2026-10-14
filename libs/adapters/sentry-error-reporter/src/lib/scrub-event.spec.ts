@@ -217,8 +217,11 @@ describe('redact: what is kept is what is safe', () => {
     });
 
     it('does not throw on what is not a string', () => {
-      expect(redact(undefined as unknown as string)).toBe('');
-      expect(redact(42 as unknown as string)).toBe('');
+      // What an event from a library that did not follow its own types holds.
+      // @ts-expect-error -- not a string
+      expect(redact(undefined)).toBe('');
+      // @ts-expect-error -- not a string
+      expect(redact(42)).toBe('');
     });
   });
 });

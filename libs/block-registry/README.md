@@ -85,6 +85,18 @@ The preset this paragraph used to describe (`BlockStyleRegistry.STANDARD`,
 copied by 33 blocks) is gone with it: the five properties are each contract's
 own `style`.
 
+## Adding a block
+
+1. The file: `blocks/<name>.block.ts`, which exports one `…Block` built with
+   `coreBlock` on its contract (ADR-0116).
+2. `pnpm run blocks:barrel`, which writes `blocks/index.ts` from the files that
+   are there (ADR-0132). The registry's spec fails, naming that command, if it
+   is behind the directory.
+3. Its place in the picker: one line in `pageBlocks` (`config.ts`) — or in
+   `headerFooterBlocks` (`layout-config.ts`) — which is the order the picker
+   shows and so a decision. A block that is in neither is a file nobody can
+   reach, and the spec says so.
+
 ## The two registries (`config.ts` / `layout-config.ts`)
 
 - **`pageBlocks`** (`config.ts`) — the ~40 blocks droppable into ordinary

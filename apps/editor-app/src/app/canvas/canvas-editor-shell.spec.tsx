@@ -566,19 +566,17 @@ describe('CanvasEditorShell', () => {
    * the canvas is the whole screen and each panel is a sheet over it.
    */
   it('on a phone-narrow window, puts the panels behind a bar at the bottom and opens them as sheets', async () => {
-    const matchMedia = vi.spyOn(window, 'matchMedia').mockImplementation(
-      (query: string) =>
-        ({
+    const matchMedia = vi
+      .spyOn(window, 'matchMedia')
+      .mockImplementation((query: string): MediaQueryList =>
+        Object.assign(new EventTarget(), {
           matches: query === '(max-width: 767px)',
           media: query,
           onchange: null,
-          addEventListener: vi.fn(),
-          removeEventListener: vi.fn(),
           addListener: vi.fn(),
           removeListener: vi.fn(),
-          dispatchEvent: vi.fn(),
-        }) as unknown as MediaQueryList,
-    );
+        }),
+      );
     try {
       renderShell();
       const iframe = await findCanvasIframe();

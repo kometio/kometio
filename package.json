@@ -8,6 +8,7 @@
     "check:image-modules": "tsc -p docker/kometio",
     "verify": "pnpm run check:tsconfig && pnpm run check:image-modules && nx run-many -t typecheck && nx run-many -t lint && nx run-many -t test --coverage --parallel=1",
     "e2e:block-samples": "tsx tools/dump-block-samples.mts",
+    "blocks:barrel": "tsx tools/generate-block-barrel.mts",
     "theme:copies-reviewed": "node tools/theme-core-copies-reviewed.mts"
   },
   "private": true,

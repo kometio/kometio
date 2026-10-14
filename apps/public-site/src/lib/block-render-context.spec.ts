@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { PublishedSite } from '@kometio/api-contracts';
 import { Translator } from '@kometio/theme-runtime';
+import { publishedSite } from '../test/published-site.test-fixture';
 import {
   COMPUTED_BLOCK_PROPS,
   commonBlockProps,
@@ -15,7 +15,7 @@ function context(
     locale: 'it',
     i18n: new Translator('it'),
     translations: [{ locale: 'en', slug: 'hello', ancestorSlugs: [] }],
-    site: { themeName: 'classic' } as PublishedSite,
+    site: publishedSite(),
     ancestors: [{ slug: 'servizi', title: 'Servizi' }],
     currentPageTitle: 'Chi siamo',
     editable: true,

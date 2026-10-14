@@ -12,8 +12,8 @@ import type {
 import { describeDevice } from '../sessions/describe-device';
 
 export interface LoginUserDeps {
-  userRepository: UserRepositoryPort;
-  authPort: AuthPort;
+  userRepository: Pick<UserRepositoryPort, 'findByEmail'>;
+  authPort: Pick<AuthPort, 'verifyPassword' | 'createSession'>;
   captchaPort: CaptchaPort;
 }
 

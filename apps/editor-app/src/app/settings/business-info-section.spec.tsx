@@ -1,6 +1,21 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  configure,
+  fireEvent,
+  getConfig,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { chooseOption, optionNames } from '../../test/select.test-fixture';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ISO_COUNTRY_CODES } from '@kometio/shared-types';
 import { TooltipProvider } from '../../components/ui/tooltip';
@@ -46,6 +61,23 @@ function renderSection(site = sampleSite) {
     </QueryClientProvider>,
   );
 }
+
+/*
+ * The form draws a country list of two hundred and fifty options and a save
+ * bar that appears when something changes. Under a loaded machine (the whole
+ * workspace's suites at once, or CI's one small runner) that is more than the
+ * second `findBy` and `waitFor` are given by default, and these two tests
+ * failed for it and for nothing else. The wait is what is raised; what is
+ * waited for, and what is asserted, is as it was.
+ */
+const SLOW_RENDER_MS = 10_000;
+const defaultTimeout = getConfig().asyncUtilTimeout;
+beforeAll(() => {
+  configure({ asyncUtilTimeout: SLOW_RENDER_MS });
+});
+afterAll(() => {
+  configure({ asyncUtilTimeout: defaultTimeout });
+});
 
 describe('BusinessInfoSection', () => {
   afterEach(() => {

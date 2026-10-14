@@ -135,6 +135,11 @@ export default defineConfig(({ mode }) => ({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['src/test-setup.ts'],
+    // A test renders whole screens in jsdom: on an idle machine a few hundred
+    // milliseconds, on the one running every suite of the workspace several
+    // seconds. Five (the default) failed the slow ones for the load, not the
+    // code; the figure is what a loaded run was measured to need, doubled.
+    testTimeout: 15_000,
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {

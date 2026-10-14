@@ -1,7 +1,7 @@
 import { Logger, NotFoundException } from '@nestjs/common';
-import type { ArgumentsHost } from '@nestjs/common';
 import { PageGroupNotFoundError } from '@kometio/domain-core';
 import type { ErrorReporterPort } from '@kometio/ports';
+import { executionContextOf } from '../test/http-doubles.test-fixture';
 import { DeploymentNotSetUpError } from './deployment-tenant.resolver';
 import { HttpExceptionFilter } from './http-exception.filter';
 import type { RequestWithId } from './request-id.middleware';
@@ -9,13 +9,7 @@ import type { RequestWithId } from './request-id.middleware';
 function buildHost(request: Partial<RequestWithId>) {
   const json = jest.fn();
   const status = jest.fn().mockReturnValue({ json });
-  const response = { status };
-  const host = {
-    switchToHttp: () => ({
-      getRequest: () => request,
-      getResponse: () => response,
-    }),
-  } as unknown as ArgumentsHost;
+  const host = executionContextOf({ request, response: { status } });
   return { host, status, json };
 }
 

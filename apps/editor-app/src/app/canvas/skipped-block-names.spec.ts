@@ -3,7 +3,7 @@ import type { BlockDescriptor } from '@kometio/block-registry';
 import type { InvalidBlockProps } from '@kometio/shared-types';
 import { skippedBlockNames } from './skipped-block-names';
 
-const image = {
+const image: BlockDescriptor = {
   type: 'Image',
   label: 'blocks.image.label',
   category: 'media',
@@ -12,7 +12,7 @@ const image = {
     { kind: 'text', key: 'caption', label: 'blocks.image.caption' },
     { kind: 'text', key: 'media', label: 'blocks.image.media' },
   ],
-} as unknown as BlockDescriptor;
+};
 
 const names: Record<string, string> = {
   'blocks.image.label': 'Immagine',

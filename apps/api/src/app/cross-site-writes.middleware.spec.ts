@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction } from 'express';
 import { rejectCrossSiteWrites } from './cross-site-writes.middleware';
 
 const editorOrigin = 'https://editor.esempio.it';
@@ -11,15 +11,13 @@ function run(request: {
   const next: NextFunction = jest.fn();
   const json = jest.fn();
   const status = jest.fn().mockReturnValue({ json });
-  // Express's Request and Response have far more than the three members
-  // read here; a minimal double stands in through `unknown`.
   rejectCrossSiteWrites(editorOrigin)(
     {
       headers: {},
       cookies: { kometio_session: 'token' },
       ...request,
-    } as unknown as Request,
-    { status } as unknown as Response,
+    },
+    { status },
     next,
   );
   return { passed: jest.mocked(next).mock.calls.length === 1, status };

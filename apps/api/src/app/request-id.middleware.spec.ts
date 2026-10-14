@@ -1,15 +1,11 @@
-import type { NextFunction, Response } from 'express';
-import {
-  requestIdMiddleware,
-  type RequestWithId,
-} from './request-id.middleware';
+import type { NextFunction } from 'express';
+import { requestIdMiddleware } from './request-id.middleware';
 
 function run(headers: Record<string, string | string[] | undefined>) {
-  // What the middleware reads of an Express request, which is a class with a
-  // whole server behind it.
-  const req = { headers } as unknown as RequestWithId;
+  // What the middleware reads of the request, and what it adds to it.
+  const req: { headers: typeof headers; requestId?: string } = { headers };
   const setHeader = jest.fn();
-  const res = { setHeader } as unknown as Response;
+  const res = { setHeader };
   const next: NextFunction = jest.fn();
 
   requestIdMiddleware(req, res, next);

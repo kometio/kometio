@@ -18,8 +18,10 @@ const tenantId = 'tenant-1';
 describe('loginUser', () => {
   it('creates a session when the account is active and the password matches', async () => {
     const userRepository = {
-      findByEmail: vi.fn().mockResolvedValue(buildUser({ isActive: true })),
-    } as unknown as UserRepositoryPort;
+      findByEmail: vi
+        .fn<UserRepositoryPort['findByEmail']>()
+        .mockResolvedValue(buildUser({ isActive: true })),
+    };
     const session: Session = {
       token: 'a-token',
       userId: 'user-1',
@@ -27,9 +29,13 @@ describe('loginUser', () => {
       expiresAt: new Date(),
     };
     const authPort = {
-      verifyPassword: vi.fn().mockResolvedValue(true),
-      createSession: vi.fn().mockResolvedValue(session),
-    } as unknown as AuthPort;
+      verifyPassword: vi
+        .fn<AuthPort['verifyPassword']>()
+        .mockResolvedValue(true),
+      createSession: vi
+        .fn<AuthPort['createSession']>()
+        .mockResolvedValue(session),
+    };
     const captchaPort = new FakeCaptchaPort();
 
     const result = await loginUser(
@@ -47,12 +53,16 @@ describe('loginUser', () => {
 
   it('rejects a deactivated account even with the correct password', async () => {
     const userRepository = {
-      findByEmail: vi.fn().mockResolvedValue(buildUser({ isActive: false })),
-    } as unknown as UserRepositoryPort;
+      findByEmail: vi
+        .fn<UserRepositoryPort['findByEmail']>()
+        .mockResolvedValue(buildUser({ isActive: false })),
+    };
     const authPort = {
-      verifyPassword: vi.fn().mockResolvedValue(true),
-      createSession: vi.fn(),
-    } as unknown as AuthPort;
+      verifyPassword: vi
+        .fn<AuthPort['verifyPassword']>()
+        .mockResolvedValue(true),
+      createSession: vi.fn<AuthPort['createSession']>(),
+    };
     const captchaPort = new FakeCaptchaPort();
 
     await expect(
@@ -71,12 +81,16 @@ describe('loginUser', () => {
 
   it('checks the password before isActive, so a wrong password never reveals deactivation status', async () => {
     const userRepository = {
-      findByEmail: vi.fn().mockResolvedValue(buildUser({ isActive: false })),
-    } as unknown as UserRepositoryPort;
+      findByEmail: vi
+        .fn<UserRepositoryPort['findByEmail']>()
+        .mockResolvedValue(buildUser({ isActive: false })),
+    };
     const authPort = {
-      verifyPassword: vi.fn().mockResolvedValue(false),
-      createSession: vi.fn(),
-    } as unknown as AuthPort;
+      verifyPassword: vi
+        .fn<AuthPort['verifyPassword']>()
+        .mockResolvedValue(false),
+      createSession: vi.fn<AuthPort['createSession']>(),
+    };
     const captchaPort = new FakeCaptchaPort();
 
     await expect(
@@ -94,12 +108,14 @@ describe('loginUser', () => {
 
   it('rejects an unknown email', async () => {
     const userRepository = {
-      findByEmail: vi.fn().mockResolvedValue(null),
-    } as unknown as UserRepositoryPort;
+      findByEmail: vi
+        .fn<UserRepositoryPort['findByEmail']>()
+        .mockResolvedValue(null),
+    };
     const authPort = {
-      verifyPassword: vi.fn(),
-      createSession: vi.fn(),
-    } as unknown as AuthPort;
+      verifyPassword: vi.fn<AuthPort['verifyPassword']>(),
+      createSession: vi.fn<AuthPort['createSession']>(),
+    };
     const captchaPort = new FakeCaptchaPort();
 
     await expect(
@@ -121,12 +137,12 @@ describe('loginUser', () => {
   // limiting — this is that second line.
   it('rejects a missing/invalid CAPTCHA token before even looking up the account', async () => {
     const userRepository = {
-      findByEmail: vi.fn(),
-    } as unknown as UserRepositoryPort;
+      findByEmail: vi.fn<UserRepositoryPort['findByEmail']>(),
+    };
     const authPort = {
-      verifyPassword: vi.fn(),
-      createSession: vi.fn(),
-    } as unknown as AuthPort;
+      verifyPassword: vi.fn<AuthPort['verifyPassword']>(),
+      createSession: vi.fn<AuthPort['createSession']>(),
+    };
     const captchaPort = new FakeCaptchaPort();
 
     await expect(

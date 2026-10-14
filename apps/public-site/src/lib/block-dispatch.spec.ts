@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { BlockDescriptor } from '@kometio/block-sdk';
 import { headerFooterBlocks, pageBlocks } from '@kometio/block-registry';
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+import { Translator } from '@kometio/theme-runtime';
+import { publishedSite } from '../test/published-site.test-fixture';
 import { coreDispatchEntries } from './block-dispatch';
 import type { BlockRenderContext } from './block-render-context';
 
-const component = (() => null) as unknown as AstroComponentFactory;
+const component: AstroComponentFactory = () => new Response();
 
 function descriptor(
   type: string,
@@ -27,14 +29,15 @@ function entriesFor(...descriptors: BlockDescriptor[]) {
 
 const context = (
   children?: BlockRenderContext['block']['children'],
-): BlockRenderContext =>
-  ({
-    block: { id: 'b1', type: 'X', props: {}, children },
-    locale: 'it',
-    translations: [],
-    ancestors: [],
-    currentPageTitle: '',
-  }) as unknown as BlockRenderContext;
+): BlockRenderContext => ({
+  block: { id: 'b1', type: 'X', props: {}, children },
+  locale: 'it',
+  i18n: new Translator('it'),
+  translations: [],
+  site: publishedSite(),
+  ancestors: [],
+  currentPageTitle: '',
+});
 
 describe('coreDispatchEntries', () => {
   it('takes a style only for a type whose descriptor lists style properties', () => {

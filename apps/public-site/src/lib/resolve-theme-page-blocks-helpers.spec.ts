@@ -56,9 +56,8 @@ describe('checkCoreTypeCollisions', () => {
 });
 
 describe('buildDispatchEntry', () => {
-  const component = (() => null) as unknown as Parameters<
-    typeof buildDispatchEntry
-  >[1];
+  const component: Parameters<typeof buildDispatchEntry>[1] = () =>
+    new Response();
   const schema = {
     parse: (props: unknown) => props as Record<string, unknown>,
   };

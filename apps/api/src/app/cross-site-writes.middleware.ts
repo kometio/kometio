@@ -22,7 +22,11 @@ const READ_ONLY_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
  * no session at all, which has nothing to forge.
  */
 export function rejectCrossSiteWrites(editorOrigin: string) {
-  return (request: Request, response: Response, next: NextFunction) => {
+  return (
+    request: Pick<Request, 'method' | 'cookies' | 'headers'>,
+    response: Pick<Response, 'status'>,
+    next: NextFunction,
+  ) => {
     if (
       READ_ONLY_METHODS.has(request.method) ||
       !hasSessionCookie(request) ||
@@ -38,7 +42,7 @@ export function rejectCrossSiteWrites(editorOrigin: string) {
   };
 }
 
-function hasSessionCookie(request: Request): boolean {
+function hasSessionCookie(request: Pick<Request, 'cookies'>): boolean {
   const cookies: unknown = request.cookies;
   return (
     typeof cookies === 'object' &&
@@ -47,7 +51,10 @@ function hasSessionCookie(request: Request): boolean {
   );
 }
 
-function comesFromEditor(request: Request, editorOrigin: string): boolean {
+function comesFromEditor(
+  request: Pick<Request, 'headers'>,
+  editorOrigin: string,
+): boolean {
   const origin = request.headers.origin;
   if (origin !== undefined) return origin === editorOrigin;
   const fetchSite = request.headers['sec-fetch-site'];

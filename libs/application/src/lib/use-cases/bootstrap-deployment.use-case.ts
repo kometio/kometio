@@ -12,7 +12,7 @@ import { describeDevice } from '../sessions/describe-device';
 
 export interface BootstrapDeploymentDeps {
   deploymentBootstrapPort: DeploymentBootstrapPort;
-  authPort: AuthPort;
+  authPort: Pick<AuthPort, 'hashPassword' | 'createSession'>;
 }
 
 /** What was created, and the session that signs its admin in. */
