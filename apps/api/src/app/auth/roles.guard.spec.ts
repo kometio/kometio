@@ -1,16 +1,14 @@
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
-import type { ExecutionContext } from '@nestjs/common';
-import type { Reflector } from '@nestjs/core';
+import { Reflector } from '@nestjs/core';
 import type { UserRepositoryPort } from '@kometio/ports';
 import { buildUser } from '@kometio/testing';
+import { executionContextOf } from '../../test/http-doubles.test-fixture';
+import { ROLES_KEY } from './roles.decorator';
 import { RolesGuard } from './roles.guard';
-import type { AuthenticatedRequest } from './session-auth.guard';
 
 const tenantId = 'tenant-1';
 
-// Express's Request has 100+ members — only `tenantId`/`userId` are read
-// here, so a minimal double stands in via `unknown` rather than
-// implementing the whole interface.
+/** A route that requires `requiredRoles` (or none), asked by a request that carries `session`. */
 function buildContext(
   requiredRoles: string[] | undefined,
   session: { tenantId?: string; userId?: string } = {
@@ -18,16 +16,13 @@ function buildContext(
     userId: 'user-1',
   },
 ) {
-  const request = session as unknown as AuthenticatedRequest;
   return {
-    context: {
-      switchToHttp: () => ({ getRequest: () => request }),
-      getHandler: () => undefined,
-      getClass: () => undefined,
-    } as unknown as ExecutionContext,
-    reflector: {
-      getAllAndOverride: jest.fn().mockReturnValue(requiredRoles),
-    } as unknown as jest.Mocked<Reflector>,
+    context: executionContextOf({
+      request: session,
+      metadata:
+        requiredRoles === undefined ? {} : { [ROLES_KEY]: requiredRoles },
+    }),
+    reflector: new Reflector(),
   };
 }
 

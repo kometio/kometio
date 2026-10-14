@@ -14,12 +14,11 @@ function form(fields: { id: string; label: string }[]): Form {
       label: f.label,
       required: false,
     })),
+    steps: [],
     notificationEmails: [],
-    newsletterProvider: null,
-    successMessage: '',
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
-  } as unknown as Parameters<typeof Form.fromProps>[0]);
+  });
 }
 
 function submission(

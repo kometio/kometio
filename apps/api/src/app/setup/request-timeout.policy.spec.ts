@@ -1,16 +1,20 @@
 import { createServer } from 'node:http';
-import type { HttpAdapterHost } from '@nestjs/core';
+import { HttpAdapterHost } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import {
   ARCHIVE_REQUEST_TIMEOUT_MS,
   DEFAULT_REQUEST_TIMEOUT_MS,
   RequestTimeoutPolicy,
 } from './request-timeout.policy';
 
-/** What the policy reads of Nest's host, which is a class with a whole adapter behind it: the server. */
-const hostOf = (server: unknown) =>
-  ({
-    httpAdapter: { getHttpServer: () => server },
-  }) as unknown as HttpAdapterHost;
+/** Nest's own host, over an adapter that has been given the server — or has not. */
+function hostOf(server?: ReturnType<typeof createServer>): HttpAdapterHost {
+  const adapter = new ExpressAdapter();
+  if (server) adapter.setHttpServer(server);
+  const host = new HttpAdapterHost();
+  host.httpAdapter = adapter;
+  return host;
+}
 
 describe('RequestTimeoutPolicy', () => {
   it('gives an archive time to arrive while there is no site to receive it into', () => {
@@ -33,7 +37,7 @@ describe('RequestTimeoutPolicy', () => {
 
   it('leaves alone a server it is not given', () => {
     expect(() =>
-      new RequestTimeoutPolicy(hostOf(undefined)).forInstallation(true),
+      new RequestTimeoutPolicy(hostOf()).forInstallation(true),
     ).not.toThrow();
   });
 });

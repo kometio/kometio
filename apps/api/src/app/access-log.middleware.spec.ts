@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction } from 'express';
 import {
   accessJson,
   accessLog,
@@ -36,12 +36,7 @@ function exchange({
     statusCode,
     getHeader: (name: string) => headers[name.toLowerCase()],
   });
-  // What Express hands a middleware is a Request and a Response; these are
-  // the parts of them it uses, and nothing else is read.
-  return {
-    req: req as unknown as Request,
-    res: res as unknown as Response & EventEmitter,
-  };
+  return { req, res };
 }
 
 function run(options: Parameters<typeof exchange>[0], format: 'text' | 'json') {

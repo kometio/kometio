@@ -1,5 +1,4 @@
 import { UnauthorizedException } from '@nestjs/common';
-import type { Request, Response } from 'express';
 import type {
   AuthPort,
   DeploymentBootstrapPort,
@@ -12,7 +11,7 @@ import {
 import { Readable } from 'node:stream';
 import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
 import { testApiEnv } from '../../test/api-env.test-fixture';
-import { SessionCookies } from '../auth/session-cookies';
+import { SessionCookies, type CookieWriter } from '../auth/session-cookies';
 import type { RequestTimeoutPolicy } from './request-timeout.policy';
 import { SetupController } from './setup.controller';
 import type { BootstrapDeploymentBody } from '@kometio/api-contracts';
@@ -32,7 +31,7 @@ describe('SetupController (unit)', () => {
   let authPort: jest.Mocked<Pick<AuthPort, 'hashPassword' | 'createSession'>>;
   let tenant: jest.Mocked<Pick<DeploymentTenantResolver, 'refresh'>>;
   let setupToken: jest.Mocked<Pick<SetupTokenRegistry, 'verify' | 'clear'>>;
-  let response: jest.Mocked<Pick<Response, 'cookie'>>;
+  let response: jest.Mocked<CookieWriter>;
   let requestTimeout: jest.Mocked<
     Pick<RequestTimeoutPolicy, 'forInstallation'>
   >;
@@ -53,28 +52,24 @@ describe('SetupController (unit)', () => {
     };
     tenant = { refresh: jest.fn() };
     setupToken = { verify: jest.fn().mockReturnValue(true), clear: jest.fn() };
-    response = { cookie: jest.fn() };
+    response = { cookie: jest.fn(), clearCookie: jest.fn() };
     requestTimeout = { forInstallation: jest.fn() };
 
     controller = new SetupController(
       {
         deploymentBootstrapPort,
-        authPort: authPort as unknown as AuthPort,
-        tenant: tenant as unknown as DeploymentTenantResolver,
+        authPort,
+        tenant,
         siteImport: null,
       },
-      setupToken as unknown as SetupTokenRegistry,
+      setupToken,
       new SessionCookies(testApiEnv()),
-      requestTimeout as unknown as RequestTimeoutPolicy,
+      requestTimeout,
     );
   });
 
   function bootstrap(body = VALID_BODY) {
-    return controller.bootstrap(
-      body,
-      { headers: {} } as unknown as Request,
-      response as unknown as Response,
-    );
+    return controller.bootstrap(body, { headers: {} }, response);
   }
 
   it('takes back the long wait for an archive once the deployment exists', async () => {
@@ -183,13 +178,13 @@ describe('SetupController (unit)', () => {
       controller = new SetupController(
         {
           deploymentBootstrapPort,
-          authPort: authPort as unknown as AuthPort,
-          tenant: tenant as unknown as DeploymentTenantResolver,
+          authPort,
+          tenant,
           siteImport,
         },
-        setupToken as unknown as SetupTokenRegistry,
+        setupToken,
         new SessionCookies(testApiEnv()),
-        requestTimeout as unknown as RequestTimeoutPolicy,
+        requestTimeout,
       );
     });
 
@@ -231,13 +226,13 @@ describe('SetupController (unit)', () => {
       const without = new SetupController(
         {
           deploymentBootstrapPort,
-          authPort: authPort as unknown as AuthPort,
-          tenant: tenant as unknown as DeploymentTenantResolver,
+          authPort,
+          tenant,
           siteImport: null,
         },
-        setupToken as unknown as SetupTokenRegistry,
+        setupToken,
         new SessionCookies(testApiEnv()),
-        requestTimeout as unknown as RequestTimeoutPolicy,
+        requestTimeout,
       );
 
       await expect(

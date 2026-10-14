@@ -15,8 +15,8 @@ export interface RequestWithId extends Request {
  * generating a new one otherwise.
  */
 export function requestIdMiddleware(
-  req: Request,
-  res: Response,
+  req: Pick<Request, 'headers'>,
+  res: Pick<Response, 'setHeader'>,
   next: NextFunction,
 ): void {
   const incoming = req.headers['x-request-id'];
@@ -24,7 +24,7 @@ export function requestIdMiddleware(
     typeof incoming === 'string' && incoming.trim() !== ''
       ? incoming
       : randomUUID();
-  Object.assign<Request, Pick<RequestWithId, 'requestId'>>(req, { requestId });
+  Object.assign(req, { requestId });
   res.setHeader('X-Request-Id', requestId);
   next();
 }

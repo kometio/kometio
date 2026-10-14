@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import {
   InvalidCredentialsError,
   UserNotActiveError,
@@ -49,7 +49,11 @@ import {
 } from '@kometio/api-contracts';
 import { SessionAuthGuard } from './session-auth.guard';
 import { AuthErrorsFilter } from './auth-errors.filter';
-import { SESSION_COOKIE_NAME, SessionCookies } from './session-cookies';
+import {
+  SESSION_COOKIE_NAME,
+  SessionCookies,
+  type CookieWriter,
+} from './session-cookies';
 import { TenantId, UserId } from './session-identity.decorator';
 import type { AuthDeps } from './auth.deps';
 import { AUTH_DEPS } from './auth.tokens';
@@ -75,8 +79,8 @@ export class AuthController {
   @HttpCode(200)
   async login(
     @Body(new ZodValidationPipe(loginBodySchema)) body: LoginBody,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
+    @Req() request: Pick<Request, 'headers'>,
+    @Res({ passthrough: true }) response: CookieWriter,
   ) {
     const tenantId = await this.deps.tenant.require();
     const session = await loginUser(this.deps, {
@@ -102,8 +106,9 @@ export class AuthController {
   @Post('logout')
   @HttpCode(200)
   async logout(
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
+    // cookie-parser may not have run: there may be none.
+    @Req() request: Partial<Pick<Request, 'cookies'>>,
+    @Res({ passthrough: true }) response: CookieWriter,
   ) {
     const token: unknown = request.cookies?.[SESSION_COOKIE_NAME];
     if (typeof token === 'string') {

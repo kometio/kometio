@@ -47,21 +47,15 @@ describe('http-client', () => {
   });
 
   it('throws even when the error body cannot be parsed as JSON', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: () => Promise.reject(new Error('not json')),
-    } as unknown as Response);
+    vi.mocked(fetch).mockResolvedValue(
+      new Response('<html>not json</html>', { status: 500 }),
+    );
 
     await expect(request('/broken')).rejects.toThrow(/API 500/);
   });
 
   it('resolves with undefined for a 204 No Content response', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      status: 204,
-      json: () => Promise.reject(new Error('should not be called')),
-    } as unknown as Response);
+    vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 204 }));
 
     await expect(request('/pages/page-1')).resolves.toBeUndefined();
   });

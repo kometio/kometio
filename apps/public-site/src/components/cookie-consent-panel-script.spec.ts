@@ -35,17 +35,25 @@ function click(selector: string) {
   document.querySelector<HTMLElement>(selector)?.click();
 }
 
-describe('COOKIE_CONSENT_PANEL_SCRIPT', () => {
-  let kometioConsent: {
-    get: ReturnType<typeof vi.fn>;
-    apply: ReturnType<typeof vi.fn>;
+type Consent = Window['kometioConsent'];
+
+/** The consent API the bootstrap defines, with every call kept to be read back. */
+function consentApi() {
+  return {
+    get: vi.fn<Consent['get']>(() => null),
+    has: vi.fn<Consent['has']>(() => false),
+    apply: vi.fn<Consent['apply']>(),
+    openPreferences: vi.fn<Consent['openPreferences']>(),
   };
+}
+
+describe('COOKIE_CONSENT_PANEL_SCRIPT', () => {
+  let kometioConsent: ReturnType<typeof consentApi>;
 
   beforeEach(() => {
     document.body.innerHTML = BANNER_HTML;
-    kometioConsent = { get: vi.fn(() => null), apply: vi.fn() };
-    window.kometioConsent =
-      kometioConsent as unknown as typeof window.kometioConsent;
+    kometioConsent = consentApi();
+    window.kometioConsent = kometioConsent;
   });
 
   afterEach(() => {

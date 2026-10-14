@@ -72,7 +72,7 @@ describe('mergeTranslatedContent', () => {
 
     const merged = mergeTranslatedContent(groupContent, {
       undefined: { body: 'Should never apply' },
-    } as unknown as Record<string, Record<string, string>>);
+    });
 
     expect(merged).toEqual(groupContent);
   });

@@ -76,7 +76,15 @@ export function accessLog({
   logger = new Logger('Access'),
   skip = () => false,
 }: AccessLogOptions) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (
+    // `route` is there only once a route has matched: a request refused earlier has none.
+    req: Pick<Request, 'method' | 'originalUrl'> &
+      Partial<Pick<Request, 'route'>>,
+    res: Pick<Response, 'getHeader' | 'statusCode'> & {
+      once(event: 'finish', listener: () => void): unknown;
+    },
+    next: NextFunction,
+  ): void => {
     const started = process.hrtime.bigint();
     res.once('finish', () => {
       const route: unknown = req.route?.path;

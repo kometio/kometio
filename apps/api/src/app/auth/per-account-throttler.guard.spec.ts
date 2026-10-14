@@ -1,6 +1,6 @@
-import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerStorage } from '@nestjs/throttler';
 import { ThrottlerException } from '@nestjs/throttler';
+import { executionContextOf } from '../../test/http-doubles.test-fixture';
 import {
   LoginThrottlerGuard,
   PerAccountThrottlerGuard,
@@ -30,11 +30,11 @@ function buildContext(
   handlerName = 'login',
   ip = '198.51.100.1',
 ) {
-  return {
-    switchToHttp: () => ({ getRequest: () => ({ body, ip }) }),
-    getHandler: () => ({ name: handlerName }),
-    getClass: () => ({ name: 'AuthController' }),
-  } as unknown as ExecutionContext;
+  return executionContextOf({
+    request: { body, ip },
+    handler: handlerName,
+    controller: 'AuthController',
+  });
 }
 
 describe('PerAccountThrottlerGuard', () => {

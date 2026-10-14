@@ -1,18 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { PublishedSite } from '@kometio/api-contracts';
+import { publishedSite } from '../test/published-site.test-fixture';
 import { resolvePageSeo } from './page-seo';
 
-const SITE = {
+const SITE = publishedSite({
   name: 'Sito',
   domain: 'esempio.test',
-  defaultLocale: 'it',
   enabledLocales: ['it', 'en'],
-  businessAddress: null,
-  businessPhone: null,
-  businessEmail: null,
-  businessType: null,
   openingHours: [],
-} as unknown as PublishedSite;
+});
 
 const TRANSLATIONS = [
   { locale: 'it', slug: 'chi-siamo', ancestorSlugs: ['azienda'] },

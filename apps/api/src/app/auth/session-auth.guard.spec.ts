@@ -1,26 +1,23 @@
 import { UnauthorizedException } from '@nestjs/common';
-import type { ExecutionContext } from '@nestjs/common';
 import type { AuthPort, Session } from '@kometio/ports';
+import { executionContextOf } from '../../test/http-doubles.test-fixture';
 import { DeploymentNotSetUpError } from '../deployment-tenant.resolver';
 import { SessionAuthGuard } from './session-auth.guard';
 import { SESSION_COOKIE_NAME } from './session-cookies';
-import type { AuthenticatedRequest } from './session-auth.guard';
 
-// Express's Request has 100+ members — a real instance isn't needed, only
-// the `cookies` field the guard reads and the `tenantId`/`userId` fields it
-// writes, so a minimal double stands in via `unknown` rather than
-// implementing (or `Partial`-satisfying) the whole interface.
-function fakeRequest(
-  cookies: Record<string, string | undefined>,
-): AuthenticatedRequest {
-  return { cookies } as unknown as AuthenticatedRequest;
+/** The request the guard reads `cookies` from and writes `tenantId`/`userId` on: it is the one given, so a test can read what was written. */
+interface Signed {
+  cookies?: Record<string, string | undefined>;
+  tenantId?: string;
+  userId?: string;
+  sessionToken?: string;
 }
 
-function buildContext(cookies: Record<string, string | undefined>) {
-  const request = fakeRequest(cookies);
-  return {
-    switchToHttp: () => ({ getRequest: () => request }),
-  } as ExecutionContext;
+function buildContext(
+  cookies: Record<string, string | undefined> | undefined,
+  request: Signed = { cookies },
+) {
+  return executionContextOf({ request });
 }
 
 describe('SessionAuthGuard', () => {
@@ -51,10 +48,7 @@ describe('SessionAuthGuard', () => {
   });
 
   it('throws Unauthorized when cookie-parser never ran (cookies is undefined)', async () => {
-    const request = { cookies: undefined } as unknown as AuthenticatedRequest;
-    const context = {
-      switchToHttp: () => ({ getRequest: () => request }),
-    } as ExecutionContext;
+    const context = buildContext(undefined);
 
     await expect(guard.canActivate(context)).rejects.toThrow(
       UnauthorizedException,
@@ -104,10 +98,10 @@ describe('SessionAuthGuard', () => {
       expiresAt: new Date(),
     };
     authPort.validateSession.mockResolvedValue(session);
-    const request = fakeRequest({ [SESSION_COOKIE_NAME]: 'good-token' });
-    const context = {
-      switchToHttp: () => ({ getRequest: () => request }),
-    } as ExecutionContext;
+    const request: Signed = {
+      cookies: { [SESSION_COOKIE_NAME]: 'good-token' },
+    };
+    const context = buildContext(request.cookies, request);
 
     expect(await guard.canActivate(context)).toBe(true);
     expect(request.tenantId).toBe('tenant-1');

@@ -1,6 +1,6 @@
-import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerStorage } from '@nestjs/throttler';
 import { ThrottlerException } from '@nestjs/throttler';
+import { executionContextOf } from '../../test/http-doubles.test-fixture';
 import {
   GenerationsPerDay,
   InvitationsPerHour,
@@ -27,11 +27,11 @@ function contextOf(
   ip = '198.51.100.1',
   handler = 'invite',
 ) {
-  return {
-    switchToHttp: () => ({ getRequest: () => ({ userId, ip }) }),
-    getHandler: () => ({ name: handler }),
-    getClass: () => ({ name: 'UsersController' }),
-  } as unknown as ExecutionContext;
+  return executionContextOf({
+    request: { userId, ip },
+    handler,
+    controller: 'UsersController',
+  });
 }
 
 describe('perUserLimit', () => {

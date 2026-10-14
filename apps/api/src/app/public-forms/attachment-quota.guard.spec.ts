@@ -1,5 +1,5 @@
-import type { ExecutionContext } from '@nestjs/common';
 import { ThrottlerException, type ThrottlerStorage } from '@nestjs/throttler';
+import { executionContextOf } from '../../test/http-doubles.test-fixture';
 import {
   AttachmentQuotaGuard,
   DAILY_ATTACHMENTS_PER_FORM,
@@ -21,15 +21,12 @@ class CountingStorage implements ThrottlerStorage {
   }
 }
 
-// Only `params` is read; a minimal double stands in through `unknown`.
 function uploadTo(formId: string, ip: string) {
-  return {
-    switchToHttp: () => ({
-      getRequest: () => ({ params: { id: formId }, ip }),
-    }),
-    getHandler: () => ({ name: 'uploadAttachment' }),
-    getClass: () => ({ name: 'PublicFormsController' }),
-  } as unknown as ExecutionContext;
+  return executionContextOf({
+    request: { params: { id: formId }, ip },
+    handler: 'uploadAttachment',
+    controller: 'PublicFormsController',
+  });
 }
 
 describe('AttachmentQuotaGuard', () => {

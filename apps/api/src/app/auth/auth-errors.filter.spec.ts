@@ -1,22 +1,18 @@
-import type { ArgumentsHost } from '@nestjs/common';
 import {
   InvalidCredentialsError,
   InvalidOrExpiredTokenError,
   UserNotActiveError,
 } from '@kometio/domain-core';
+import { executionContextOf } from '../../test/http-doubles.test-fixture';
 import { AuthErrorsFilter } from './auth-errors.filter';
 
-// Only the response's status/json and the request id are read; a minimal
-// double stands in through `unknown`.
 function answerTo(error: Error) {
   const json = jest.fn();
   const status = jest.fn().mockReturnValue({ json });
-  const host = {
-    switchToHttp: () => ({
-      getResponse: () => ({ status }),
-      getRequest: () => ({ method: 'POST', originalUrl: '/api/auth/login' }),
-    }),
-  } as unknown as ArgumentsHost;
+  const host = executionContextOf({
+    response: { status },
+    request: { method: 'POST', originalUrl: '/api/auth/login' },
+  });
   new AuthErrorsFilter().catch(error, host);
   return { status: status.mock.calls[0][0], body: json.mock.calls[0][0] };
 }

@@ -302,10 +302,7 @@ describe('convertAcfFields', () => {
     const unknown = convertAcfFields(
       [field({ name: 'strano', type: 'text' })],
       { strano: 'qualcosa' },
-      {
-        resolveMedia: vi.fn(),
-        resolvePage: vi.fn(),
-      } as unknown as AcfConversionResolvers,
+      NOTHING,
     );
     expect(unknown.blocks).toHaveLength(1);
   });

@@ -54,11 +54,7 @@ describe('media-api-client', () => {
   });
 
   it('deleteMedia sends a DELETE for the given id', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      status: 204,
-      json: () => Promise.reject(new Error('should not be called')),
-    } as unknown as Response);
+    vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 204 }));
 
     await deleteMedia('media-1');
 

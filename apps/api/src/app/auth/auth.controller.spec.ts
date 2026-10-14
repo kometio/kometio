@@ -1,5 +1,4 @@
 import { Logger } from '@nestjs/common';
-import type { Request, Response } from 'express';
 import {
   InvalidCaptchaError,
   InvalidCredentialsError,
@@ -27,23 +26,22 @@ import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 const tenantId = 'tenant-1';
 const editorAppUrl = 'https://editor.example.com';
 
+/** What a cookie is written through, with the calls kept to be read back. */
 function buildResponse() {
   return {
     cookie: jest.fn(),
     clearCookie: jest.fn(),
-  } as unknown as Response;
+  };
 }
 
-// Express's Request has 100+ members — only `cookies` is read here, so a
-// minimal double stands in via `unknown` rather than implementing the whole
-// interface.
-function fakeRequest(cookies: Record<string, string | undefined>): Request {
-  return { cookies } as unknown as Request;
+/** The part of the request a logout reads. */
+function fakeRequest(cookies: Record<string, string | undefined>) {
+  return { cookies };
 }
 
 /** What a sign-in is read from: only the browser's own name for itself. */
-function loginRequest(userAgent?: string): Request {
-  return { headers: { 'user-agent': userAgent } } as unknown as Request;
+function loginRequest(userAgent?: string) {
+  return { headers: { 'user-agent': userAgent } };
 }
 
 describe('AuthController', () => {
@@ -312,7 +310,7 @@ describe('AuthController', () => {
     });
 
     it('clears the cookie even when cookie-parser never ran (cookies is undefined)', async () => {
-      const request = { cookies: undefined } as unknown as Request;
+      const request = { cookies: undefined };
       const response = buildResponse();
 
       await controller.logout(request, response);
