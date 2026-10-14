@@ -5,7 +5,7 @@ import {
   importJobListSchema,
   importJobRecordSchema,
 } from '@kometio/api-contracts';
-import { API_BASE_URL, request } from './http-client';
+import { API_BASE_URL, request, send } from './http-client';
 
 export type { ImportJobList, ImportJobRecord, ImportJobStatus };
 
@@ -43,4 +43,12 @@ export async function listImportJobs(siteId: string): Promise<ImportJobList> {
   return importJobListSchema.parse(
     await request(`/imports?siteId=${encodeURIComponent(siteId)}`),
   );
+}
+
+/**
+ * An attempt, forgotten. What was read from the file goes with it, and so do
+ * the addresses the redirects of a WordPress move would be made from.
+ */
+export function deleteImportJob(id: string): Promise<void> {
+  return send(`/imports/${id}`, { method: 'DELETE' });
 }

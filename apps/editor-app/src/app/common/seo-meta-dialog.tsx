@@ -12,6 +12,7 @@ import {
 } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Switch } from '../../components/ui/switch';
 import { actionErrorMessage } from '../../lib/http-client';
 import { InlineError } from '../../components/ui/inline-error';
 import { useToast } from '../shell/toast-provider';
@@ -25,6 +26,12 @@ export interface SeoMetaDialogProps {
   /** Rejecting here keeps the dialog open and shows why. */
   onSave: (next: SeoMeta) => Promise<void>;
   isSaving: boolean;
+  /**
+   * Offers "hide from search engines" (docs/adr/0134). A page's translation
+   * keeps the flag in its SEO; a term keeps its own on the term (ADR-0078), so
+   * the same fields are shown without it there.
+   */
+  showNoIndex?: boolean;
 }
 
 /**
@@ -44,6 +51,7 @@ export function SeoMetaDialog({
   onOpenChange,
   onSave,
   isSaving,
+  showNoIndex = false,
 }: SeoMetaDialogProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -52,6 +60,7 @@ export function SeoMetaDialog({
   const [description, setDescription] = useState(seoMeta.description);
   const [canonical, setCanonical] = useState(seoMeta.canonical ?? '');
   const [ogImage, setOgImage] = useState(seoMeta.ogTags?.['image'] ?? '');
+  const [noIndex, setNoIndex] = useState(seoMeta.noIndex === true);
   const [error, setError] = useState('');
 
   // Re-syncs from the latest seoMeta every time the dialog opens (or the
@@ -66,6 +75,7 @@ export function SeoMetaDialog({
       setDescription(seoMeta.description);
       setCanonical(seoMeta.canonical ?? '');
       setOgImage(seoMeta.ogTags?.['image'] ?? '');
+      setNoIndex(seoMeta.noIndex === true);
       setError('');
     }
   }
@@ -83,6 +93,8 @@ export function SeoMetaDialog({
         description,
         ...(canonical.trim() && { canonical: canonical.trim() }),
         ...(ogImage.trim() && { ogTags: { image: ogImage.trim() } }),
+        // Absent means "not hidden": a page that is shown carries no flag.
+        ...(showNoIndex && noIndex && { noIndex: true }),
       });
       toast(t('pages.seo.saved'), 'success');
       onOpenChange(false);
@@ -148,6 +160,25 @@ export function SeoMetaDialog({
               placeholder="https://..."
             />
           </div>
+          {showNoIndex && (
+            <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+              <div className="flex flex-col gap-1">
+                {/* The label is the switch's own, so a click on the words
+                    turns it too. */}
+                <Label htmlFor="seo-no-index">
+                  {t('pages.seo.noIndexLabel')}
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  {t('pages.seo.noIndexHint')}
+                </span>
+              </div>
+              <Switch
+                id="seo-no-index"
+                checked={noIndex}
+                onCheckedChange={setNoIndex}
+              />
+            </div>
+          )}
         </div>
         {error && <InlineError>{error}</InlineError>}
         <DialogFooter>

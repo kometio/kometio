@@ -61,6 +61,55 @@ describe('resolveDefaultStyleExpression', () => {
       'var(--missing)',
     );
   });
+
+  describe('with a fallback, as a block writes it', () => {
+    // `core/global.css` declares `--link: var(--primary)`: a theme's own
+    // variable can itself be a reference, and the answer is what the page
+    // would show, not the name of another variable.
+    const chained = new Map([
+      ['--primary', 'oklch(0.205 0 0)'],
+      ['--link', 'var(--primary)'],
+    ]);
+
+    it('takes the first variable that is declared, and follows it through what it refers to', () => {
+      expect(
+        resolveDefaultStyleExpression('var(--link, var(--primary))', chained),
+      ).toBe('oklch(0.205 0 0)');
+    });
+
+    it('takes the fallback when the first is not declared', () => {
+      expect(
+        resolveDefaultStyleExpression('var(--missing, var(--primary))', vars),
+      ).toBe('oklch(0.205 0 0)');
+      expect(
+        resolveDefaultStyleExpression('var(--missing, 0.5rem)', vars),
+      ).toBe('0.5rem');
+    });
+
+    it('keeps a variable of the theme that refers to another that is not declared as it is', () => {
+      expect(
+        resolveDefaultStyleExpression(
+          'var(--link)',
+          new Map([['--link', 'var(--nowhere)']]),
+        ),
+      ).toBe('var(--link)');
+    });
+
+    it('leaves what it cannot resolve as it was written', () => {
+      expect(
+        resolveDefaultStyleExpression('var(--a, var(--b))', new Map()),
+      ).toBe('var(--a, var(--b))');
+    });
+
+    it('does not loop on variables that refer to each other', () => {
+      const loop = new Map([
+        ['--a', 'var(--b)'],
+        ['--b', 'var(--a)'],
+      ]);
+
+      expect(resolveDefaultStyleExpression('var(--a)', loop)).toBe('var(--a)');
+    });
+  });
 });
 
 describe('resolveBlockStyleDefaults', () => {

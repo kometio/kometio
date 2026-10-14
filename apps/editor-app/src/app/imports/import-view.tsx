@@ -1,10 +1,14 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Upload } from 'lucide-react';
+import { Trash2, Upload } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { actionErrorMessage } from '../../lib/http-client';
-import { startWordPressAnalysis } from '../../lib/imports-api-client';
+import {
+  deleteImportJob,
+  startWordPressAnalysis,
+  type ImportJobRecord,
+} from '../../lib/imports-api-client';
 import {
   importJobQueryOptions,
   importJobsQueryOptions,
@@ -15,6 +19,8 @@ import { useFormatDate } from '../../lib/use-format-date';
 import { PageHeader } from '../shell/page-header';
 import { InlineError } from '../../components/ui/inline-error';
 import { ListItemButton } from '../../components/ui/list-item-button';
+import { ConfirmActionDialog } from '../common/confirm-action-dialog';
+import { IconButton } from '../common/icon-button';
 
 export interface ImportViewProps {
   siteId: string;
@@ -37,6 +43,7 @@ export function ImportView({ siteId }: ImportViewProps) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [watchedJobId, setWatchedJobId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<ImportJobRecord | null>(null);
 
   const { data: jobs } = useQuery(importJobsQueryOptions(siteId));
   const { data: watched } = useQuery(importJobQueryOptions(watchedJobId));
@@ -49,6 +56,21 @@ export function ImportView({ siteId }: ImportViewProps) {
     },
     onError: (cause) =>
       setError(actionErrorMessage(cause, t('imports.failed'))),
+  });
+
+  const remove = useMutation({
+    mutationFn: (job: ImportJobRecord) => deleteImportJob(job.id),
+    onSuccess: (_, job) => {
+      setDeleting(null);
+      // What was being watched is gone: the newest that is left takes its place.
+      if (watchedJobId === job.id) setWatchedJobId(null);
+      queryClient.removeQueries({ queryKey: ['imports', 'detail', job.id] });
+      void queryClient.invalidateQueries({ queryKey: ['imports', 'list'] });
+    },
+    onError: (cause) => {
+      setDeleting(null);
+      setError(actionErrorMessage(cause, t('imports.delete.failed')));
+    },
   });
 
   // The newest attempt is what somebody wants to see on arrival, without
@@ -97,8 +119,15 @@ export function ImportView({ siteId }: ImportViewProps) {
         <section className="flex flex-col gap-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-base font-semibold">{shown.fileName}</h2>
-            <span className="text-muted-foreground text-xs tabular-nums">
+            <span className="text-muted-foreground flex items-center gap-1 text-xs tabular-nums">
               {formatBytes(shown.fileBytes)} · {formatDateTime(shown.createdAt)}
+              <IconButton
+                label={t('imports.delete.label', { name: shown.fileName })}
+                size="icon-sm"
+                onClick={() => setDeleting(shown)}
+              >
+                <Trash2 />
+              </IconButton>
             </span>
           </div>
 
@@ -123,7 +152,7 @@ export function ImportView({ siteId }: ImportViewProps) {
           <h2 className="text-sm font-semibold">{t('imports.history')}</h2>
           <ul className="border-border divide-y rounded-md border text-sm">
             {jobs.items.slice(1).map((job) => (
-              <li key={job.id}>
+              <li key={job.id} className="flex items-center gap-1 pr-1">
                 <ListItemButton
                   inset="row"
                   onClick={() => setWatchedJobId(job.id)}
@@ -133,10 +162,27 @@ export function ImportView({ siteId }: ImportViewProps) {
                     {formatDate(job.createdAt)}
                   </span>
                 </ListItemButton>
+                <IconButton
+                  label={t('imports.delete.label', { name: job.fileName })}
+                  size="icon-sm"
+                  onClick={() => setDeleting(job)}
+                >
+                  <Trash2 />
+                </IconButton>
               </li>
             ))}
           </ul>
         </section>
+      )}
+
+      {deleting && (
+        <ConfirmActionDialog
+          open
+          onOpenChange={(open) => !open && setDeleting(null)}
+          title={t('imports.delete.title', { name: deleting.fileName })}
+          description={t('imports.delete.description')}
+          onConfirm={() => remove.mutate(deleting)}
+        />
       )}
     </div>
   );

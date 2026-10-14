@@ -187,7 +187,9 @@ export const linkBlockContract = defineBlockContract({
   props: linkPropsSchema,
   style: {
     backgroundColor: 'transparent',
-    textColor: 'var(--primary)',
+    // What the block renders: the theme's link colour, which is its primary
+    // unless it says otherwise (core's \`--link\` is \`var(--primary)\`).
+    textColor: 'var(--link, var(--primary))',
     borderRadius: '0',
     paddingX: '0',
     paddingY: '0',

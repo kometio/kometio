@@ -26,12 +26,12 @@ const href = resolveLinkHref({ linkType, page, url });
 	   want, and until now the only way to get one was to use a Button —
 	   which carries a different meaning. */
 	.kometio-link {
-		/* `var(--primary)`, NOT `inherit`: global.css gives a bare `<a>`
+		/* The colour is the theme's link colour (`var(--link, var(--primary))`
+		   in the contract), NOT `inherit`: global.css gives a bare `<a>`
 		   `text-primary` and names this very block in its comment for why.
 		   A scoped rule here outranks that layer, so `inherit` would have
 		   quietly turned every existing Link the colour of its surrounding
 		   text. The fallback has to be what the block already rendered. */
-		color: var(--kometio-override-text, var(--link, var(--primary)));
-		@kometio-bridge background border-radius padding;
+		@kometio-bridge color background border-radius padding;
 	}
 </style>
