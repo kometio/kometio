@@ -18,6 +18,13 @@ import { useTranslation } from 'react-i18next';
 const STYLES = {
   date: { dateStyle: 'medium' },
   dateTime: { dateStyle: 'medium', timeStyle: 'short' },
+  /** Where there is no room for the year: a chip on the bar, a mark on a row. The day and the hour, in the person's language. */
+  dayAndTime: {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  },
   time: { timeStyle: 'short' },
 } as const satisfies Record<string, Intl.DateTimeFormatOptions>;
 

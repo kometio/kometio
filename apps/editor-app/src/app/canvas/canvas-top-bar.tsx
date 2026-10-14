@@ -1,5 +1,11 @@
 import { type ReactNode, useState } from 'react';
-import { ChevronDown, Redo2, Undo2, type LucideIcon } from 'lucide-react';
+import {
+  CalendarClock,
+  ChevronDown,
+  Redo2,
+  Undo2,
+  type LucideIcon,
+} from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
@@ -39,6 +45,22 @@ export interface CanvasTopBarProps {
   /** Whether visitors can see this page at all — absent for things that are not pages (the header, a section). */
   publicationState?: 'draft' | 'published';
   statusText: string;
+  /**
+   * A publication waiting for its moment (docs/adr/0135). It is written next
+   * to the page's state — in place of "Draft", which it makes more exact — and
+   * is the way back into the dialog that set it.
+   */
+  scheduled?: {
+    /** The moment, short: the left of the bar has little room. */
+    text: string;
+    /** What it is, before the moment — drawn only where there is room for it, always said by `label`. */
+    prefix: string;
+    /** What it is called to a reader of the screen and in the tooltip: with the whole date. */
+    label: string;
+    /** The last attempt did not happen: the chip is red. */
+    failed: boolean;
+    onOpen: () => void;
+  };
   /** Page-level actions, as a labelled menu rather than a row of icons. */
   pageMenu?: CanvasPageMenuItem[];
   /** Anything that genuinely has to stay on the bar — the header editor's "stick while scrolling" is the only one. */
@@ -129,6 +151,7 @@ export function CanvasTopBar({
   title,
   publicationState,
   statusText,
+  scheduled,
   pageMenu,
   actions,
   generateAction,
@@ -167,12 +190,32 @@ export function CanvasTopBar({
         {languageSwitcher}
         {pageMenu && pageMenu.length > 0 && <PageMenu items={pageMenu} />}
         {actions}
-        {publicationState && (
+        {publicationState && !(scheduled && publicationState === 'draft') && (
           <Badge
             variant={publicationState === 'published' ? 'success' : 'secondary'}
           >
             {t(`canvas.publication.${publicationState}`)}
           </Badge>
+        )}
+        {scheduled && (
+          <Button
+            variant={scheduled.failed ? 'destructive' : 'outline'}
+            size="xs"
+            className="min-w-0"
+            aria-label={scheduled.label}
+            title={scheduled.label}
+            onClick={scheduled.onOpen}
+          >
+            <CalendarClock />
+            {/* The bar has three columns from a phone's width up and the left
+                one is short of room until a wide screen: the word, then the
+                date, give way to the icon alone (and to its label, which says
+                all of it) before the page's name is squeezed to nothing. */}
+            <span className="truncate sm:max-xl:sr-only">
+              <span className="max-xl:hidden">{scheduled.prefix} · </span>
+              {scheduled.text}
+            </span>
+          </Button>
         )}
         {/* A live region: "Saving…" then "Draft saved at 14:32" is news
             to somebody who cannot see the bar change. */}

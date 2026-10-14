@@ -3,7 +3,7 @@ import type { Block, ExposedFields } from '@kometio/shared-types';
 import type { BlockDescriptor } from '@kometio/block-registry';
 import type { BlockPickerCategory } from './block-picker';
 import type { EditingSection } from './canvas-frame';
-import type { CanvasPageMenuItem } from './canvas-top-bar';
+import type { CanvasPageMenuItem, CanvasTopBarProps } from './canvas-top-bar';
 import type { PageGenerationConfig } from './use-page-generation-entry';
 
 export interface CanvasEditorShellProps {
@@ -32,6 +32,8 @@ export interface CanvasEditorShellProps {
   title?: string;
   /** Page editor only: whether visitors can see the page at all, shown as a badge beside its name. */
   publicationState?: 'draft' | 'published';
+  /** Page editor only: a publication waiting for its moment, drawn on the bar in place of "Draft" (docs/adr/0135). */
+  scheduled?: CanvasTopBarProps['scheduled'];
   /** Page-level actions, drawn as a labelled menu rather than a row of unlabelled icons. */
   pageMenu?: CanvasPageMenuItem[];
   statusText: string;

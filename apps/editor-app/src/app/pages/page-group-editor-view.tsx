@@ -23,7 +23,6 @@ import { useCurrentSession } from '../auth/use-current-session';
 import { FormListProvider } from '../forms/form-list-provider';
 import { IconListProvider } from '../style/icon-list-provider';
 import { MediaPickerProvider } from '../media/media-picker-provider';
-import { Button } from '../../components/ui/button';
 import { useFormatDate } from '../../lib/use-format-date';
 import { PageGroupSeoPanelDialog } from './page-group-seo-panel-dialog';
 import { SchedulePublishDialog } from './schedule-publish-dialog';
@@ -197,9 +196,8 @@ export function PageGroupEditorView({
   const languageLabel = activeLocale.toUpperCase();
   const schedule = usePageTranslationSchedule(groupId, activeTranslation.id);
   const formatDateTime = useFormatDate('dateTime');
-  const scheduledFor = activeTranslation.scheduledPublishAt
-    ? formatDateTime(activeTranslation.scheduledPublishAt)
-    : null;
+  const formatDayAndTime = useFormatDate('dayAndTime');
+  const scheduledAt = activeTranslation.scheduledPublishAt;
 
   /**
    * The canvas sends any change still waiting out its debounce before it
@@ -329,21 +327,18 @@ export function PageGroupEditorView({
               ]}
               // What is set is said on the bar and is the way back into the
               // dialog: a state nobody can see is one that stays set.
-              actions={
-                scheduledFor && (
-                  <Button
-                    variant={
-                      activeTranslation.scheduleFailure
-                        ? 'destructive'
-                        : 'outline'
+              scheduled={
+                scheduledAt
+                  ? {
+                      prefix: t('pages.schedule.chip'),
+                      text: formatDayAndTime(scheduledAt) ?? '',
+                      label: t('pages.schedule.badge', {
+                        when: formatDateTime(scheduledAt) ?? '',
+                      }),
+                      failed: activeTranslation.scheduleFailure !== null,
+                      onOpen: () => setIsScheduleOpen(true),
                     }
-                    size="xs"
-                    onClick={() => setIsScheduleOpen(true)}
-                  >
-                    <CalendarClock />
-                    {t('pages.schedule.badge', { when: scheduledFor })}
-                  </Button>
-                )
+                  : undefined
               }
               registry={registry}
               categories={categories}

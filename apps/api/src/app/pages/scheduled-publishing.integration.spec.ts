@@ -221,4 +221,23 @@ describe('publishing at a moment (integration)', () => {
     expect(after.body[0].scheduleFailure).toBe('scheduler-cannot-publish');
     expect(after.body[0].scheduledPublishAt).not.toBeNull();
   });
+
+  it('is in the pages list too, as an instant', async () => {
+    const { groupId, id } = await aDraft();
+    const publishAt = inAMinute(90);
+    await agent
+      .put(`/page-groups/translations/${id}/schedule`)
+      .send({ publishAt })
+      .expect(200);
+
+    const list = await agent
+      .get('/page-groups')
+      .query({ siteId, pageSize: 100 })
+      .expect(200);
+
+    const row = list.body.items.find(
+      (item: { id: string }) => item.id === groupId,
+    );
+    expect(row.translations[0].scheduledPublishAt).toBe(publishAt);
+  });
 });

@@ -511,7 +511,8 @@
         "scheduler-inactive": "It was not published: the account of the person who scheduled it has been deactivated. Schedule it again.",
         "scheduler-cannot-publish": "It was not published: the person who scheduled it can no longer publish. Schedule it again from an account that can."
       },
-      "badge": "Scheduled: {{when}}"
+      "badge": "Scheduled: {{when}}",
+      "chip": "Scheduled"
     },
     "translations": {
       "open": "Translations",
