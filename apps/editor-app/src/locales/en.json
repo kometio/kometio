@@ -1726,6 +1726,12 @@
     "placement": {
       "refused": "{{block}} only belongs inside {{parents}}, so there is nowhere to put it here."
     },
+    "publishSkipped": {
+      "title": "Publish with blocks the site will leave out?",
+      "body_one": "{{count}} block is not filled in as its type needs, so the site leaves it out and visitors see nothing there: {{names}}. The canvas marks it where it is.",
+      "body_other": "{{count}} blocks are not filled in as their type needs, so the site leaves them out and visitors see nothing there: {{names}}. The canvas marks them where they are.",
+      "action": "Publish anyway"
+    },
     "status": {
       "saving": "Saving…",
       "draftSavedAt": "Draft saved at {{time}}",

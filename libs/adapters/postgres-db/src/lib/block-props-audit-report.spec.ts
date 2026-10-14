@@ -51,6 +51,7 @@ describe('describeInvalidBlock', () => {
       type: 'Heading\r\nBlock props audit complete: 0 blocks do not pass',
       position: 3,
       issues: ['text\nsecond line: Invalid input'],
+      fields: [],
     });
 
     expect(line).not.toMatch(/[\r\n]/);
@@ -63,6 +64,7 @@ describe('describeInvalidBlock', () => {
       type: 'Form',
       position: 1,
       issues: Array.from({ length: 8 }, (_, index) => `field${index}: wrong`),
+      fields: [],
     });
 
     expect(line).toContain('field4: wrong; and 3 more');
@@ -76,6 +78,7 @@ describe('describeInvalidBlock', () => {
         type: 'Image',
         position: 7,
         issues: ['media: Invalid input: expected object', 'caption: required'],
+        fields: [],
       }),
     ).toBe(
       '  row g1, block 7 (Image b1): media: Invalid input: expected object; caption: required',

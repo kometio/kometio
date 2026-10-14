@@ -1726,6 +1726,12 @@
     "placement": {
       "refused": "{{block}} sta solo dentro {{parents}}, quindi qui non c'è posto per inserirlo."
     },
+    "publishSkipped": {
+      "title": "Pubblicare con blocchi che il sito lascia fuori?",
+      "body_one": "{{count}} blocco non è compilato come il suo tipo richiede, quindi il sito lo lascia fuori e chi visita non vede nulla al suo posto: {{names}}. Il canvas lo segnala dov'è.",
+      "body_other": "{{count}} blocchi non sono compilati come il loro tipo richiede, quindi il sito li lascia fuori e chi visita non vede nulla al loro posto: {{names}}. Il canvas li segnala dov'è.",
+      "action": "Pubblica comunque"
+    },
     "status": {
       "saving": "Salvataggio…",
       "draftSavedAt": "Bozza salvata alle {{time}}",

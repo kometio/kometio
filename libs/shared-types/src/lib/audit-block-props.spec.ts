@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { auditBlockProps } from './audit-block-props';
 import type { PageContent } from './block';
 
@@ -29,12 +30,36 @@ describe('auditBlockProps', () => {
         type: 'Column',
         position: 2,
         issues: [expect.stringMatching(/^span: /)],
+        fields: ['span'],
       },
     ]);
   });
 
   // Container → children → page order: the second block of a tree whose
   // first block has two children is the first child, not the next root.
+  it('names the props at fault by key, once each, whatever the depth of the issue', () => {
+    const audit = auditBlockProps(
+      [
+        {
+          id: 'x',
+          type: 'Probe',
+          props: { media: null, tags: [1, 2], caption: 'ok' },
+        },
+      ],
+      {
+        Probe: z.object({
+          media: z.object({ id: z.string() }),
+          tags: z.array(z.string()),
+          caption: z.string(),
+        }),
+      },
+    );
+
+    // `tags` has two issues (0 and 1) and is named once.
+    expect(audit.invalid[0].issues).toHaveLength(3);
+    expect(audit.invalid[0].fields).toEqual(['media', 'tags']);
+  });
+
   it('reaches blocks at any depth, and counts them in page order', () => {
     const audit = auditBlockProps([
       column('root', 6, [column('first', 6), column('second', 99)]),
@@ -79,8 +104,7 @@ describe('auditBlockProps', () => {
     });
   });
 
-  it("holds a block to the schemas it is given when they are not the core's", async () => {
-    const { z } = await import('zod');
+  it("holds a block to the schemas it is given when they are not the core's", () => {
     const audit = auditBlockProps(
       [{ id: 'x', type: 'StatusBadge', props: { tone: 'purple' } }],
       { StatusBadge: z.object({ tone: z.enum(['info', 'warn']) }) },
