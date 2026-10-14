@@ -130,6 +130,14 @@ where not exists (
 hash is only recorded, never compared. `db:migrate` then runs nothing,
 and every migration after the baseline applies as usual.
 
+Such a database keeps the rows of the migrations the baseline replaced
+(older than it, and not in the journal). The single image's guard against a
+database a newer version has migrated does not count them: a row older than
+the journal's first entry is of the history the baseline replaced
+(`docker/kometio/archive.mjs`). Counted as newer, they made the image refuse
+this very database, and its export — found on 2026-10-14 by opening the
+development database's own dump in the image.
+
 Every self-hosted instance runs as one fixed tenant/site (see
 [ADR-0006](adr/0006-temporary-fixed-tenant-resolution-pre-auth.md)). Auth
 now exists (see [ADR-0010](adr/0010-session-based-auth-foundations.md)) —
