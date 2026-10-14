@@ -390,6 +390,41 @@ key. What to know as the person running the stack:
   output tokens with Claude, no automatic retries, and a request the editor
   abandons is cancelled at the provider.
 
+## Two-step verification
+
+Each person can turn on a second step at sign-in from **Account → Two-step
+verification**: after the password, a six-digit code from an authenticator app
+(or one of ten recovery codes, each good once). It is off until somebody turns
+it on, and nothing makes anybody (docs/adr/0137).
+
+What to know as the person running the stack:
+
+- **It uses the same key as the AI provider's API key**
+  (`KOMETIO_SECRETS_DIR` or `KOMETIO_SECRETS_KEY`, above): each person's
+  authenticator secret is stored sealed with it, so a database backup alone
+  opens nothing. Without either, the editor does not offer the second step.
+  The `docker-compose.prod.yml` and the single image both set it.
+- **Back up the `secrets` volume with the database** if people have turned it
+  on. Restore a database without its key and the secrets cannot be opened: those
+  people sign in with a recovery code (which does not need the key), or an
+  administrator resets them from **Settings → Users**.
+- **If the only administrator has lost the app and the recovery codes**, nobody
+  can reset them from the editor. As whoever runs the server, take it off in the
+  database (replace the address):
+
+  ```sh
+  docker compose -f docker-compose.prod.yml exec postgres \
+    psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
+    "DELETE FROM user_second_factors WHERE user_id = (SELECT id FROM users WHERE email = 'you@example.com');"
+  ```
+
+  They sign in with the password alone and turn it on again. The recovery codes
+  of that person (`user_recovery_codes`) are removed the same way.
+
+- **A site archive does not carry it.** An exported site opened on another
+  server starts with the second step off for everybody, for the same reason the
+  AI key does not travel: it is sealed with a key of the server that made it.
+
 ## Custom themes
 
 Adding a theme Kometio doesn't ship — an agency's own, for a specific
