@@ -1,4 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ThrottlerStorage } from '@nestjs/throttler';
+import type { ApiEnv } from '../../env-schema';
+import { API_ENV } from '../api-env.module';
 import {
   KeyedThrottlerGuard,
   type ThrottleBucket,
@@ -47,9 +50,22 @@ export class PerAccountThrottlerGuard extends KeyedThrottlerGuard {
  * out (audit B6, 2026-09-29). From their own address they now still get
  * in. A looser count per email stays behind it, so spreading guesses over
  * many addresses buys six times as many, not unlimited.
+ *
+ * Not in a demo (docs/adr/0118): the account is shared and its password is
+ * written on the page, so a guess is worth nothing and the looser count would
+ * only be a way to keep every visitor out — thirty requests from thirty
+ * addresses lock the demo for a quarter of an hour. The count per address
+ * stays, which is what keeps one client from hammering it.
  */
 @Injectable()
 export class LoginThrottlerGuard extends KeyedThrottlerGuard {
+  constructor(
+    @Inject(ThrottlerStorage) storage: ThrottlerStorage,
+    @Inject(API_ENV) private readonly env: Pick<ApiEnv, 'KOMETIO_DEMO'>,
+  ) {
+    super(storage);
+  }
+
   protected buckets(
     request: ThrottledRequest,
     scope: string,
@@ -57,12 +73,14 @@ export class LoginThrottlerGuard extends KeyedThrottlerGuard {
     const email = emailOf(request);
     if (!email) return [];
     const address = request.ip ?? 'unknown';
+    const perAddress: ThrottleBucket = {
+      key: `per-account-address:${scope}:${email}:${address}`,
+      limit: 5,
+      ttlMs: TTL_MS,
+    };
+    if (this.env.KOMETIO_DEMO === 'true') return [perAddress];
     return [
-      {
-        key: `per-account-address:${scope}:${email}:${address}`,
-        limit: 5,
-        ttlMs: TTL_MS,
-      },
+      perAddress,
       { key: `per-account:${scope}:${email}`, limit: 30, ttlMs: TTL_MS },
     ];
   }
