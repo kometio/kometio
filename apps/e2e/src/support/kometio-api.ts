@@ -8,6 +8,7 @@ import {
   mediaSchema,
   pageGroupSchema,
   pageTranslationSchema,
+  redirectSchema,
   siteSchema,
   taxonomySchema,
   termSchema,
@@ -203,6 +204,26 @@ export class KometioApi {
           this.request.get(`site-layout-sections/${id}/versions`),
         ),
       );
+  }
+
+  /** A rule for an old address, as the editor's Redirects screen writes it. `to: null` with `status: 410` says it is gone. */
+  async createRedirect(input: {
+    siteId: string;
+    from: string;
+    to: { kind: 'url'; url: string } | null;
+    status?: 301 | 302 | 410;
+  }) {
+    return redirectSchema.parse(
+      await this.json(
+        this.request.post('redirects', {
+          data: { status: 301, ...input },
+        }),
+      ),
+    );
+  }
+
+  async deleteRedirect(id: string): Promise<void> {
+    await this.ok(this.request.delete(`redirects/${id}`));
   }
 
   private async json(pending: Promise<APIResponse>): Promise<unknown> {

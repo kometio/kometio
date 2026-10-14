@@ -2,6 +2,12 @@ import { randomBytes } from 'node:crypto';
 import { defineMiddleware } from 'astro:middleware';
 import { buildContentSecurityPolicy } from './lib/content-security-policy';
 import { errorReporter } from './lib/error-reporter';
+import { resolveRedirect } from './lib/public-api-client';
+import {
+  isAskedForRedirect,
+  redirectForMissing,
+  responseForRedirect,
+} from './lib/redirects';
 import {
   runWithRequestContext,
   visitorIpFromForwardedFor,
@@ -45,11 +51,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     safeClientAddress(context);
   // An error the route throws is reported on its way out (docs/adr/0114),
   // by method and path, and goes on to Astro's own 500 page.
-  const response = await reportErrors(
+  const rendered = await reportErrors(
     errorReporter,
     { method: context.request.method, path: context.url.pathname },
     () => runWithRequestContext({ visitorIp }, next),
   );
+  // An address this site's routes did not have is asked of the rules, once
+  // the routes have said so (docs/adr/0127): a page always wins over a rule,
+  // and nothing here is on the path of one that exists.
+  const response =
+    rendered.status === 404 &&
+    isAskedForRedirect(context.request.method, context.url.pathname)
+      ? await answerMissing(context.url, rendered, visitorIp)
+      : rendered;
   if (!response.headers.has('Content-Security-Policy')) {
     response.headers.set(
       'Content-Security-Policy',
@@ -64,6 +78,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
   return response;
 });
+
+/**
+ * The rule's answer for an address that was not found, or the 404 as it was.
+ * Asked inside the visitor's own context, so the API counts this visitor
+ * and not this server.
+ */
+async function answerMissing(
+  url: URL,
+  notFound: Response,
+  visitorIp: string | null,
+): Promise<Response> {
+  const answer = await runWithRequestContext({ visitorIp }, () =>
+    redirectForMissing(url, {
+      ask: resolveRedirect,
+      report: (error) => errorReporter.captureException(error),
+    }),
+  );
+  return answer ? responseForRedirect(answer, notFound) : notFound;
+}
 
 /**
  * `Astro.clientAddress` throws on an adapter that cannot know it, and a
