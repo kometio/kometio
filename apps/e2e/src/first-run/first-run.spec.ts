@@ -29,9 +29,10 @@ function widgetState(widget: Locator): Promise<unknown> {
  * by walking it by hand.
  *
  * It also invites a person and asks for a password reset, with no mail
- * server: the invitation has to be made, the editor has to say that no email
- * went out, and the link of each has to be in the installation's log
- * (docker/kometio/check.sh reads them there, for the address in
+ * server: the invitation has to be made and its link given to the administrator
+ * on the screen, once, as the way in for the person invited; the reset's link
+ * has to be in the installation's log. The invitation's is not there
+ * (docker/kometio/check.sh reads the log, for the address in
  * E2E_INVITEE_EMAIL and the administrator's own).
  *
  * And it downloads the site from Settings → Export (docs/adr/0105), which only
@@ -142,8 +143,9 @@ test('a person who starts the image reaches a working site, and can sign in agai
   expect(tarball.includes('database.sql.gz')).toBe(true);
 
   // Invite somebody, on an installation with no mail server. It used to answer
-  // 500 after the person was already made; now the invitation is made, and the
-  // editor says that nothing was mailed instead of "they will get an email".
+  // 500 after the person was already made; then it wrote the link to the log,
+  // for whoever ran the server to find. Now the invitation is made and the
+  // editor gives the link to the administrator who made it (docs/adr/0128).
   const invitee = requireEnv('E2E_INVITEE_EMAIL');
   await login.goto(`${environment.editorUrl}users`);
   await expect(
@@ -160,8 +162,27 @@ test('a person who starts the image reaches a working site, and can sign in agai
   await dialog.getByLabel('Email').fill(invitee);
   await dialog.getByLabel('Name').fill('New Colleague');
   await dialog.getByRole('button', { name: 'Invite', exact: true }).click();
+  const issued = login.getByRole('dialog', {
+    name: `Invitation for ${invitee}`,
+  });
+  await expect(issued).toBeVisible();
+  const inviteLink = await issued.getByLabel('Invitation link').inputValue();
+  expect(inviteLink).toContain(
+    `${environment.editorUrl}accept-invite?inviteToken=`,
+  );
+  await issued.getByRole('button', { name: 'Done' }).click();
+
+  // The link is the way in: the person it was passed to chooses a password with
+  // it, in a browser that has never seen the editor.
+  const invited = await browser.newContext(trust);
+  const joining = await invited.newPage();
+  await joining.goto(inviteLink);
+  await joining
+    .getByLabel('Password')
+    .fill('a-long-passphrase-for-the-invitee');
+  await joining.getByRole('button', { name: 'Complete registration' }).click();
   await expect(
-    login.getByText(`${invitee} is invited, but no email was sent`),
+    joining.getByText('Password set. You can log in now.'),
   ).toBeVisible();
 
   // Forgot the password, before there is a session: told that no email will

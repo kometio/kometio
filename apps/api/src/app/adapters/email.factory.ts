@@ -4,6 +4,17 @@ import { SmtpEmailAdapter } from '@kometio/smtp-email-adapter';
 import { requiredIn, type ApiEnv } from '../../env-schema';
 
 /**
+ * Whether the emails of this deployment reach the people they are for: it has
+ * a mail server, and it is not a demo. What the editor is told (`GET
+ * /deployment`) and what `createEmailPort` builds are the same answer.
+ */
+export function deploymentSendsEmail(
+  env: Pick<ApiEnv, 'SMTP_HOST' | 'KOMETIO_DEMO'>,
+): boolean {
+  return env.SMTP_HOST !== undefined && env.KOMETIO_DEMO !== 'true';
+}
+
+/**
  * The deployment's mail server when it has one (SMTP_HOST set), and the log
  * when it has not (docs/adr/0103).
  *
@@ -26,11 +37,11 @@ export function createEmailPort(
   env: ApiEnv,
   write: (entry: string) => void,
 ): EmailPort {
-  if (env.SMTP_HOST === undefined || env.KOMETIO_DEMO === 'true') {
+  if (!deploymentSendsEmail(env)) {
     return new LogEmailAdapter(write);
   }
   return new SmtpEmailAdapter({
-    host: env.SMTP_HOST,
+    host: requiredIn(env, 'SMTP_HOST'),
     port: requiredIn(env, 'SMTP_PORT'),
     fromAddress: requiredIn(env, 'SMTP_FROM_ADDRESS'),
     user: env.SMTP_USER || undefined,

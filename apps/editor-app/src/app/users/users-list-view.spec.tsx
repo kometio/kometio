@@ -290,7 +290,10 @@ describe('UsersListView', () => {
     });
 
     it('sends the link again, and says to whom', async () => {
-      vi.mocked(api.resendInvite).mockResolvedValue({ emailSent: true });
+      vi.mocked(api.resendInvite).mockResolvedValue({
+        emailSent: true,
+        inviteLink: null,
+      });
       renderView([invitee]);
 
       fireEvent.click(screen.getByRole('button', { name: 'Reinvia invito' }));
@@ -303,26 +306,35 @@ describe('UsersListView', () => {
       ).toBeTruthy();
     });
 
-    it('does not say an email was sent when the server has no mail server', async () => {
+    it('gives the new link to the administrator when the server has no mail server, and says nothing was sent', async () => {
       vi.mocked(deployment.getDeployment).mockResolvedValue(
         deploymentRecord({ emailConfigured: false }),
       );
-      vi.mocked(api.resendInvite).mockResolvedValue({ emailSent: true });
+      vi.mocked(api.resendInvite).mockResolvedValue({
+        emailSent: true,
+        inviteLink: 'https://editor.example.com/accept-invite?inviteToken=xyz',
+      });
       renderView([invitee]);
       await screen.findByText(/non può inviare email/i);
 
       fireEvent.click(screen.getByRole('button', { name: 'Reinvia invito' }));
 
+      const dialog = await screen.findByRole('dialog');
       expect(
-        await screen.findByText(
-          'Il nuovo invito per nuova@example.com è pronto, ma nessuna email è partita: il suo link è nel log del server.',
-        ),
+        within(dialog).getByText(/non è partita nessuna email/i),
       ).toBeTruthy();
+      expect(
+        within(dialog).getByLabelText<HTMLInputElement>('Link dell’invito')
+          .value,
+      ).toBe('https://editor.example.com/accept-invite?inviteToken=xyz');
       expect(screen.queryByText(/reinviato a/)).toBeNull();
     });
 
     it('says the email could not be sent, and what to do, when the mail server refused it', async () => {
-      vi.mocked(api.resendInvite).mockResolvedValue({ emailSent: false });
+      vi.mocked(api.resendInvite).mockResolvedValue({
+        emailSent: false,
+        inviteLink: null,
+      });
       renderView([invitee]);
 
       fireEvent.click(screen.getByRole('button', { name: 'Reinvia invito' }));
@@ -403,6 +415,7 @@ describe('UsersListView', () => {
     vi.mocked(api.inviteUser).mockResolvedValue({
       user: { ...userOne, email: 'nuova@example.com' },
       emailSent: true,
+      inviteLink: null,
     });
     renderView([]);
 
@@ -422,13 +435,24 @@ describe('UsersListView', () => {
     ).toBeTruthy();
   });
 
-  it('does not say an email was sent when the server has no mail server', async () => {
+  /*
+   * Without a mail server nothing is sent, and the link used to be written to
+   * the server's log. It is given to the administrator who made the
+   * invitation instead, once, on the screen: the log says only that it was made.
+   */
+  it('gives the link to the administrator when the server has no mail server, to copy and pass on', async () => {
     vi.mocked(deployment.getDeployment).mockResolvedValue(
       deploymentRecord({ emailConfigured: false }),
     );
     vi.mocked(api.inviteUser).mockResolvedValue({
       user: { ...userOne, email: 'nuova@example.com' },
       emailSent: true,
+      inviteLink: 'https://editor.example.com/accept-invite?inviteToken=abc',
+    });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
     });
     renderView([]);
 
@@ -439,16 +463,35 @@ describe('UsersListView', () => {
     fireEvent.change(screen.getByLabelText('Nome'), {
       target: { value: 'Nuova Persona' },
     });
-    // The answer is in before the form is sent: the words depend on it.
-    await screen.findAllByText(/non può inviare email/i);
     fireEvent.click(screen.getByRole('button', { name: 'Invita' }));
 
+    const link =
+      await screen.findByLabelText<HTMLInputElement>('Link dell’invito');
+    expect(link.value).toBe(
+      'https://editor.example.com/accept-invite?inviteToken=abc',
+    );
+    expect(link.readOnly).toBe(true);
     expect(
-      await screen.findByText(
-        'nuova@example.com è stato invitato, ma nessuna email è partita: il link dell’invito è nel log del server.',
+      screen.getByText(
+        /non è partita nessuna email. Manda tu questo link a nuova@example.com/i,
       ),
     ).toBeTruthy();
     expect(screen.queryByText(/riceverà un’email/)).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /copia il link/i }));
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(
+        'https://editor.example.com/accept-invite?inviteToken=abc',
+      ),
+    );
+    expect(await screen.findByText('Link copiato')).toBeTruthy();
+
+    // Done: it is gone, and nothing on the page keeps it.
+    fireEvent.click(screen.getByRole('button', { name: 'Fatto' }));
+    await waitFor(() =>
+      expect(screen.queryByLabelText('Link dell’invito')).toBeNull(),
+    );
+    expect(document.body.textContent).not.toContain('inviteToken=abc');
   });
 
   /*
@@ -460,6 +503,7 @@ describe('UsersListView', () => {
     vi.mocked(api.inviteUser).mockResolvedValue({
       user: { ...userOne, email: 'nuova@example.com' },
       emailSent: false,
+      inviteLink: null,
     });
     renderView([]);
 
@@ -497,6 +541,7 @@ describe('UsersListView', () => {
       vi.mocked(api.inviteUser).mockResolvedValue({
         user: userOne,
         emailSent: true,
+        inviteLink: null,
       });
       renderView([]);
 
@@ -517,6 +562,7 @@ describe('UsersListView', () => {
       vi.mocked(api.inviteUser).mockResolvedValue({
         user: userOne,
         emailSent: true,
+        inviteLink: null,
       });
       renderView([]);
 

@@ -29,6 +29,16 @@ describe('createEmailPort', () => {
     );
   });
 
+  it('says whether what it sends reaches anybody: a mail server does, the log does not', () => {
+    expect(createEmailPort(testApiEnv(), jest.fn()).delivers).toBe(true);
+    expect(
+      createEmailPort(testApiEnv({ SMTP_HOST: undefined }), jest.fn()).delivers,
+    ).toBe(false);
+    expect(
+      createEmailPort(testApiEnv({ KOMETIO_DEMO: 'true' }), jest.fn()).delivers,
+    ).toBe(false);
+  });
+
   it('writes the emails to the log in a demo, even with a mail server: strangers must not be able to use it', () => {
     expect(
       createEmailPort(testApiEnv({ KOMETIO_DEMO: 'true' }), jest.fn()),

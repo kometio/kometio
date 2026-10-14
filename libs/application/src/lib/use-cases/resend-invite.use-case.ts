@@ -2,26 +2,16 @@ import {
   UserAlreadyActiveError,
   UserNotFoundError,
 } from '@kometio/domain-core';
-import type {
-  EmailPort,
-  UserRepositoryPort,
-  VerificationTokenPort,
-} from '@kometio/ports';
+import type { User } from '@kometio/domain-core';
+import type { UserRepositoryPort } from '@kometio/ports';
 import {
-  emailLanguageOfUser,
-  type EmailLanguageDeps,
-} from '../emails/email-language';
-import { buildInviteEmail } from '../emails/invite-email.template';
-import { trySendEmail, type UndeliveredEmail } from '../emails/try-send-email';
+  issueInvite,
+  type IssueInviteDeps,
+  type IssuedInvite,
+} from './issue-invite';
 
-// Same TTL as the original invite (inviteUser) — a re-invite is just a
-// fresh shot at the same 7-day window, not a different policy.
-const INVITE_TTL_MS = 1000 * 60 * 60 * 24 * 7;
-
-export interface ResendInviteDeps extends EmailLanguageDeps {
+export interface ResendInviteDeps extends IssueInviteDeps {
   userRepository: UserRepositoryPort;
-  verificationTokenPort: VerificationTokenPort;
-  emailPort: EmailPort;
 }
 
 export interface ResendInviteInput {
@@ -31,9 +21,9 @@ export interface ResendInviteInput {
   inviteUrlBase: string;
 }
 
-export interface ResendInviteResult {
-  /** The invitation, if the mail server did not take it: the new link exists all the same. */
-  undelivered: UndeliveredEmail[];
+/** The same answer as the invitation itself: a re-invite is a fresh shot at the same window, not a different policy. */
+export interface ResendInviteResult extends IssuedInvite {
+  user: User;
 }
 
 /**
@@ -59,19 +49,8 @@ export async function resendInvite(
     throw new UserAlreadyActiveError(input.userId);
   }
 
-  const inviteToken = await deps.verificationTokenPort.createToken(
-    user.id,
-    user.tenantId,
-    'user-invite',
-    INVITE_TTL_MS,
-  );
-  const inviteUrlBase = input.inviteUrlBase.replace(/\/$/, '');
-  const inviteUrl = `${inviteUrlBase}/accept-invite?inviteToken=${inviteToken.token}`;
-
   return {
-    undelivered: await trySendEmail(deps.emailPort, {
-      to: user.email,
-      ...buildInviteEmail(await emailLanguageOfUser(deps, user), inviteUrl),
-    }),
+    user,
+    ...(await issueInvite(deps, { user, inviteUrlBase: input.inviteUrlBase })),
   };
 }

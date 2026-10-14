@@ -93,7 +93,7 @@ describe('UsersController', () => {
 
       const answer = await controller.resend(tenantId, user.id);
 
-      expect(answer).toEqual({ emailSent: false });
+      expect(answer).toEqual({ emailSent: false, inviteLink: null });
       expect(logged).toHaveBeenCalledWith(
         'Invitation (sent again): the email to nuovo@example.com was not sent',
         expect.stringContaining('ECONNREFUSED'),
@@ -106,7 +106,72 @@ describe('UsersController', () => {
 
       expect(await controller.resend(tenantId, user.id)).toEqual({
         emailSent: true,
+        inviteLink: null,
       });
+    });
+  });
+
+  /*
+   * With no mail server the link is the administrator's, in the answer, and
+   * the log is told only that it was made: a link that signs in as the invitee
+   * would otherwise be kept for as long as the log is.
+   */
+  describe('on a server with no mail server', () => {
+    let info: jest.SpyInstance;
+
+    beforeEach(() => {
+      info = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    });
+
+    afterEach(() => {
+      info.mockRestore();
+    });
+
+    function setupWithoutMailServer() {
+      const made = setup();
+      made.emailPort.delivers = false;
+      return made;
+    }
+
+    it('answers an invitation with the link, and keeps it out of the log', async () => {
+      const { controller, emailPort } = setupWithoutMailServer();
+
+      const answer = await controller.invite(tenantId, invitation);
+
+      expect(answer.emailSent).toBe(true);
+      expect(answer.inviteLink).toMatch(
+        /^https:\/\/editor\.example\.com\/accept-invite\?inviteToken=.+/,
+      );
+      expect(emailPort.sentEmails).toEqual([]);
+      const token = new URL(answer.inviteLink ?? '').searchParams.get(
+        'inviteToken',
+      );
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('nothing was sent to nuovo@example.com'),
+      );
+      expect(JSON.stringify(info.mock.calls)).not.toContain(token);
+      expect(logged).not.toHaveBeenCalled();
+    });
+
+    it('answers sending it again with a new link, and keeps that out of the log too', async () => {
+      const { controller } = setupWithoutMailServer();
+      const { user, inviteLink: first } = await controller.invite(
+        tenantId,
+        invitation,
+      );
+      info.mockClear();
+
+      const answer = await controller.resend(tenantId, user.id);
+
+      expect(answer.inviteLink).toMatch(/\/accept-invite\?inviteToken=.+/);
+      expect(answer.inviteLink).not.toBe(first);
+      const token = new URL(answer.inviteLink ?? '').searchParams.get(
+        'inviteToken',
+      );
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('Invitation (sent again)'),
+      );
+      expect(JSON.stringify(info.mock.calls)).not.toContain(token);
     });
   });
 });

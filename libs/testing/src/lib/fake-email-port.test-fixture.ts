@@ -2,6 +2,8 @@ import type { EmailMessage, EmailPort } from '@kometio/ports';
 
 /** Records sent emails in-memory instead of actually delivering them. */
 export class FakeEmailPort implements EmailPort {
+  /** A server with no mail server: `false` makes the use cases that ask give the link to a person instead. */
+  delivers = true;
   readonly sentEmails: EmailMessage[] = [];
   private failure: Error | null = null;
 

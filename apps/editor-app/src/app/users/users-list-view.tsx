@@ -5,8 +5,8 @@ import { Button } from '../../components/ui/button';
 import { actionErrorMessage } from '../../lib/http-client';
 import type { UserRecord, UserRole } from '../../lib/users-api-client';
 import { ConfirmActionDialog } from '../common/confirm-action-dialog';
-import { useServerSendsEmail } from '../common/deployment-queries';
 import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
+import { InvitationLinkDialog } from './invitation-link-dialog';
 import { InviteUserDialog } from './invite-user-dialog';
 import { useCurrentSession } from '../auth/use-current-session';
 import { RoleDescriptions } from './role-descriptions';
@@ -18,19 +18,23 @@ import { useToast } from '../shell/toast-provider';
 import { InlineError } from '../../components/ui/inline-error';
 import { Pagination } from '../common/pagination';
 
-/** What is said after an invitation, or after sending it again: one wording for each of the three ways it can go. */
+/** What is said after an invitation, or after sending it again, when there is a mail server: one wording for each of the two ways it can go. */
 const INVITATION_MESSAGES = {
   invited: {
     sent: 'users.inviteDialog.sent',
-    noMailServer: 'users.inviteDialog.sentNoEmail',
     refused: 'users.inviteDialog.notMailed',
   },
   resent: {
     sent: 'users.list.inviteResent',
-    noMailServer: 'users.list.inviteResentNoEmail',
     refused: 'users.list.inviteResentNotMailed',
   },
 } as const;
+
+/** What the server answers to an invitation, or to sending it again, of what concerns saying so. */
+interface InvitationAnswer {
+  emailSent: boolean;
+  inviteLink: string | null;
+}
 
 export interface UsersListViewProps {
   items: UserRecord[];
@@ -56,22 +60,28 @@ export function UsersListView({
     cancelInvite,
   } = useUsers();
   const { toast } = useToast();
-  // "Sent" is only true when the server can send and the mail server took the
-  // message: otherwise the link is in the log or the mail did not go out, and
-  // the confirmation says so rather than promise an email.
-  const sendsEmail = useServerSendsEmail();
+  // A server with no mail server sent nothing and gave the link instead: it is
+  // held here, for the one dialog that shows it, and nowhere else.
+  const [issuedLink, setIssuedLink] = useState<{
+    email: string;
+    link: string;
+  } | null>(null);
 
   function announceInvitation(
     kind: 'invited' | 'resent',
     email: string,
-    emailSent: boolean,
+    answer: InvitationAnswer,
   ) {
+    if (answer.inviteLink !== null) {
+      setIssuedLink({ email, link: answer.inviteLink });
+      return;
+    }
     const keys = INVITATION_MESSAGES[kind];
-    if (!emailSent) {
+    if (!answer.emailSent) {
       toast(t(keys.refused, { email }), 'destructive');
       return;
     }
-    toast(t(sendsEmail ? keys.sent : keys.noMailServer, { email }), 'success');
+    toast(t(keys.sent, { email }), 'success');
   }
 
   const { session } = useCurrentSession();
@@ -136,8 +146,7 @@ export function UsersListView({
   async function handleResendInvite(user: UserRecord) {
     setActionError('');
     try {
-      const { emailSent } = await resendInvite(user.id);
-      announceInvitation('resent', user.email, emailSent);
+      announceInvitation('resent', user.email, await resendInvite(user.id));
     } catch (err) {
       setActionError(actionErrorMessage(err, t('users.list.actionFailed')));
     }
@@ -201,10 +210,16 @@ export function UsersListView({
         open={isInviteDialogOpen}
         onOpenChange={setIsInviteDialogOpen}
         onInvite={async (input) => {
-          const { emailSent } = await inviteUser(input);
-          announceInvitation('invited', input.email, emailSent);
+          announceInvitation('invited', input.email, await inviteUser(input));
         }}
       />
+      {issuedLink && (
+        <InvitationLinkDialog
+          email={issuedLink.email}
+          link={issuedLink.link}
+          onClose={() => setIssuedLink(null)}
+        />
+      )}
       {pendingCancellation && (
         <ConfirmActionDialog
           open

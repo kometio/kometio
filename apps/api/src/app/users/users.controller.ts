@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   Inject,
   Patch,
@@ -84,11 +85,13 @@ export class UsersController {
 
   @Post('invite')
   @UseGuards(InvitationsPerHour)
+  // The answer can hold the link that signs in as the invitee (`inviteLink`).
+  @Header('Cache-Control', 'no-store')
   async invite(
     @TenantId() tenantId: string,
     @Body(new ZodValidationPipe(inviteUserBodySchema)) body: InviteUserBody,
   ): Promise<InvitationRecord> {
-    const { user, undelivered } = await inviteUser(this.deps, {
+    const { user, undelivered, inviteLink } = await inviteUser(this.deps, {
       tenantId,
       email: body.email,
       displayName: body.displayName,
@@ -100,9 +103,13 @@ export class UsersController {
     // message is told to the administrator who is looking (`emailSent`), and
     // to the log for the reason.
     this.undeliveredEmails.report('Invitation', undelivered);
+    if (inviteLink !== null) {
+      this.undeliveredEmails.withheld('Invitation', user.email);
+    }
     return invitationRecordSchema.parse({
       user: this.toDto(user),
       emailSent: undelivered.length === 0,
+      inviteLink,
     });
   }
 
@@ -117,18 +124,23 @@ export class UsersController {
   @Post(':id/resend-invite')
   @UseGuards(InvitationsPerHour)
   @HttpCode(200)
+  @Header('Cache-Control', 'no-store')
   async resend(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
   ): Promise<InvitationResendRecord> {
-    const { undelivered } = await resendInvite(this.deps, {
+    const { user, undelivered, inviteLink } = await resendInvite(this.deps, {
       tenantId,
       userId: id,
       inviteUrlBase: this.env.EDITOR_APP_URL,
     });
     this.undeliveredEmails.report('Invitation (sent again)', undelivered);
+    if (inviteLink !== null) {
+      this.undeliveredEmails.withheld('Invitation (sent again)', user.email);
+    }
     return invitationResendRecordSchema.parse({
       emailSent: undelivered.length === 0,
+      inviteLink,
     });
   }
 

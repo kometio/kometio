@@ -77,7 +77,7 @@
   },
   "emailNotice": {
     "title": "Questa installazione non può inviare email",
-    "body": "Inviti, reset della password e notifiche dei moduli non vengono spediti: finiscono nel log del server, con i loro link. Imposta SMTP_HOST (e le altre impostazioni SMTP) sul server per inviarli."
+    "body": "Reset della password, cambi di email e notifiche dei moduli non vengono spediti: finiscono nel log del server, con i loro link. Un invito ti mostra il suo link quando lo crei, da mandare tu. Imposta SMTP_HOST (e le altre impostazioni SMTP) sul server per spedirli tutti."
   },
   "demo": {
     "notice": "Questa è una demo. Altre persone possono provarla nello stesso momento e ogni tanto ricomincia da capo: quello che fai qui non viene conservato. Il caricamento di file e l'account condiviso sono disattivati.",
@@ -1382,7 +1382,6 @@
       "resendInvite": "Reinvia invito",
       "cancelInvite": "Annulla invito",
       "inviteResent": "Invito reinviato a {{email}}",
-      "inviteResentNoEmail": "Il nuovo invito per {{email}} è pronto, ma nessuna email è partita: il suo link è nel log del server.",
       "inviteResentNotMailed": "L’invito per {{email}} è pronto, ma l’email non è partita. Riprova quando il mail server funziona.",
       "inviteCancelled": "Invito a {{email}} annullato",
       "cancelInviteConfirm": {
@@ -1402,11 +1401,20 @@
       "inviting": "Invio in corso...",
       "emailTaken": "Esiste già un utente con questa email.",
       "sent": "Invito inviato a {{email}}: riceverà un’email per scegliere la password.",
-      "sentNoEmail": "{{email}} è stato invitato, ma nessuna email è partita: il link dell’invito è nel log del server.",
       "notMailed": "{{email}} è stato invitato, ma l’email non è partita. Quando il mail server funziona, usa «Reinvia invito».",
       "languageLabel": "Lingua",
       "languageHint": "L’invito e ogni mail che riceverà dopo saranno scritti in questa lingua, finché non ne sceglie un’altra.",
       "failed": "L’invito non è stato inviato. Riprova."
+    },
+    "inviteLinkDialog": {
+      "title": "Invito per {{email}}",
+      "description": "Questo server non ha un mail server, quindi non è partita nessuna email. Manda tu questo link a {{email}}: serve a scegliere una password e ad accedere, e scade tra 7 giorni.",
+      "linkLabel": "Link dell’invito",
+      "copy": "Copia il link",
+      "copied": "Link copiato",
+      "copyFailed": "Impossibile copiare: il link è selezionato, premi Ctrl/⌘ + C.",
+      "onlyOnce": "Lo vedi solo adesso. Per averne uno nuovo usa «Reinvia invito» nella lista.",
+      "done": "Fatto"
     },
     "role": {
       "admin": "Admin",

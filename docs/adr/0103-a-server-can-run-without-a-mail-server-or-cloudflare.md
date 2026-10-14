@@ -1,6 +1,6 @@
 # 0103 — A server can run without a mail server and without Cloudflare
 
-**Status**: Accepted — 2026-10-05
+**Status**: Accepted — 2026-10-05. Amended by [0128](0128-an-invitation-hands-its-link-to-its-administrator.md): an invitation's link goes to the administrator who made it, not to the log.
 
 ## Context
 

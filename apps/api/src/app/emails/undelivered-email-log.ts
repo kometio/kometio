@@ -14,10 +14,22 @@ import type { UndeliveredEmail } from '@kometio/application';
  *
  * `what` names the thing that was being done ("Password reset", "Invitation"),
  * and the entry reads "Password reset: the email to x@y.z was not sent".
+ *
+ * A server with no mail server is the other way an email is not sent, and on
+ * purpose: for what has a link only its recipient should have, the link is
+ * handed to the person who asked and the log is told that, without the link
+ * (`withheld`).
  */
 @Injectable()
 export class UndeliveredEmailLog {
   private readonly logger = new Logger('Email');
+
+  /** The log's account of an email that was not made, because the link in it went to the administrator instead. */
+  withheld(what: string, to: string): void {
+    this.logger.log(
+      `${what}: no mail server is configured, so nothing was sent to ${to}; the link was shown to the administrator who made it`,
+    );
+  }
 
   report(what: string, undelivered: readonly UndeliveredEmail[]): void {
     for (const { to, reason } of undelivered) {

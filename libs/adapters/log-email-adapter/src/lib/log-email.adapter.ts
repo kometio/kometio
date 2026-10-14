@@ -5,9 +5,14 @@ import type { EmailMessage, EmailPort } from '@kometio/ports';
  * where the person who runs the server will look, instead of failing.
  *
  * The emails that matter without a mail server are the ones that carry a
- * link: an invitation, a password reset, the confirmation of a new address.
- * The text of each has the link in it, in full, so the log entry is enough to
- * follow it. The HTML is left out; it says nothing the text does not.
+ * link: a password reset, the confirmation of a new address. The text of each
+ * has the link in it, in full, so the log entry is enough to follow it. The
+ * HTML is left out; it says nothing the text does not. An invitation is not
+ * one of them: its link is given to the administrator who made it, and the
+ * use case does not send it through here (`EmailPort.delivers`).
+ *
+ * A link that signs somebody in is kept by the log for as long as the log is
+ * kept, so each entry says so to whoever reads it.
  *
  * It does not throw, on purpose. Failing the request because nobody has set a
  * mail server up would leave a half-done invitation behind (the person is
@@ -19,6 +24,8 @@ import type { EmailMessage, EmailPort } from '@kometio/ports';
  * Where the entry goes is the caller's: the API hands in its own logger.
  */
 export class LogEmailAdapter implements EmailPort {
+  readonly delivers = false;
+
   constructor(private readonly write: (entry: string) => void) {}
 
   async sendEmail(message: EmailMessage): Promise<void> {
@@ -28,6 +35,7 @@ export class LogEmailAdapter implements EmailPort {
     this.write(
       [
         'Email NOT sent: no mail server is configured (set SMTP_HOST to send email).',
+        'Anything in it, a link included, is for whoever reads this log: do not share the log.',
         `  To:      ${visible(message.to)}`,
         `  Subject: ${visible(message.subject)}`,
         '',
