@@ -304,6 +304,10 @@ services:
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
       KOMETIO_ACME_EMAIL_LINE: email ${ACME_EMAIL:?Set ACME_EMAIL in .env, Let's Encrypt needs a contact address}
+      # A line for each request, with what a request carries left out
+      # (docs/adr/0126): the same variable as the API's. `false`, and not
+      # empty: the Caddyfile reads it as the name of a snippet.
+      KOMETIO_ACCESS_LOG: ${KOMETIO_ACCESS_LOG:-false}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

@@ -346,13 +346,18 @@ is wrapped. The banner, with the setup token, is still there, one line at a time
 The commands (`export`, `import`, `backup`) are always text: a person reads
 those.
 
-**One line for each request**, to the API's log, with `-e KOMETIO_ACCESS_LOG=true`:
-method, path (never the query), status, time, the request id the response carries
-and who was signed in; not the health check, which Docker asks every ten seconds.
-Not the address or the browser: a server that is asked for them has them in the
-proxy in front. It is off because it is the most
-frequent line there is; on a busy site it is the one that makes a rotating log
-forget an hour ago.
+**One line for each request**, with `-e KOMETIO_ACCESS_LOG=true`. The API writes
+one: method, path (never the query), status, time, the request id the response
+carries and who was signed in; not the health check, which Docker asks every ten
+seconds. On a server with a `DOMAIN`, the proxy writes one too, for every request
+to the site, the editor and the API: time, method, host, path (never the query),
+status, size and duration, and **nothing a request carries**: no cookie, no
+header of any kind, no address, no browser. A line of the proxy's is a JSON
+object (`"logger":"http.log.access…"`) in the text log too, as the proxy writes
+it. If you need the address of a client, for an abuse report, put a proxy of
+your own in front: this is the one that is shipped. It is off because it is the
+most frequent line there is; on a busy site it is the one that makes a rotating
+log forget an hour ago.
 
 ## Move a site to another installation
 

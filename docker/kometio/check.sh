@@ -93,6 +93,13 @@ DOWNGRADE_VOLUME=kometio-check-downgrade-data
 LOGJSON=kometio-check-logjson
 LOGJSON_VOLUME=kometio-check-logjson-data
 LOGJSON_API_PORT=22000
+# The ninth, a server with a name that is asked one request carrying a secret in
+# every place a request has one, to read what the proxy wrote (docs/adr/0126).
+PROXYLOG=kometio-check-proxylog
+PROXYLOG_VOLUME=kometio-check-proxylog-data
+PROXYLOG_DOMAIN=kometio-check-proxylog.localhost
+PROXYLOG_HTTP_PORT=19080
+PROXYLOG_HTTPS_PORT=19443
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -132,16 +139,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE"; do
+    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE" "$PROXYLOG"; do
       if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
         printf '\n== the last lines of the log of %s\n' "$other"
         docker logs --tail 40 "$other" 2>&1 || true
       fi
     done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE" "$PROXYLOG" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME" "$PROXYLOG_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -150,13 +157,13 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$DOWNGRADE"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$DOWNGRADE" "$PROXYLOG"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME" "$PROXYLOG_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -944,6 +951,71 @@ while IFS= read -r answer; do
   esac
 done < <(docker logs "$LOGJSON" 2>&1 | node "$(git rev-parse --show-toplevel)/docker/kometio/json-log-check.mjs" "$LOGJSON_REQUEST_ID" "$LOGJSON_QUERY_SECRET" || true)
 docker rm -fv "$LOGJSON" >/dev/null
+
+# --- what the proxy writes of a request ---------------------------------------------
+#
+# docs/adr/0126. A server with a name has Caddy in front of the three parts. Its
+# own access line carries what a request did but the credentials it redacts: every
+# other header, the address, the query. And the line for a name that has no site
+# (the machine's address, the redirect from port 80) goes to a log that no site's
+# filter sees.
+# Two runs on the same volume: without KOMETIO_ACCESS_LOG there is no line of a
+# request and nothing a request carried; with it there is a line for each, and
+# the container's whole log is searched for what they carried.
+step "the proxy's access log: nothing unless asked, and then none of what a request carried (docs/adr/0126)"
+PROXYLOG_SECRET="proxy-secret-$(openssl rand -hex 8)"
+PROXYLOG_HOST="api.${PROXYLOG_DOMAIN}:${PROXYLOG_HTTPS_PORT}"
+
+# One container, started with the arguments after the first, asked what a
+# request carrying a secret in every place has: through the name that has a site,
+# over HTTP to the address (no site at all), and to a name over HTTP (the
+# redirect). `--resolve` and not DNS: the name only has to reach this machine,
+# and Caddy's certificate for it is its own authority's (-k).
+proxylog_run() {
+  docker run -d --name "$PROXYLOG" \
+    -p "${PROXYLOG_HTTP_PORT}:80" -p "${PROXYLOG_HTTPS_PORT}:443" \
+    -e "DOMAIN=${PROXYLOG_DOMAIN}" \
+    -e "EDITOR_APP_URL=https://admin.${PROXYLOG_DOMAIN}:${PROXYLOG_HTTPS_PORT}" \
+    -e "API_PUBLIC_URL=https://${PROXYLOG_HOST}/api" \
+    -e "PUBLIC_SITE_URL=https://${PROXYLOG_DOMAIN}:${PROXYLOG_HTTPS_PORT}" \
+    -v "${PROXYLOG_VOLUME}:/data" "$@" "$IMAGE" >/dev/null
+  wait_for_banners 1 "$PROXYLOG" >/dev/null
+  curl -sk -o /dev/null \
+    --resolve "${PROXYLOG_HOST}:127.0.0.1" \
+    -H "Cookie: session=${PROXYLOG_SECRET}-cookie" \
+    -H "Authorization: Bearer ${PROXYLOG_SECRET}-bearer" \
+    -H "X-Preview-Token: ${PROXYLOG_SECRET}-header" \
+    -H "Referer: https://elsewhere.test/page?t=${PROXYLOG_SECRET}-referer" \
+    -A "Browser/${PROXYLOG_SECRET}-agent" \
+    "https://${PROXYLOG_HOST}/api/proxy-log-check?token=${PROXYLOG_SECRET}-query"
+  curl -s -o /dev/null \
+    -H "Cookie: session=${PROXYLOG_SECRET}-cookie" \
+    -A "Browser/${PROXYLOG_SECRET}-agent" \
+    "http://127.0.0.1:${PROXYLOG_HTTP_PORT}/no-site-here?token=${PROXYLOG_SECRET}-query"
+  # The line is written when the response has gone: a moment, not none.
+  sleep 1
+}
+proxy_lines() { docker logs "$PROXYLOG" 2>&1 | grep 'http.log.access' || true; }
+
+proxylog_run
+check "without the variable the proxy writes no line of a request" \
+  test "$(proxy_lines | grep -c .)" = 0
+check "and nothing a request carried is anywhere in the log" \
+  sh -c "! docker logs '$PROXYLOG' 2>&1 | grep -q '${PROXYLOG_SECRET}'"
+docker rm -fv "$PROXYLOG" >/dev/null
+
+proxylog_run -e KOMETIO_ACCESS_LOG=true
+check "with it, the proxy wrote a line for the request: its host, its path and its status" \
+  sh -c "docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep '\"host\":\"${PROXYLOG_HOST}\"' | grep '\"uri\":\"/api/proxy-log-check\"' | grep -q '\"status\":404'"
+check "its line has what a log of requests is asked: duration and size" \
+  sh -c "docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep -q '\"duration\":.*\"size\":'"
+check "a request to an address that has no site is a line too (the default logger's)" \
+  sh -c "docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep -q '\"uri\":\"/no-site-here\"'"
+check "no cookie, no token, no header of its own, no referer, no browser, no query: none of the six secrets is anywhere in the log" \
+  sh -c "! docker logs '$PROXYLOG' 2>&1 | grep -q '${PROXYLOG_SECRET}'"
+check "and no line of the proxy's has an address, a port, a header or a response header" \
+  sh -c "! docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep -Eq 'remote_ip|client_ip|remote_port|\"headers\"|resp_headers'"
+docker rm -fv "$PROXYLOG" >/dev/null
 
 # --- the browser suite ----------------------------------------------------------
 
