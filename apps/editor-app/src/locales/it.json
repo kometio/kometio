@@ -3748,6 +3748,12 @@
       "unsupported-post-types": "{{count}} voci sono in tipi di contenuto che non importo: resterebbero fuori.",
       "menus": "{{count}} voci di menu. I menu si ricostruiscono a mano nell’editor.",
       "fields-not-described": "{{count}} blocchi tengono i propri campi nel codice del tema, non nella base dati: arriva il loro contenuto, ma senza sapere che cosa sia ciascun pezzo."
+    },
+    "delete": {
+      "label": "Elimina {{name}}",
+      "title": "Eliminare «{{name}}»?",
+      "description": "Sparisce il resoconto di questo file, e con lui gli indirizzi da cui ricavare i reindirizzamenti. Il sito non cambia. Per riaverlo, carica di nuovo il file.",
+      "failed": "Non è stato eliminato. Riprova."
     }
   },
   "datePicker": {
