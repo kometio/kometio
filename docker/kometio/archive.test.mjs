@@ -86,6 +86,7 @@ describe('what an archive says about itself', () => {
 
   it('knows which tables hold moments and not a site', () => {
     assert.deepEqual([...TRANSIENT_TABLES].sort(), [
+      'audit_events',
       'form_submissions',
       'import_jobs',
       'missing_paths',

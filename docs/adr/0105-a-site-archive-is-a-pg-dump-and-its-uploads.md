@@ -27,7 +27,8 @@ The choices, with the reasons they went as they did:
   password hashes, so a person signs in on the new installation with the password
   they had. Not in the file: sessions and the links in flight (the rows of
   `sessions`, `verification_tokens`), the submissions of the forms
-  (`form_submissions`), the state of imports (`import_jobs`), and the key that seals
+  (`form_submissions`), the state of imports (`import_jobs`), the log of who did
+  what (`audit_events`, docs/adr/0130), and the key that seals
   the AI provider's API key, which lives in the server's own volume. The sealed key
   stays in the database, useless without that key, and is cleared on import; the
   provider and model are kept and the key is asked for again. The structure of those

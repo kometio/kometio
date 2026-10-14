@@ -409,7 +409,8 @@ What you should know:
   password reset, an invitation, an address confirmation), do not travel; an
   invitation still waiting is sent again from the Users screen. **Form submissions
   do not travel** either: a copy of a site does not start with somebody else's
-  messages.
+  messages. Nor does **the activity log** (Settings → Activity): the new
+  installation starts its own.
 - **The site takes the new address.** Its domain becomes the host of the address
   the new installation is reached at, not the one it had.
 - **The AI provider's key does not travel.** It is sealed with a key that belongs to

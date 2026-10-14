@@ -60,6 +60,14 @@ visit, or of what was typed.
 - **Settings → Activity, an administrator's** (`configureSite`): the entries
   newest first, in pages of 25, each as one sentence in the person's language.
 
+- **A moment's, not a site's: an archive does not carry it.** The log is what
+  happened on the server that was asked, for ninety days; a site opened from an
+  archive starts its own, as it starts with nobody signed in (ADR-0105). Carried,
+  it would also put into a file that is handed around the record of who signed in
+  and when, outside the clock that bounds it here. The structure travels, the rows
+  do not (`TRANSIENT_TABLES`, which `archive-tables.test.mjs` makes a decision for
+  every new table).
+
 ## Not in this change
 
 - **No content events.** If an agency wants "who published this page", that is a
