@@ -9,6 +9,7 @@ import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { TooltipProvider } from '../../components/ui/tooltip';
 import { ToastProvider } from '../shell/toast-provider';
 import { IntegrationsView } from './integrations-view';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // The save bar asks before a link throws unsaved work away, which needs a
 // router; nothing is being left here.
@@ -261,7 +262,9 @@ describe('IntegrationsView — what each field is for', () => {
       expect(edit.getAttribute('aria-expanded')).toBe('true');
 
       const code = screen.getByLabelText('Codice di Google Analytics');
-      expect((code as HTMLTextAreaElement).value).toBe('<script>ga()</script>');
+      expect(instanceOf(code, HTMLTextAreaElement).value).toBe(
+        '<script>ga()</script>',
+      );
       fireEvent.change(code, { target: { value: '<script>ga2()</script>' } });
       fireEvent.click(await screen.findByRole('button', { name: /^salva$/i }));
 

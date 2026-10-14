@@ -24,6 +24,7 @@ import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { useCurrentSession } from '../auth/use-current-session';
 import { GlobalSearch } from './global-search';
 import { ToastProvider } from './toast-provider';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 
@@ -250,7 +251,7 @@ describe('GlobalSearch', () => {
     fireEvent.change(field, { target: { value: 'lingua' } });
     const options = await screen.findAllByRole('option');
     expect(options).toHaveLength(1);
-    fireEvent.click(options[0] as HTMLElement);
+    fireEvent.click(instanceOf(options[0], HTMLElement));
 
     await waitFor(() => expect(i18n.language).toBe('en'));
   });

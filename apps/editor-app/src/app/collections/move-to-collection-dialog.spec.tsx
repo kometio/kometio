@@ -5,6 +5,7 @@ import { buildCollectionRecord } from '@kometio/testing/records';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { MoveToCollectionDialog } from './move-to-collection-dialog';
 import * as api from '../../lib/collections-api-client';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/collections-api-client', async (importOriginal) => {
   const actual =
@@ -64,7 +65,7 @@ describe('MoveToCollectionDialog', () => {
     await screen.findByText('Events');
     const chosen = screen
       .getAllByRole('radio')
-      .filter((radio) => (radio as HTMLInputElement).checked);
+      .filter((radio) => instanceOf(radio, HTMLInputElement).checked);
     expect(chosen).toHaveLength(1);
     expect(chosen[0].closest('label')?.textContent).toContain('Events');
   });
@@ -88,9 +89,9 @@ describe('MoveToCollectionDialog', () => {
 
     await screen.findByText('News');
     const confirm = screen.getByRole('button', { name: 'Sposta' });
-    expect((confirm as HTMLButtonElement).disabled).toBe(true);
+    expect(instanceOf(confirm, HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.click(screen.getByText('Pagine (nessuna collezione)'));
-    expect((confirm as HTMLButtonElement).disabled).toBe(false);
+    expect(instanceOf(confirm, HTMLButtonElement).disabled).toBe(false);
   });
 });

@@ -17,6 +17,7 @@ import { buildFormRecord } from '@kometio/testing/records';
 import { FormsListView } from './forms-list-view';
 import { useCurrentSession } from '../auth/use-current-session';
 import { sessionAs } from '../../test/current-session.test-fixture';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../auth/use-current-session', () => ({ useCurrentSession: vi.fn() }));
 
@@ -263,7 +264,10 @@ describe('FormsListView', () => {
     tick('Contact form');
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
     // The name is proposed in the language of the editor, and can be changed.
-    const field = screen.getByLabelText('Nome della copia') as HTMLInputElement;
+    const field = instanceOf(
+      screen.getByLabelText('Nome della copia'),
+      HTMLInputElement,
+    );
     expect(field.value).toBe('Copia di Contact form');
     fireEvent.click(screen.getByRole('button', { name: 'Crea la copia' }));
 
@@ -310,7 +314,8 @@ describe('FormsListView', () => {
 
     expect(await screen.findByText('Form not found')).toBeTruthy();
     expect(
-      (screen.getByLabelText('Nome della copia') as HTMLInputElement).value,
+      instanceOf(screen.getByLabelText('Nome della copia'), HTMLInputElement)
+        .value,
     ).toBe('Copia di Contact form');
   });
 

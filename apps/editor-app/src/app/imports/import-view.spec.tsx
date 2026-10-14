@@ -6,6 +6,7 @@ import * as api from '../../lib/imports-api-client';
 import type { ImportJobRecord } from '../../lib/imports-api-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { ImportView } from './import-view';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/imports-api-client', async (importOriginal) => {
   const actual =
@@ -178,7 +179,9 @@ describe('ImportView', () => {
 
     const input = document.querySelector('input[type="file"]');
     const file = new File(['<rss/>'], 'export.xml', { type: 'text/xml' });
-    fireEvent.change(input as HTMLInputElement, { target: { files: [file] } });
+    fireEvent.change(instanceOf(input, HTMLInputElement), {
+      target: { files: [file] },
+    });
 
     await waitFor(() =>
       expect(api.startWordPressAnalysis).toHaveBeenCalledWith('site-1', file),
