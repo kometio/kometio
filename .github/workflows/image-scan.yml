@@ -7,8 +7,11 @@ name: Image scan
 # nothing changed on our side, so the published image is read every day and
 # not only when a build makes one.
 #
-# It reports and does not fail: what it finds is listed in the run's summary
-# and as code-scanning alerts. docs/adr/0121 says when that changes.
+# What it finds is listed in the run's summary and as code-scanning alerts. A
+# pull request and a run started by hand only report; the daily run also
+# fails when there is something with a fix (the last step), because a list
+# that nobody opens is not read. It is not a required check: it is not
+# something a change of ours can be blamed for. docs/adr/0121.
 on:
   schedule:
     - cron: '23 5 * * *'
@@ -64,6 +67,7 @@ jobs:
             --format json --output /out/report.json "$IMAGE"
           docker run --rm -v "$RUNNER_TEMP/trivy:/out" "$TRIVY" convert \
             --format sarif --output /out/trivy.sarif /out/report.json
+          echo "FINDINGS=$(jq '[.Results[]? | .Vulnerabilities[]?] | length' "$RUNNER_TEMP/trivy/report.json")" >> "$GITHUB_ENV"
 
       # One row per package, not per advisory: a package with nine advisories
       # is one update to make, and a table of every one overruns the summary.
@@ -72,11 +76,10 @@ jobs:
           {
             echo "### $IMAGE"
             echo
-            findings=$(jq '[.Results[]? | .Vulnerabilities[]?] | length' "$RUNNER_TEMP/trivy/report.json")
-            if [ "$findings" -eq 0 ]; then
+            if [ "$FINDINGS" -eq 0 ]; then
               echo "No high or critical advisory with a fix."
             else
-              echo "$findings advisories with a fix, high or critical:"
+              echo "$FINDINGS advisories with a fix, high or critical:"
               echo
               echo "| Package | Installed | Advisories | Worst | Where |"
               echo "| --- | --- | ---: | --- | --- |"
@@ -101,3 +104,14 @@ jobs:
         with:
           sarif_file: ${{ runner.temp }}/trivy/trivy.sarif
           category: trivy-image
+
+      # Last, so that the summary and the alerts are there to be read when it
+      # fails. Only the daily run: whoever starts one by hand, or edits this
+      # file, is looking at the list and does not need a red mark for it.
+      - name: Fail when the image has an advisory with a fix
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$FINDINGS" -gt 0 ]; then
+            echo "::error::$FINDINGS high or critical advisories with a fix in $IMAGE: the run's summary lists them by package"
+            exit 1
+          fi

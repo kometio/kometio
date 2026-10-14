@@ -16,7 +16,8 @@ import { SITE_ARCHIVE } from '../adapters/port.tokens';
 import { RequiresPermission } from '../auth/allowed.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
-import { UserId } from '../auth/session-identity.decorator';
+import { TenantId, UserId } from '../auth/session-identity.decorator';
+import { AuditRecorder } from '../audit/audit-recorder';
 
 /** The part of Express's response a download is written through. */
 export interface DownloadResponse extends NodeJS.WritableStream {
@@ -46,6 +47,7 @@ export class SiteArchiveController {
 
   constructor(
     @Inject(SITE_ARCHIVE) private readonly archives: SiteArchivePort | null,
+    private readonly audit: AuditRecorder,
   ) {}
 
   // A dump of the whole database and a read of every upload, for something an
@@ -54,6 +56,7 @@ export class SiteArchiveController {
   @Get()
   @UseGuards(ThrottlerGuard)
   async download(
+    @TenantId() tenantId: string,
     @UserId() userId: string,
     @Headers('sec-fetch-site') fetchSite: string | undefined,
     @Res() response: DownloadResponse,
@@ -67,6 +70,13 @@ export class SiteArchiveController {
 
     const archive = await this.archives.export();
     this.logger.log(`The site archive is being downloaded by user ${userId}`);
+    // Said when it starts: the file holds every account's password hash, and
+    // whether the download then arrives whole is the connection's business.
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'archive.exported',
+    });
     response.status(200);
     response.setHeader('Content-Type', 'application/gzip');
     response.setHeader(

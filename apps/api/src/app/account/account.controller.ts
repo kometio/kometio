@@ -19,7 +19,10 @@ import {
   changeAccountAvatar,
   changeAccountLanguage,
   changePassword,
+  endOtherSessions,
+  endSession,
   getAccountProfile,
+  listSessions,
   MAX_UPLOAD_BYTES_BY_KIND,
   removeAccountAvatar,
   requestEmailChange,
@@ -28,6 +31,8 @@ import {
 import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
+  type AccountSessionList,
+  accountSessionListSchema,
   type ChangeAccountLanguageBody,
   changeAccountLanguageBodySchema,
   type ChangePasswordBody,
@@ -41,6 +46,7 @@ import type { AccountDeps } from './account.deps';
 import { ACCOUNT_DEPS } from './account.tokens';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 import { PerUserThrottlerGuard } from '../auth/per-user-throttler.guard';
 import {
@@ -48,6 +54,7 @@ import {
   TenantId,
   UserId,
 } from '../auth/session-identity.decorator';
+import { UuidParam } from '../uuid-param.decorator';
 
 /**
  * The signed-in person's own profile (docs/adr/0071).
@@ -64,6 +71,7 @@ export class AccountController {
     @Inject(ACCOUNT_DEPS) private readonly deps: AccountDeps,
     @Inject(API_ENV) private readonly env: ApiEnv,
     private readonly undeliveredEmails: UndeliveredEmailLog,
+    private readonly audit: AuditRecorder,
   ) {}
 
   @Get('profile')
@@ -130,6 +138,72 @@ export class AccountController {
       `Password change (user ${userId})`,
       undeliveredNotices,
     );
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'account.password_changed',
+      targetId: userId,
+    });
+  }
+
+  /**
+   * Where the person is signed in (docs/adr/0129): a label for each device,
+   * when it was last used, and which one is this. Their own only.
+   */
+  @Get('sessions')
+  async sessions(
+    @TenantId() tenantId: string,
+    @UserId() userId: string,
+    @SessionToken() currentSessionToken: string,
+  ): Promise<AccountSessionList> {
+    const sessions = await listSessions(this.deps, {
+      tenantId,
+      userId,
+      currentSessionToken,
+    });
+    return accountSessionListSchema.parse({
+      items: sessions.map((session) => ({
+        id: session.id,
+        deviceLabel: session.deviceLabel,
+        createdAt: session.createdAt.toISOString(),
+        lastUsedAt: session.lastUsedAt.toISOString(),
+        isCurrent: session.isCurrent,
+      })),
+    });
+  }
+
+  /** Signs out of every other device; this one stays. Declared before `sessions/:id`, which it would otherwise be read as. */
+  @Delete('sessions')
+  @HttpCode(204)
+  @UseGuards(PerUserThrottlerGuard)
+  async endOtherSessions(
+    @TenantId() tenantId: string,
+    @UserId() userId: string,
+    @SessionToken() currentSessionToken: string,
+  ): Promise<void> {
+    await endOtherSessions(this.deps, {
+      tenantId,
+      userId,
+      currentSessionToken,
+    });
+  }
+
+  /** Signs out of one other device. The one it is called from is signing out, which is `POST /auth/logout`. */
+  @Delete('sessions/:id')
+  @HttpCode(204)
+  @UseGuards(PerUserThrottlerGuard)
+  async endSession(
+    @TenantId() tenantId: string,
+    @UserId() userId: string,
+    @SessionToken() currentSessionToken: string,
+    @UuidParam('id') sessionId: string,
+  ): Promise<void> {
+    await endSession(this.deps, {
+      tenantId,
+      userId,
+      sessionId,
+      currentSessionToken,
+    });
   }
 
   /**
@@ -152,6 +226,13 @@ export class AccountController {
       newEmail: body.newEmail,
       currentPassword: body.currentPassword,
       confirmUrlBase: this.env.EDITOR_APP_URL,
+    });
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'account.email_change_requested',
+      targetId: userId,
+      targetLabel: body.newEmail,
     });
   }
 

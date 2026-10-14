@@ -81,20 +81,47 @@ describe('invitationRecordSchema', () => {
 
   it('carries the person and whether the email went out', () => {
     expect(
-      invitationRecordSchema.parse({ user: waiting, emailSent: false }),
-    ).toEqual({ user: waiting, emailSent: false });
+      invitationRecordSchema.parse({
+        user: waiting,
+        emailSent: false,
+        inviteLink: null,
+      }),
+    ).toEqual({ user: waiting, emailSent: false, inviteLink: null });
   });
 
-  it('refuses an answer that does not say whether the email went out', () => {
-    expect(invitationRecordSchema.safeParse({ user: waiting }).success).toBe(
-      false,
-    );
+  it('carries the link when there was no mail server to send it', () => {
+    const link = 'https://editor.example.com/accept-invite?inviteToken=abc';
+
+    expect(
+      invitationRecordSchema.parse({
+        user: waiting,
+        emailSent: true,
+        inviteLink: link,
+      }).inviteLink,
+    ).toBe(link);
+  });
+
+  it('refuses an answer that does not say whether the email went out, or whether there is a link', () => {
+    expect(
+      invitationRecordSchema.safeParse({ user: waiting, inviteLink: null })
+        .success,
+    ).toBe(false);
+    expect(
+      invitationRecordSchema.safeParse({ user: waiting, emailSent: true })
+        .success,
+    ).toBe(false);
     expect(invitationResendRecordSchema.safeParse({}).success).toBe(false);
   });
 
-  it('carries whether a resent invitation went out', () => {
-    expect(invitationResendRecordSchema.parse({ emailSent: true })).toEqual({
-      emailSent: true,
-    });
+  it('carries whether a resent invitation went out, and its new link', () => {
+    expect(
+      invitationResendRecordSchema.parse({ emailSent: true, inviteLink: null }),
+    ).toEqual({ emailSent: true, inviteLink: null });
+    expect(
+      invitationResendRecordSchema.parse({
+        emailSent: true,
+        inviteLink: 'https://editor.example.com/accept-invite?inviteToken=xyz',
+      }).inviteLink,
+    ).toContain('inviteToken=xyz');
   });
 });

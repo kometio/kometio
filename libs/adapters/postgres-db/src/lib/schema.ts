@@ -32,9 +32,11 @@ import {
   UNTRANSLATED_PAGE_FALLBACKS,
   USER_ROLES,
   VERIFICATION_TOKEN_PURPOSES,
+  type AuditAction,
 } from '@kometio/shared-types';
 import {
   DEFAULT_COOKIE_BANNER_SETTINGS,
+  auditDetailSchema,
   businessAddressSchema,
   cookieBannerSettingsSchema,
   exposedFieldsSchema,
@@ -915,8 +917,49 @@ export const sessions = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
+    // "Chrome on macOS" (docs/adr/0129): what the person recognises their own
+    // sign-ins by, and the most the table keeps of the device — no address, no
+    // user-agent string. `null` for a sign-in whose agent was not recognised and
+    // for the ones that predate the column.
+    deviceLabel: text('device_label'),
+    // Kept to a few minutes' accuracy: refreshed by a request only when it is
+    // older than that, so that being signed in is not a write per request.
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [index('sessions_user_idx').on(table.userId)],
+);
+
+/**
+ * The activity log of a site (docs/adr/0130): who did what to what, for the
+ * security and configuration events and nothing else. Append-only; the
+ * scheduled clean-up removes what is older than `AUDIT_RETENTION_DAYS`.
+ *
+ * No address and no request body: the columns are the whole of what is kept.
+ */
+export const auditEvents = pgTable(
+  'audit_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+    // `set null`: an account that goes does not take with it the record of what
+    // it did while it was there. (An account is only removed while it is an
+    // invitation nobody accepted, which has done nothing.)
+    actorUserId: uuid('actor_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    // Text, not an enum: a new kind of entry is a line in `AUDIT_ACTIONS`, not
+    // a migration. What is read back is checked against the list.
+    action: text('action').$type<AuditAction>().notNull(),
+    targetId: text('target_id'),
+    targetLabel: text('target_label'),
+    detail: validatedJsonb('detail', auditDetailSchema),
+  },
+  (table) => [index('audit_events_tenant_at_idx').on(table.tenantId, table.at)],
 );
 
 export const verificationTokens = pgTable(

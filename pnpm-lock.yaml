@@ -275,6 +275,9 @@ importers:
       '@kometio/ports':
         specifier: workspace:*
         version: link:../../libs/ports
+      '@kometio/postgres-audit-log-repository':
+        specifier: workspace:*
+        version: link:../../libs/adapters/postgres-audit-log-repository
       '@kometio/postgres-dashboard-stats-repository':
         specifier: workspace:*
         version: link:../../libs/adapters/postgres-dashboard-stats-repository
@@ -781,6 +784,25 @@ importers:
       zod:
         specifier: ^4.6.5
         version: 4.6.5
+
+  libs/adapters/postgres-audit-log-repository:
+    dependencies:
+      '@kometio/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@kometio/postgres-db':
+        specifier: workspace:*
+        version: link:../postgres-db
+      '@kometio/shared-types':
+        specifier: workspace:*
+        version: link:../../shared-types
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@opentelemetry/api@1.9.1)(postgres@3.4.9)
+    devDependencies:
+      dotenv:
+        specifier: ^18.0.7
+        version: 18.0.7
 
   libs/adapters/postgres-dashboard-stats-repository:
     dependencies:

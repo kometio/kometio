@@ -180,6 +180,7 @@ export class ImportsController {
   }
 
   @Get(':id')
+  @Allowed('configureSite')
   async findById(
     @TenantId() tenantId: string,
     @UuidParam('id') id: string,
@@ -200,6 +201,7 @@ export class ImportsController {
   }
 
   @Get()
+  @Allowed('configureSite')
   async list(
     @TenantId() tenantId: string,
     @Query(new ZodValidationPipe(listImportJobsQuerySchema))

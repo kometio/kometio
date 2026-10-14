@@ -174,11 +174,16 @@ export class DrizzleUserRepository
   }
 
   async saveInviteAccepted(user: User): Promise<boolean> {
-    const { tenantId, id, passwordHash } = user.toProps();
+    const { tenantId, id, passwordHash, emailVerifiedAt } = user.toProps();
     const accepted = await withTenant(this.db, tenantId, (tx: KometioTx) =>
       tx
         .update(users)
-        .set({ passwordHash, isActive: true, invitePending: false })
+        .set({
+          passwordHash,
+          emailVerifiedAt,
+          isActive: true,
+          invitePending: false,
+        })
         .where(
           and(
             eq(users.tenantId, tenantId),

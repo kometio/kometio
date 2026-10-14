@@ -34,8 +34,9 @@ export interface UserRepositoryPort {
    */
   saveCredentials(user: User): Promise<void>;
   /**
-   * Writes an accepted invitation: the password the person chose, and that
-   * they are now active and no longer pending — and nothing else of the row.
+   * Writes an accepted invitation: the password the person chose, that the
+   * address is verified, and that they are now active and no longer pending —
+   * and nothing else of the row.
    * Only these columns, for the reason `saveProfile` gives: an admin changing the
    * invitee's role in the moment between the link being read and accepted
    * would be undone.

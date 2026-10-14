@@ -1,22 +1,27 @@
 import { Logger } from '@nestjs/common';
 import {
+  buildUser,
   FakeAuthPort,
   FakeDeploymentLocale,
   FakeEmailPort,
   FakeVerificationTokenPort,
+  InMemoryAuditLog,
   InMemoryUserRepository,
 } from '@kometio/testing';
 import { testApiEnv } from '../../test/api-env.test-fixture';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 import { UsersController } from './users.controller';
 import type { UsersDeps } from './users.deps';
 
 const tenantId = 'tenant-1';
+const adminId = 'admin-1';
 
 function setup() {
   const emailPort = new FakeEmailPort();
+  const userRepository = new InMemoryUserRepository();
   const deps: UsersDeps = {
-    userRepository: new InMemoryUserRepository(),
+    userRepository,
     authPort: new FakeAuthPort(),
     verificationTokenPort: new FakeVerificationTokenPort(),
     emailPort,
@@ -28,12 +33,14 @@ function setup() {
       delete: jest.fn(),
     },
   };
+  const auditLog = new InMemoryAuditLog();
   const controller = new UsersController(
     deps,
     testApiEnv({ EDITOR_APP_URL: 'https://editor.example.com' }),
     new UndeliveredEmailLog(),
+    new AuditRecorder(auditLog),
   );
-  return { controller, emailPort };
+  return { controller, emailPort, auditLog, userRepository };
 }
 
 const invitation = {
@@ -58,7 +65,7 @@ describe('UsersController', () => {
     it('says the email went out, and writes nothing to the log', async () => {
       const { controller } = setup();
 
-      const answer = await controller.invite(tenantId, invitation);
+      const answer = await controller.invite(tenantId, adminId, invitation);
 
       expect(answer.emailSent).toBe(true);
       expect(answer.user.invitePending).toBe(true);
@@ -73,7 +80,7 @@ describe('UsersController', () => {
       const { controller, emailPort } = setup();
       emailPort.failEverySendWith(new Error('connect ECONNREFUSED'));
 
-      const answer = await controller.invite(tenantId, invitation);
+      const answer = await controller.invite(tenantId, adminId, invitation);
 
       expect(answer.emailSent).toBe(false);
       expect(answer.user.email).toBe('nuovo@example.com');
@@ -88,12 +95,12 @@ describe('UsersController', () => {
   describe('resend', () => {
     it('says the email did not go out when the mail server is down, as the invitation does', async () => {
       const { controller, emailPort } = setup();
-      const { user } = await controller.invite(tenantId, invitation);
+      const { user } = await controller.invite(tenantId, adminId, invitation);
       emailPort.failEverySendWith(new Error('connect ECONNREFUSED'));
 
-      const answer = await controller.resend(tenantId, user.id);
+      const answer = await controller.resend(tenantId, adminId, user.id);
 
-      expect(answer).toEqual({ emailSent: false });
+      expect(answer).toEqual({ emailSent: false, inviteLink: null });
       expect(logged).toHaveBeenCalledWith(
         'Invitation (sent again): the email to nuovo@example.com was not sent',
         expect.stringContaining('ECONNREFUSED'),
@@ -102,11 +109,180 @@ describe('UsersController', () => {
 
     it('says the email went out when it did', async () => {
       const { controller } = setup();
-      const { user } = await controller.invite(tenantId, invitation);
+      const { user } = await controller.invite(tenantId, adminId, invitation);
 
-      expect(await controller.resend(tenantId, user.id)).toEqual({
+      expect(await controller.resend(tenantId, adminId, user.id)).toEqual({
         emailSent: true,
+        inviteLink: null,
       });
+    });
+  });
+
+  /*
+   * With no mail server the link is the administrator's, in the answer, and
+   * the log is told only that it was made: a link that signs in as the invitee
+   * would otherwise be kept for as long as the log is.
+   */
+  describe('on a server with no mail server', () => {
+    let info: jest.SpyInstance;
+
+    beforeEach(() => {
+      info = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    });
+
+    afterEach(() => {
+      info.mockRestore();
+    });
+
+    function setupWithoutMailServer() {
+      const made = setup();
+      made.emailPort.delivers = false;
+      return made;
+    }
+
+    it('answers an invitation with the link, and keeps it out of the log', async () => {
+      const { controller, emailPort } = setupWithoutMailServer();
+
+      const answer = await controller.invite(tenantId, adminId, invitation);
+
+      expect(answer.emailSent).toBe(true);
+      expect(answer.inviteLink).toMatch(
+        /^https:\/\/editor\.example\.com\/accept-invite\?inviteToken=.+/,
+      );
+      expect(emailPort.sentEmails).toEqual([]);
+      const token = new URL(answer.inviteLink ?? '').searchParams.get(
+        'inviteToken',
+      );
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('nothing was sent to nuovo@example.com'),
+      );
+      expect(JSON.stringify(info.mock.calls)).not.toContain(token);
+      expect(logged).not.toHaveBeenCalled();
+    });
+
+    it('answers sending it again with a new link, and keeps that out of the log too', async () => {
+      const { controller } = setupWithoutMailServer();
+      const { user, inviteLink: first } = await controller.invite(
+        tenantId,
+        adminId,
+        invitation,
+      );
+      info.mockClear();
+
+      const answer = await controller.resend(tenantId, adminId, user.id);
+
+      expect(answer.inviteLink).toMatch(/\/accept-invite\?inviteToken=.+/);
+      expect(answer.inviteLink).not.toBe(first);
+      const token = new URL(answer.inviteLink ?? '').searchParams.get(
+        'inviteToken',
+      );
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('Invitation (sent again)'),
+      );
+      expect(JSON.stringify(info.mock.calls)).not.toContain(token);
+    });
+  });
+
+  describe('the activity log', () => {
+    it('says who invited whom and as what', async () => {
+      const { controller, auditLog } = setup();
+
+      const { user } = await controller.invite(tenantId, adminId, invitation);
+
+      expect(auditLog.events).toEqual([
+        {
+          tenantId,
+          actorUserId: adminId,
+          action: 'user.invited',
+          targetId: user.id,
+          targetLabel: 'nuovo@example.com',
+          detail: { role: 'editor' },
+        },
+      ]);
+    });
+
+    it('says an invitation was sent again, and to whom', async () => {
+      const { controller, auditLog } = setup();
+      const { user } = await controller.invite(tenantId, adminId, invitation);
+
+      await controller.resend(tenantId, adminId, user.id);
+
+      expect(auditLog.events.map((event) => event.action)).toEqual([
+        'user.invited',
+        'user.invite_resent',
+      ]);
+    });
+
+    it('keeps the address of an invitation that was withdrawn, since the person is gone', async () => {
+      const { controller, auditLog } = setup();
+      const { user } = await controller.invite(tenantId, adminId, invitation);
+
+      await controller.cancelInvitation(tenantId, adminId, user.id);
+
+      expect(auditLog.events[1]).toMatchObject({
+        action: 'user.invite_cancelled',
+        targetId: user.id,
+        targetLabel: 'nuovo@example.com',
+      });
+    });
+
+    it('says a role was changed and what it was changed to', async () => {
+      const { controller, auditLog, userRepository } = setup();
+      await userRepository.add(
+        buildUser({ id: adminId, email: 'admin@example.com', role: 'admin' }),
+      );
+      const { user } = await controller.invite(tenantId, adminId, invitation);
+
+      await controller.updateRole(tenantId, adminId, user.id, {
+        role: 'publisher',
+      });
+
+      expect(auditLog.events[1]).toMatchObject({
+        action: 'user.role_changed',
+        actorUserId: adminId,
+        targetLabel: 'nuovo@example.com',
+        detail: { role: 'publisher' },
+      });
+    });
+
+    it('says whether a person was switched off or on again', async () => {
+      const { controller, auditLog, userRepository } = setup();
+      await userRepository.add(
+        buildUser({ id: adminId, email: 'admin@example.com', role: 'admin' }),
+      );
+      await userRepository.add(
+        buildUser({
+          id: 'user-2',
+          email: 'collega@example.com',
+          role: 'editor',
+        }),
+      );
+
+      await controller.setActive(tenantId, adminId, 'user-2', {
+        isActive: false,
+      });
+      await controller.setActive(tenantId, adminId, 'user-2', {
+        isActive: true,
+      });
+
+      expect(auditLog.events.map((event) => event.action)).toEqual([
+        'user.deactivated',
+        'user.activated',
+      ]);
+      expect(auditLog.events[0]).toMatchObject({
+        actorUserId: adminId,
+        targetId: 'user-2',
+        targetLabel: 'collega@example.com',
+      });
+    });
+
+    it('does not fail an invitation when the log cannot be written', async () => {
+      const { controller, auditLog } = setup();
+      auditLog.failEveryWriteWith(new Error('connection lost'));
+
+      const answer = await controller.invite(tenantId, adminId, invitation);
+
+      expect(answer.user.invitePending).toBe(true);
     });
   });
 });

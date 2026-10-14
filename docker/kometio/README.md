@@ -409,7 +409,8 @@ What you should know:
   password reset, an invitation, an address confirmation), do not travel; an
   invitation still waiting is sent again from the Users screen. **Form submissions
   do not travel** either: a copy of a site does not start with somebody else's
-  messages.
+  messages. Nor does **the activity log** (Settings → Activity): the new
+  installation starts its own.
 - **The site takes the new address.** Its domain becomes the host of the address
   the new installation is reached at, not the one it had.
 - **The AI provider's key does not travel.** It is sealed with a key that belongs to
@@ -523,9 +524,10 @@ docker run -d --name kometio --restart unless-stopped \
 Said plainly, so that you do not find out by failing:
 
 - **It sends no email.** Invitations and password resets need a mail server,
-  and a trial has none, so each of those emails is written to the container's
-  log instead, link included (`docker logs kometio`). The editor says so on the
-  Users screen. Give it a mail server with `SMTP_HOST`, `SMTP_PORT`,
+  and a trial has none. An invitation shows its link to the administrator who
+  makes it, on the screen, to pass on; a password reset is written to the
+  container's log instead, link included (`docker logs kometio`). The editor
+  says so on the Users screen. Give it a mail server with `SMTP_HOST`, `SMTP_PORT`,
   `SMTP_FROM_ADDRESS` and, if the server asks for them, `SMTP_USER` and
   `SMTP_PASSWORD` (`-e SMTP_HOST=…` on the `docker run`; `.env.prod.example`
   lists the rest).

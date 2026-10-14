@@ -2,30 +2,17 @@ import { randomUUID } from 'node:crypto';
 import { User, UserEmailAlreadyExistsError } from '@kometio/domain-core';
 import type { UserRole } from '@kometio/domain-core';
 import type { InterfaceLanguage } from '@kometio/shared-types';
-import type {
-  AuthPort,
-  EmailPort,
-  UserRepositoryPort,
-  VerificationTokenPort,
-} from '@kometio/ports';
-import {
-  emailLanguageOfUser,
-  type EmailLanguageDeps,
-} from '../emails/email-language';
-import { buildInviteEmail } from '../emails/invite-email.template';
-import { trySendEmail, type UndeliveredEmail } from '../emails/try-send-email';
+import type { AuthPort, UserRepositoryPort } from '@kometio/ports';
 import { chooseAuthorSlug } from './author-profile';
+import {
+  issueInvite,
+  type IssueInviteDeps,
+  type IssuedInvite,
+} from './issue-invite';
 
-// Longer than password-reset's 1h: accepting an invite isn't a
-// time-sensitive security action, and an admin realistically expects a
-// new collaborator to get to it within a normal work week, not an hour.
-const INVITE_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
-
-export interface InviteUserDeps extends EmailLanguageDeps {
+export interface InviteUserDeps extends IssueInviteDeps {
   userRepository: UserRepositoryPort;
   authPort: AuthPort;
-  verificationTokenPort: VerificationTokenPort;
-  emailPort: EmailPort;
 }
 
 export interface InviteUserInput {
@@ -43,15 +30,15 @@ export interface InviteUserInput {
   inviteUrlBase: string;
 }
 
-export interface InviteUserResult {
+/**
+ * `undelivered` is the invitation if the mail server did not take it. The
+ * person is invited all the same, with a link that works: it is the
+ * administrator's to be told (and to resend once the mail server works), not
+ * an error that leaves them to try again and be told the address is taken.
+ * `inviteLink` is the link when there is no mail server to carry it.
+ */
+export interface InviteUserResult extends IssuedInvite {
   user: User;
-  /**
-   * The invitation if the mail server did not take it. The person is invited
-   * all the same, with a link that works: it is the administrator's to be told
-   * (and to resend once the mail server works), not an error that leaves them
-   * to try again and be told the address is taken.
-   */
-  undelivered: UndeliveredEmail[];
 }
 
 /**
@@ -96,19 +83,8 @@ export async function inviteUser(
   });
   await deps.userRepository.add(user);
 
-  const inviteToken = await deps.verificationTokenPort.createToken(
-    user.id,
-    user.tenantId,
-    'user-invite',
-    INVITE_TTL_MS,
-  );
-  const inviteUrlBase = input.inviteUrlBase.replace(/\/$/, '');
-  const inviteUrl = `${inviteUrlBase}/accept-invite?inviteToken=${inviteToken.token}`;
-
-  const undelivered = await trySendEmail(deps.emailPort, {
-    to: user.email,
-    ...buildInviteEmail(await emailLanguageOfUser(deps, user), inviteUrl),
-  });
-
-  return { user, undelivered };
+  return {
+    user,
+    ...(await issueInvite(deps, { user, inviteUrlBase: input.inviteUrlBase })),
+  };
 }

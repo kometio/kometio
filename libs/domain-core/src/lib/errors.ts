@@ -137,7 +137,12 @@ export class PageSlugAlreadyExistsError extends Error {
  * password was wrong (prevents user enumeration via the login endpoint).
  */
 export class InvalidCredentialsError extends Error {
-  constructor() {
+  /**
+   * The account a wrong password was given for, when there is one. For the
+   * activity log (docs/adr/0130) and nothing else: the answer to the person is
+   * the same sentence whether or not it is set.
+   */
+  constructor(readonly userId?: string) {
     super('Invalid email or password');
     this.name = 'InvalidCredentialsError';
   }
@@ -394,6 +399,25 @@ export class InviteNotPendingError extends Error {
   }
 }
 
+/** None of the person's sign-ins has this id — it never had, it has ended, or it is somebody else's. */
+export class SessionNotFoundError extends Error {
+  constructor(sessionId: string) {
+    super(`Session not found: ${sessionId}`);
+    this.name = 'SessionNotFoundError';
+  }
+}
+
+/**
+ * The sign-in a request came from is not ended from the list of the others:
+ * that is signing out, which has its own answer and its own cookie to clear.
+ */
+export class CannotEndCurrentSessionError extends Error {
+  constructor() {
+    super('This is the device you are using: sign out instead');
+    this.name = 'CannotEndCurrentSessionError';
+  }
+}
+
 /** Somebody who has not accepted their invitation cannot be switched on by an admin. */
 export class InvitePendingError extends Error {
   constructor(userId: string) {
@@ -505,7 +529,7 @@ export class UnsupportedAttachmentTypeError extends Error {
  * anything that legitimately needs to tell them apart (e.g. logging) do
  * so. */
 export class UserNotActiveError extends Error {
-  constructor(userId: string) {
+  constructor(readonly userId: string) {
     super(`User is not active: ${userId}`);
     this.name = 'UserNotActiveError';
   }

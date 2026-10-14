@@ -142,6 +142,7 @@ export function InspectorPanel({
         key={field.key}
         field={field}
         block={block}
+        defaultValue={descriptor.defaultProps[field.key]}
         onChangeProp={onChangeProp}
         sectionEditing={sectionEditing}
       />

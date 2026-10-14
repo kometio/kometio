@@ -15,6 +15,7 @@ import {
   DEPLOYMENT_TENANT_RESOLVER,
   type DeploymentTenantResolver,
 } from '../deployment-tenant.resolver';
+import { AuditEventsRetentionCleanupService } from './audit-events-retention-cleanup.service';
 import { ExpiredTokensCleanupService } from './expired-tokens-cleanup.service';
 import { FormAttachmentsSweepService } from './form-attachments-sweep.service';
 import { FormSubmissionsRetentionCleanupService } from './form-submissions-retention-cleanup.service';
@@ -47,6 +48,17 @@ import { FormSubmissionsRetentionCleanupService } from './form-submissions-reten
         FORM_SUBMISSION_REPOSITORY,
         DEPLOYMENT_TENANT_RESOLVER,
       ],
+    },
+    {
+      provide: AuditEventsRetentionCleanupService,
+      useFactory: (
+        expiredRecords: ExpiredRecordsPort,
+        tenant: DeploymentTenantResolver,
+      ) =>
+        new AuditEventsRetentionCleanupService(expiredRecords, () =>
+          tenant.resolve(),
+        ),
+      inject: [EXPIRED_RECORDS, DEPLOYMENT_TENANT_RESOLVER],
     },
     {
       provide: FormSubmissionsRetentionCleanupService,

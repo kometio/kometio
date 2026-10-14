@@ -526,6 +526,7 @@ describe('DrizzleUserRepository (integration)', () => {
       expect(stored?.passwordHash).toBe('the-chosen-hash');
       expect(stored?.isActive).toBe(true);
       expect(stored?.invitePending).toBe(false);
+      expect(stored?.isEmailVerified).toBe(true);
       expect(stored?.role).toBe('publisher');
     });
 

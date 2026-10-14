@@ -2,14 +2,19 @@ import { PageGenerationDisabledError } from '@kometio/domain-core';
 import {
   buildSite,
   FakeSecretCipher,
+  InMemoryAuditLog,
   InMemorySiteAiSettingsRepository,
   InMemorySiteRepository,
 } from '@kometio/testing';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { AiSettingsController } from './ai-settings.controller';
 import { GenerationSlots } from './generation-slots';
 import { PageGenerationDeps } from './page-generation.deps';
 
-async function controller(cipher: FakeSecretCipher | null) {
+async function controller(
+  cipher: FakeSecretCipher | null,
+  auditLog = new InMemoryAuditLog(),
+) {
   const sites = new InMemorySiteRepository();
   await sites.add(buildSite());
   return new AiSettingsController(
@@ -25,6 +30,7 @@ async function controller(cipher: FakeSecretCipher | null) {
       slots: new GenerationSlots(2),
       deadlineMs: 60_000,
     }),
+    new AuditRecorder(auditLog),
   );
 }
 
@@ -34,7 +40,7 @@ describe('AiSettingsController', () => {
   it('takes the key and never gives it back', async () => {
     const ai = await controller(new FakeSecretCipher());
 
-    const saved = await ai.update('tenant-1', 'site-1', {
+    const saved = await ai.update('tenant-1', 'admin-1', 'site-1', {
       provider: 'anthropic',
       model: 'claude-opus-5',
       baseUrl: null,
@@ -58,7 +64,7 @@ describe('AiSettingsController', () => {
       configured: false,
     });
     await expect(
-      ai.update('tenant-1', 'site-1', {
+      ai.update('tenant-1', 'admin-1', 'site-1', {
         provider: 'anthropic',
         model: 'claude-opus-5',
         baseUrl: null,
@@ -69,16 +75,47 @@ describe('AiSettingsController', () => {
 
   it('forgets the settings on delete', async () => {
     const ai = await controller(new FakeSecretCipher());
-    await ai.update('tenant-1', 'site-1', {
+    await ai.update('tenant-1', 'admin-1', 'site-1', {
       provider: 'anthropic',
       model: 'claude-opus-5',
       baseUrl: null,
       apiKey: key,
     });
-    await ai.remove('tenant-1', 'site-1');
+    await ai.remove('tenant-1', 'admin-1', 'site-1');
 
     expect(await ai.get('tenant-1', 'site-1')).toMatchObject({
       configured: false,
     });
+  });
+
+  it('says that a key was given and by whom, and never the key', async () => {
+    const auditLog = new InMemoryAuditLog();
+    const ai = await controller(new FakeSecretCipher(), auditLog);
+
+    await ai.update('tenant-1', 'admin-1', 'site-1', {
+      provider: 'anthropic',
+      model: 'claude-opus-5',
+      baseUrl: null,
+      apiKey: key,
+    });
+    await ai.remove('tenant-1', 'admin-1', 'site-1');
+
+    expect(auditLog.events).toEqual([
+      {
+        tenantId: 'tenant-1',
+        actorUserId: 'admin-1',
+        action: 'site.ai_changed',
+        targetId: 'site-1',
+        detail: { change: 'saved', provider: 'anthropic', keyChanged: true },
+      },
+      {
+        tenantId: 'tenant-1',
+        actorUserId: 'admin-1',
+        action: 'site.ai_changed',
+        targetId: 'site-1',
+        detail: { change: 'removed' },
+      },
+    ]);
+    expect(JSON.stringify(auditLog.events)).not.toContain(key);
   });
 });

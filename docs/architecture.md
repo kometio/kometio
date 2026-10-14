@@ -101,7 +101,8 @@ admin-only invite (`inviteUser`, `apps/api`'s `UsersController`). Same
 7-day TTL: the `User` row is created immediately with `isActive: false` and
 an unguessable random password hash, so nobody can sign in until
 `acceptInvite` consumes the token, sets a real password, and activates the
-account. `resendInvite` mints a fresh token and re-sends the invite email
+account — and marks the address verified, since the link went to it and was
+followed. `resendInvite` mints a fresh token and re-sends the invite email
 for a still-pending invite — added because the original token had no
 cleanup job and no way to re-issue it, permanently blocking the invitee's
 email against `UserEmailAlreadyExistsError` once it expired. A second valid

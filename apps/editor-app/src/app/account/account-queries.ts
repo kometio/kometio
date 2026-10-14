@@ -1,5 +1,8 @@
 import { queryOptions } from '@tanstack/react-query';
-import { getAccountProfile } from '../../lib/account-api-client';
+import {
+  getAccountProfile,
+  getAccountSessions,
+} from '../../lib/account-api-client';
 
 /**
  * Who is signed in, as they describe themselves — the name and picture
@@ -13,5 +16,14 @@ export function accountProfileQueryOptions() {
   return queryOptions({
     queryKey: ['account', 'profile'] as const,
     queryFn: getAccountProfile,
+  });
+}
+
+/** Where the person is signed in. Short-lived: it is read to be acted on, and a device is signed in or out in the meantime. */
+export function accountSessionsQueryOptions() {
+  return queryOptions({
+    queryKey: ['account', 'sessions'] as const,
+    queryFn: getAccountSessions,
+    staleTime: 0,
   });
 }

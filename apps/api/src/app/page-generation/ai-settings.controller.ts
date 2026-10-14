@@ -20,7 +20,8 @@ import {
   type SiteAiSettingsView,
 } from '@kometio/api-contracts';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
-import { TenantId } from '../auth/session-identity.decorator';
+import { TenantId, UserId } from '../auth/session-identity.decorator';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { UuidParam } from '../uuid-param.decorator';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import type { PageGenerationDeps } from './page-generation.deps';
@@ -40,6 +41,7 @@ import { RolesGuard } from '../auth/roles.guard';
 export class AiSettingsController {
   constructor(
     @Inject(PAGE_GENERATION_DEPS) private readonly deps: PageGenerationDeps,
+    private readonly audit: AuditRecorder,
   ) {}
 
   @Get()
@@ -54,23 +56,45 @@ export class AiSettingsController {
   @Put()
   async update(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') siteId: string,
     @Body(new ZodValidationPipe(siteAiSettingsInputSchema))
     settings: SiteAiSettingsInput,
   ): Promise<SiteAiSettingsView> {
-    return updateSiteAiSettings(this.deps.requireEnabled(), {
+    const view = await updateSiteAiSettings(this.deps.requireEnabled(), {
       tenantId,
       siteId,
       settings,
     });
+    // That a key was given, never the key.
+    await this.audit.record({
+      tenantId,
+      actorUserId,
+      action: 'site.ai_changed',
+      targetId: siteId,
+      detail: {
+        change: 'saved',
+        provider: settings.provider,
+        keyChanged: typeof settings.apiKey === 'string',
+      },
+    });
+    return view;
   }
 
   @Delete()
   @HttpCode(204)
   async remove(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') siteId: string,
   ): Promise<void> {
     await removeSiteAiSettings(this.deps, { tenantId, siteId });
+    await this.audit.record({
+      tenantId,
+      actorUserId,
+      action: 'site.ai_changed',
+      targetId: siteId,
+      detail: { change: 'removed' },
+    });
   }
 }

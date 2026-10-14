@@ -285,13 +285,18 @@ first_run() {
   else
     fail "the first run in a browser failed"
   fi
-  # No mail server: the invitation the test made is in the log, link included
-  # (docs/adr/0103). Without this a quiet log would pass for a working mailer.
+  # No mail server (docs/adr/0103): the invitation the test made gave its link
+  # to the administrator on the screen, and the log says it was made and nothing
+  # of the link (docs/adr/0128); a reset has nobody to give it to, so it is in
+  # the log. Without this a quiet log would pass for a working mailer.
   log="$(docker logs "$container" 2>&1 || true)"
-  check "an invitation with no mail server is written to the log" \
-    grep -q "To:      ${INVITEE_EMAIL}" <<<"$log"
-  check "the logged invitation carries its link" \
-    grep -q "${editor_url}/accept-invite?inviteToken=" <<<"$log"
+  check "an invitation with no mail server is told to the log" \
+    grep -q "nothing was sent to ${INVITEE_EMAIL}" <<<"$log"
+  if grep -q "accept-invite?inviteToken=" <<<"$log"; then
+    fail "the log holds the invitation's link"
+  else
+    pass "the log does not hold the invitation's link"
+  fi
   check "a password reset with no mail server is written to the log, link included" \
     grep -q "${editor_url}/reset-password?resetToken=" <<<"$log"
   # With no Turnstile keys the captcha is the built-in one, and it hands out a

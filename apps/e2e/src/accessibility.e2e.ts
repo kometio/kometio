@@ -143,6 +143,7 @@ function screens(): string[] {
     'settings/cookies/legal-documents',
     'settings/retention',
     'settings/users',
+    'settings/activity',
     'imports',
     'account',
   ];

@@ -77,7 +77,7 @@
   },
   "emailNotice": {
     "title": "Questa installazione non può inviare email",
-    "body": "Inviti, reset della password e notifiche dei moduli non vengono spediti: finiscono nel log del server, con i loro link. Imposta SMTP_HOST (e le altre impostazioni SMTP) sul server per inviarli."
+    "body": "Reset della password, cambi di email e notifiche dei moduli non vengono spediti: finiscono nel log del server, con i loro link. Un invito ti mostra il suo link quando lo crei, da mandare tu. Imposta SMTP_HOST (e le altre impostazioni SMTP) sul server per spedirli tutti."
   },
   "demo": {
     "notice": "Questa è una demo. Altre persone possono provarla nello stesso momento e ogni tanto ricomincia da capo: quello che fai qui non viene conservato. Il caricamento di file e l'account condiviso sono disattivati.",
@@ -222,6 +222,26 @@
       "password": "Password",
       "passwordHint": "Scegline una nuova quando vuoi. Ogni altro accesso viene chiuso.",
       "changePassword": "Cambia password"
+    },
+    "sessions": {
+      "title": "Dove sei collegato",
+      "description": "Ogni browser e dispositivo collegato al tuo account. Scollega quelli che non riconosci o che non usi più.",
+      "thisDevice": "Questo dispositivo",
+      "unknownDevice": "Dispositivo sconosciuto",
+      "activeNow": "Attivo adesso",
+      "lastUsed": "Ultimo uso {{when}}",
+      "signedInOn": "collegato {{when}}",
+      "signOut": "Scollega",
+      "signOutOf": "Scollega {{device}}",
+      "signOutOthers": "Scollega tutti gli altri dispositivi",
+      "signedOut": "{{device}} scollegato",
+      "othersSignedOut": "Tutti gli altri dispositivi sono stati scollegati",
+      "confirm": {
+        "title": "Scollegare tutti gli altri dispositivi?",
+        "description": "Ogni altro dispositivo dovrà accedere di nuovo. Questo resta collegato."
+      },
+      "failed": "Non è stato possibile scollegare. Riprova.",
+      "loadFailed": "Non è stato possibile caricare dove sei collegato. Ricarica la pagina per riprovare."
     },
     "currentPassword": "Password attuale",
     "currentPasswordRequired": "Scrivi la password attuale.",
@@ -876,7 +896,8 @@
       "action": "Elimina le risposte vecchie",
       "descriptionCount_one": "{{count}} risposta più vecchia di {{days}} giorni verrà eliminata per sempre alla prossima pulizia notturna (alle 4). Non si può recuperare.",
       "descriptionCount_other": "{{count}} risposte più vecchie di {{days}} giorni verranno eliminate per sempre alla prossima pulizia notturna (alle 4). Non si possono recuperare."
-    }
+    },
+    "activityNote": "Il registro delle attività (Impostazioni → Attività) viene conservato per {{days}} giorni e poi rimosso. Quel periodo è fisso: non è un’impostazione."
   },
   "cookieConsent": {
     "category": {
@@ -1382,7 +1403,6 @@
       "resendInvite": "Reinvia invito",
       "cancelInvite": "Annulla invito",
       "inviteResent": "Invito reinviato a {{email}}",
-      "inviteResentNoEmail": "Il nuovo invito per {{email}} è pronto, ma nessuna email è partita: il suo link è nel log del server.",
       "inviteResentNotMailed": "L’invito per {{email}} è pronto, ma l’email non è partita. Riprova quando il mail server funziona.",
       "inviteCancelled": "Invito a {{email}} annullato",
       "cancelInviteConfirm": {
@@ -1402,11 +1422,20 @@
       "inviting": "Invio in corso...",
       "emailTaken": "Esiste già un utente con questa email.",
       "sent": "Invito inviato a {{email}}: riceverà un’email per scegliere la password.",
-      "sentNoEmail": "{{email}} è stato invitato, ma nessuna email è partita: il link dell’invito è nel log del server.",
       "notMailed": "{{email}} è stato invitato, ma l’email non è partita. Quando il mail server funziona, usa «Reinvia invito».",
       "languageLabel": "Lingua",
       "languageHint": "L’invito e ogni mail che riceverà dopo saranno scritti in questa lingua, finché non ne sceglie un’altra.",
       "failed": "L’invito non è stato inviato. Riprova."
+    },
+    "inviteLinkDialog": {
+      "title": "Invito per {{email}}",
+      "description": "Questo server non ha un mail server, quindi non è partita nessuna email. Manda tu questo link a {{email}}: serve a scegliere una password e ad accedere, e scade tra 7 giorni.",
+      "linkLabel": "Link dell’invito",
+      "copy": "Copia il link",
+      "copied": "Link copiato",
+      "copyFailed": "Impossibile copiare: il link è selezionato, premi Ctrl/⌘ + C.",
+      "onlyOnce": "Lo vedi solo adesso. Per averne uno nuovo usa «Reinvia invito» nella lista.",
+      "done": "Fatto"
     },
     "role": {
       "admin": "Admin",
@@ -2130,6 +2159,15 @@
       "fields": {
         "html": {
           "fieldLabel": "Codice HTML"
+        },
+        "consentCategory": {
+          "fieldLabel": "Parte quando il visitatore accetta",
+          "options": {
+            "experience": "Esperienza (video, mappe, widget)",
+            "functionality": "Funzionalità (preferenze, chat)",
+            "measurement": "Misurazione (statistiche)",
+            "necessary": "Niente: parte sempre"
+          }
         }
       }
     },
@@ -3860,6 +3898,7 @@
         "cookies": "Cookie e privacy",
         "retention": "Conservazione dati",
         "users": "Utenti",
+        "activity": "Attività",
         "export": "Esporta"
       }
     },
@@ -3897,5 +3936,45 @@
     "empty": "Nessun risultato per “{{query}}”.",
     "hint": "↑↓ per scegliere · Invio per eseguire · Esc per chiudere",
     "searching": "Ricerca…"
+  },
+  "activity": {
+    "description": "Chi ha fatto cosa sul sito: accessi, persone e ruoli, impostazioni, tema e chiave AI, archivio. Conservato per {{days}} giorni, senza indirizzi e senza quello che è stato digitato.",
+    "empty": "Non è ancora successo niente che venga conservato qui.",
+    "by": "da {{who}}",
+    "actions": {
+      "login.succeeded": "Ha effettuato l’accesso",
+      "login.failed": "Accesso rifiutato per {{who}} ({{reason}})",
+      "user.invited": "Ha invitato {{target}} come {{role}}",
+      "user.invite_resent": "Ha rimandato l’invito a {{target}}",
+      "user.invite_cancelled": "Ha ritirato l’invito a {{target}}",
+      "user.role_changed": "Ha reso {{target}} {{role}}",
+      "user.activated": "Ha riattivato {{target}}",
+      "user.deactivated": "Ha disattivato {{target}}",
+      "account.password_changed": "Ha cambiato la propria password",
+      "account.password_reset": "La sua password è stata reimpostata da un link",
+      "account.email_change_requested": "Ha chiesto di accedere con {{target}}",
+      "account.email_changed": "Ha cambiato l’indirizzo con cui accede",
+      "site.settings_changed": "Ha cambiato le impostazioni del sito: {{section}}",
+      "site.theme_changed": "Ha cambiato il tema: {{section}}",
+      "site.ai_changed": "Ha cambiato le impostazioni dell’AI",
+      "theme.uploaded": "Ha caricato il tema {{target}}",
+      "archive.exported": "Ha scaricato l’archivio del sito"
+    },
+    "sections": {
+      "business": "dati dell’attività",
+      "general": "generali",
+      "seo": "SEO",
+      "retention": "conservazione dei dati",
+      "languages": "lingue",
+      "cookie-banner": "banner dei cookie",
+      "theme-code": "stile e script",
+      "theme-package": "il tema stesso",
+      "theme-tokens": "stili dei blocchi"
+    },
+    "reasons": {
+      "wrong-password": "password sbagliata",
+      "deactivated": "account disattivato"
+    },
+    "byRemoved": "da un account che è stato rimosso"
   }
 }

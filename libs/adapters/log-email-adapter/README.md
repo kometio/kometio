@@ -11,9 +11,14 @@ writes each email to a log, in full, instead of sending it or failing.
 ## How it works
 
 The emails that matter without a mail server are the ones that carry a link:
-an invitation, a password reset, the confirmation of a new address. Their
-`text` has the link in it, in full, so the entry is enough to follow it. The
-HTML is left out.
+a password reset, the confirmation of a new address. Their `text` has the link
+in it, in full, so the entry is enough to follow it. The HTML is left out. An
+invitation does not go through here: `delivers` is `false`, and the use case
+that makes one hands its link to the administrator instead (docs/adr/0128), so
+the log never holds a link that signs in as the invitee.
+
+Every entry says that a link in it is for whoever reads the log, and that the
+log is not to be shared.
 
 It never throws, on purpose. A request that failed for lack of a mail server
 would leave a half-done invitation behind (the person is created, the email is

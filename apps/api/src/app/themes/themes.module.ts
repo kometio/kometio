@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AdaptersModule } from '../adapters/adapters.module';
 import { THEME_CATALOG, THEME_UPLOADS } from '../adapters/port.tokens';
+import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { moduleDeps } from '../module-deps';
 import { ThemeUploadsController } from './theme-uploads.controller';
@@ -11,6 +12,7 @@ import { THEMES_DEPS } from './themes.tokens';
 @Module({
   imports: [
     AdaptersModule,
+    AuditModule,
     AuthModule,
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 5 }] }),
   ],

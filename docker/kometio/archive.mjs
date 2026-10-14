@@ -44,6 +44,11 @@ export const TRANSIENT_TABLES = [
   // count of a moment on the server that was asked, which a copy of the site
   // does not start with — and which the new server's own visitors rewrite.
   'missing_paths',
+  // Who did what on the server that was asked (docs/adr/0130): the history of
+  // that installation, kept for ninety days. A copy starts its own; and an
+  // archive is a file that is handed around, which the log of who signed in
+  // when is not to be copied into, outside the clock that bounds it.
+  'audit_events',
 ];
 
 export const archiveFileName = (date) =>

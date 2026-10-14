@@ -58,12 +58,16 @@ import { UuidParam } from '../uuid-param.decorator';
 import { Allowed } from '../auth/allowed.decorator';
 import type { SitesDeps } from './sites.deps';
 import { SITES_DEPS } from './sites.tokens';
-import { TenantId } from '../auth/session-identity.decorator';
+import { TenantId, UserId } from '../auth/session-identity.decorator';
+import { AuditRecorder } from '../audit/audit-recorder';
 
 @Controller('sites')
 @UseGuards(SessionAuthGuard)
 export class SitesController {
-  constructor(@Inject(SITES_DEPS) private readonly deps: SitesDeps) {}
+  constructor(
+    @Inject(SITES_DEPS) private readonly deps: SitesDeps,
+    private readonly audit: AuditRecorder,
+  ) {}
 
   @Get('themes/available')
   async listAvailableThemes() {
@@ -95,6 +99,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateBusinessInfo(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateBusinessInfoBodySchema))
     body: UpdateBusinessInfoBody,
@@ -104,6 +109,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.settings_changed',
+      id,
+      'business',
+    );
     return this.toDto(site);
   }
 
@@ -111,6 +123,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateGeneralSettings(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateGeneralSettingsBodySchema))
     body: UpdateGeneralSettingsBody,
@@ -120,6 +133,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.settings_changed',
+      id,
+      'general',
+    );
     return this.toDto(site);
   }
 
@@ -127,6 +147,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateSeoSettings(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateSeoSettingsBodySchema))
     body: UpdateSeoSettingsBody,
@@ -136,6 +157,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.settings_changed',
+      id,
+      'seo',
+    );
     return this.toDto(site);
   }
 
@@ -143,6 +171,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateFormSubmissionRetention(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateFormSubmissionRetentionBodySchema))
     body: UpdateFormSubmissionRetentionBody,
@@ -152,6 +181,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.settings_changed',
+      id,
+      'retention',
+    );
     return this.toDto(site);
   }
 
@@ -182,6 +218,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateLocaleSettings(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateLocaleSettingsBodySchema))
     body: UpdateLocaleSettingsBody,
@@ -191,6 +228,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.settings_changed',
+      id,
+      'languages',
+    );
     return this.toDto(site);
   }
 
@@ -203,6 +247,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateThemeSettings(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateThemeSettingsBodySchema))
     body: UpdateThemeSettingsBody,
@@ -212,6 +257,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.theme_changed',
+      id,
+      'theme-code',
+    );
     return this.toDto(site);
   }
 
@@ -222,6 +274,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateThemePackage(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateThemePackageBodySchema))
     body: UpdateThemePackageBody,
@@ -231,6 +284,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.theme_changed',
+      id,
+      'theme-package',
+    );
     return this.toDto(site);
   }
 
@@ -238,6 +298,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateCookieBannerSettings(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateCookieBannerSettingsBodySchema))
     body: UpdateCookieBannerSettingsBody,
@@ -247,6 +308,13 @@ export class SitesController {
       siteId: id,
       ...body,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.settings_changed',
+      id,
+      'cookie-banner',
+    );
     return this.toDto(site);
   }
 
@@ -254,6 +322,7 @@ export class SitesController {
   @Allowed('configureSite')
   async updateThemeTokens(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
     @Body(new ZodValidationPipe(updateThemeTokensBodySchema))
     body: UpdateThemeTokensBody,
@@ -265,7 +334,35 @@ export class SitesController {
       variant: body.variant,
       style: body.style,
     });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.theme_changed',
+      id,
+      'theme-tokens',
+    );
     return this.toDto(site);
+  }
+
+  /**
+   * Which part of the site's configuration was changed, and by whom
+   * (docs/adr/0130) — the part and not the values: what was typed may be a
+   * script or an address, and the log is not a place to copy it to.
+   */
+  private recordChange(
+    tenantId: string,
+    actorUserId: string,
+    action: 'site.settings_changed' | 'site.theme_changed',
+    siteId: string,
+    section: string,
+  ): Promise<void> {
+    return this.audit.record({
+      tenantId,
+      actorUserId,
+      action,
+      targetId: siteId,
+      detail: { section },
+    });
   }
 
   /**

@@ -58,7 +58,7 @@ describe('bootstrapDeployment', () => {
 
     const outcome = await bootstrapDeployment(d, INPUT);
 
-    expect(createSession).toHaveBeenCalledWith('u', 't');
+    expect(createSession).toHaveBeenCalledWith('u', 't', { label: null });
     expect(outcome.session).toBe(SESSION);
   });
 

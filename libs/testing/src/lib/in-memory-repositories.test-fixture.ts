@@ -847,6 +847,7 @@ export class InMemoryUserRepository implements UserRepositoryPort {
       User.fromProps({
         ...stored.toProps(),
         passwordHash: user.passwordHash,
+        emailVerifiedAt: user.emailVerifiedAt,
         isActive: true,
         invitePending: false,
       }),

@@ -183,6 +183,21 @@ ${body}
     await agent.delete(`/imports/${started.body.id}`).expect(404);
   });
 
+  it('keeps what an export brought out of the roles that cannot import', async () => {
+    const started = await agent
+      .post('/imports/wordpress/analysis')
+      .field('siteId', siteId)
+      .attach('file', wxrFile(''))
+      .expect(202);
+    await waitForReport(started.body.id);
+    const publisher = await integration.login(
+      await integration.createUser({ role: 'publisher' }),
+    );
+
+    await publisher.get('/imports').query({ siteId }).expect(403);
+    await publisher.get(`/imports/${started.body.id}`).expect(403);
+  });
+
   it('404s a job that does not exist', async () => {
     await agent.get(`/imports/${randomUUID()}`).expect(404);
   });

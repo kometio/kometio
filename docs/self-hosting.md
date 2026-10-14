@@ -36,9 +36,11 @@ decisions about each; the DNS and the addresses below are the same.
   if you want `www` to work.
 - Optionally, an SMTP provider (invitations and password-reset emails go
   through it — there is no Mailpit here, that's dev-only). Without one the API
-  starts anyway and writes each email, link included, to its log
-  (`docker compose logs api`), and the editor says so on the Users screen
-  (docs/adr/0103). Add one before more than one person uses the site.
+  starts anyway: an invitation shows its link to the administrator who makes it,
+  to pass on, and the other emails (a password reset, say) are written, link
+  included, to its log (`docker compose logs api`); the editor says so on the
+  Users screen (docs/adr/0103, 0128). Add one before more than one person uses
+  the site.
 
 ## Why three subdomains
 

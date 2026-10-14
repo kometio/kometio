@@ -9,6 +9,7 @@ import {
   USER_REPOSITORY,
   VERIFICATION_TOKEN_PORT,
 } from '../adapters/port.tokens';
+import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { EmailsModule } from '../emails/emails.module';
 import { ApiEnvModule } from '../api-env.module';
@@ -21,6 +22,7 @@ import { USERS_DEPS } from './users.tokens';
 @Module({
   imports: [
     AdaptersModule,
+    AuditModule,
     AuthModule,
     ApiEnvModule,
     DeploymentSiteModule,

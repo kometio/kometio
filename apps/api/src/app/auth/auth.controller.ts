@@ -14,6 +14,10 @@ import {
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import {
+  InvalidCredentialsError,
+  UserNotActiveError,
+} from '@kometio/domain-core';
+import {
   LoginThrottlerGuard,
   PerAccountThrottlerGuard,
 } from './per-account-throttler.guard';
@@ -51,6 +55,7 @@ import type { AuthDeps } from './auth.deps';
 import { AUTH_DEPS } from './auth.tokens';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 import { roleInDemo } from '../demo-mode';
 
@@ -62,6 +67,7 @@ export class AuthController {
     @Inject(API_ENV) private readonly env: ApiEnv,
     private readonly cookies: SessionCookies,
     private readonly undeliveredEmails: UndeliveredEmailLog,
+    private readonly audit: AuditRecorder,
   ) {}
 
   @UseGuards(ThrottlerGuard, LoginThrottlerGuard)
@@ -69,13 +75,24 @@ export class AuthController {
   @HttpCode(200)
   async login(
     @Body(new ZodValidationPipe(loginBodySchema)) body: LoginBody,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    const tenantId = await this.deps.tenant.require();
     const session = await loginUser(this.deps, {
-      tenantId: await this.deps.tenant.require(),
+      tenantId,
       email: body.email,
       password: body.password,
       captchaToken: body.captchaToken,
+      userAgent: request.headers['user-agent'],
+    }).catch(async (error: unknown) => {
+      await this.recordFailedLogin(tenantId, error);
+      throw error;
+    });
+    await this.audit.record({
+      tenantId,
+      actorUserId: session.userId,
+      action: 'login.succeeded',
     });
 
     this.cookies.set(response, session);
@@ -166,9 +183,18 @@ export class AuthController {
     @Body(new ZodValidationPipe(confirmEmailChangeBodySchema))
     body: ConfirmEmailChangeBody,
   ) {
-    const { undeliveredNotices } = await confirmEmailChange(this.deps, {
-      token: body.token,
-      editorUrlBase: this.env.EDITOR_APP_URL,
+    const { undeliveredNotices, tenantId, userId } = await confirmEmailChange(
+      this.deps,
+      {
+        token: body.token,
+        editorUrlBase: this.env.EDITOR_APP_URL,
+      },
+    );
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'account.email_changed',
+      targetId: userId,
     });
     // The address is changed: the notice to the one left behind that did not
     // go out is for the log, not an error for the person who followed the link.
@@ -209,9 +235,15 @@ export class AuthController {
     @Body(new ZodValidationPipe(resetPasswordBodySchema))
     body: ResetPasswordBody,
   ) {
-    await resetPassword(this.deps, {
+    const { tenantId, userId } = await resetPassword(this.deps, {
       token: body.token,
       newPassword: body.newPassword,
+    });
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'account.password_reset',
+      targetId: userId,
     });
     return { success: true };
   }
@@ -229,5 +261,32 @@ export class AuthController {
       password: body.password,
     });
     return { success: true };
+  }
+
+  /**
+   * A failed sign-in into an account that exists (docs/adr/0130): a wrong
+   * password, or the right one for an account that is switched off. An address
+   * nobody has is not written down: it is what a person typed, and a log that
+   * took whatever it was given would be filled by whoever tried.
+   */
+  private async recordFailedLogin(
+    tenantId: string,
+    error: unknown,
+  ): Promise<void> {
+    if (error instanceof InvalidCredentialsError && error.userId) {
+      await this.audit.record({
+        tenantId,
+        actorUserId: error.userId,
+        action: 'login.failed',
+        detail: { reason: 'wrong-password' },
+      });
+    } else if (error instanceof UserNotActiveError) {
+      await this.audit.record({
+        tenantId,
+        actorUserId: error.userId,
+        action: 'login.failed',
+        detail: { reason: 'deactivated' },
+      });
+    }
   }
 }

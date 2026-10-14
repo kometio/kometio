@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { embedHtmlBehaviors } from './embed-html';
+import { embedHtmlBehaviors, settleEmbeds } from './embed-html';
 import { runBlockBehaviors } from './run-block-behaviors';
 
 function renderFrame(): HTMLIFrameElement {
@@ -64,5 +64,28 @@ describe('embedHtmlBehaviors', () => {
 
     postHeightFrom(frame.contentWindow, 200);
     expect(frame.style.height).toBe('200px');
+  });
+});
+
+describe('settleEmbeds', () => {
+  it('takes the note away once the embed it stood in for is there', () => {
+    document.body.innerHTML = `
+      <div class="kometio-embed-html" id="done">
+        <p class="kometio-embed-html__consent">Waiting</p>
+        <iframe class="kometio-embed-html__frame"></iframe>
+      </div>
+      <div class="kometio-embed-html" id="waiting">
+        <p class="kometio-embed-html__consent">Waiting</p>
+        <template data-kometio-consent="experience"></template>
+      </div>`;
+
+    settleEmbeds(document);
+
+    expect(
+      document.querySelector('#done .kometio-embed-html__consent'),
+    ).toBeNull();
+    expect(
+      document.querySelector('#waiting .kometio-embed-html__consent'),
+    ).not.toBeNull();
   });
 });

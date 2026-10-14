@@ -2,6 +2,8 @@ import { PassThrough, Readable } from 'node:stream';
 import { ForbiddenException } from '@nestjs/common';
 import { SiteArchiveUnavailableError } from '@kometio/domain-core';
 import type { SiteArchive, SiteArchivePort } from '@kometio/ports';
+import { InMemoryAuditLog } from '@kometio/testing';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { SiteArchiveController } from './site-archive.controller';
 
 /** What the controller writes through, which is a writable stream with headers. */
@@ -37,17 +39,25 @@ function archiving(archive: SiteArchive | Error): SiteArchivePort {
   };
 }
 
+const auditLog = new InMemoryAuditLog();
+const recorder = () => new AuditRecorder(auditLog);
+
 describe('SiteArchiveController (unit)', () => {
+  beforeEach(() => {
+    auditLog.events.length = 0;
+  });
+
   it('sends the archive as a download that is never kept, with the headers out before the first byte', async () => {
     const controller = new SiteArchiveController(
       archiving({
         fileName: 'kometio-site-20261005-1200.tar.gz',
         content: Readable.from([Buffer.from('some '), Buffer.from('bytes')]),
       }),
+      recorder(),
     );
     const response = new FakeResponse();
 
-    const done = controller.download('user-1', undefined, response);
+    const done = controller.download('tenant-1', 'user-1', undefined, response);
     const body = collect(response);
     await done;
 
@@ -62,19 +72,27 @@ describe('SiteArchiveController (unit)', () => {
   });
 
   it('says there is none on a deployment that cannot make one', async () => {
-    const controller = new SiteArchiveController(null);
+    const controller = new SiteArchiveController(null, recorder());
 
     await expect(
-      controller.download('user-1', undefined, new FakeResponse()),
+      controller.download('tenant-1', 'user-1', undefined, new FakeResponse()),
     ).rejects.toBeInstanceOf(SiteArchiveUnavailableError);
   });
 
   it('refuses a link followed from another site, before anything is made', async () => {
     const exported = jest.fn();
-    const controller = new SiteArchiveController({ export: exported });
+    const controller = new SiteArchiveController(
+      { export: exported },
+      recorder(),
+    );
 
     await expect(
-      controller.download('user-1', 'cross-site', new FakeResponse()),
+      controller.download(
+        'tenant-1',
+        'user-1',
+        'cross-site',
+        new FakeResponse(),
+      ),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(exported).not.toHaveBeenCalled();
   });
@@ -87,11 +105,12 @@ describe('SiteArchiveController (unit)', () => {
           fileName: 'a.tar.gz',
           content: Readable.from([Buffer.from('x')]),
         }),
+        recorder(),
       );
       const response = new FakeResponse();
       const body = collect(response);
 
-      await controller.download('user-1', fetchSite, response);
+      await controller.download('tenant-1', 'user-1', fetchSite, response);
 
       expect(await body).toBe('x');
     },
@@ -99,11 +118,14 @@ describe('SiteArchiveController (unit)', () => {
 
   it('answers nothing of its own when the archive is refused: the error is the answer', async () => {
     const refusal = new Error('refused');
-    const controller = new SiteArchiveController(archiving(refusal));
+    const controller = new SiteArchiveController(
+      archiving(refusal),
+      recorder(),
+    );
     const response = new FakeResponse();
 
     await expect(
-      controller.download('user-1', undefined, response),
+      controller.download('tenant-1', 'user-1', undefined, response),
     ).rejects.toBe(refusal);
     expect(response.flushed).toBe(false);
   });
@@ -115,12 +137,46 @@ describe('SiteArchiveController (unit)', () => {
     }
     const controller = new SiteArchiveController(
       archiving({ fileName: 'a.tar.gz', content: failing() }),
+      recorder(),
     );
     const response = new FakeResponse();
     response.on('error', () => undefined);
 
-    await controller.download('user-1', undefined, response);
+    await controller.download('tenant-1', 'user-1', undefined, response);
 
     expect(response.destroyed).toBe(true);
+  });
+
+  it('says that the archive was taken, and by whom', async () => {
+    const controller = new SiteArchiveController(
+      archiving({ fileName: 'a.tar.gz', content: Readable.from(['x']) }),
+      recorder(),
+    );
+    const response = new FakeResponse();
+    const done = controller.download('tenant-1', 'user-1', undefined, response);
+    const drained = collect(response);
+    await done;
+    await drained;
+
+    expect(auditLog.events).toEqual([
+      {
+        tenantId: 'tenant-1',
+        actorUserId: 'user-1',
+        action: 'archive.exported',
+      },
+    ]);
+  });
+
+  it('says nothing for a download that was refused', async () => {
+    const controller = new SiteArchiveController(
+      archiving(new Error('no room')),
+      recorder(),
+    );
+
+    await expect(
+      controller.download('tenant-1', 'user-1', undefined, new FakeResponse()),
+    ).rejects.toThrow('no room');
+
+    expect(auditLog.events).toEqual([]);
   });
 });

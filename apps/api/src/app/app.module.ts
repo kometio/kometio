@@ -20,6 +20,7 @@ import { PagesModule } from './pages/pages.module';
 import { PublicFormsModule } from './public-forms/public-forms.module';
 import { PublicNewsletterModule } from './public-newsletter/public-newsletter.module';
 import { PublicPagesModule } from './public-pages/public-pages.module';
+import { ActivityModule } from './activity/activity.module';
 import { PublicRedirectsModule } from './redirects/public-redirects.module';
 import { RedirectsModule } from './redirects/redirects.module';
 import { ReusableSectionsModule } from './reusable-sections/reusable-sections.module';
@@ -48,6 +49,7 @@ import { UsersModule } from './users/users.module';
     PagesModule,
     LegalDocumentsModule,
     PublicPagesModule,
+    ActivityModule,
     RedirectsModule,
     PublicRedirectsModule,
     MediaModule,

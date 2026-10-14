@@ -18,6 +18,7 @@ import { useAccountProfile } from './use-account-profile';
 import { useAccountCredentials } from './use-account-credentials';
 import { ChangeEmailDialog } from './change-email-dialog';
 import { ChangePasswordDialog } from './change-password-dialog';
+import { SessionsSection } from './sessions-section';
 import { SignInSection } from './sign-in-section';
 import { PageHeader } from '../shell/page-header';
 import { SaveBar } from '../settings/save-bar';
@@ -85,12 +86,15 @@ export function AccountProfileView(props: AccountProfileViewProps) {
   }
 
   return (
-    <>
+    <div className="flex max-w-2xl flex-col gap-6">
       <ProfileForm
         {...props}
         onChangeEmail={() => setDialog('email')}
         onChangePassword={() => setDialog('password')}
       />
+      {/* A sibling of the form, like the dialogs: what it opens must not send a
+          submit up to the profile. */}
+      <SessionsSection />
       <ChangeEmailDialog
         open={dialog === 'email'}
         onOpenChange={(open) => setDialog(open ? 'email' : null)}
@@ -102,7 +106,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
         onOpenChange={(open) => setDialog(open ? 'password' : null)}
         onChangePassword={changePassword}
       />
-    </>
+    </div>
   );
 }
 
@@ -222,7 +226,7 @@ function ProfileForm({
 
   return (
     <form
-      className="flex max-w-2xl flex-col gap-6"
+      className="flex flex-col gap-6"
       onSubmit={(event) => void handleSubmit(event)}
       noValidate
     >

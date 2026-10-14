@@ -116,7 +116,10 @@
             ]
           }
         },
-        { "type": "EmbedHtml", "props": { "html": "" } },
+        {
+          "type": "EmbedHtml",
+          "props": { "html": "", "consentCategory": "experience" }
+        },
         { "type": "Code", "props": { "code": "", "language": "typescript" } },
         {
           "type": "Breadcrumb",

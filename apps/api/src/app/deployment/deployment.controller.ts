@@ -3,6 +3,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import type { DeploymentRecord } from '@kometio/api-contracts';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { deploymentSendsEmail } from '../adapters/email.factory';
 
 /**
  * What the editor needs to know about the server it is talking to, as opposed
@@ -25,8 +26,7 @@ export class DeploymentController {
   get(): DeploymentRecord {
     return {
       // A demo mails nothing, whatever it is configured with (docs/adr/0118).
-      emailConfigured:
-        this.env.SMTP_HOST !== undefined && this.env.KOMETIO_DEMO !== 'true',
+      emailConfigured: deploymentSendsEmail(this.env),
       // Whether the launcher of the single image is there to make the archive
       // (docs/adr/0105): the same fact SITE_ARCHIVE is wired from.
       siteArchive: this.env.KOMETIO_CONTROL_SOCKET !== undefined,

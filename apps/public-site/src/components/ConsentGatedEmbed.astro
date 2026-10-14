@@ -31,10 +31,24 @@ interface Props {
    * a ratio would make it shortest exactly where it needs the most room.
    */
   height?: string | null;
+  /**
+   * What the visitor must have agreed to, in the cookie banner, for this to
+   * load without the button (docs/adr/0131). A third party's page is the
+   * banner's "experience".
+   */
+  consentCategory?: 'functionality' | 'measurement' | 'experience';
 }
 
-const { src, title, buttonLabel, instanceClass, posterUrl, aspectRatio, height } =
-  Astro.props;
+const {
+  src,
+  title,
+  buttonLabel,
+  instanceClass,
+  posterUrl,
+  aspectRatio,
+  height,
+  consentCategory = 'experience',
+} = Astro.props;
 ---
 
 <div
@@ -52,6 +66,7 @@ const { src, title, buttonLabel, instanceClass, posterUrl, aspectRatio, height }
     class="kometio-consent-embed__trigger"
     data-embed-src={src}
     data-embed-title={title}
+    data-embed-category={consentCategory}
   >
     {buttonLabel}
   </button>

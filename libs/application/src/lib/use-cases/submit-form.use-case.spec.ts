@@ -599,6 +599,7 @@ describe('getPublicForm and submitForm', () => {
       const deps = setup();
       const delivered: string[] = [];
       const emailPort = {
+        delivers: true,
         async sendEmail({ to }: { to: string }) {
           if (to === 'broken@example.com') throw new Error('SMTP refused');
           delivered.push(to);
@@ -750,6 +751,7 @@ describe('getPublicForm and submitForm', () => {
         notificationEmails: ['owner@example.com'],
       });
       const emailPort = {
+        delivers: true,
         async sendEmail() {
           throw new Error('SMTP down');
         },

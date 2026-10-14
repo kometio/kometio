@@ -12,6 +12,7 @@ export interface SmtpConfig {
 
 /** Generic SMTP — no vendor lock-in, works against Mailpit locally and any real provider in production. */
 export class SmtpEmailAdapter implements EmailPort {
+  readonly delivers = true;
   private readonly transporter: Transporter;
 
   constructor(private readonly config: SmtpConfig) {

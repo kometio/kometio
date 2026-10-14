@@ -1,19 +1,41 @@
 ---
 import sanitizeHtml from 'sanitize-html';
 import type { EmbedHtmlProps } from '@kometio/shared-types';
+import type { PublishedSite } from '@kometio/api-contracts';
 import type { Translator } from '@kometio/theme-runtime';
 import { isDemoDeployment } from '../../lib/demo-mode';
 
 type Props = EmbedHtmlProps & {
   i18n: Translator;
+  site: PublishedSite;
+  editable?: boolean;
   instanceClass?: string | null;
 };
 
-const { html, i18n, instanceClass } = Astro.props;
+const {
+  html,
+  consentCategory = 'experience',
+  i18n,
+  site,
+  editable,
+  instanceClass,
+} = Astro.props;
 // In a demo (docs/adr/0118) the account everybody signs in with can paste
 // anything here, and a frame that may open forms and popups, at the demo's
 // own address, is a phishing page with a good name. It is not run there.
 const inDemo = isDemoDeployment();
+// Its scripts and frames are a third party's, and nothing of it is asked for
+// until the visitor has answered the banner for its category (docs/adr/0131):
+// it sits in an inert <template>, which the consent bootstrap opens once the
+// category is granted — the same mechanism the site's trackers go through.
+// Only where there is a banner to answer (a site with none has no consent to
+// wait for, and would never show it), and not in the editor's canvas, which
+// has no visitor and no consent record: there the editor sees what they wrote.
+const waitsForConsent =
+  !inDemo &&
+  consentCategory !== 'necessary' &&
+  site.cookieBannerSettings.enabled &&
+  editable !== true;
 
 // Permissive policy (confirmed with the user, 2026-08-19): script/iframe
 // stay allowed — that's what a free-embed block is for (YouTube, Calendly,
@@ -86,6 +108,28 @@ ${safeHtml}
   {
     inDemo ? (
       <p class="kometio-embed-html__demo">{i18n.t('embedHtml.demo')}</p>
+    ) : waitsForConsent ? (
+      <>
+        <p class="kometio-embed-html__consent">
+          {i18n.t('embedHtml.consent.message')}{' '}
+          <button
+            type="button"
+            class="kometio-embed-html__preferences"
+            data-kometio-cookie-preferences
+          >
+            {i18n.t('embedHtml.consent.button')}
+          </button>
+        </p>
+        <template data-kometio-consent={consentCategory}>
+          <iframe
+            class="kometio-embed-html__frame"
+            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
+            loading="lazy"
+            title="Contenuto incorporato"
+            srcdoc={srcDoc}
+          />
+        </template>
+      </>
     ) : (
       <iframe
         class="kometio-embed-html__frame"
@@ -106,9 +150,21 @@ ${safeHtml}
   // error (see cookie-consent-panel-script.ts's own comment, PR #125,
   // for the confirmed root cause). Also lets this re-run after a live
   // canvas insert/patch — see block-behaviors/run-block-behaviors-in-subtree.ts.
-  import { embedHtmlBehaviors } from '../../lib/block-behaviors/embed-html';
+  import { cookiePreferencesBehaviors } from '../../lib/block-behaviors/cookie-preferences';
+  import {
+    embedHtmlBehaviors,
+    settleEmbeds,
+  } from '../../lib/block-behaviors/embed-html';
   import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
   runBlockBehaviors(document, embedHtmlBehaviors);
+  runBlockBehaviors(document, cookiePreferencesBehaviors);
+  // An embed that waited for the banner is in the page only after this has
+  // run (the consent bootstrap opens it at DOMContentLoaded, or when the
+  // visitor answers), so it is looked for again when that happens.
+  document.addEventListener('kometio-consent-activated', () => {
+    runBlockBehaviors(document, embedHtmlBehaviors);
+    settleEmbeds(document);
+  });
 </script>
 
 <style>
@@ -116,6 +172,23 @@ ${safeHtml}
     background: var(--kometio-override-bg, transparent);
     border-radius: var(--kometio-override-radius, 0);
     padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+  }
+  .kometio-embed-html__consent {
+    margin: 0;
+    padding: 1rem;
+    border: 1px dashed currentColor;
+    text-align: center;
+    opacity: 0.8;
+  }
+  .kometio-embed-html__preferences {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
   }
   .kometio-embed-html__demo {
     margin: 0;

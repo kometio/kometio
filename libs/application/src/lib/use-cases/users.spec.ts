@@ -102,6 +102,52 @@ describe('inviteUser', () => {
     expect(undelivered).toEqual([]);
   });
 
+  it('gives no link back when the email went out: the person has it', async () => {
+    const deps = setup();
+
+    const { inviteLink } = await inviteUser(deps, {
+      tenantId,
+      email: 'nuovo@example.com',
+      displayName: 'Nuovo Utente',
+      role: 'editor',
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    expect(inviteLink).toBeNull();
+  });
+
+  /*
+   * A server with no mail server used to write the whole email, link
+   * included, to its log, for whoever ran the server to find. The invitation
+   * is the inviter's: the link is handed to the administrator who made it,
+   * and goes nowhere else.
+   */
+  describe('on a server with no mail server', () => {
+    it('hands the link to the inviter and sends nothing', async () => {
+      const deps = setup();
+      deps.emailPort.delivers = false;
+
+      const { user, inviteLink, undelivered } = await inviteUser(deps, {
+        tenantId,
+        email: 'nuovo@example.com',
+        displayName: 'Nuovo Utente',
+        role: 'editor',
+        inviteUrlBase: 'https://editor.example.com/',
+      });
+
+      expect(inviteLink).toMatch(
+        /^https:\/\/editor\.example\.com\/accept-invite\?inviteToken=.+/,
+      );
+      expect(deps.emailPort.sentEmails).toEqual([]);
+      expect(undelivered).toEqual([]);
+      // And it is a link that works.
+      const token = new URL(inviteLink ?? '').searchParams.get('inviteToken');
+      await acceptInvite(deps, { token: token ?? '', password: 'chosen' });
+      const saved = await deps.userRepository.findById(tenantId, user.id);
+      expect(saved?.invitePending).toBe(false);
+    });
+  });
+
   it('throws UserEmailAlreadyExistsError for an email already in use, sending no email', async () => {
     const deps = setup();
     await deps.userRepository.add(
@@ -201,6 +247,48 @@ describe('resendInvite', () => {
     );
   });
 
+  it('hands the new link to the administrator when there is no mail server, and sends nothing', async () => {
+    const deps = setup();
+    deps.emailPort.delivers = false;
+    const { user } = await inviteUser(deps, {
+      tenantId,
+      email: 'in-attesa@example.com',
+      displayName: 'In Attesa',
+      role: 'editor',
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    const { inviteLink } = await resendInvite(deps, {
+      tenantId,
+      userId: user.id,
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    expect(inviteLink).toMatch(
+      /^https:\/\/editor\.example\.com\/accept-invite\?inviteToken=.+/,
+    );
+    expect(deps.emailPort.sentEmails).toEqual([]);
+  });
+
+  it('gives no link back when the email went out', async () => {
+    const deps = setup();
+    const { user } = await inviteUser(deps, {
+      tenantId,
+      email: 'in-attesa@example.com',
+      displayName: 'In Attesa',
+      role: 'editor',
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    const { inviteLink } = await resendInvite(deps, {
+      tenantId,
+      userId: user.id,
+      inviteUrlBase: 'https://editor.example.com/',
+    });
+
+    expect(inviteLink).toBeNull();
+  });
+
   it('throws UserAlreadyActiveError for a user that already accepted', async () => {
     const deps = setup();
     await deps.userRepository.add(
@@ -256,8 +344,10 @@ describe('cancelInvite', () => {
     const deps = setup();
     await deps.userRepository.add(invitee());
 
-    await cancelInvite(deps, { tenantId, userId: 'invitee' });
+    const removed = await cancelInvite(deps, { tenantId, userId: 'invitee' });
 
+    // Gone from the list, so what the person was called is said here once.
+    expect(removed.email).toBe('nuovo@example.com');
     expect(await deps.userRepository.findById(tenantId, 'invitee')).toBeNull();
     const { user: again } = await inviteUser(deps, {
       tenantId,
@@ -339,6 +429,7 @@ describe('acceptInvite', () => {
     const saved = await deps.userRepository.findById(tenantId, user.id);
     expect(saved?.isActive).toBe(true);
     expect(saved?.invitePending).toBe(false);
+    expect(saved?.isEmailVerified).toBe(true);
     expect(
       await deps.authPort.verifyPassword(
         'new-password',

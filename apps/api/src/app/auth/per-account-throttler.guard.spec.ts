@@ -6,6 +6,9 @@ import {
   PerAccountThrottlerGuard,
 } from './per-account-throttler.guard';
 
+const ORDINARY = { KOMETIO_DEMO: undefined } as const;
+const DEMO = { KOMETIO_DEMO: 'true' } as const;
+
 /** Same increment/limit semantics as the real in-memory storage this guard is built on — `totalHits` accumulates per key, `isBlocked` is unused by this guard (it reads `totalHits` directly instead). */
 class FakeThrottlerStorage implements ThrottlerStorage {
   private hits = new Map<string, number>();
@@ -130,7 +133,7 @@ describe('LoginThrottlerGuard', () => {
   const email = { email: 'admin@esempio.it' };
 
   it('keeps letting the owner in from their own address while someone else guesses from theirs', async () => {
-    const guard = new LoginThrottlerGuard(new FakeThrottlerStorage());
+    const guard = new LoginThrottlerGuard(new FakeThrottlerStorage(), ORDINARY);
     const attacker = buildContext(email, 'login', '203.0.113.9');
     for (let i = 0; i < 5; i++) await guard.canActivate(attacker);
 
@@ -143,7 +146,7 @@ describe('LoginThrottlerGuard', () => {
   });
 
   it('still stops guesses spread over many addresses, past a looser limit', async () => {
-    const guard = new LoginThrottlerGuard(new FakeThrottlerStorage());
+    const guard = new LoginThrottlerGuard(new FakeThrottlerStorage(), ORDINARY);
     for (let i = 0; i < 30; i++) {
       await guard.canActivate(buildContext(email, 'login', `203.0.113.${i}`));
     }
@@ -151,5 +154,35 @@ describe('LoginThrottlerGuard', () => {
     await expect(
       guard.canActivate(buildContext(email, 'login', '203.0.113.200')),
     ).rejects.toThrow(ThrottlerException);
+  });
+});
+
+/*
+ * In a demo (docs/adr/0118) the account is shared and its password is on the
+ * page, so a guess is worth nothing and a lock is worth a lot: thirty requests
+ * from thirty addresses keep every visitor out of the demo for a quarter of an
+ * hour. The count per address stays, which is what keeps one client from
+ * hammering it.
+ */
+describe('LoginThrottlerGuard in a demo', () => {
+  const email = { email: 'demo@esempio.it' };
+
+  it('does not lock the shared account for everybody after guesses from many addresses', async () => {
+    const guard = new LoginThrottlerGuard(new FakeThrottlerStorage(), DEMO);
+    for (let i = 0; i < 40; i++) {
+      await guard.canActivate(buildContext(email, 'login', `203.0.113.${i}`));
+    }
+
+    await expect(
+      guard.canActivate(buildContext(email, 'login', '198.51.100.7')),
+    ).resolves.toBe(true);
+  });
+
+  it('still stops one address that keeps trying', async () => {
+    const guard = new LoginThrottlerGuard(new FakeThrottlerStorage(), DEMO);
+    const client = buildContext(email, 'login', '203.0.113.9');
+    for (let i = 0; i < 5; i++) await guard.canActivate(client);
+
+    await expect(guard.canActivate(client)).rejects.toThrow(ThrottlerException);
   });
 });

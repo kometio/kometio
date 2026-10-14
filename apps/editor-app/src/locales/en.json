@@ -77,7 +77,7 @@
   },
   "emailNotice": {
     "title": "This installation cannot send email",
-    "body": "Invitations, password resets and form notifications are not mailed: they are written to the server's log, with their links. Set SMTP_HOST (and the other SMTP settings) on the server to send them."
+    "body": "Password resets, email changes and form notifications are not mailed: they are written to the server's log, with their links. An invitation shows you its link when you make it, for you to send. Set SMTP_HOST (and the other SMTP settings) on the server to send them all."
   },
   "demo": {
     "notice": "This is a demo. Others may be trying it at the same time, and it starts over from time to time: nothing you do here is kept. Uploads and the shared account are turned off.",
@@ -222,6 +222,26 @@
       "password": "Password",
       "passwordHint": "Choose a new one whenever you like. Every other sign-in is ended.",
       "changePassword": "Change password"
+    },
+    "sessions": {
+      "title": "Where you are signed in",
+      "description": "Every browser and device signed in to your account. Sign out of any you do not recognise or no longer use.",
+      "thisDevice": "This device",
+      "unknownDevice": "Unknown device",
+      "activeNow": "Active now",
+      "lastUsed": "Last used {{when}}",
+      "signedInOn": "signed in {{when}}",
+      "signOut": "Sign out",
+      "signOutOf": "Sign out of {{device}}",
+      "signOutOthers": "Sign out of all other devices",
+      "signedOut": "Signed out of {{device}}",
+      "othersSignedOut": "Signed out of every other device",
+      "confirm": {
+        "title": "Sign out of every other device?",
+        "description": "Every other device will have to sign in again. This one stays signed in."
+      },
+      "failed": "Could not sign out. Try again.",
+      "loadFailed": "Could not load where you are signed in. Reload the page to try again."
     },
     "currentPassword": "Current password",
     "currentPasswordRequired": "Enter your current password.",
@@ -876,7 +896,8 @@
       "action": "Delete the older answers",
       "descriptionCount_one": "{{count}} answer older than {{days}} days will be deleted for good at the next nightly clean-up (at 4 am). It cannot be recovered.",
       "descriptionCount_other": "{{count}} answers older than {{days}} days will be deleted for good at the next nightly clean-up (at 4 am). They cannot be recovered."
-    }
+    },
+    "activityNote": "The activity log (Settings → Activity) is kept for {{days}} days and then removed. That period is fixed: it is not a setting."
   },
   "cookieConsent": {
     "category": {
@@ -1382,7 +1403,6 @@
       "resendInvite": "Resend invite",
       "cancelInvite": "Cancel invite",
       "inviteResent": "Invite sent again to {{email}}",
-      "inviteResentNoEmail": "A new invitation for {{email}} is made, but no email was sent: its link is in the server's log.",
       "inviteResentNotMailed": "The invitation for {{email}} is ready, but the email could not be sent. Try again once the mail server works.",
       "inviteCancelled": "Invite to {{email}} cancelled",
       "cancelInviteConfirm": {
@@ -1402,11 +1422,20 @@
       "inviting": "Inviting...",
       "emailTaken": "A user with this email already exists.",
       "sent": "Invitation sent to {{email}}: they will get an email to choose a password.",
-      "sentNoEmail": "{{email}} is invited, but no email was sent: the invitation link is in the server's log.",
       "notMailed": "{{email}} is invited, but the email could not be sent. Once the mail server works, use “Resend invite”.",
       "languageLabel": "Language",
       "languageHint": "The invitation and every email they get afterwards will be written in this language, until they choose another.",
       "failed": "The invitation was not sent. Try again."
+    },
+    "inviteLinkDialog": {
+      "title": "Invitation for {{email}}",
+      "description": "This server has no mail server, so no email was sent. Send this link to {{email}} yourself: it lets them choose a password and sign in, and it expires in 7 days.",
+      "linkLabel": "Invitation link",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "copyFailed": "Could not copy: the link is selected, press Ctrl/⌘ + C.",
+      "onlyOnce": "It is shown only now. To get a new one, use “Resend invite” in the list.",
+      "done": "Done"
     },
     "role": {
       "admin": "Admin",
@@ -2130,6 +2159,15 @@
       "fields": {
         "html": {
           "fieldLabel": "HTML code"
+        },
+        "consentCategory": {
+          "fieldLabel": "Runs after the visitor accepts",
+          "options": {
+            "experience": "Experience (videos, maps, widgets)",
+            "functionality": "Functionality (preferences, chat)",
+            "measurement": "Measurement (analytics)",
+            "necessary": "Nothing: it always runs"
+          }
         }
       }
     },
@@ -3860,6 +3898,7 @@
         "cookies": "Cookies & privacy",
         "retention": "Data retention",
         "users": "Users",
+        "activity": "Activity",
         "export": "Export"
       }
     },
@@ -3897,5 +3936,45 @@
     "empty": "No results for “{{query}}”.",
     "hint": "↑↓ to choose · Enter to run · Esc to close",
     "searching": "Searching…"
+  },
+  "activity": {
+    "description": "Who did what to the site — sign-ins, people and roles, settings, the theme and the AI key, and the archive. Kept for {{days}} days, with no address and nothing that was typed.",
+    "empty": "Nothing has happened yet that is kept here.",
+    "by": "by {{who}}",
+    "actions": {
+      "login.succeeded": "Signed in",
+      "login.failed": "Sign-in refused for {{who}} ({{reason}})",
+      "user.invited": "Invited {{target}} as {{role}}",
+      "user.invite_resent": "Sent the invitation to {{target}} again",
+      "user.invite_cancelled": "Withdrew the invitation to {{target}}",
+      "user.role_changed": "Made {{target}} {{role}}",
+      "user.activated": "Switched {{target}} on",
+      "user.deactivated": "Switched {{target}} off",
+      "account.password_changed": "Changed their password",
+      "account.password_reset": "Their password was reset from a link",
+      "account.email_change_requested": "Asked to sign in with {{target}}",
+      "account.email_changed": "Changed the address they sign in with",
+      "site.settings_changed": "Changed the site's settings: {{section}}",
+      "site.theme_changed": "Changed the theme: {{section}}",
+      "site.ai_changed": "Changed the AI settings",
+      "theme.uploaded": "Uploaded the theme {{target}}",
+      "archive.exported": "Downloaded the site's archive"
+    },
+    "sections": {
+      "business": "business info",
+      "general": "general",
+      "seo": "SEO",
+      "retention": "data retention",
+      "languages": "languages",
+      "cookie-banner": "cookie banner",
+      "theme-code": "style and scripts",
+      "theme-package": "the theme itself",
+      "theme-tokens": "block styles"
+    },
+    "reasons": {
+      "wrong-password": "wrong password",
+      "deactivated": "account switched off"
+    },
+    "byRemoved": "by an account that has been removed"
   }
 }

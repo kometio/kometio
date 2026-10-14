@@ -160,7 +160,11 @@ describe('the control server', () => {
     const answer = await ask('/export');
 
     assert.equal(answer.status, 500);
-    assert.match(JSON.parse(answer.body).message, /connection refused/);
+    // What went wrong is the server's to read in its log. The answer goes to the
+    // API, which may show it: an error that was not foreseen can carry a path, a
+    // connection string or a line of SQL (CodeQL js/stack-trace-exposure).
+    assert.doesNotMatch(answer.body, /connection refused|psql/);
+    assert.match(JSON.parse(answer.body).message, /server's log/);
     assert.ok(said.some((line) => /connection refused/.test(line)));
   });
 
@@ -322,7 +326,12 @@ describe('the control server', () => {
         throw new Error('disk on fire');
       };
 
-      assert.equal((await post('/import', 'x')).status, 500);
+      const answer = await post('/import', 'x');
+
+      assert.equal(answer.status, 500);
+      assert.doesNotMatch(answer.body, /disk on fire/);
+      assert.match(JSON.parse(answer.body).message, /server's log/);
+      assert.ok(said.some((line) => /disk on fire/.test(line)));
     });
 
     it('says only POST, and that is only for the import', async () => {

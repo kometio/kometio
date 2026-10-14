@@ -59,9 +59,10 @@ export function apiEnvironment({
     PUBLIC_API_SERVICE_TOKEN: secrets.publicApiServiceToken,
     EDITOR_APP_URL: editorUrl,
     API_PUBLIC_URL: apiPublicUrl,
-    // No SMTP_* here: without a mail server the API writes each email (an
-    // invitation, a password reset) to its log, link included. Set SMTP_* to
-    // a real server to send them (docs/adr/0103).
+    // No SMTP_* here: without a mail server an invitation shows its link to
+    // the administrator who makes it, and the API writes the other emails (a
+    // password reset) to its log, link included. Set SMTP_* to a real server to
+    // send them (docs/adr/0103, 0128).
     MEDIA_UPLOAD_DIR: `${dataDir}/uploads`,
     THEMES_DIR: '/opt/api/themes',
     KOMETIO_SECRETS_DIR: `${dataDir}/secrets`,

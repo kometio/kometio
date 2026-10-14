@@ -17,6 +17,17 @@ import { messageOf } from './error-message.mjs';
 
 export const CONTROL_SOCKET = '/run/kometio/control.sock';
 
+/**
+ * What is said to whoever asked when something that was not foreseen failed.
+ *
+ * The reason is in the log of the server, which is where whoever runs it reads.
+ * It is not in the answer: the API that gets it may show it, and an error that
+ * nobody wrote a sentence for can carry a path of the volume, a connection
+ * string or a line of SQL. A refusal (`Refusal`) is another thing: somebody
+ * wrote its sentence for the person who will read it.
+ */
+const UNEXPECTED = "it failed; the reason is in the server's log";
+
 /** An answer that is a message, as JSON. */
 function reply(response, status, message) {
   response.writeHead(status, {
@@ -100,7 +111,7 @@ export async function startControlServer({
         reply(response, 409, error.message);
       } else {
         say(`the export failed: ${messageOf(error)}`);
-        reply(response, 500, messageOf(error));
+        reply(response, 500, `the export ${UNEXPECTED}`);
       }
     } finally {
       archive?.discard();
@@ -130,7 +141,7 @@ export async function startControlServer({
         );
       } else {
         say(`the archive could not be read: ${messageOf(error)}`);
-        refuseUnused(request, response, 500, messageOf(error));
+        refuseUnused(request, response, 500, `the archive ${UNEXPECTED}`);
       }
       return;
     }

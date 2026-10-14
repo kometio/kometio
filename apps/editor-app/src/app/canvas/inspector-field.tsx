@@ -257,6 +257,13 @@ export interface SectionExposeControls {
 export interface FieldEntryProps {
   field: FieldDescriptor;
   block: Block;
+  /**
+   * What the block type gives this field when it is made (its
+   * `defaultProps`). A choice saved before the field existed has no value,
+   * and the page is drawn as if it had this one: the select says so rather
+   * than showing nothing chosen where something is in force.
+   */
+  defaultValue?: unknown;
   onChangeProp: (key: string, value: unknown) => void;
   sectionEditing?: SectionExposeControls;
 }
@@ -265,6 +272,7 @@ export interface FieldEntryProps {
 export function FieldEntry({
   field,
   block,
+  defaultValue,
   onChangeProp,
   sectionEditing,
 }: FieldEntryProps) {
@@ -314,7 +322,11 @@ export function FieldEntry({
       )}
       <FieldRow
         field={field}
-        value={block.props[field.key]}
+        value={
+          field.kind === 'select'
+            ? (block.props[field.key] ?? defaultValue)
+            : block.props[field.key]
+        }
         blockId={block.id}
         onChange={(value) => onChangeProp(field.key, value)}
         controlId={controlId}
