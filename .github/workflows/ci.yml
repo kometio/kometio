@@ -346,3 +346,26 @@ jobs:
       - run: node --test tools/check-runtime-dependencies.test.mjs
       - run: node tools/check-runtime-dependencies.mjs
       - run: pnpm audit --prod --audit-level moderate
+
+  # The production compose file is the way a person runs Kometio on a server
+  # (docs/self-hosting.md), and nothing ever read it: a variable renamed in one
+  # place and not in the other was found by whoever ran `docker compose up` on
+  # a Friday. `config` interpolates it the way `up` does and fails on a
+  # variable it requires and is not given (docs/adr/0138). The values are not
+  # secrets and are not used for anything: it starts nothing.
+  compose-config:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # The file reads `.env` (`env_file:`), which is what a person makes from
+      # `.env.prod.example`; and the workflow's own `env:` above is for the
+      # test jobs and would answer the file's questions in their place, so the
+      # command gets an environment of its own.
+      - name: docker-compose.prod.yml is valid with what .env.prod.example asks for
+        run: |
+          cp .env.prod.example .env
+          env -i PATH="$PATH" HOME="$HOME" \
+            POSTGRES_PASSWORD=ci-not-a-secret POSTGRES_APP_PASSWORD=ci-not-a-secret \
+            DOMAIN=example.test ACME_EMAIL=ops@example.test \
+            docker compose -f docker-compose.prod.yml config --quiet
