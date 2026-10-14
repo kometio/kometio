@@ -358,10 +358,14 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # The file reads `.env` (`env_file:`), which is what a person makes from
+      # `.env.prod.example`; and the workflow's own `env:` above is for the
+      # test jobs and would answer the file's questions in their place, so the
+      # command gets an environment of its own.
       - name: docker-compose.prod.yml is valid with what .env.prod.example asks for
-        env:
-          POSTGRES_PASSWORD: ci-not-a-secret
-          POSTGRES_APP_PASSWORD: ci-not-a-secret
-          DOMAIN: example.test
-          ACME_EMAIL: ops@example.test
-        run: docker compose -f docker-compose.prod.yml config --quiet
+        run: |
+          cp .env.prod.example .env
+          env -i PATH="$PATH" HOME="$HOME" \
+            POSTGRES_PASSWORD=ci-not-a-secret POSTGRES_APP_PASSWORD=ci-not-a-secret \
+            DOMAIN=example.test ACME_EMAIL=ops@example.test \
+            docker compose -f docker-compose.prod.yml config --quiet
