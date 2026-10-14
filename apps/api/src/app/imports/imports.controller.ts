@@ -5,9 +5,11 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
+  Logger,
   Post,
   Query,
   UploadedFile,
@@ -19,6 +21,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { diskStorage } from 'multer';
 import { tmpdir } from 'node:os';
 import {
+  deleteImportJob,
   getImportJob,
   listImportJobs,
   runWordPressAnalysis,
@@ -78,6 +81,8 @@ function toDto(job: ImportJob): ImportJobRecord {
 @Controller('imports')
 @UseGuards(SessionAuthGuard)
 export class ImportsController {
+  private readonly logger = new Logger(ImportsController.name);
+
   constructor(@Inject(IMPORTS_DEPS) private readonly deps: ImportsDeps) {}
 
   /**
@@ -159,7 +164,17 @@ export class ImportsController {
       tenantId,
       jobId: job.id,
       filePath,
-    }).finally(() => unlink(filePath).catch(() => undefined));
+    })
+      // A promise nobody awaits that rejects ends the process: what is left
+      // to fail here is the database not answering, and it is said in the log
+      // — by its kind and not by its message, which for a failed query holds
+      // the query and with it what the site's own pages are called.
+      .catch((error: unknown) =>
+        this.logger.error(
+          `Reading import ${job.id} failed (${error instanceof Error ? error.name : 'unknown error'})`,
+        ),
+      )
+      .finally(() => unlink(filePath).catch(() => undefined));
 
     return toDto(job);
   }
@@ -171,6 +186,17 @@ export class ImportsController {
   ): Promise<ImportJobRecord> {
     const job = await getImportJob(this.deps, { tenantId, jobId: id });
     return toDto(job);
+  }
+
+  /** An attempt, forgotten: what a person does with a file they are done with. */
+  @Delete(':id')
+  @Allowed('configureSite')
+  @HttpCode(204)
+  async remove(
+    @TenantId() tenantId: string,
+    @UuidParam('id') id: string,
+  ): Promise<void> {
+    await deleteImportJob(this.deps, { tenantId, jobId: id });
   }
 
   @Get()

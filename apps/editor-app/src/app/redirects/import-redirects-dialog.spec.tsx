@@ -35,6 +35,8 @@ function renderDialog(
   const onOpenChange = vi.fn();
   render(
     <ImportRedirectsDialog
+      siteId="site-1"
+      withWordPress={false}
       onOpenChange={onOpenChange}
       onCheck={onCheck}
       onApply={onApply}

@@ -78,6 +78,13 @@
       "when": 1791917928943,
       "tag": "0010_redirects",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791922906388,
+      "tag": "0011_import_job_permalinks",
+      "breakpoints": true
     }
   ]
 }

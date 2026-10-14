@@ -83,6 +83,7 @@ export * from './lib/use-cases/update-redirect.use-case';
 export * from './lib/use-cases/delete-redirect.use-case';
 export * from './lib/use-cases/list-redirects.use-case';
 export * from './lib/use-cases/import-redirects.use-case';
+export * from './lib/use-cases/redirects-from-wordpress.use-case';
 export * from './lib/use-cases/resolve-redirect.use-case';
 export * from './lib/use-cases/test-redirect-address.use-case';
 export * from './lib/use-cases/missing-paths.use-case';

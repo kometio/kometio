@@ -3550,7 +3550,7 @@
       "done": "Done"
     },
     "import": {
-      "title": "Import a list of redirects",
+      "title": "Import redirects",
       "description": "A spreadsheet or the export of an SEO tool: one old address and one new address per line, as a CSV file.",
       "format": "Columns: old address, new address and, if you like, the kind (301, 302 or 410). The first line may be a header. A line whose address already has a redirect updates it, so importing the same list twice does no harm.",
       "chooseFile": "Choose a CSV file",
@@ -3579,7 +3579,46 @@
       "line": "Line {{line}}",
       "truncated": "Only the first {{max}} lines were read.",
       "done": "Import finished. New: {{created}}, changed: {{updated}}.",
-      "failed": "The list could not be imported."
+      "failed": "The list could not be imported.",
+      "sources": {
+        "label": "Where the redirects come from",
+        "list": "From a list",
+        "wordpress": "From a WordPress export"
+      },
+      "wordpress": {
+        "summary": "The addresses your WordPress site had, taken from its export.",
+        "description": "Each page and post is sent from the address it had, and from its number (/?p=123), to the page of the same name on this site.",
+        "file": "Export file",
+        "fileOption": "{{name}} · {{date}}",
+        "check": "Check the export",
+        "found": "{{matched}} of {{total}} pages and posts already have a page on this site.",
+        "unmatched": {
+          "title": "No page here yet ({{count}})",
+          "hint": "Make each page with the same name, then check again: what is already done stays as it is."
+        },
+        "ambiguous": {
+          "title": "More than one page could be it ({{count}})",
+          "hint": "Several pages here have the same name. Rename or move one, then check again."
+        },
+        "shown": "Showing the first {{shown}} of {{total}}.",
+        "download": "Download this list (CSV)",
+        "csv": {
+          "type": "Type",
+          "title": "Title",
+          "address": "Old address",
+          "note": "What is missing",
+          "unmatched": "No page here with this name",
+          "ambiguous": "More than one page could be it"
+        },
+        "none": {
+          "title": "No export has been read yet",
+          "body": "Upload the .xml file WordPress makes under Tools → Export in Import, and come back here.",
+          "goToImport": "Go to Import"
+        },
+        "noPermalinks": "This file was read before the addresses were kept. Upload it again in Import.",
+        "notAnalyzed": "That file is still being read. Try again in a moment.",
+        "loadFailed": "The files that were read could not be loaded."
+      }
     },
     "missing": {
       "description": "Addresses that visitors asked for and the site did not have, most asked first. Turn the ones that matter into redirects.",

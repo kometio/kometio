@@ -145,3 +145,40 @@ export const wordPressAnalysisSchema = z.object({
   warnings: z.array(wordPressAnalysisWarningSchema),
 });
 export type WordPressAnalysis = z.infer<typeof wordPressAnalysisSchema>;
+
+/**
+ * Where a page or a post of the export used to live — all the redirects of a
+ * move need of it (docs/adr/0127), kept apart from the report because it is
+ * one entry per page and a report is a few hundred numbers.
+ */
+/**
+ * What is kept of one entry is bounded in each part, so that the size of the
+ * whole is a product of bounds that are ours and not a function of whatever
+ * the file held: an export is somebody else's.
+ */
+export const WORDPRESS_PERMALINK_LIMITS = {
+  /** An address longer than a rule may be (`REDIRECT_LIMITS.addressLength`) is not one a browser sent. */
+  link: 2048,
+  /** WordPress's own `post_name` column is 200. */
+  slug: 200,
+  /** Enough to tell two pages apart in a list. */
+  title: 120,
+  /** How many entries, and how many characters of them all: more is not kept, and a move that big is the proxy's. */
+  entries: 20_000,
+  characters: 8_000_000,
+} as const;
+
+export const wordPressPermalinkSchema = z.object({
+  /** The number WordPress calls it by, which `/?p=123` and `/?page_id=45` ask for. */
+  id: z.number().int(),
+  type: z.enum(['page', 'post']),
+  slug: z.string().max(WORDPRESS_PERMALINK_LIMITS.slug),
+  /** Enough to say which one it is in a list; not what it said. */
+  title: z.string().max(WORDPRESS_PERMALINK_LIMITS.title),
+  /** The address it answered at when the file was made: `https://old.example/2019/05/hello/`. */
+  link: z.string().max(WORDPRESS_PERMALINK_LIMITS.link),
+  /** The page it sat under, for telling two pages of one slug apart. */
+  parentId: z.number().int().nullable(),
+});
+export type WordPressPermalink = z.infer<typeof wordPressPermalinkSchema>;
+export const wordPressPermalinksSchema = z.array(wordPressPermalinkSchema);

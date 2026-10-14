@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ImportJob } from '@kometio/domain-core';
-import type { WordPressAnalysis } from '@kometio/shared-types';
+import { ImportJob, ImportJobNotFoundError } from '@kometio/domain-core';
+import type {
+  WordPressAnalysis,
+  WordPressPermalink,
+} from '@kometio/shared-types';
 import { type KometioDb, createAppDb } from '@kometio/postgres-db';
 import {
   createIntegrationSite,
@@ -167,6 +170,107 @@ describe('DrizzleImportJobRepository (integration)', () => {
     expect(ids).toContain(running.id);
     expect(ids).toContain(runningElsewhere.id);
     expect(ids).not.toContain(finished.id);
+  });
+
+  describe('where the pages lived', () => {
+    const permalinks: WordPressPermalink[] = [
+      {
+        id: 42,
+        type: 'post',
+        slug: 'hello-world',
+        title: 'Hello world',
+        link: 'https://old.example/2019/05/hello-world/',
+        parentId: null,
+      },
+      {
+        id: 7,
+        type: 'page',
+        slug: 'team',
+        title: 'Team',
+        link: 'https://old.example/about/team/',
+        parentId: 3,
+      },
+    ];
+
+    it('keeps them apart from the job, and gives them back', async () => {
+      const job = buildJob();
+      await repository.add(job);
+
+      expect(await repository.permalinksOf(tenantAId, job.id)).toBeNull();
+      await repository.savePermalinks(tenantAId, job.id, permalinks);
+
+      expect(await repository.permalinksOf(tenantAId, job.id)).toEqual(
+        permalinks,
+      );
+      // The job itself is the same job: its status is read on a poll, and the
+      // list of addresses is as long as the site.
+      expect((await repository.findById(tenantAId, job.id))?.status).toBe(
+        'analyzing',
+      );
+    });
+
+    it('replaces what was kept, and an empty list is a list', async () => {
+      const job = buildJob();
+      await repository.add(job);
+      await repository.savePermalinks(tenantAId, job.id, permalinks);
+
+      await repository.savePermalinks(tenantAId, job.id, []);
+
+      expect(await repository.permalinksOf(tenantAId, job.id)).toEqual([]);
+    });
+
+    it('does not carry them in a listing or in what a save writes back', async () => {
+      const job = buildJob();
+      await repository.add(job);
+      await repository.savePermalinks(tenantAId, job.id, permalinks);
+
+      job.succeed(REPORT);
+      await repository.save(job);
+
+      expect(await repository.permalinksOf(tenantAId, job.id)).toEqual(
+        permalinks,
+      );
+      const listed = await repository.listBySite(tenantAId, siteAId);
+      expect(listed.find((one) => one.id === job.id)?.status).toBe('analyzed');
+    });
+
+    it('says a job that is not there is not there, and never gives one tenant the other’s', async () => {
+      const job = buildJob();
+      await repository.add(job);
+      await repository.savePermalinks(tenantAId, job.id, permalinks);
+
+      await expect(
+        repository.savePermalinks(tenantBId, job.id, permalinks),
+      ).rejects.toBeInstanceOf(ImportJobNotFoundError);
+      expect(await repository.permalinksOf(tenantBId, job.id)).toBeNull();
+      expect(await repository.permalinksOf(tenantAId, randomUUID())).toBeNull();
+    });
+  });
+
+  it('deletes a job with what was kept for it, and only for its tenant', async () => {
+    const job = buildJob();
+    await repository.add(job);
+    await repository.savePermalinks(tenantAId, job.id, [
+      {
+        id: 1,
+        type: 'page',
+        slug: 'a',
+        title: 'A',
+        link: 'https://old.example/a/',
+        parentId: null,
+      },
+    ]);
+
+    await expect(repository.delete(tenantBId, job.id)).rejects.toBeInstanceOf(
+      ImportJobNotFoundError,
+    );
+    await repository.delete(tenantAId, job.id);
+
+    expect(await repository.findById(tenantAId, job.id)).toBeNull();
+    expect(await repository.permalinksOf(tenantAId, job.id)).toBeNull();
+    await expect(repository.delete(tenantAId, job.id)).rejects.toBeInstanceOf(
+      ImportJobNotFoundError,
+    );
   });
 
   it('never hands one tenant another tenant report', async () => {

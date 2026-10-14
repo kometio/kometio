@@ -18,6 +18,7 @@ import {
   importRedirects,
   listMissingPaths,
   listRedirects,
+  redirectsFromWordPress,
   testRedirectAddress,
   updateRedirect,
   type RedirectListItem,
@@ -35,6 +36,8 @@ import {
   type RedirectTestResult as RedirectTestResultRecord,
   type TestRedirectBody,
   type UpdateRedirectBody,
+  type WordPressRedirectPlan,
+  type WordPressRedirectsBody,
   createRedirectBodySchema,
   importRedirectsBodySchema,
   listMissingPathsQuerySchema,
@@ -46,6 +49,8 @@ import {
   redirectTestResultSchema,
   testRedirectBodySchema,
   updateRedirectBodySchema,
+  wordPressRedirectPlanSchema,
+  wordPressRedirectsBodySchema,
 } from '@kometio/api-contracts';
 import { describeRedirectSource } from '@kometio/shared-types';
 import { API_ENV } from '../api-env.module';
@@ -201,6 +206,32 @@ export class RedirectsController {
       allowExternalTargets: this.allowExternalTargets,
     });
     return redirectImportReportSchema.parse(report);
+  }
+
+  /**
+   * The redirects of a WordPress move, from the file's addresses and the
+   * pages the site has now. Judged with `dryRun`, written without it; the
+   * file is a job that has been read, so nothing is uploaded again.
+   */
+  // An admin's, like the imports it reads from (docs/roles.md): the file is
+  // the importer's, and a publisher cannot list or upload one.
+  @Post('wordpress')
+  @Allowed('configureSite')
+  async fromWordPress(
+    @TenantId() tenantId: string,
+    @UserId() userId: string,
+    @Body(new ZodValidationPipe(wordPressRedirectsBodySchema))
+    body: WordPressRedirectsBody,
+  ): Promise<WordPressRedirectPlan> {
+    const result = await redirectsFromWordPress(this.deps, {
+      tenantId,
+      siteId: body.siteId,
+      importJobId: body.importJobId,
+      dryRun: body.dryRun,
+      createdBy: userId,
+      allowExternalTargets: this.allowExternalTargets,
+    });
+    return wordPressRedirectPlanSchema.parse(result);
   }
 
   /** Where an address would go, from the same rules the site answers with. */

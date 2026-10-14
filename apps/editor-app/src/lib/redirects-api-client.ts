@@ -4,6 +4,7 @@ import {
   redirectImportReportSchema,
   redirectRecordSchema,
   redirectTestResultSchema,
+  wordPressRedirectPlanSchema,
   type CreateRedirectBody,
   type MissingPathRecord,
   type PaginatedMissingPaths,
@@ -12,6 +13,7 @@ import {
   type RedirectRecord,
   type RedirectTestResult,
   type UpdateRedirectBody,
+  type WordPressRedirectPlan,
 } from '@kometio/api-contracts';
 import { request, send } from './http-client';
 
@@ -22,6 +24,7 @@ export type {
   RedirectImportReport,
   RedirectRecord,
   RedirectTestResult,
+  WordPressRedirectPlan,
 };
 
 export interface ListRedirectsFilters {
@@ -124,4 +127,22 @@ export async function listMissingPaths(
 
 export function dismissMissingPath(id: string): Promise<void> {
   return send(`/redirects/missing/${id}/dismiss`, { method: 'POST' });
+}
+
+/**
+ * The redirects of a WordPress move, from a file that has been read in
+ * Import. `dryRun` judges and writes nothing; the answer has the same shape
+ * either way, so that what is shown before is what is done.
+ */
+export async function redirectsFromWordPress(input: {
+  siteId: string;
+  importJobId: string;
+  dryRun: boolean;
+}): Promise<WordPressRedirectPlan> {
+  return wordPressRedirectPlanSchema.parse(
+    await request('/redirects/wordpress', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  );
 }

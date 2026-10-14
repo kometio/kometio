@@ -83,6 +83,25 @@ once had. Nothing could say what an address from before Kometio is.
   permanent/temporary/gone). Every row is judged on its own and a bad one is
   named by its line; a dry run answers in the shape of the real one; the same
   file twice is the same site (an address that has a rule is updated).
+- **A WordPress move makes its rules from the export it was read from.** The
+  analysis (ADR-0082) already streams every item of the file once; on the same
+  pass it keeps, for each _published_ page and post, its number, slug, title,
+  parent and the address it answered at (`import_jobs.permalinks`, its own
+  column and never in a listing: it is as long as the site, where a report is
+  a few hundred numbers; each part of an entry and the whole are bounded, at
+  20,000 entries and eight million characters, because the file is somebody
+  else's). From that and the pages the site has
+  now, each item becomes up to two rules: its address, and its number
+  (`/?p=123`, `/?page_id=45`), both to the page that took its place. The page
+  is found by its slug — the one thing an import keeps — narrowed by who it sat
+  under when two pages have it, and by the site's own language when it is in
+  several; **what is still more than one is not guessed at** (a redirect to
+  the wrong page is worse than none, because nothing says it is wrong). What has
+  no page yet is listed, with a CSV to work from: making the page and asking
+  again is the way to finish a move, and what was made is left as it was. It is
+  judged first (a dry run in the import's own report) and is an administrator's,
+  like the file it reads from. An export read before this was kept says so and
+  has to be uploaded again.
 - **A target is refused for what a browser would read as another host**: a
   `javascript:` or `data:` address, a `//host`, a credential, a control
   character and a backslash (`/\evil.example` is `//evil.example` to a
@@ -106,7 +125,12 @@ once had. Nothing could say what an address from before Kometio is.
   by. Two domains for one site are the same answer; a domain redirect belongs to
   the proxy in front.
 - **A site holds at most 10,000 rules**: the set is read into memory to answer.
-  A site with more is asking for the proxy's tool.
+  A site with more is asking for the proxy's tool. A big move is two rules per
+  page, so a site of five thousand posts is at the limit.
+- **A WordPress move's archives are not made**: the categories, tags, authors
+  and dates (`/category/news/`, `/2019/05/`). They have no page to be the
+  answer of until the site's own category pages exist, and what visitors still
+  ask for shows up in "Not found" to be answered by hand or by a pattern.
 
 ## Consequences
 

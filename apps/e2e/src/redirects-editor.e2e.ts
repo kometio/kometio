@@ -402,3 +402,115 @@ test.describe('the dialogs of the screen', () => {
     }
   }
 });
+
+test.describe('the redirects of a WordPress move', () => {
+  const item = (id: number, slug: string, link: string) => `<item>
+  <title><![CDATA[${slug}]]></title><link>${link}</link>
+  <content:encoded><![CDATA[<p>${slug}</p>]]></content:encoded>
+  <wp:post_id>${id}</wp:post_id><wp:post_name><![CDATA[${slug}]]></wp:post_name>
+  <wp:post_type><![CDATA[post]]></wp:post_type><wp:status><![CDATA[publish]]></wp:status>
+</item>`;
+
+  const exportOf = (items: string[]) => `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wp="http://wordpress.org/export/1.2/">
+<channel><title><![CDATA[The old site]]></title><wp:base_blog_url>https://old.example</wp:base_blog_url>
+${items.join('\n')}
+</channel></rss>`;
+
+  test('are judged against the pages the site has, made, and answer for the old address', async ({
+    page,
+    api,
+    cleanup,
+    copy,
+    uniqueName,
+    request,
+  }) => {
+    const site = await api.currentSite();
+    const { group, translation } = await api.createPage({
+      siteId: site.id,
+      locale: site.defaultLocale,
+      slug: `post-${uniqueName}`,
+      title: `Post ${uniqueName}`,
+      content: [],
+    });
+    cleanup.add(() => api.deletePage(group.id));
+    await api.publishTranslation(translation.id);
+    removeRulesNamed(cleanup, api, site.id, uniqueName);
+    const job = await api.analyseWordPressExport(
+      site.id,
+      `e2e-${uniqueName}.xml`,
+      exportOf([
+        item(
+          101,
+          `post-${uniqueName}`,
+          `https://old.example/2019/05/post-${uniqueName}/`,
+        ),
+        item(
+          102,
+          `missing-${uniqueName}`,
+          `https://old.example/2019/06/missing-${uniqueName}/`,
+        ),
+      ]),
+    );
+    cleanup.add(() => api.deleteImportJob(job));
+
+    await page.goto('settings/redirects');
+    await page
+      .getByRole('button', { name: copy.t('redirects.actions.import') })
+      .click();
+    const dialog = page.getByRole('dialog', {
+      name: copy.t('redirects.import.title'),
+    });
+    await dialog
+      .getByRole('tab', { name: copy.t('redirects.import.sources.wordpress') })
+      .click();
+    await dialog
+      .getByRole('button', {
+        name: copy.t('redirects.import.wordpress.check'),
+      })
+      .click();
+
+    // Judged against the site's own pages, with what is left over named.
+    await expect(
+      dialog.getByText(
+        copy.t('redirects.import.wordpress.found', { matched: 1, total: 2 }),
+      ),
+    ).toBeVisible();
+    await expect(
+      dialog.getByText(`https://old.example/2019/06/missing-${uniqueName}/`),
+    ).toBeVisible();
+    const before = await request.get(
+      `${environment.publicSiteUrl}2019/05/post-${uniqueName}`,
+      { maxRedirects: 0 },
+    );
+    expect(before.status()).toBe(404);
+
+    await dialog
+      .getByRole('button', {
+        name: copy.t('redirects.import.apply', { count: 2 }),
+      })
+      .click();
+
+    await expect(
+      page
+        .getByRole('listitem')
+        .filter({ hasText: `/2019/05/post-${uniqueName}` }),
+    ).toBeVisible();
+    const after = await request.get(
+      `${environment.publicSiteUrl}2019/05/post-${uniqueName}`,
+      { maxRedirects: 0 },
+    );
+    expect(after.status()).toBe(301);
+    expect(after.headers()['location']).toBe(
+      `/${site.defaultLocale}/post-${uniqueName}`,
+    );
+    // And by its number, which is what WordPress answered at its front door.
+    const byNumber = await request.get(`${environment.publicSiteUrl}?p=101`, {
+      maxRedirects: 0,
+    });
+    expect(byNumber.status()).toBe(301);
+    expect(byNumber.headers()['location']).toBe(
+      `/${site.defaultLocale}/post-${uniqueName}`,
+    );
+  });
+});

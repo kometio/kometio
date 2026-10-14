@@ -137,3 +137,26 @@ export class ImportJobNotFoundError extends Error {
     this.name = 'ImportJobNotFoundError';
   }
 }
+
+/**
+ * Something that is made from what a file said — the redirects of a move —
+ * was asked of a job that has not finished reading it. A code, like the
+ * redirects' own refusals, so the editor says it in the person's language.
+ */
+export class ImportJobNotAnalyzedError extends Error {
+  constructor(readonly jobId: string) {
+    super(`import:not-analyzed:${jobId}`);
+    this.name = 'ImportJobNotAnalyzedError';
+  }
+}
+
+/**
+ * The file was read before where its pages lived was kept, so the redirects
+ * of its move cannot be made from it: it has to be read again.
+ */
+export class ImportJobHasNoPermalinksError extends Error {
+  constructor(readonly jobId: string) {
+    super(`import:no-permalinks:${jobId}`);
+    this.name = 'ImportJobHasNoPermalinksError';
+  }
+}

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { wordPressPermalinkSchema } from '@kometio/shared-types';
 
 export const redirectStatusSchema = z.union([
   z.literal(301),
@@ -116,3 +117,23 @@ export const publicRedirectAnswerSchema = z.discriminatedUnion('outcome', [
   z.object({ outcome: z.literal('gone') }),
 ]);
 export type PublicRedirectAnswer = z.infer<typeof publicRedirectAnswerSchema>;
+
+/**
+ * The redirects of a WordPress move, as the editor shows them before they
+ * are made and after: the import's own report, line by line, and what of the
+ * file's pages and posts has no page to go to.
+ */
+export const wordPressRedirectPlanSchema = z.object({
+  report: redirectImportReportSchema,
+  /** Of the pages and posts that were published, how many found their page. */
+  pages: z.object({
+    matched: z.number().int().nonnegative(),
+    ambiguous: z.number().int().nonnegative(),
+    unmatched: z.number().int().nonnegative(),
+  }),
+  /** The first of those with no page of this site, for making them: `pages.unmatched` says how many there are. */
+  unmatched: z.array(wordPressPermalinkSchema),
+  /** The first that more than one page could be. */
+  ambiguous: z.array(wordPressPermalinkSchema),
+});
+export type WordPressRedirectPlan = z.infer<typeof wordPressRedirectPlanSchema>;

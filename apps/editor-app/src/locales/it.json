@@ -3550,7 +3550,7 @@
       "done": "Fatto"
     },
     "import": {
-      "title": "Importa un elenco di reindirizzamenti",
+      "title": "Importa reindirizzamenti",
       "description": "Un foglio di calcolo o l’esportazione di uno strumento SEO: un indirizzo vecchio e uno nuovo per riga, in un file CSV.",
       "format": "Colonne: indirizzo vecchio, indirizzo nuovo e, se vuoi, il tipo (301, 302 o 410). La prima riga può essere l’intestazione. Una riga il cui indirizzo ha già un reindirizzamento lo aggiorna, quindi importare due volte lo stesso elenco non fa danni.",
       "chooseFile": "Scegli un file CSV",
@@ -3579,7 +3579,46 @@
       "line": "Riga {{line}}",
       "truncated": "Sono state lette solo le prime {{max}} righe.",
       "done": "Importazione completata. Nuovi: {{created}}, modificati: {{updated}}.",
-      "failed": "Non è stato possibile importare l’elenco."
+      "failed": "Non è stato possibile importare l’elenco.",
+      "sources": {
+        "label": "Da dove arrivano i reindirizzamenti",
+        "list": "Da un elenco",
+        "wordpress": "Da un’esportazione di WordPress"
+      },
+      "wordpress": {
+        "summary": "Gli indirizzi che aveva il tuo sito WordPress, presi dalla sua esportazione.",
+        "description": "Ogni pagina e articolo viene mandato dall’indirizzo che aveva, e dal suo numero (/?p=123), alla pagina con lo stesso nome di questo sito.",
+        "file": "File di esportazione",
+        "fileOption": "{{name}} · {{date}}",
+        "check": "Controlla l’esportazione",
+        "found": "{{matched}} pagine e articoli su {{total}} hanno già una pagina in questo sito.",
+        "unmatched": {
+          "title": "Ancora senza pagina qui ({{count}})",
+          "hint": "Crea ogni pagina con lo stesso nome e poi controlla di nuovo: quello che è già fatto resta com’è."
+        },
+        "ambiguous": {
+          "title": "Potrebbe essere più di una pagina ({{count}})",
+          "hint": "Qui più pagine hanno lo stesso nome. Rinominane o spostane una e poi controlla di nuovo."
+        },
+        "shown": "Mostrate le prime {{shown}} su {{total}}.",
+        "download": "Scarica questo elenco (CSV)",
+        "csv": {
+          "type": "Tipo",
+          "title": "Titolo",
+          "address": "Vecchio indirizzo",
+          "note": "Cosa manca",
+          "unmatched": "Nessuna pagina qui con questo nome",
+          "ambiguous": "Potrebbe essere più di una pagina"
+        },
+        "none": {
+          "title": "Nessuna esportazione è stata ancora letta",
+          "body": "Carica in Importa il file .xml che WordPress crea da Strumenti → Esporta, e torna qui.",
+          "goToImport": "Vai a Importa"
+        },
+        "noPermalinks": "Questo file è stato letto prima che gli indirizzi venissero conservati. Caricalo di nuovo in Importa.",
+        "notAnalyzed": "Quel file è ancora in lettura. Riprova tra un attimo.",
+        "loadFailed": "Non è stato possibile caricare i file già letti."
+      }
     },
     "missing": {
       "description": "Indirizzi che i visitatori hanno cercato e che il sito non ha, dal più cercato. Trasforma in reindirizzamenti quelli che contano.",
