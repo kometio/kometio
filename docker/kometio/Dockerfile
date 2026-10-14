@@ -23,14 +23,17 @@ FROM ${PUBLIC_SITE_IMAGE} AS public-site
 FROM ${EDITOR_IMAGE} AS editor
 
 FROM node:24-alpine AS runtime
-# postgresql16-contrib: the same extension set the official postgres:16 image
+# postgresql18-contrib: the same extension set the official postgres:18 image
 # carries, so a database restored from a stack that ran on that one opens here.
+# The major version is the package's, and the launcher asks the binary which it
+# is (embedded-postgres.mjs): a volume made by another major is refused with what
+# to do, as a major version does not read the files of another (docs/adr/0125).
 #
 # caddy is the proxy of a server (DOMAIN set; docs/adr/0104): ports 80 and 443
 # and the certificates. A trial does not start it. It runs as its own user, which
 # may bind a port below 1024 only if the binary is given that one capability
 # (setcap's package is only needed for this line, and goes again).
-RUN apk add --no-cache postgresql16 postgresql16-contrib nginx tini caddy libcap-utils \
+RUN apk add --no-cache postgresql18 postgresql18-contrib nginx tini caddy libcap-utils \
  && setcap cap_net_bind_service=+ep /usr/sbin/caddy \
  && apk del libcap-utils
 

@@ -29,7 +29,7 @@ runs:
           -e POSTGRES_PASSWORD="$admin_password" \
           -e POSTGRES_DB="$POSTGRES_DB" \
           -p 5432:5432 \
-          postgres:16-alpine
+          postgres:18-alpine
 
         # The official image starts Postgres twice: once internally to run
         # initdb, then for real. pg_isready can report ready during that

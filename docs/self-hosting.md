@@ -269,6 +269,47 @@ docker compose -f docker-compose.prod.yml up -d --build migrate  # runs and exit
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
+### A new major version of Postgres
+
+A major version of Postgres does not open the files of another. This stack moved
+from Postgres 16 to 18 on 2026-10-13
+([ADR-0125](adr/0125-the-image-carries-postgres-18.md)), and its database is now
+in a volume of its own, `postgres18-data`, which starts empty. The 16's,
+`postgres-data`, is where your data still is, untouched. Moving it is a dump and
+a restore, and the order matters: the dump is made by the stack that is still on
+16, before `git pull` replaces the compose file.
+
+1. A fresh dump, with the command under "Upgrading" above, and a copy of it out of
+   the volume (the file name is the one that command wrote):
+   ```sh
+   docker compose -f docker-compose.prod.yml cp \
+     postgres-backup:/backups/kometio-before-upgrade-<…>.sql.gz ./
+   ```
+2. Stop everything, without `-v`, and update:
+   ```sh
+   docker compose -f docker-compose.prod.yml down
+   git pull
+   ```
+3. Start only the database: an empty 18, in which `db/init` makes the application
+   role.
+   ```sh
+   docker compose -f docker-compose.prod.yml up -d postgres
+   ```
+4. Restore into it with step 2 of "Restoring from a backup" above (the file you
+   copied in step 1 is the one to give it).
+5. Start the rest, which runs the migrations the dump does not have:
+   ```sh
+   docker compose -f docker-compose.prod.yml up -d --build
+   ```
+6. When the site is as it was, remove the old volume:
+   `docker volume rm <the project's name>_postgres-data` (`docker volume ls` shows
+   it). Until then it is the way back, which is a stack of the previous commit
+   started on it.
+
+The single image (`ghcr.io/kometio/kometio`) does this with its own export and
+import, and refuses a volume of the other version with what to do:
+[its README](../docker/kometio/README.md#update-to-a-newer-version).
+
 ## Uploaded themes
 
 An admin can upload a theme from the editor (Style → Theme → "Upload a

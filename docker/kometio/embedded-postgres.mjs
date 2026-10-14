@@ -3,7 +3,8 @@
 // as long as the container lives; the archive commands run it for as long as
 // one export or one import takes.
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { Refusal } from './archive.mjs';
 import { ensureDir, once, waitFor } from './processes.mjs';
 
 export const SOCKET_DIR = '/run/postgresql';
@@ -52,12 +53,54 @@ export const postgresArguments = (dataDir) => [
 export const volumeInUse = (dataDir) =>
   existsSync(`${pgData(dataDir)}/postmaster.pid`);
 
-/** Makes the cluster the first time. */
+/**
+ * The major version of the Postgres this image carries, as the server says it
+ * (`postgres (PostgreSQL) 18.6`): asked of the binary, so that the one place
+ * that names a version is the package the Dockerfile installs.
+ */
+export function serverMajor() {
+  const said = spawnSync('postgres', ['--version'], { encoding: 'utf8' });
+  const match = /\(PostgreSQL\) (\d+)/.exec(said.stdout ?? '');
+  if (!match) {
+    throw new Error(
+      `could not tell the version of Postgres from "${(said.stdout ?? '').trim()}"`,
+    );
+  }
+  return Number(match[1]);
+}
+
+/**
+ * Refuses a volume whose database another major version of Postgres made.
+ *
+ * A major version does not read the files of another: started on them, the
+ * server stops with "database files are incompatible with server", which says
+ * nothing of what to do and arrives after the volume has been looked at. The
+ * way across is the site's own export, which is SQL and goes forward (docs/adr/0125);
+ * the way back is the export made before.
+ */
+export function assertClusterIsOpenable(clusterMajor, server) {
+  if (clusterMajor === server) return;
+  if (clusterMajor < server) {
+    throw new Refusal(
+      `this volume's database was made by PostgreSQL ${clusterMajor}, and this image carries ${server}, which cannot open it: a major version of Postgres does not read the files of another. Start the Kometio that made it and export the site (docker exec kometio node /opt/kometio/cli.mjs export > site.tar.gz), then open that file into a new volume with this image (docker run … import, see the README, "Move a site"). The volume has not been changed`,
+    );
+  }
+  throw new Refusal(
+    `this volume's database was made by PostgreSQL ${clusterMajor}, which is newer than the ${server} this image carries, and cannot be opened by it. Start the Kometio that made it (or a newer one) on this volume; to be on this version again, open an export made before the update into a new volume (docker run … import, see the README, "Move a site"). The volume has not been changed`,
+  );
+}
+
+/** Makes the cluster the first time, and refuses one that another major version made. */
 export function prepareCluster(dataDir, log) {
   ensureDir(SOCKET_DIR, 'postgres', 0o755);
   ensureDir(pgData(dataDir), 'postgres', 0o700);
 
-  if (!existsSync(`${pgData(dataDir)}/PG_VERSION`)) {
+  const versionFile = `${pgData(dataDir)}/PG_VERSION`;
+  if (existsSync(versionFile)) {
+    const made = Number.parseInt(readFileSync(versionFile, 'utf8'), 10);
+    // A file that says something else is the server's to report.
+    if (Number.isInteger(made)) assertClusterIsOpenable(made, serverMajor());
+  } else {
     log('creating the database (first start)');
     // `local` trusts the socket, which is why `postgresArguments` closes it to
     // everyone but root and `postgres`; TCP, which the API uses, wants the
