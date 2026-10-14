@@ -73,6 +73,19 @@
       "success": "L’email è stata cambiata. Usala al prossimo accesso.",
       "error": "Il link non è valido o è scaduto, oppure l’indirizzo è stato preso da un’altra persona. Chiedi di nuovo il cambio dal tuo profilo.",
       "toEditor": "Vai al tuo profilo"
+    },
+    "secondFactor": {
+      "title": "Inserisci il codice",
+      "description": "Il tuo account ha la verifica in due passaggi. Apri l’app di autenticazione e scrivi le sei cifre che mostra.",
+      "codeLabel": "Codice",
+      "hint": "Se hai perso l’app, scrivi invece uno dei tuoi codici di recupero.",
+      "wrongCode": "Il codice non è giusto. Prova con il prossimo che mostra l’app.",
+      "submitIdle": "Accedi",
+      "submitPending": "Controllo…",
+      "startAgain": "Ricomincia dalla password",
+      "recoveryCodeUsed_one": "Hai acceduto con un codice di recupero. Te ne resta {{count}}: creane di nuovi dal tuo account.",
+      "recoveryCodeUsed_other": "Hai acceduto con un codice di recupero. Te ne restano {{count}}: creane di nuovi dal tuo account.",
+      "locked": "Troppi codici sbagliati. Aspetta qualche minuto, oppure usa uno dei tuoi codici di recupero."
     }
   },
   "emailNotice": {
@@ -277,7 +290,47 @@
       "failed": "La richiesta di cambio email non è stata inviata. Riprova."
     },
     "pictureSaved": "Foto aggiornata",
-    "pictureRemoved": "Foto rimossa"
+    "pictureRemoved": "Foto rimossa",
+    "secondFactor": {
+      "title": "Verifica in due passaggi",
+      "statusLabel": "Stato",
+      "on": "Attiva",
+      "off": "Non attiva",
+      "offHint": "All’accesso, dopo la password, ti viene chiesto un codice generato da un’app di autenticazione.",
+      "onHint_one": "Dopo la password ti viene chiesto un codice dell’app di autenticazione. Hai ancora {{count}} codice di recupero.",
+      "onHint_other": "Dopo la password ti viene chiesto un codice dell’app di autenticazione. Hai ancora {{count}} codici di recupero.",
+      "turnOnAction": "Attiva…",
+      "newCodes": "Nuovi codici di recupero…",
+      "turnOff": "Disattiva…",
+      "enableTitle": "Attiva la verifica in due passaggi",
+      "passwordStep": "Conferma che sei tu con la tua password.",
+      "scanStep": "Inquadra il codice con un’app di autenticazione, oppure scrivi la chiave nell’app, poi inserisci le sei cifre che mostra.",
+      "codesStep": "È attiva. Conserva questi codici di recupero in un posto sicuro: ognuno vale una volta sola e ti serve se perdi l’app.",
+      "continue": "Continua",
+      "turnOn": "Attiva",
+      "done": "Fatto",
+      "qrLabel": "Codice QR per la tua app di autenticazione",
+      "keyLabel": "Oppure scrivi questa chiave nell’app",
+      "codeLabel": "Codice dell’app",
+      "codeRequired": "Scrivi le sei cifre che mostra l’app.",
+      "codeMismatch": "Il codice non corrisponde. Controlla l’app e riprova.",
+      "alreadyOn": "La verifica in due passaggi è già attiva.",
+      "startAgain": "Questa procedura è stata sostituita o è scaduta. Chiudi la finestra e ricomincia.",
+      "failed": "Non è andata a buon fine. Riprova.",
+      "codesIntro_one": "{{count}} codice di recupero. Lo vedi solo ora.",
+      "codesIntro_other": "{{count}} codici di recupero. Li vedi solo ora.",
+      "codesLabel": "Codici di recupero",
+      "codesDownload": "Scarica come file",
+      "codesSaved": "Li ho conservati in un posto sicuro",
+      "codesFileTitle": "Codici di recupero di Kometio. Ogni codice vale una volta sola.",
+      "newCodesTitle": "Nuovi codici di recupero",
+      "newCodesDescription": "Quelli che hai ora smettono di funzionare. Conferma che sei tu con la tua password.",
+      "newCodesSubmit": "Crea nuovi codici",
+      "disableTitle": "Disattiva la verifica in due passaggi",
+      "disableDescription": "All’accesso tornerà a bastare la password, e gli altri tuoi dispositivi verranno disconnessi.",
+      "disableSubmit": "Disattiva",
+      "disabled": "La verifica in due passaggi è disattivata."
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1436,7 +1489,14 @@
         "description": "Il link che {{email}} ha ricevuto smetterà di funzionare e la persona sparirà dall’elenco. Puoi invitarla di nuovo quando vuoi."
       },
       "language": "Lingua: {{name}}",
-      "languageOfTheSite": "Lingua: quella del sito"
+      "languageOfTheSite": "Lingua: quella del sito",
+      "secondFactorOn": "2 passaggi",
+      "resetSecondFactor": "Azzera i 2 passaggi",
+      "resetSecondFactorConfirm": {
+        "title": "Azzerare la verifica in due passaggi?",
+        "description": "{{name}} accederà con la sola password e verrà disconnesso da tutti i dispositivi. Fallo quando ha perso l’app di autenticazione e i codici di recupero."
+      },
+      "secondFactorReset": "{{name}}: verifica in due passaggi azzerata."
     },
     "inviteDialog": {
       "title": "Invita utente",
@@ -3990,7 +4050,11 @@
       "site.theme_changed": "Ha cambiato il tema: {{section}}",
       "site.ai_changed": "Ha cambiato le impostazioni dell’AI",
       "theme.uploaded": "Ha caricato il tema {{target}}",
-      "archive.exported": "Ha scaricato l’archivio del sito"
+      "archive.exported": "Ha scaricato l’archivio del sito",
+      "account.two_factor_enabled": "Ha attivato la verifica in due passaggi",
+      "account.two_factor_disabled": "Ha disattivato la verifica in due passaggi",
+      "account.recovery_code_used": "Ha acceduto con un codice di recupero",
+      "account.two_factor_reset": "Ha azzerato la verifica in due passaggi di {{target}}"
     },
     "sections": {
       "business": "dati dell’attività",
@@ -4005,7 +4069,8 @@
     },
     "reasons": {
       "wrong-password": "password sbagliata",
-      "deactivated": "account disattivato"
+      "deactivated": "account disattivato",
+      "second-factor": "codice sbagliato"
     },
     "byRemoved": "da un account che è stato rimosso"
   }

@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '../../components/ui/button';
 import { actionErrorMessage } from '../../lib/http-client';
-import type { UserRecord, UserRole } from '../../lib/users-api-client';
+import type {
+  UserListItem,
+  UserRecord,
+  UserRole,
+} from '../../lib/users-api-client';
 import { ConfirmActionDialog } from '../common/confirm-action-dialog';
 import { EmailNotConfiguredNotice } from '../common/email-not-configured-notice';
 import { InvitationLinkDialog } from './invitation-link-dialog';
@@ -37,7 +41,7 @@ interface InvitationAnswer {
 }
 
 export interface UsersListViewProps {
-  items: UserRecord[];
+  items: UserListItem[];
   page: number;
   total: number;
   /** Open with the "Invite user" dialog already showing. */
@@ -58,6 +62,7 @@ export function UsersListView({
     setUserActive,
     resendInvite,
     cancelInvite,
+    resetSecondFactor,
   } = useUsers();
   const { toast } = useToast();
   // A server with no mail server sent nothing and gave the link instead: it is
@@ -97,6 +102,9 @@ export function UsersListView({
   // deactivation.
   const [pendingCancellation, setPendingCancellation] =
     useState<UserRecord | null>(null);
+  // Taking somebody's second step off ends their sessions and leaves them
+  // with the password alone: asked first, naming who.
+  const [pendingReset, setPendingReset] = useState<UserRecord | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / USERS_PAGE_SIZE));
 
@@ -152,6 +160,21 @@ export function UsersListView({
     }
   }
 
+  async function handleResetSecondFactor(user: UserRecord) {
+    setActionError('');
+    try {
+      await resetSecondFactor(user.id);
+      toast(
+        t('users.list.secondFactorReset', {
+          name: user.displayName || user.email,
+        }),
+        'success',
+      );
+    } catch (err) {
+      setActionError(actionErrorMessage(err, t('users.list.actionFailed')));
+    }
+  }
+
   async function handleCancelInvite(user: UserRecord) {
     setActionError('');
     try {
@@ -188,6 +211,7 @@ export function UsersListView({
               onToggleActive={() => void handleActiveToggle(user)}
               onResendInvite={() => void handleResendInvite(user)}
               onCancelInvite={() => setPendingCancellation(user)}
+              onResetSecondFactor={() => setPendingReset(user)}
             />
           ))}
         </ul>
@@ -233,6 +257,22 @@ export function UsersListView({
             const user = pendingCancellation;
             setPendingCancellation(null);
             void handleCancelInvite(user);
+          }}
+        />
+      )}
+      {pendingReset && (
+        <ConfirmActionDialog
+          open
+          onOpenChange={(open) => !open && setPendingReset(null)}
+          title={t('users.list.resetSecondFactorConfirm.title')}
+          description={t('users.list.resetSecondFactorConfirm.description', {
+            name: pendingReset.displayName || pendingReset.email,
+          })}
+          actionLabel={t('users.list.resetSecondFactor')}
+          onConfirm={() => {
+            const user = pendingReset;
+            setPendingReset(null);
+            void handleResetSecondFactor(user);
           }}
         />
       )}

@@ -18,6 +18,7 @@ import { useAccountProfile } from './use-account-profile';
 import { useAccountCredentials } from './use-account-credentials';
 import { ChangeEmailDialog } from './change-email-dialog';
 import { ChangePasswordDialog } from './change-password-dialog';
+import { SecondFactorSection } from './second-factor-section';
 import { SessionsSection } from './sessions-section';
 import { SignInSection } from './sign-in-section';
 import { PageHeader } from '../shell/page-header';
@@ -94,6 +95,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
       />
       {/* A sibling of the form, like the dialogs: what it opens must not send a
           submit up to the profile. */}
+      <SecondFactorSection />
       <SessionsSection />
       <ChangeEmailDialog
         open={dialog === 'email'}

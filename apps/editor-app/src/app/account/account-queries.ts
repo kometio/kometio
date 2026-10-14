@@ -3,6 +3,7 @@ import {
   getAccountProfile,
   getAccountSessions,
 } from '../../lib/account-api-client';
+import { getSecondFactorStatus } from '../../lib/second-factor-api-client';
 
 /**
  * Who is signed in, as they describe themselves — the name and picture
@@ -24,6 +25,15 @@ export function accountSessionsQueryOptions() {
   return queryOptions({
     queryKey: ['account', 'sessions'] as const,
     queryFn: getAccountSessions,
+    staleTime: 0,
+  });
+}
+
+/** Whether the second step of sign-in is offered, is on, and how many recovery codes are left (docs/adr/0137). Asked afresh each time: turning it on or off elsewhere is what the person is here to see. */
+export function secondFactorStatusQueryOptions() {
+  return queryOptions({
+    queryKey: ['account', 'second-factor'] as const,
+    queryFn: getSecondFactorStatus,
     staleTime: 0,
   });
 }
