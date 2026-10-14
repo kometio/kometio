@@ -8,6 +8,7 @@ import type {
   Session,
   SiteImportPort,
 } from '@kometio/ports';
+import { describeDevice } from '../sessions/describe-device';
 
 export interface BootstrapDeploymentDeps {
   deploymentBootstrapPort: DeploymentBootstrapPort;
@@ -51,6 +52,8 @@ export interface BootstrapDeploymentInput {
   adminEmail: string;
   /** Plaintext, hashed here and never stored or logged as given. */
   adminPassword: string;
+  /** The `User-Agent` of the browser that is setting the site up: only the label made of it is kept (docs/adr/0129). */
+  userAgent?: string;
 }
 
 /**
@@ -105,6 +108,7 @@ export async function bootstrapDeployment(
   const session = await deps.authPort.createSession(
     created.userId,
     created.tenantId,
+    { label: describeDevice(input.userAgent) },
   );
   return { ...created, session };
 }

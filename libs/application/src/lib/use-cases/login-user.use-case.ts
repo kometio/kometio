@@ -9,6 +9,7 @@ import type {
   Session,
   UserRepositoryPort,
 } from '@kometio/ports';
+import { describeDevice } from '../sessions/describe-device';
 
 export interface LoginUserDeps {
   userRepository: UserRepositoryPort;
@@ -22,6 +23,8 @@ export interface LoginUserInput {
   password: string;
   /** Cloudflare Turnstile's client-side widget token — security review 2026-08-24, point 13: credential stuffing distributed across many IPs has no second line of defense without this. */
   captchaToken: string;
+  /** The `User-Agent` the sign-in came with: only the label made of it is kept (docs/adr/0129). */
+  userAgent?: string;
 }
 
 export async function loginUser(
@@ -65,5 +68,7 @@ export async function loginUser(
     throw new UserNotActiveError(user.id);
   }
 
-  return deps.authPort.createSession(user.id, user.tenantId);
+  return deps.authPort.createSession(user.id, user.tenantId, {
+    label: describeDevice(input.userAgent),
+  });
 }

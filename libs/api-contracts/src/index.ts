@@ -1,5 +1,6 @@
 export * from './lib/account-profile';
 export * from './lib/account-requests';
+export * from './lib/account-sessions';
 export * from './lib/auth-requests';
 export * from './lib/author-record';
 export * from './lib/available-theme';

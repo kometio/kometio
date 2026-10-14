@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import {
   bootstrapDeployment,
   getSetupStatus,
@@ -101,6 +101,7 @@ export class SetupController {
   async bootstrap(
     @Body(new ZodValidationPipe(bootstrapDeploymentBodySchema))
     body: BootstrapDeploymentBody,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ tenantId: string; siteId: string; userId: string }> {
     // Before anything else, and before any password hashing: whoever is
@@ -110,7 +111,10 @@ export class SetupController {
       throw new UnauthorizedException(SETUP_TOKEN_REFUSED);
     }
 
-    const { session, ...result } = await bootstrapDeployment(this.deps, body);
+    const { session, ...result } = await bootstrapDeployment(this.deps, {
+      ...body,
+      userAgent: request.headers['user-agent'],
+    });
 
     // The process has been answering "not set up" and caching that. Without
     // this, the login the wizard performs next would fail against a tenant

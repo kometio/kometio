@@ -144,6 +144,38 @@ describe('loginUser', () => {
   });
 });
 
+describe('loginUser: the device', () => {
+  it('keeps a label for the device the sign-in came from, and not the header it was read from', async () => {
+    const authPort = new FakeAuthPort();
+    const userRepository = new InMemoryUserRepository();
+    await userRepository.add(
+      buildUser({
+        passwordHash: await authPort.hashPassword('correct'),
+        isActive: true,
+      }),
+    );
+
+    const session = await loginUser(
+      { userRepository, authPort, captchaPort: new FakeCaptchaPort() },
+      {
+        tenantId,
+        email: 'lele@example.com',
+        password: 'correct',
+        captchaToken: 'valid-token',
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      },
+    );
+
+    const [listed] = await authPort.listSessionsForUser(
+      session.userId,
+      tenantId,
+      session.token,
+    );
+    expect(listed.deviceLabel).toBe('Chrome on macOS');
+  });
+});
+
 describe('loginUser: the address is the same whatever case it is typed in', () => {
   async function setup() {
     const authPort = new FakeAuthPort();

@@ -915,6 +915,16 @@ export const sessions = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
+    // "Chrome on macOS" (docs/adr/0129): what the person recognises their own
+    // sign-ins by, and the most the table keeps of the device — no address, no
+    // user-agent string. `null` for a sign-in whose agent was not recognised and
+    // for the ones that predate the column.
+    deviceLabel: text('device_label'),
+    // Kept to a few minutes' accuracy: refreshed by a request only when it is
+    // older than that, so that being signed in is not a write per request.
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [index('sessions_user_idx').on(table.userId)],
 );

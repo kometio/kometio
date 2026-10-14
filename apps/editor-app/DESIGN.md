@@ -452,6 +452,16 @@ text-destructive`, announced with `role="alert"`, nothing drawn when
   toast, because what it says has to be there when it is looked for. The
   dialogs are siblings of the profile's `<form>`, never inside it: React
   sends a submit up through a portal to the form that rendered it.
+- **Where you are signed in** (`app/account/sessions-section.tsx`, below the
+  profile's form, a sibling of it for the same reason): one row for each
+  sign-in in a bordered `divide-y` list — the device's label (`font-medium`,
+  truncating), a `secondary` badge on the one the person is looking from, and
+  under it "Active now" or when it was last used and when it was signed in
+  (`text-xs text-muted-foreground`). Another device has an outline `sm` button,
+  named by the device ("Sign out of Safari on iPhone"), that acts at once and
+  says what it did in a toast; this device has none, since signing out of it is
+  the account menu's. "Sign out of all other devices" is only offered from two
+  others up, and asks first. Not drawn in a demo, whose account is everybody's.
 - **Preview drawn by the editor** (`CookieBannerPreview`): where a setting
   is about how something looks, the form shows the thing beside its
   controls, from the values in the form, saved or not. It is `role="img"`

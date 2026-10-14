@@ -85,6 +85,13 @@
       "when": 1791922906388,
       "tag": "0011_import_job_permalinks",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791969492332,
+      "tag": "0012_session_devices",
+      "breakpoints": true
     }
   ]
 }

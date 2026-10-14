@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import type {
   AuthPort,
   DeploymentBootstrapPort,
@@ -70,7 +70,11 @@ describe('SetupController (unit)', () => {
   });
 
   function bootstrap(body = VALID_BODY) {
-    return controller.bootstrap(body, response as unknown as Response);
+    return controller.bootstrap(
+      body,
+      { headers: {} } as unknown as Request,
+      response as unknown as Response,
+    );
   }
 
   it('takes back the long wait for an archive once the deployment exists', async () => {

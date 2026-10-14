@@ -1,6 +1,8 @@
 import {
   accountProfileSchema,
+  accountSessionListSchema,
   type AccountProfile,
+  type AccountSession,
   type ChangeAccountLanguageBody,
   type ChangePasswordRequest,
   type RequestEmailChangeRequest,
@@ -78,4 +80,22 @@ export function requestEmailChange(
     method: 'POST',
     body: JSON.stringify(input),
   });
+}
+
+/** Where the person is signed in, the most recently used first (docs/adr/0129). */
+export async function getAccountSessions(): Promise<AccountSession[]> {
+  return accountSessionListSchema.parse(await request('/account/sessions'))
+    .items;
+}
+
+/** Signs out of one other device. The one asking cannot be ended from here. */
+export function endAccountSession(id: string): Promise<void> {
+  return send(`/account/sessions/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+/** Signs out of every device but this one. */
+export function endOtherAccountSessions(): Promise<void> {
+  return send('/account/sessions', { method: 'DELETE' });
 }

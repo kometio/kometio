@@ -65,6 +65,8 @@ import {
   UserAlreadyActiveError,
   InviteNotPendingError,
   InvitePendingError,
+  SessionNotFoundError,
+  CannotEndCurrentSessionError,
   UserEmailAlreadyExistsError,
   EmailUnchangedError,
   UserSlugAlreadyExistsError,
@@ -162,6 +164,8 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   // accepted for a cancel, not accepted yet for a switch-on.
   [InviteNotPendingError, (m) => new ConflictException(m)],
   [InvitePendingError, (m) => new ConflictException(m)],
+  [SessionNotFoundError, (m) => new NotFoundException(m)],
+  [CannotEndCurrentSessionError, (m) => new ConflictException(m)],
   // 409, like the two above it: nothing about the caller is wrong, the
   // tenant is simply in a state where this request would destroy access
   // to itself.

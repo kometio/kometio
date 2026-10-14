@@ -394,6 +394,25 @@ export class InviteNotPendingError extends Error {
   }
 }
 
+/** None of the person's sign-ins has this id — it never had, it has ended, or it is somebody else's. */
+export class SessionNotFoundError extends Error {
+  constructor(sessionId: string) {
+    super(`Session not found: ${sessionId}`);
+    this.name = 'SessionNotFoundError';
+  }
+}
+
+/**
+ * The sign-in a request came from is not ended from the list of the others:
+ * that is signing out, which has its own answer and its own cookie to clear.
+ */
+export class CannotEndCurrentSessionError extends Error {
+  constructor() {
+    super('This is the device you are using: sign out instead');
+    this.name = 'CannotEndCurrentSessionError';
+  }
+}
+
 /** Somebody who has not accepted their invitation cannot be switched on by an admin. */
 export class InvitePendingError extends Error {
   constructor(userId: string) {

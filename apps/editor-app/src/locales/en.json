@@ -223,6 +223,26 @@
       "passwordHint": "Choose a new one whenever you like. Every other sign-in is ended.",
       "changePassword": "Change password"
     },
+    "sessions": {
+      "title": "Where you are signed in",
+      "description": "Every browser and device signed in to your account. Sign out of any you do not recognise or no longer use.",
+      "thisDevice": "This device",
+      "unknownDevice": "Unknown device",
+      "activeNow": "Active now",
+      "lastUsed": "Last used {{when}}",
+      "signedInOn": "signed in {{when}}",
+      "signOut": "Sign out",
+      "signOutOf": "Sign out of {{device}}",
+      "signOutOthers": "Sign out of all other devices",
+      "signedOut": "Signed out of {{device}}",
+      "othersSignedOut": "Signed out of every other device",
+      "confirm": {
+        "title": "Sign out of every other device?",
+        "description": "Every other device will have to sign in again. This one stays signed in."
+      },
+      "failed": "Could not sign out. Try again.",
+      "loadFailed": "Could not load where you are signed in. Reload the page to try again."
+    },
     "currentPassword": "Current password",
     "currentPasswordRequired": "Enter your current password.",
     "wrongCurrentPassword": "That is not your current password.",

@@ -37,7 +37,13 @@ describe('AccountController (integration)', () => {
   const run = randomUUID().slice(0, 8);
 
   beforeAll(async () => {
-    integration = await IntegrationApp.start({ imports: [AccountModule] });
+    // One proxy in front: the sign-ins of "where a person is signed in" each
+    // come from an address of their own, as devices do, and not all from this
+    // one machine, which the login limit (five a minute) would stop at the sixth.
+    integration = await IntegrationApp.start({
+      imports: [AccountModule],
+      trustedProxyHops: 1,
+    });
     app = integration.app;
 
     // An editor, not an admin: every role has a profile of its own.
@@ -257,6 +263,135 @@ describe('AccountController (integration)', () => {
       expect(await subjectsOfEmailsTo(person.email)).toContain(
         'Your sign-in address was changed',
       );
+    });
+  });
+
+  describe('where a person is signed in', () => {
+    const CHROME_ON_MAC =
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
+    const SAFARI_ON_IPHONE =
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+
+    let device = 0;
+
+    /** A device of its own: its own agent, and an address of its own. */
+    async function signIn(user: IntegrationUser, userAgent: string) {
+      device += 1;
+      const signedIn = request.agent(app.getHttpServer());
+      await signedIn
+        .post('/auth/login')
+        .set('User-Agent', userAgent)
+        .set(
+          'X-Forwarded-For',
+          `10.20.${Math.floor(device / 250)}.${device % 250}`,
+        )
+        .send({
+          email: user.email,
+          password: user.password,
+          captchaToken: 'test-token',
+        })
+        .expect(200);
+      return signedIn;
+    }
+
+    it('refuses anyone without a session', async () => {
+      await request(app.getHttpServer()).get('/account/sessions').expect(401);
+      await request(app.getHttpServer())
+        .delete('/account/sessions')
+        .expect(401);
+      await request(app.getHttpServer())
+        .delete(`/account/sessions/${randomUUID()}`)
+        .expect(401);
+    });
+
+    it('lists the devices by what a person recognises them by, and marks the one asking', async () => {
+      const user = await integration.createUser({ role: 'editor' });
+      const laptop = await signIn(user, CHROME_ON_MAC);
+      await signIn(user, SAFARI_ON_IPHONE);
+
+      const res = await laptop.get('/account/sessions').expect(200);
+
+      expect(res.body.items).toHaveLength(2);
+      const labels = res.body.items.map(
+        (item: { deviceLabel: string }) => item.deviceLabel,
+      );
+      expect(labels.sort()).toEqual(['Chrome on macOS', 'Safari on iPhone']);
+      const current = res.body.items.filter(
+        (item: { isCurrent: boolean }) => item.isCurrent,
+      );
+      expect(current).toHaveLength(1);
+      expect(current[0].deviceLabel).toBe('Chrome on macOS');
+      // Nothing that is an address, a header or a way in.
+      expect(JSON.stringify(res.body)).not.toMatch(
+        /Mozilla|127\.0\.0\.1|::1|token/i,
+      );
+    });
+
+    it('shows a person nobody else’s sign-ins', async () => {
+      const user = await integration.createUser({ role: 'editor' });
+      const other = await integration.createUser({ role: 'editor' });
+      const mine = await signIn(user, CHROME_ON_MAC);
+      await signIn(other, SAFARI_ON_IPHONE);
+
+      const res = await mine.get('/account/sessions').expect(200);
+
+      expect(res.body.items).toHaveLength(1);
+    });
+
+    it('signs out another device, which is then refused, and leaves this one', async () => {
+      const user = await integration.createUser({ role: 'editor' });
+      const laptop = await signIn(user, CHROME_ON_MAC);
+      const phone = await signIn(user, SAFARI_ON_IPHONE);
+      const listed = await laptop.get('/account/sessions').expect(200);
+      const phoneRow = listed.body.items.find(
+        (item: { isCurrent: boolean }) => !item.isCurrent,
+      );
+
+      await laptop.delete(`/account/sessions/${phoneRow.id}`).expect(204);
+
+      await phone.get('/account/profile').expect(401);
+      await laptop.get('/account/profile').expect(200);
+    });
+
+    it('does not end the device it is asked from: that is signing out', async () => {
+      const user = await integration.createUser({ role: 'editor' });
+      const laptop = await signIn(user, CHROME_ON_MAC);
+      const listed = await laptop.get('/account/sessions').expect(200);
+      const here = listed.body.items[0];
+
+      await laptop.delete(`/account/sessions/${here.id}`).expect(409);
+
+      await laptop.get('/account/profile').expect(200);
+    });
+
+    it('answers another person’s session as one that does not exist, and ends nothing', async () => {
+      const user = await integration.createUser({ role: 'editor' });
+      const other = await integration.createUser({ role: 'editor' });
+      const mine = await signIn(user, CHROME_ON_MAC);
+      const theirs = await signIn(other, SAFARI_ON_IPHONE);
+      const theirList = await theirs.get('/account/sessions').expect(200);
+
+      await mine
+        .delete(`/account/sessions/${theirList.body.items[0].id}`)
+        .expect(404);
+      await mine.delete(`/account/sessions/${randomUUID()}`).expect(404);
+      await mine.delete('/account/sessions/not-an-id').expect(400);
+
+      await theirs.get('/account/profile').expect(200);
+    });
+
+    it('signs out everywhere else in one go', async () => {
+      const user = await integration.createUser({ role: 'editor' });
+      const laptop = await signIn(user, CHROME_ON_MAC);
+      const phone = await signIn(user, SAFARI_ON_IPHONE);
+      const tablet = await signIn(user, SAFARI_ON_IPHONE);
+
+      await laptop.delete('/account/sessions').expect(204);
+
+      await phone.get('/account/profile').expect(401);
+      await tablet.get('/account/profile').expect(401);
+      const res = await laptop.get('/account/sessions').expect(200);
+      expect(res.body.items).toHaveLength(1);
     });
   });
 

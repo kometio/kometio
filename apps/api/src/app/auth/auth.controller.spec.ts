@@ -39,6 +39,11 @@ function fakeRequest(cookies: Record<string, string | undefined>): Request {
   return { cookies } as unknown as Request;
 }
 
+/** What a sign-in is read from: only the browser's own name for itself. */
+function loginRequest(userAgent?: string): Request {
+  return { headers: { 'user-agent': userAgent } } as unknown as Request;
+}
+
 describe('AuthController', () => {
   let userRepository: jest.Mocked<UserRepositoryPort>;
   let authPort: jest.Mocked<AuthPort>;
@@ -130,6 +135,7 @@ describe('AuthController', () => {
           password: 'correct',
           captchaToken: 'valid-token',
         },
+        loginRequest(),
         response,
       );
 
@@ -139,6 +145,43 @@ describe('AuthController', () => {
         'a-token',
         expect.objectContaining({ httpOnly: true, sameSite: 'lax' }),
       );
+    });
+
+    it('records what the sign-in came from as a label, not as the header', async () => {
+      userRepository.findByEmail.mockResolvedValue(
+        User.create({
+          id: 'user-1',
+          tenantId,
+          email: 'lele@example.com',
+          displayName: 'Lele',
+          passwordHash: 'hash',
+          role: 'admin',
+          isActive: true,
+        }),
+      );
+      authPort.verifyPassword.mockResolvedValue(true);
+      authPort.createSession.mockResolvedValue({
+        token: 'a-token',
+        userId: 'user-1',
+        tenantId,
+        expiresAt: new Date(),
+      });
+
+      await controller.login(
+        {
+          email: 'lele@example.com',
+          password: 'correct',
+          captchaToken: 'valid-token',
+        },
+        loginRequest(
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+        ),
+        buildResponse(),
+      );
+
+      expect(authPort.createSession).toHaveBeenCalledWith('user-1', tenantId, {
+        label: 'Safari on iPhone',
+      });
     });
 
     it('lets InvalidCredentialsError through to the auth filter', async () => {
@@ -152,6 +195,7 @@ describe('AuthController', () => {
             password: 'irrelevant',
             captchaToken: 'valid-token',
           },
+          loginRequest(),
           response,
         ),
       ).rejects.toThrow(InvalidCredentialsError);
@@ -180,6 +224,7 @@ describe('AuthController', () => {
             password: 'correct',
             captchaToken: 'valid-token',
           },
+          loginRequest(),
           response,
         );
       } catch (error) {
@@ -204,6 +249,7 @@ describe('AuthController', () => {
             password: 'irrelevant',
             captchaToken: 'valid-token',
           },
+          loginRequest(),
           response,
         ),
       ).rejects.toThrow('db exploded');
@@ -220,6 +266,7 @@ describe('AuthController', () => {
             password: 'correct',
             captchaToken: 'bad-token',
           },
+          loginRequest(),
           response,
         ),
       ).rejects.toThrow(InvalidCaptchaError);

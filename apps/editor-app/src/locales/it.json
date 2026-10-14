@@ -223,6 +223,26 @@
       "passwordHint": "Scegline una nuova quando vuoi. Ogni altro accesso viene chiuso.",
       "changePassword": "Cambia password"
     },
+    "sessions": {
+      "title": "Dove sei collegato",
+      "description": "Ogni browser e dispositivo collegato al tuo account. Scollega quelli che non riconosci o che non usi più.",
+      "thisDevice": "Questo dispositivo",
+      "unknownDevice": "Dispositivo sconosciuto",
+      "activeNow": "Attivo adesso",
+      "lastUsed": "Ultimo uso {{when}}",
+      "signedInOn": "collegato {{when}}",
+      "signOut": "Scollega",
+      "signOutOf": "Scollega {{device}}",
+      "signOutOthers": "Scollega tutti gli altri dispositivi",
+      "signedOut": "{{device}} scollegato",
+      "othersSignedOut": "Tutti gli altri dispositivi sono stati scollegati",
+      "confirm": {
+        "title": "Scollegare tutti gli altri dispositivi?",
+        "description": "Ogni altro dispositivo dovrà accedere di nuovo. Questo resta collegato."
+      },
+      "failed": "Non è stato possibile scollegare. Riprova.",
+      "loadFailed": "Non è stato possibile caricare dove sei collegato. Ricarica la pagina per riprovare."
+    },
     "currentPassword": "Password attuale",
     "currentPasswordRequired": "Scrivi la password attuale.",
     "wrongCurrentPassword": "Questa non è la tua password attuale.",

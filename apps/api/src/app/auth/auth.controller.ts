@@ -69,6 +69,7 @@ export class AuthController {
   @HttpCode(200)
   async login(
     @Body(new ZodValidationPipe(loginBodySchema)) body: LoginBody,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     const session = await loginUser(this.deps, {
@@ -76,6 +77,7 @@ export class AuthController {
       email: body.email,
       password: body.password,
       captchaToken: body.captchaToken,
+      userAgent: request.headers['user-agent'],
     });
 
     this.cookies.set(response, session);
