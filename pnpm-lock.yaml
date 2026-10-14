@@ -653,6 +653,9 @@ importers:
       '@types/sanitize-html':
         specifier: ^2.16.2
         version: 2.16.2
+      postcss:
+        specifier: ^8.5.29
+        version: 8.5.29
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3

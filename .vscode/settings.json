@@ -1,0 +1,5 @@
+{
+  // `@kometio-bridge` in a block's <style> is read by the site's build, not by
+  // CSS (docs/adr/0133): the language server would flag it as an unknown at-rule.
+  "css.lint.unknownAtRules": "ignore"
+}
