@@ -32,9 +32,6 @@ const href = resolveLinkHref({ linkType, page, url });
 		   quietly turned every existing Link the colour of its surrounding
 		   text. The fallback has to be what the block already rendered. */
 		color: var(--kometio-override-text, var(--link, var(--primary)));
-		background: var(--kometio-override-bg, transparent);
-		border-radius: var(--kometio-override-radius, 0);
-		padding: var(--kometio-override-padding-y, 0)
-			var(--kometio-override-padding-x, 0);
+		@kometio-bridge background border-radius padding;
 	}
 </style>

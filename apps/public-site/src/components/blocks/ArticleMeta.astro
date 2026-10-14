@@ -66,11 +66,7 @@ const author = showAuthor ? authorName.trim() : '';
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-    color: var(--kometio-override-text, var(--muted-foreground));
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge color background border-radius padding;
   }
 
   .kometio-article-meta__sep {

@@ -54,12 +54,9 @@ const { editable, hasChildren, instanceClass, i18n, emptyChildLabel} = Astro.pro
   .kometio-column {
     display: flex;
     flex-direction: column;
-    gap: var(--kometio-override-gap, 1rem);
+    @kometio-bridge gap;
     min-width: 0;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   /* Editor only (never on the published page, see editable), and only
      once it has content — when empty it already shows its own dashed

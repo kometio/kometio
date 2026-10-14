@@ -76,17 +76,13 @@ const crumbs: Crumb[] = [
   /* Every fallback is what this block already rendered, so a breadcrumb
      nobody has styled is unchanged. */
   .kometio-breadcrumb {
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   .kometio-breadcrumb ol {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--kometio-override-gap, 0.4rem);
+    @kometio-bridge gap;
     margin: 0;
     padding: 0;
     list-style: none;

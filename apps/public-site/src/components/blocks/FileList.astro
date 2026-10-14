@@ -38,11 +38,7 @@ const { title, i18n, editable, hasChildren, emptyChildLabel, instanceClass } =
   .kometio-file-list {
     display: grid;
     gap: 0.75rem;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-file-list__title {
@@ -55,7 +51,7 @@ const { title, i18n, editable, hasChildren, emptyChildLabel, instanceClass } =
      reads as a list, a row of boxes as a set of buttons. */
   .kometio-file-list__items {
     display: grid;
-    gap: var(--kometio-override-gap, 0.5rem);
+    @kometio-bridge gap;
   }
 
   .kometio-file-list__items > :global(.kometio-file-download),

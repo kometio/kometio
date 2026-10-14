@@ -112,11 +112,7 @@ const label = isFilter ? i18n.t('termList.label') : i18n.t('termList.browseLabel
   /* An unstyled row of links is the fallback everywhere, so a TermList
      nobody has styled still reads as a set of controls. */
   .kometio-term-list {
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge padding background color border-radius;
     border-width: var(--kometio-override-border-width, 0);
     border-style: var(--kometio-override-border-style, solid);
     border-color: var(--kometio-override-border-color, var(--border));
@@ -131,7 +127,7 @@ const label = isFilter ? i18n.t('termList.label') : i18n.t('termList.browseLabel
        thing, and a row that overflows the page is not (the responsive
        rule every block here follows). */
     flex-wrap: wrap;
-    gap: var(--kometio-override-gap, 0.5rem);
+    @kometio-bridge gap;
     align-items: center;
   }
 
@@ -170,7 +166,7 @@ const label = isFilter ? i18n.t('termList.label') : i18n.t('termList.browseLabel
   .kometio-term-list__form {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--kometio-override-gap, 0.5rem);
+    @kometio-bridge gap;
     align-items: end;
   }
 

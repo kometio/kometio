@@ -82,11 +82,7 @@ const hasLink = href !== null;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: var(--kometio-override-padding-y, 0.75rem)
-      var(--kometio-override-padding-x, 2.5rem);
-    border-radius: var(--kometio-override-radius, 0);
-    background: var(--kometio-override-bg, var(--primary));
-    color: var(--kometio-override-text, var(--primary-foreground));
+    @kometio-bridge padding border-radius background color;
     text-align: center;
   }
   .kometio-promo-bar__message {

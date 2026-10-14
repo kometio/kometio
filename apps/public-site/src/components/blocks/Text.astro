@@ -14,6 +14,6 @@ const { body, instanceClass } = Astro.props;
 
 <style>
   .kometio-text {
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge color;
   }
 </style>

@@ -34,7 +34,7 @@ const decorative = label.trim() === '';
     /* `currentColor` is what makes the colour override work at all: the
        SVG inherits it, so `textColor` paints the icon without this block
        having to rewrite the markup it was given. */
-    color: var(--kometio-override-text, currentColor);
+    @kometio-bridge color;
   }
   .kometio-icon :global(svg) {
     width: 100%;

@@ -81,14 +81,7 @@ const highlighted =
   .kometio-comparison-table {
     min-width: 0;
     overflow: hidden;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, var(--radius));
-    border-width: var(--kometio-override-border-width, 1px);
-    border-style: var(--kometio-override-border-style, solid);
-    border-color: var(--kometio-override-border-color, var(--border));
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius border-width border-style border-color padding;
   }
 
   /* Sideways scroll inside the block, never across the page. */

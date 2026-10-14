@@ -128,7 +128,10 @@ export const articleMetaBlockContract = defineBlockContract({
   props: articleMetaPropsSchema,
   style: {
     backgroundColor: 'transparent',
-    textColor: 'inherit',
+    // What the block renders (it is the muted line under a title), not
+    // `inherit`: the field in the Style dialog showed the second while the page
+    // showed the first.
+    textColor: 'var(--muted-foreground)',
     borderRadius: '0',
     paddingX: '0',
     paddingY: '0',

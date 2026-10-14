@@ -23,9 +23,6 @@ const hasRole = Boolean(role);
 
 <style>
   .kometio-quote {
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge background border-radius padding color;
   }
 </style>

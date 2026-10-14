@@ -61,8 +61,7 @@ const cells =
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
     border-block-start: 1px solid var(--border);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge background color;
   }
 
   /* `break-word`, not `anywhere`: measured at 390px, `anywhere` let the
@@ -72,8 +71,7 @@ const cells =
   .kometio-comparison-row > * {
     display: flex;
     align-items: center;
-    padding: var(--kometio-override-padding-y, 0.75rem)
-      var(--kometio-override-padding-x, 1rem);
+    @kometio-bridge padding;
     overflow-wrap: break-word;
   }
 

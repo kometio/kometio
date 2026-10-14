@@ -24,9 +24,7 @@ const { message, tone, instanceClass } = Astro.props;
      element with higher precedence, so setting one wins and setting
      nothing leaves the tone alone. */
   .kometio-callout {
-    padding: var(--kometio-override-padding-y, 1rem)
-      var(--kometio-override-padding-x, 1.25rem);
-    border-radius: var(--kometio-override-radius, var(--radius));
+    @kometio-bridge padding border-radius;
     border-left: 4px solid;
   }
   .kometio-callout__message {

@@ -46,10 +46,7 @@ const { editable, hasChildren, instanceClass, i18n, emptyChildLabel} = Astro.pro
 
 <style>
   .kometio-tabs {
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   .kometio-tabs__list {
     display: flex;

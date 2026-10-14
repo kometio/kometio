@@ -51,7 +51,7 @@ const percent = new Intl.NumberFormat(locale || undefined, {
   .kometio-progress-bar {
     display: grid;
     gap: 0.375rem;
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge color;
   }
 
   .kometio-progress-bar__head {
@@ -75,7 +75,7 @@ const percent = new Intl.NumberFormat(locale || undefined, {
   .kometio-progress-bar__track {
     height: var(--kometio-override-min-height, 0.5rem);
     overflow: hidden;
-    border-radius: var(--kometio-override-radius, 999px);
+    @kometio-bridge border-radius;
     background: var(--muted);
   }
 
@@ -84,7 +84,7 @@ const percent = new Intl.NumberFormat(locale || undefined, {
      it never makes the page lay itself out again. */
   .kometio-progress-bar__fill {
     height: 100%;
-    background: var(--kometio-override-bg, var(--primary));
+    @kometio-bridge background;
     transform: scaleX(var(--kometio-progress));
     transform-origin: left;
   }

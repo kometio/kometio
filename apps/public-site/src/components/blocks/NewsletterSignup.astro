@@ -85,12 +85,7 @@ const redirectTo =
      wide section — the most common complaint a fixed width causes.
      Fallbacks are what it already rendered. */
   .kometio-newsletter-signup {
-    max-width: var(--kometio-override-max-width, 24rem);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge max-width background color border-radius padding;
   }
   .kometio-newsletter-signup__title {
     margin: 0 0 0.5rem;

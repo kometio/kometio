@@ -232,8 +232,9 @@ artifact.
 ### Proving a change of CSS does not change what a visitor sees
 
 A refactor of how blocks are styled (how `--kometio-override-*` reaches a
-property, where a default is declared) changes no behaviour a unit test can
-name: what it must not change is the computed style of every element. The
+property, where a default is declared — `@kometio-bridge`, ADR-0133, was one)
+changes no behaviour a unit test can name: what it must not change is the
+computed style of every element. The
 snapshot tool reads it, for a page of every block of each picker category, in
 each theme and at desktop and phone width, once with the blocks' own defaults
 and once with every override property set:

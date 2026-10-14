@@ -320,3 +320,11 @@ used to be caught by it).
 Both DO answer to the theme's own ceiling, `allowStyleOverrides` in
 `theme.json`: a theme declaring it refuses to be dressed at all, and that
 has to hold for every tier or it is not a ceiling.
+
+## Amended (2026-10-14, ADR-0133): how a block reads these properties
+
+A block no longer writes `var(--kometio-override-bg, <default>)` out. It says
+`@kometio-bridge background …` in its own `<style>`, and the site's build writes
+the declaration with the custom property named in `BLOCK_STYLE_CUSTOM_PROPERTIES`
+and the default from the block's contract `style`. The properties themselves, the
+three layers and the cascade this ADR describes are unchanged.

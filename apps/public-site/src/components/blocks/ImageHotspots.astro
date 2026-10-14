@@ -55,10 +55,7 @@ const show = Boolean(image) || Boolean(editable);
   .kometio-image-hotspots {
     display: grid;
     gap: 0.5rem;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color padding;
   }
 
   /* The points are placed in percent of THIS box, so it has to be exactly
@@ -71,7 +68,7 @@ const show = Boolean(image) || Boolean(editable);
     display: block;
     width: 100%;
     height: auto;
-    border-radius: var(--kometio-override-radius, var(--radius));
+    @kometio-bridge border-radius;
   }
 
   .kometio-image-hotspots__placeholder {
@@ -79,7 +76,7 @@ const show = Boolean(image) || Boolean(editable);
     place-items: center;
     aspect-ratio: 16 / 9;
     margin: 0;
-    border-radius: var(--kometio-override-radius, var(--radius));
+    @kometio-bridge border-radius;
     background: var(--muted);
     font-size: 0.875rem;
     color: var(--muted-foreground);

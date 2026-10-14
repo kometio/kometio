@@ -19,7 +19,7 @@ const Tag = level;
 
 <style>
   .kometio-heading {
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge color;
     /* A link from the table of contents lands with the heading clear of a
        sticky header, not underneath it. */
     scroll-margin-top: 5rem;

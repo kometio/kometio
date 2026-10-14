@@ -58,8 +58,7 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
 		display: flex;
 		flex-direction: column;
 		align-items: var(--kometio-override-align, stretch);
-		gap: var(--kometio-override-gap, 0);
-		max-width: var(--kometio-override-max-width, 48rem);
+		@kometio-bridge gap max-width;
 		/* `max-w-3xl py-20 sm:py-28` moved off the class list and into
 		   here, because a scoped rule outranks a Tailwind utility: left
 		   in place they would have been declared twice and the utility
@@ -71,9 +70,7 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
 			var(--kometio-override-padding-x, 0);
 		--kometio-hero-py: 5rem;
 		background-color: var(--kometio-override-bg, transparent);
-		border-radius: var(--kometio-override-radius, 0);
-		box-shadow: var(--kometio-override-shadow, none);
-		min-height: var(--kometio-override-min-height, auto);
+		@kometio-bridge border-radius box-shadow min-height;
 		background-image:
 			linear-gradient(
 				var(--kometio-override-overlay, transparent),
@@ -99,7 +96,7 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
 	}
 
 	.kometio-hero h1 {
-		color: var(--kometio-override-text, var(--foreground));
+		@kometio-bridge color;
 	}
 
 	/* The small line above the title. Sized and spaced like the pill it

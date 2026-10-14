@@ -128,8 +128,7 @@ const actions = [
 
 <style>
   .kometio-sticky-contact-bar {
-    background: var(--kometio-override-bg, var(--background));
-    color: var(--kometio-override-text, var(--foreground));
+    @kometio-bridge background color;
   }
 
   .kometio-sticky-contact-bar__actions {
@@ -137,8 +136,7 @@ const actions = [
     grid-auto-columns: minmax(0, 1fr);
     grid-auto-flow: column;
     margin: 0;
-    padding: var(--kometio-override-padding-y, 0.5rem)
-      var(--kometio-override-padding-x, 0.5rem);
+    @kometio-bridge padding;
     list-style: none;
   }
 

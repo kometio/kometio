@@ -104,15 +104,7 @@ const resolvedAlt = resolveImageAlt({ alt, isDecorative, media });
        background under a picture that is meant to butt against the text
        block below it. The override applies inside the body. */
     gap: 0;
-    max-width: var(--kometio-override-max-width, none);
-    min-height: var(--kometio-override-min-height, auto);
-    background: var(--kometio-override-bg, var(--background));
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, var(--radius));
-    border-width: var(--kometio-override-border-width, 1px);
-    border-style: var(--kometio-override-border-style, solid);
-    border-color: var(--kometio-override-border-color, var(--border));
-    box-shadow: var(--kometio-override-shadow, none);
+    @kometio-bridge max-width min-height background color border-radius border-width border-style border-color box-shadow;
     /* The corner radius has to clip the media header, and the header is
        the child that reaches the edge. Without this the picture's square
        corners poke out of the card's rounded ones. */
@@ -147,9 +139,7 @@ const resolvedAlt = resolveImageAlt({ alt, isDecorative, media });
     display: flex;
     flex-direction: column;
     align-items: var(--kometio-override-align, stretch);
-    gap: var(--kometio-override-gap, 0.75rem);
-    padding: var(--kometio-override-padding-y, 1.25rem)
-      var(--kometio-override-padding-x, 1.25rem);
+    @kometio-bridge gap padding;
   }
 
   /* The shadow-instead-of-border look. The border is not removed but set
@@ -170,7 +160,7 @@ const resolvedAlt = resolveImageAlt({ alt, isDecorative, media });
   .kometio-card--flat {
     background: var(--kometio-override-bg, transparent);
     border-color: var(--kometio-override-border-color, transparent);
-    box-shadow: var(--kometio-override-shadow, none);
+    @kometio-bridge box-shadow;
   }
   .kometio-card--flat .kometio-card__body {
     padding: var(--kometio-override-padding-y, 0)
@@ -200,7 +190,7 @@ const resolvedAlt = resolveImageAlt({ alt, isDecorative, media });
     align-items: stretch;
     /* The gap between the picture and the words on one line, and between
        them when they wrap onto two. */
-    gap: var(--kometio-override-gap, 0.75rem);
+    @kometio-bridge gap;
   }
   .kometio-card--horizontal .kometio-card__media {
     /* Grow and shrink from a comfortable minimum: side by side it takes

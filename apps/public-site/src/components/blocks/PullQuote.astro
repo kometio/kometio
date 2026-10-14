@@ -43,10 +43,7 @@ const Quote = resolveThemeBlockOverride('Quote', QuoteCore, themeName);
     gap: 0.75rem;
     margin: 0;
     border-block: 2px solid var(--primary);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    padding: var(--kometio-override-padding-y, 1.5rem)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color padding;
   }
 
   .kometio-pull-quote > :global(*) {

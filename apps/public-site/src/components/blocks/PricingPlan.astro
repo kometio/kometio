@@ -51,11 +51,7 @@ const hasLink = href !== null;
 <style>
   .kometio-pricing-plan {
     border: 1px solid var(--border);
-    border-radius: var(--kometio-override-radius, 12px);
-    padding: var(--kometio-override-padding-y, 1.5rem)
-      var(--kometio-override-padding-x, 1.5rem);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge border-radius padding background color;
     text-align: center;
   }
   /* No dedicated "accent" token distinct from primary — a highlighted

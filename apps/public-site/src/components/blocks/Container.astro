@@ -113,15 +113,9 @@ const paddingValue: Record<ContainerProps['padding'], string> = {
 			--kometio-override-bg,
 			var(--kometio-container-bg, transparent)
 		);
-		border-radius: var(--kometio-override-radius, 0.5rem);
+		@kometio-bridge border-radius;
 		color: var(--kometio-override-text, var(--kometio-container-fg, inherit));
-		border-width: var(--kometio-override-border-width, 0);
-		border-style: var(--kometio-override-border-style, solid);
-		border-color: var(--kometio-override-border-color, var(--border));
-		box-shadow: var(--kometio-override-shadow, none);
-		min-height: var(--kometio-override-min-height, auto);
-		max-width: var(--kometio-override-max-width, none);
-		gap: var(--kometio-override-gap, 1rem);
+		@kometio-bridge border-width border-style border-color box-shadow min-height max-width gap;
 		/* The element is `flex flex-col`, so align-items is the HORIZONTAL
 		   axis and justify-content the vertical — which is why the two
 		   properties map this way round and not the other. */

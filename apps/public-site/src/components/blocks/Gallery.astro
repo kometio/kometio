@@ -102,11 +102,7 @@ const {
       --kometio-gallery-columns,
       repeat(auto-fill, minmax(200px, 1fr))
     );
-    gap: var(--kometio-override-gap, 0.5rem);
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge gap background border-radius padding;
   }
   /* :global() because OptimizedImage (a child component) renders the
   actual <img> — see Image.astro's own style block for the full reasoning. */

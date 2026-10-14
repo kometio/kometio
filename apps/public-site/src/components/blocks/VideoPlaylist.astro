@@ -68,12 +68,7 @@ const titles = items
 <style>
   .kometio-video-playlist {
     display: grid;
-    gap: var(--kometio-override-gap, 1rem);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge gap background color border-radius padding;
   }
 
   /* One video at a time. Until the behaviour has run — or if it never

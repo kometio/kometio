@@ -56,14 +56,12 @@ const { visibility, i18n, instanceClass } = Astro.props;
     height: 2.75rem;
     padding: 0;
     border: none;
-    border-radius: var(--kometio-override-radius, 50%);
-    background: var(--kometio-override-bg, var(--primary));
-    color: var(--kometio-override-text, var(--primary-foreground));
+    @kometio-bridge border-radius background color;
     display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--kometio-override-shadow, 0 4px 12px rgb(0 0 0 / 20%));
+    @kometio-bridge box-shadow;
   }
   .kometio-back-to-top--visible {
     display: flex;

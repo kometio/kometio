@@ -25,9 +25,7 @@ const { label, title, description, instanceClass } = Astro.props;
     position: relative;
     padding-block-end: var(--kometio-override-padding-y, 1.5rem);
     padding-inline-start: var(--kometio-override-padding-x, 1rem);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge background color border-radius;
   }
   .kometio-timeline-step:last-child {
     padding-block-end: 0;

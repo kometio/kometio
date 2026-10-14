@@ -55,11 +55,7 @@ const { display, editable, hasChildren, instanceClass, i18n } = Astro.props;
      element OptimizedImage renders.
   */
   :global(.kometio-testimonials) {
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   /* The grid arrangement this block never had before: the same shape as
      every other collection's, at a width a testimonial card reads well

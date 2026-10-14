@@ -40,11 +40,7 @@ const values = options
   .kometio-product-variants {
     display: grid;
     gap: 0.5rem;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-product-variants__label {
@@ -56,7 +52,7 @@ const values = options
   .kometio-product-variants__options {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--kometio-override-gap, 0.5rem);
+    @kometio-bridge gap;
     margin: 0;
     padding: 0;
     list-style: none;

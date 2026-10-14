@@ -92,14 +92,10 @@ const mapHref = address ? mapSearchHref(address) : '';
 <style>
   .kometio-contact-details {
     display: grid;
-    gap: var(--kometio-override-gap, 0.5rem);
+    @kometio-bridge gap;
     margin: 0;
     font-style: normal;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-contact-details__row {

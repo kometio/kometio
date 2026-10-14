@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import node from '@astrojs/node';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import { blockBridge } from './block-bridge.mjs';
 
 // docs/adr/0021's original two-tier theming model paired Tier 2 (which
 // filesystem theme package) with a single build-time `~theme` Vite alias,
@@ -84,6 +85,8 @@ export default defineConfig({
     remotePatterns: [{ protocol: 'https' }, { protocol: 'http' }],
   },
   vite: {
+    // `@kometio-bridge` in a block's own <style> (docs/adr/0133).
+    css: { postcss: { plugins: [blockBridge()] } },
     plugins: [
       tailwindcss(),
       {

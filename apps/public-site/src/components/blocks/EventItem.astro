@@ -184,12 +184,7 @@ const jsonLd =
     flex-direction: column;
     min-width: 0;
     overflow: hidden;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, var(--radius));
-    border-width: var(--kometio-override-border-width, 1px);
-    border-style: var(--kometio-override-border-style, solid);
-    border-color: var(--kometio-override-border-color, var(--border));
+    @kometio-bridge background color border-radius border-width border-style border-color;
   }
 
   .kometio-event-item--over {
@@ -212,8 +207,7 @@ const jsonLd =
     display: flex;
     gap: 1rem;
     align-items: flex-start;
-    padding: var(--kometio-override-padding-y, 1rem)
-      var(--kometio-override-padding-x, 1rem);
+    @kometio-bridge padding;
   }
 
   .kometio-event-item__badge {

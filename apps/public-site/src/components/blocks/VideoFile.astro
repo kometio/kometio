@@ -47,10 +47,8 @@ const isMuted = muted || autoplay;
     display: block;
     /* Never wider than the space it is in, and keeping its own shape —
        the pair of declarations every responsive media element needs. */
-    max-width: var(--kometio-override-max-width, 100%);
+    @kometio-bridge max-width;
     height: auto;
-    border-radius: var(--kometio-override-radius, 0);
-    box-shadow: var(--kometio-override-shadow, none);
-    background: var(--kometio-override-bg, #000);
+    @kometio-bridge border-radius box-shadow background;
   }
 </style>

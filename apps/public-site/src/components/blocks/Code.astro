@@ -28,14 +28,12 @@ const shikiLang = language as CodeLanguage;
      block of its own the code touched the edges of its dark box. The
      corners are the theme's, clipped here. */
   .kometio-code {
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, var(--radius));
+    @kometio-bridge background border-radius;
     overflow: hidden;
   }
   .kometio-code :global(pre) {
     margin: 0;
-    padding: var(--kometio-override-padding-y, 1rem)
-      var(--kometio-override-padding-x, 1.25rem);
+    @kometio-bridge padding;
     overflow-x: auto;
     font-family: var(--kometio-code-font);
     font-size: 0.875rem;

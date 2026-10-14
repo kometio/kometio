@@ -19,7 +19,6 @@ const { instanceClass } = Astro.props;
   .kometio-spacer {
     /* 2rem when nobody has said otherwise: enough to read as deliberate
        space rather than as a rendering mistake. */
-    min-height: var(--kometio-override-min-height, 2rem);
-    background: var(--kometio-override-bg, transparent);
+    @kometio-bridge min-height background;
   }
 </style>

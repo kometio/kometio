@@ -66,13 +66,11 @@ const href = resolveLinkHref({ linkType, page, url });
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--kometio-override-gap, 0.5em);
+    @kometio-bridge gap;
     padding: var(--kometio-override-padding-y, var(--kometio-button-py))
       var(--kometio-override-padding-x, var(--kometio-button-px));
     font-size: var(--kometio-button-size, 1rem);
-    border-radius: var(--kometio-override-radius, var(--radius));
-    background: var(--kometio-override-bg, var(--primary));
-    color: var(--kometio-override-text, var(--primary-foreground));
+    @kometio-bridge border-radius background color;
     text-decoration: none;
     border: 1px solid var(--kometio-override-bg, var(--primary));
     /* The medium size is exactly the padding this block had before sizes

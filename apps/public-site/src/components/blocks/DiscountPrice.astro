@@ -45,11 +45,7 @@ const { price, compareAtPrice, currency, note, locale, i18n, editable, instanceC
     display: grid;
     gap: 0.25rem;
     justify-items: start;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-discount-price__note {

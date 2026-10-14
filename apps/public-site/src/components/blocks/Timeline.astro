@@ -33,9 +33,7 @@ const { editable, hasChildren, instanceClass, i18n, emptyChildLabel} = Astro.pro
   .kometio-timeline {
     position: relative;
     padding-inline-start: 1.5rem;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge background color border-radius;
   }
   .kometio-timeline::before {
     content: '';
