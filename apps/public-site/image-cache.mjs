@@ -348,5 +348,11 @@ export function createImageCache({
     return made;
   }
 
-  return { handle, size: () => total, count: () => entries.size };
+  return {
+    handle,
+    size: () => total,
+    count: () => entries.size,
+    /** Resolves once every entry being made has been written (or has given up): what a caller that is about to remove the directory waits for. */
+    settled: () => Promise.allSettled([...making.values()]),
+  };
 }
