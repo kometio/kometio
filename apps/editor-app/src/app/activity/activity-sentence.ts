@@ -23,6 +23,9 @@ export function activitySentence(entry: ActivityEntry): ActivitySentence {
   return {
     key: `activity.actions.${entry.action}`,
     values: {
+      // For a refused sign-in, whose account it was tried on: it is not who
+      // did anything.
+      who: entry.actor?.displayName ?? entry.actor?.email ?? '',
       target: entry.targetLabel ?? '',
       role: detailText(entry, 'role'),
       section: detailText(entry, 'section'),

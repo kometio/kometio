@@ -73,13 +73,17 @@ export function ActivitySection({
                         : '',
                     })}
                   </p>
-                  <p className="min-w-0 text-xs break-all text-muted-foreground">
-                    {entry.actor
-                      ? t('activity.by', {
-                          who: entry.actor.displayName ?? entry.actor.email,
-                        })
-                      : t('activity.byNobody')}
-                  </p>
+                  {/* A refused sign-in names the account it was tried on in its
+                      own sentence: the account did not do it. */}
+                  {entry.action !== 'login.failed' && (
+                    <p className="min-w-0 text-xs break-all text-muted-foreground">
+                      {entry.actor
+                        ? t('activity.by', {
+                            who: entry.actor.displayName ?? entry.actor.email,
+                          })
+                        : t('activity.byRemoved')}
+                    </p>
+                  )}
                 </div>
                 <time
                   dateTime={entry.at}

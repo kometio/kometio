@@ -3941,10 +3941,9 @@
     "description": "Who did what to the site — sign-ins, people and roles, settings, the theme and the AI key, and the archive. Kept for {{days}} days, with no address and nothing that was typed.",
     "empty": "Nothing has happened yet that is kept here.",
     "by": "by {{who}}",
-    "byNobody": "by nobody who is signed in",
     "actions": {
       "login.succeeded": "Signed in",
-      "login.failed": "A sign-in was refused ({{reason}})",
+      "login.failed": "Sign-in refused for {{who}} ({{reason}})",
       "user.invited": "Invited {{target}} as {{role}}",
       "user.invite_resent": "Sent the invitation to {{target}} again",
       "user.invite_cancelled": "Withdrew the invitation to {{target}}",
@@ -3975,6 +3974,7 @@
     "reasons": {
       "wrong-password": "wrong password",
       "deactivated": "account switched off"
-    }
+    },
+    "byRemoved": "by an account that has been removed"
   }
 }

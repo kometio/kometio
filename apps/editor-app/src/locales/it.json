@@ -3941,10 +3941,9 @@
     "description": "Chi ha fatto cosa sul sito: accessi, persone e ruoli, impostazioni, tema e chiave AI, archivio. Conservato per {{days}} giorni, senza indirizzi e senza quello che è stato digitato.",
     "empty": "Non è ancora successo niente che venga conservato qui.",
     "by": "da {{who}}",
-    "byNobody": "da nessuno che avesse effettuato l’accesso",
     "actions": {
       "login.succeeded": "Ha effettuato l’accesso",
-      "login.failed": "Un accesso è stato rifiutato ({{reason}})",
+      "login.failed": "Accesso rifiutato per {{who}} ({{reason}})",
       "user.invited": "Ha invitato {{target}} come {{role}}",
       "user.invite_resent": "Ha rimandato l’invito a {{target}}",
       "user.invite_cancelled": "Ha ritirato l’invito a {{target}}",
@@ -3975,6 +3974,7 @@
     "reasons": {
       "wrong-password": "password sbagliata",
       "deactivated": "account disattivato"
-    }
+    },
+    "byRemoved": "da un account che è stato rimosso"
   }
 }

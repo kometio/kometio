@@ -60,15 +60,24 @@ describe('ActivitySection', () => {
     expect(screen.getByText('da admin@example.com')).toBeTruthy();
   });
 
-  it('says when nobody who was signed in did it', () => {
+  it('says when the account that did it has been removed', () => {
+    renderSection([entry({ action: 'user.invited', actor: null })]);
+
+    expect(screen.getByText('da un account che è stato rimosso')).toBeTruthy();
+  });
+
+  it('names the account a refused sign-in was tried on, and does not say it did it', () => {
     renderSection([
       entry({
-        action: 'account.password_reset',
-        actor: null,
+        action: 'login.failed',
+        detail: { reason: 'wrong-password' },
       }),
     ]);
 
-    expect(screen.getByText(/da nessuno che avesse effettuato/)).toBeTruthy();
+    expect(
+      screen.getByText('Accesso rifiutato per Lele (password sbagliata)'),
+    ).toBeTruthy();
+    expect(screen.queryByText('da Lele')).toBeNull();
   });
 
   it('says in words which part of the settings, and why a sign-in was refused', () => {
@@ -91,7 +100,7 @@ describe('ActivitySection', () => {
       ),
     ).toBeTruthy();
     expect(
-      screen.getByText('Un accesso è stato rifiutato (password sbagliata)'),
+      screen.getByText('Accesso rifiutato per Lele (password sbagliata)'),
     ).toBeTruthy();
   });
 
