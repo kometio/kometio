@@ -83,12 +83,6 @@ describe('http-client', () => {
 
     await expect(request('/slow')).rejects.toThrow(/timed out/i);
   });
-
-  it('lets a non-timeout fetch failure (e.g. offline) propagate unchanged', async () => {
-    vi.mocked(fetch).mockRejectedValue(new TypeError('Failed to fetch'));
-
-    await expect(request('/anything')).rejects.toThrow('Failed to fetch');
-  });
 });
 
 describe('applyApiFieldErrors', () => {

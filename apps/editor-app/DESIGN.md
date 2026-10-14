@@ -256,6 +256,16 @@ accessibility.spec.tsx` checks it for every block type.
   than none. A confirmation that would say "sent" says what really happened
   instead (`useServerSendsEmail`, and `emailSent` in an invitation's answer):
   no mail server, or a mail server that refused it.
+- **A server that did not answer** (`ServerUnreachable`, `app/shell/route-error.tsx`):
+  a request that gets no answer at all — `fetch` rejects with a `TypeError`, which
+  `request()` turns into a `ServerUnreachableError` carrying the address it asked —
+  is not "something went wrong". A browser says the same for a stopped server and
+  for a page opened at an address the installation was not set up for (`127.0.0.1`
+  for `localhost`, a server's IP for its name), which is how a self-hosted install
+  most often fails the first time. The screen names the two addresses that have to
+  agree (this page's and the server's) and says where Kometio printed the right one;
+  a retry is a button. The query retries it once, not three times (`lib/should-retry.ts`):
+  the person is told after about a second instead of after seven.
 - **Something the server may not be able to do** (`useServerFeatures`,
   `app/common/deployment-queries.ts`): the editor offers it only where `GET
 /api/deployment` says the server can — Settings → Export, today (`siteArchive`).
