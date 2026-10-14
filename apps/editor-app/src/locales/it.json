@@ -17,6 +17,13 @@
     },
     "selection": {
       "clear": "Deseleziona"
+    },
+    "unreachable": {
+      "title": "L’editor non raggiunge il server",
+      "explanation": "Il server potrebbe essere spento, oppure hai aperto questa pagina a un indirizzo diverso da quello per cui Kometio è configurato.",
+      "thisPage": "Indirizzo di questa pagina",
+      "theServer": "Indirizzo del server",
+      "whatToDo": "Apri l’editor all’indirizzo che Kometio ha scritto all’avvio (lo trovi nel log del container), poi riprova."
     }
   },
   "auth": {
