@@ -229,6 +229,28 @@ from the build (`playwright.config.ts`, `webServer`). A failed run
 uploads the report, with a trace of each failed test, as the `e2e-report`
 artifact.
 
+### Proving a change of CSS does not change what a visitor sees
+
+A refactor of how blocks are styled (how `--kometio-override-*` reaches a
+property, where a default is declared) changes no behaviour a unit test can
+name: what it must not change is the computed style of every element. The
+snapshot tool reads it, for a page of every block of each picker category, in
+each theme and at desktop and phone width, once with the blocks' own defaults
+and once with every override property set:
+
+```sh
+# against the stack as it is now (API, public site, migrated and seeded DB)
+pnpm --filter @kometio/e2e exec tsx tools/block-style-snapshot.mts snapshot before.json
+# ... change the CSS, rebuild the public site, restart it ...
+pnpm --filter @kometio/e2e exec tsx tools/block-style-snapshot.mts snapshot after.json
+pnpm --filter @kometio/e2e exec tsx tools/block-style-snapshot.mts diff before.json after.json
+```
+
+`diff` prints each element and each property that moved and exits non-zero; two
+snapshots of the same code are identical (a countdown's digits, which are the
+time of day, are left out). It leaves the stack as it found it: the pages, the
+form and the picture it makes are removed, and the theme is put back.
+
 ### Adding a library
 
 ```sh

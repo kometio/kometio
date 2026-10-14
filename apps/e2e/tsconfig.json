@@ -11,6 +11,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.json",
+    "tools/**/*.mts",
     "playwright.config.ts",
     "playwright.image.config.ts",
     "playwright.first-run.config.ts"
