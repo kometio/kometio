@@ -22,19 +22,12 @@ on:
       - main
     tags:
       - 'v*'
+  # Every pull request starts this workflow; the `changes` job decides whether
+  # there is anything to build (docs/adr/0138). It used to be a `paths:` filter
+  # on this trigger, and a workflow that does not start leaves its jobs as
+  # checks that never report — which is what made `single-image-check` a check
+  # that could not be required.
   pull_request:
-    paths:
-      - 'apps/**'
-      - 'libs/**'
-      - 'themes/**'
-      - 'docker/**'
-      - '**/Dockerfile'
-      # The proxy's own file, which the single image and the compose stack share.
-      - 'Caddyfile'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.dockerignore'
-      - '.github/workflows/docker-build.yml'
 
 permissions:
   contents: read
@@ -55,6 +48,40 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Whether this pull request touches anything an image is made of. On a push
+  # there is no question. The list is what the trigger's `paths:` was: what
+  # the apps, the libraries, the themes, the single image's own files, the
+  # Dockerfiles, the proxy's file (which the single image and the compose stack
+  # share), the lockfile and workspace, the build context's ignore list, and
+  # this file.
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      images: ${{ steps.filter.outputs.images }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # The base commit has to be there to be compared with.
+          fetch-depth: 0
+      - id: filter
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT" != "pull_request" ]; then
+            echo "images=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only "$BASE_SHA" HEAD > "$RUNNER_TEMP/changed"
+          echo "Changed in this pull request:"
+          cat "$RUNNER_TEMP/changed"
+          if grep -Eq '^(apps/|libs/|themes/|docker/|Caddyfile$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|\.dockerignore$|\.github/workflows/docker-build\.yml$)|(^|/)Dockerfile$' "$RUNNER_TEMP/changed"; then
+            echo "images=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "images=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # One job per image and architecture, each on a runner of that
   # architecture: arm64 builds natively on GitHub's arm64 runners instead of
   # under QEMU, where pnpm install and the Nx builds would take many times
@@ -62,6 +89,9 @@ jobs:
   # two digests of an image behind its tags as one multi-arch image, so a
   # server — or an Apple Silicon Mac — pulls the one for its own CPU.
   build:
+    needs: changes
+    # Skipped is a pass for a required check, and says "nothing to build here".
+    if: needs.changes.outputs.images == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -222,6 +252,9 @@ jobs:
   # what a pull request changes, and the publishing jobs below check both.
   single-image-check:
     if: github.event_name == 'pull_request'
+    # When `build` was skipped (nothing an image is made of changed, see
+    # `changes`), so is this one — and a skipped job is a pass, which is what
+    # lets this check be required (docs/adr/0138).
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 30
