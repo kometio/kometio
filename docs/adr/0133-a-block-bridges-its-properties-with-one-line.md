@@ -120,3 +120,15 @@ can vouch for, so it was measured twice, each independent of the other:
   repository's `.vscode/settings.json` turns that one warning off for CSS.
 - Roughly 350 lines are gone from the blocks, and the 31 blocks that are left
   with a hand-written reference to an override variable are the exceptions above.
+
+## Amended (2026-10-14): three of the exceptions are gone
+
+- **`Link`'s contract now says `var(--link, var(--primary))`**, which is what the
+  block renders. The editor's resolver reads a fallback the way a block's CSS
+  writes it and follows a variable through what it refers to (core's `--link` is
+  itself `var(--primary)`), so the field shows the colour the page shows; what it
+  cannot answer it gives back as it was written.
+- **`PageGrid` and `TermList` declare the three border defaults** (`0`, `solid`,
+  `var(--border)`) and bridge them: their Style dialogs gain a width, a style and a
+  colour for the frame, which the page already honoured.
+- 25 declarations stay by hand, for the reasons above.
