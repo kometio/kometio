@@ -355,10 +355,81 @@ describe('PageTranslation entity', () => {
       updatedBy: 'user-2',
       contentUpdatedAt: new Date('2026-01-01T00:00:00Z'),
       publishedAt: new Date('2026-01-01T00:00:00Z'),
+      scheduledPublishAt: new Date('2026-02-01T09:00:00Z'),
+      scheduledBy: 'user-2',
+      scheduleFailure: 'the search index did not answer',
     };
 
     const translation = PageTranslation.fromProps(props);
 
     expect(translation.toProps()).toEqual(props);
+  });
+
+  describe('publishing at a time (docs/adr/0135)', () => {
+    const AT = new Date('2026-11-02T08:00:00.000Z');
+
+    it('is not scheduled when it is made', () => {
+      const translation = PageTranslation.create(baseInput);
+
+      expect(translation.scheduledPublishAt).toBeNull();
+      expect(translation.scheduledBy).toBeNull();
+      expect(translation.scheduleFailure).toBeNull();
+    });
+
+    it('remembers the moment and the person who set it, because nobody will be there at the time', () => {
+      const translation = PageTranslation.create(baseInput);
+
+      translation.schedulePublish(AT, EDIT);
+
+      expect(translation.scheduledPublishAt).toEqual(AT);
+      expect(translation.scheduledBy).toBe('user-1');
+    });
+
+    it('forgets the reason of an earlier failure when it is scheduled again', () => {
+      const translation = PageTranslation.create(baseInput);
+      translation.schedulePublish(AT, EDIT);
+      translation.recordScheduleFailure('the search index did not answer');
+
+      translation.schedulePublish(new Date('2026-11-03T08:00:00.000Z'), EDIT);
+
+      expect(translation.scheduleFailure).toBeNull();
+    });
+
+    it('keeps the schedule and says why when the attempt failed', () => {
+      const translation = PageTranslation.create(baseInput);
+      translation.schedulePublish(AT, EDIT);
+
+      translation.recordScheduleFailure('the search index did not answer');
+
+      expect(translation.scheduledPublishAt).toEqual(AT);
+      expect(translation.scheduleFailure).toBe(
+        'the search index did not answer',
+      );
+    });
+
+    it('is cancelled by cancelling, and leaves nothing behind', () => {
+      const translation = PageTranslation.create(baseInput);
+      translation.schedulePublish(AT, EDIT);
+      translation.recordScheduleFailure('boom');
+
+      translation.cancelSchedule(EDIT);
+
+      expect(translation.scheduledPublishAt).toBeNull();
+      expect(translation.scheduledBy).toBeNull();
+      expect(translation.scheduleFailure).toBeNull();
+    });
+
+    it('is done by publishing, by hand or at its time, which clears it', () => {
+      const translation = PageTranslation.create(baseInput);
+      translation.schedulePublish(AT, EDIT);
+      translation.recordScheduleFailure('boom');
+
+      translation.publish([], EDIT);
+
+      expect(translation.status).toBe('published');
+      expect(translation.scheduledPublishAt).toBeNull();
+      expect(translation.scheduledBy).toBeNull();
+      expect(translation.scheduleFailure).toBeNull();
+    });
   });
 });

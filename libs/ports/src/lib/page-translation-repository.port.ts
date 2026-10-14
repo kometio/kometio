@@ -41,8 +41,21 @@ export interface PageTranslationRepositoryPort {
     translation: PageTranslation,
     version: PageTranslationVersion,
   ): Promise<void>;
-  /** The published snapshot, the status and when. */
+  /** The published snapshot, the status and when — and no schedule, since publishing is what a schedule asks for. */
   publish(translation: PageTranslation): Promise<void>;
+  /** The moment to publish at, who set it, and why the last attempt did not happen (docs/adr/0135). Writes nothing else. */
+  saveSchedule(translation: PageTranslation): Promise<void>;
+  /**
+   * What is scheduled for `now` or earlier, oldest first: what a tick of the
+   * API publishes. A bounded batch, not every row: a tick that found a
+   * thousand would be late for the thousandth, and the next one takes the
+   * rest.
+   */
+  listDueForPublish(
+    tenantId: string,
+    now: Date,
+    limit: number,
+  ): Promise<PageTranslation[]>;
   saveSeoMeta(translation: PageTranslation): Promise<void>;
   /** A new slug, with the former ones kept for their redirects. Throws `PageSlugAlreadyExistsError` for an address taken meanwhile. */
   rename(translation: PageTranslation): Promise<void>;

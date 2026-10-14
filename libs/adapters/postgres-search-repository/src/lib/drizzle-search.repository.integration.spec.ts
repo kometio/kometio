@@ -115,6 +115,9 @@ describe('DrizzleSearchRepository (integration)', () => {
       updatedBy: row.updatedBy,
       contentUpdatedAt: row.contentUpdatedAt,
       publishedAt: row.publishedAt,
+      scheduledPublishAt: row.scheduledPublishAt,
+      scheduledBy: row.scheduledBy,
+      scheduleFailure: row.scheduleFailure,
     });
   }
 

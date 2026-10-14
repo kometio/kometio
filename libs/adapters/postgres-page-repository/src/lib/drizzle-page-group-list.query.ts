@@ -382,6 +382,7 @@ export class DrizzlePageGroupListQuery {
           isDiverged: pageTranslations.isDiverged,
           contentUpdatedAt: pageTranslations.contentUpdatedAt,
           publishedAt: pageTranslations.publishedAt,
+          scheduledPublishAt: pageTranslations.scheduledPublishAt,
           updatedAt: pageTranslations.updatedAt,
           updatedByName: sql<
             string | null
@@ -415,6 +416,7 @@ export class DrizzlePageGroupListQuery {
           groupContentUpdatedAt:
             groupContentUpdatedAt.get(row.pageGroupId) ?? row.contentUpdatedAt,
         }),
+        scheduledPublishAt: row.scheduledPublishAt,
       });
       translationsByGroup.set(row.pageGroupId, list);
       const lastEdit = lastEditByGroup.get(row.pageGroupId);

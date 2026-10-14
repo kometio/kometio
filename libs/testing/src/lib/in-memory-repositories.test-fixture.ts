@@ -463,6 +463,7 @@ export class InMemoryPageGroupRepository implements PageGroupRepositoryPort {
             status: translation.status,
             isDiverged: translation.isDiverged,
             hasUnpublishedChanges: hasChangesWaiting(translation, group),
+            scheduledPublishAt: translation.scheduledPublishAt,
           })),
         };
       }),
@@ -610,6 +611,30 @@ export class InMemoryPageTranslationRepository implements PageTranslationReposit
 
   async publish(translation: PageTranslation): Promise<void> {
     this.replace(translation);
+  }
+
+  async saveSchedule(translation: PageTranslation): Promise<void> {
+    this.replace(translation);
+  }
+
+  async listDueForPublish(
+    tenantId: string,
+    now: Date,
+    limit: number,
+  ): Promise<PageTranslation[]> {
+    return [...this.translations.values()]
+      .filter(
+        (translation) =>
+          translation.tenantId === tenantId &&
+          translation.scheduledPublishAt !== null &&
+          translation.scheduledPublishAt.getTime() <= now.getTime(),
+      )
+      .sort(
+        (a, b) =>
+          (a.scheduledPublishAt?.getTime() ?? 0) -
+          (b.scheduledPublishAt?.getTime() ?? 0),
+      )
+      .slice(0, limit);
   }
 
   async saveSeoMeta(translation: PageTranslation): Promise<void> {

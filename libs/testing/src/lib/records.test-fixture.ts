@@ -114,6 +114,8 @@ export function buildPageTranslationRecord(
     createdBy: null,
     createdAt: CREATED_AT,
     updatedAt: CREATED_AT,
+    scheduledPublishAt: null,
+    scheduleFailure: null,
     ...overrides,
   };
 }
@@ -129,6 +131,7 @@ export function buildPageGroupListItemTranslation(
     status: 'draft',
     isDiverged: false,
     hasUnpublishedChanges: false,
+    scheduledPublishAt: null,
     ...overrides,
   };
 }
