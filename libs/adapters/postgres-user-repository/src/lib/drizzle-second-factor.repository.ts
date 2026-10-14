@@ -27,7 +27,6 @@ function toFactor(row: typeof userSecondFactors.$inferSelect): TotpFactor {
     sealedSecret: row.sealedSecret,
     confirmedAt: row.confirmedAt,
     lastUsedStep: row.lastUsedStep,
-    lockedUntil: row.lockedUntil,
   };
 }
 
@@ -186,35 +185,50 @@ export class DrizzleSecondFactorRepository implements SecondFactorRepositoryPort
     return moved.length > 0;
   }
 
-  async recordFailedAttempt(
+  async reserveAttempt(
     tenantId: string,
     userId: string,
     now: Date,
     policy: { maxAttempts: number; lockMs: number },
-  ): Promise<void> {
-    // Every right-hand side reads the row as it was, so the two columns
-    // agree about the count they are moving to: one that starts over when a
-    // lock has run out, and a lock when that count reaches the limit.
-    // Instants as text with their cast: a driver does not know what a Date is
-    // inside an expression it did not build from a column.
-    const at = sql`${now.toISOString()}::timestamptz`;
-    const lockUntil = sql`${new Date(now.getTime() + policy.lockMs).toISOString()}::timestamptz`;
-    const nextCount = sql`case when ${userSecondFactors.lockedUntil} is not null and ${userSecondFactors.lockedUntil} <= ${at} then 1 else ${userSecondFactors.failedAttempts} + 1 end`;
-    await withTenant(this.db, tenantId, (tx) =>
-      tx
-        .update(userSecondFactors)
-        .set({
-          failedAttempts: nextCount,
-          lockedUntil: sql`case when (${nextCount}) >= ${policy.maxAttempts} then ${lockUntil} else null end`,
-        })
-        .where(
-          and(
-            eq(userSecondFactors.tenantId, tenantId),
-            eq(userSecondFactors.userId, userId),
-            eq(userSecondFactors.kind, TOTP),
-          ),
-        ),
+  ): Promise<boolean> {
+    const at = now.toISOString();
+    const lockUntil = new Date(now.getTime() + policy.lockMs).toISOString();
+    // One statement, over the row as it is the moment it is locked. `old` is
+    // read FOR UPDATE, so a second request waits for the first and then reads
+    // what it left; the new count and the lock are worked out from that same
+    // row. Held back (a lock still on): nothing moves. Otherwise the count
+    // goes up by one, or starts at one when a lock has just run out, and the
+    // try that reaches the limit is given and locks the ones after it.
+    const rows = await withTenant(this.db, tenantId, (tx) =>
+      tx.execute<{ allowed: boolean }>(sql`
+        update user_second_factors as f
+        set failed_attempts = case
+              when o.locked_until is not null and o.locked_until > ${at}::timestamptz
+                then f.failed_attempts
+              when o.locked_until is not null then 1
+              else f.failed_attempts + 1
+            end,
+            locked_until = case
+              when o.locked_until is not null and o.locked_until > ${at}::timestamptz
+                then o.locked_until
+              when (case when o.locked_until is not null then 1 else f.failed_attempts + 1 end) >= ${policy.maxAttempts}
+                then ${lockUntil}::timestamptz
+              else null
+            end
+        from (
+          select id, locked_until
+          from user_second_factors
+          where tenant_id = ${tenantId}
+            and user_id = ${userId}
+            and kind = ${TOTP}
+            and confirmed_at is not null
+          for update
+        ) as o
+        where f.id = o.id
+        returning (o.locked_until is null or o.locked_until <= ${at}::timestamptz) as allowed
+      `),
     );
+    return rows[0]?.allowed === true;
   }
 
   async clearFailedAttempts(tenantId: string, userId: string): Promise<void> {

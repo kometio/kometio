@@ -147,7 +147,7 @@ describe('DrizzleSecondFactorRepository (integration)', () => {
     expect(answers.filter(Boolean)).toHaveLength(1);
   });
 
-  describe('wrong codes of the app', () => {
+  describe('the tries of the app’s codes', () => {
     const policy = { maxAttempts: 3, lockMs: 10 * 60 * 1000 };
     const NOW = new Date('2026-10-14T12:00:00Z');
 
@@ -157,73 +157,79 @@ describe('DrizzleSecondFactorRepository (integration)', () => {
       await repository.confirmTotp(tenantAId, userId, 1, hashes(1));
       return userId;
     }
-    const lockedUntil = async (userId: string) =>
-      (await repository.findTotp(tenantAId, userId))?.lockedUntil ?? null;
+    const take = (userId: string, at = NOW) =>
+      repository.reserveAttempt(tenantAId, userId, at, policy);
 
-    it('locks at the limit, for as long as the policy says', async () => {
+    it('gives the tries up to the limit, and holds the codes back after the last', async () => {
       const userId = await enrolled();
 
-      await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-      await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-      expect(await lockedUntil(userId)).toBeNull();
-      await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-
-      expect(await lockedUntil(userId)).toEqual(
-        new Date(NOW.getTime() + policy.lockMs),
-      );
+      expect(await take(userId)).toBe(true);
+      expect(await take(userId)).toBe(true);
+      // The last one is given, and it is the one that locks the ones after it.
+      expect(await take(userId)).toBe(true);
+      expect(await take(userId)).toBe(false);
+      expect(await take(userId)).toBe(false);
     });
 
-    it('counts again from one when a lock has run out', async () => {
+    it('holds back for as long as the policy says, and counts again from one after', async () => {
       const userId = await enrolled();
-      for (let i = 0; i < policy.maxAttempts; i += 1) {
-        await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-      }
+      for (let i = 0; i < policy.maxAttempts; i += 1) await take(userId);
+      const justBefore = new Date(NOW.getTime() + policy.lockMs - 1000);
       const after = new Date(NOW.getTime() + policy.lockMs + 1000);
 
-      await repository.recordFailedAttempt(tenantAId, userId, after, policy);
-
-      // One wrong code after a lock is the first of a new count, not the
-      // eleventh of the old: it does not lock again.
-      expect(await lockedUntil(userId)).toBeNull();
+      expect(await take(userId, justBefore)).toBe(false);
+      expect(await take(userId, after)).toBe(true);
+      expect(await take(userId, after)).toBe(true);
+      expect(await take(userId, after)).toBe(true);
+      expect(await take(userId, after)).toBe(false);
     });
 
     it('is forgotten when a code is accepted', async () => {
       const userId = await enrolled();
-      for (let i = 0; i < policy.maxAttempts; i += 1) {
-        await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-      }
-      expect(await lockedUntil(userId)).not.toBeNull();
+      for (let i = 0; i < policy.maxAttempts; i += 1) await take(userId);
+      expect(await take(userId)).toBe(false);
 
       expect(await repository.useStep(tenantAId, userId, 50)).toBe(true);
 
-      expect(await lockedUntil(userId)).toBeNull();
+      expect(await take(userId)).toBe(true);
     });
 
     it('is forgotten on request, which is what a recovery code asks', async () => {
       const userId = await enrolled();
-      for (let i = 0; i < policy.maxAttempts; i += 1) {
-        await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-      }
+      for (let i = 0; i < policy.maxAttempts; i += 1) await take(userId);
 
       await repository.clearFailedAttempts(tenantAId, userId);
 
-      expect(await lockedUntil(userId)).toBeNull();
-      // And the count is nothing again: two more do not lock.
-      await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-      await repository.recordFailedAttempt(tenantAId, userId, NOW, policy);
-      expect(await lockedUntil(userId)).toBeNull();
+      expect(await take(userId)).toBe(true);
+      expect(await take(userId)).toBe(true);
+      expect(await take(userId)).toBe(true);
+      expect(await take(userId)).toBe(false);
     });
 
-    it('counts a burst of wrong codes without losing one', async () => {
+    it('gives the limit and no more to a hundred requests at once', async () => {
       const userId = await enrolled();
 
-      await Promise.all(
-        Array.from({ length: policy.maxAttempts }, () =>
-          repository.recordFailedAttempt(tenantAId, userId, NOW, policy),
-        ),
+      const answers = await Promise.all(
+        Array.from({ length: 100 }, () => take(userId)),
       );
 
-      expect(await lockedUntil(userId)).not.toBeNull();
+      expect(answers.filter(Boolean)).toHaveLength(policy.maxAttempts);
+    });
+
+    it('gives nothing for a person who has not switched it on', async () => {
+      const userId = await person();
+      await repository.savePendingTotp(tenantAId, userId, 'sealed');
+
+      expect(await take(userId)).toBe(false);
+    });
+
+    it('is theirs alone: another tenant’s request is told no and moves nothing', async () => {
+      const userId = await enrolled();
+
+      expect(
+        await repository.reserveAttempt(tenantBId, userId, NOW, policy),
+      ).toBe(false);
+      expect(await take(userId)).toBe(true);
     });
   });
 

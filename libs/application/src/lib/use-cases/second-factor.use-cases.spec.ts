@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IncorrectPasswordError,
   InvalidSecondFactorError,
@@ -451,6 +451,32 @@ describe('the second step of a sign-in', () => {
 
       expect(error).toBeInstanceOf(InvalidSecondFactorError);
       expect(error).toMatchObject({ locked: true });
+    });
+
+    it('looks at no more than the limit of codes, however many arrive together', async () => {
+      const verify = vi.spyOn(deps.totpPort, 'verify');
+      const tokens = await Promise.all(
+        Array.from({ length: 30 }, () => challenge()),
+      );
+
+      const outcomes = await Promise.all(
+        tokens.map((token) =>
+          completeSecondFactorLogin(deps, {
+            challenge: token,
+            code: '000000',
+            now: LATER,
+          }).catch((e: unknown) => e),
+        ),
+      );
+
+      // A count made after the comparison is read as nothing by every one of
+      // the thirty at once. Taken first, only the limit is looked at.
+      expect(verify).toHaveBeenCalledTimes(SECOND_FACTOR_MAX_FAILED_ATTEMPTS);
+      expect(
+        outcomes.filter(
+          (o) => o instanceof InvalidSecondFactorError && o.locked,
+        ),
+      ).toHaveLength(30 - SECOND_FACTOR_MAX_FAILED_ATTEMPTS);
     });
 
     it('lets them in again when the lock has run out', async () => {

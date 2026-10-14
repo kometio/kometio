@@ -12,11 +12,6 @@ export interface TotpFactor {
   confirmedAt: Date | null;
   /** The last time step a code was accepted for; `null` before any. */
   lastUsedStep: number | null;
-  /**
-   * Until when the codes of the app are refused, because too many were wrong
-   * in a row; `null` when they are not. A recovery code is not held back.
-   */
-  lockedUntil: Date | null;
 }
 
 /**
@@ -64,18 +59,26 @@ export interface SecondFactorRepositoryPort {
   useStep(tenantId: string, userId: string, step: number): Promise<boolean>;
 
   /**
-   * A wrong code of the app, counted against the person and not against the
-   * challenge it came with: a challenge costs a password and a captcha, and
-   * the count has to survive the next one. The `maxAttempts`th in a row locks
-   * the codes of the app until `lockMs` from `now`; the first after a lock
-   * has run out starts the count again.
+   * Takes one of the tries of the app's codes, before the code is looked at.
+   * Answers whether it was given: `false` is the codes being held back.
+   *
+   * It is one statement, so it holds under any number of requests at once:
+   * whatever their number, only `maxAttempts` of them are told yes before the
+   * lock is on, and the rest are told no without anything being compared.
+   * Counted before and not after, because a count made after the comparison
+   * is a count that a hundred requests sent together all read as nothing.
+   * The count is per person and not per challenge — a challenge costs a
+   * password and a captcha, and the count has to outlive it — and it is
+   * forgotten by `useStep` when a code is accepted. The `maxAttempts`th try
+   * locks the codes until `lockMs` from `now`; the first after a lock has run
+   * out starts the count again.
    */
-  recordFailedAttempt(
+  reserveAttempt(
     tenantId: string,
     userId: string,
     now: Date,
     policy: { maxAttempts: number; lockMs: number },
-  ): Promise<void>;
+  ): Promise<boolean>;
 
   /** Forgets the wrong codes and any lock: a recovery code was used, which is who the lock is not for. */
   clearFailedAttempts(tenantId: string, userId: string): Promise<void>;

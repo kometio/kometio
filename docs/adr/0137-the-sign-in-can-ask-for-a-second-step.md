@@ -33,11 +33,24 @@ permissions per section, which was considered and left out of the beta.
   `second-factor`, five minutes). It says who is being asked, lives in the
   database, is spent when it is read, and so is neither replayed nor kept by a
   client. It needed no new mechanism and no signing key.
-- **A wrong code is a try, and the tries are counted in the challenge.** The
-  refusal hands back a fresh challenge carrying the count (its `payload`), up
-  to five; after that the person begins again from the password, which has its
-  own throttle and captcha. A typo costs a try, not a trip back to the
-  password.
+- **A wrong code is a try, and the tries are counted twice.** In the
+  challenge: the refusal hands back a fresh one carrying the count, up to five
+  (`payload`), so a typo costs a try and not a trip back to the password. And
+  per person: five wrong codes of the app in a row, across challenges, hold the
+  codes of the app back for fifteen minutes. The second is what matters against
+  somebody who has the password and a captcha-solving service, for whom a
+  challenge is five guesses and a new one is a login away. After a lock the
+  count starts again, so a guesser gets five tries a quarter of an hour. The
+  refusal says when the codes are held back, so that a right code that is
+  refused is not a mystery, and a recovery code (fifty random bits) is not held
+  back: it is the way in while the lock lasts, and it lifts it.
+- **The try is taken before the code is looked at, in one statement.** A
+  count made after the comparison is read as nothing by every request sent
+  together: a hundred challenges answered at once would be a hundred guesses
+  before the first lock landed. `reserveAttempt` reads the row `FOR UPDATE` and
+  moves the count and the lock in the same statement, so however many arrive,
+  only the limit is told yes and the rest are refused without a comparison.
+  (An automated review of the first version of this change found the gap.)
 - **A code is good once.** The last accepted step is kept per person and moved
   forward in the same statement that checks it, so a code read over a shoulder,
   or from a log, or sent twice at once, is refused (RFC 6238 §5.2).
@@ -101,9 +114,9 @@ permissions per section, which was considered and left out of the beta.
   `user_recovery_codes` (delete the person's), documented in
   docs/self-hosting.md. A command for it in the launcher is the obvious next
   step.
-- **No limit per address on the second step beyond the API's default.** The
-  count that matters is per challenge, and a challenge needs the password and
-  its captcha.
+- **No limit per address on the second step beyond the API's default** (five a
+  minute per address). The counts that matter are per challenge and per person,
+  above.
 
 ## Consequences
 

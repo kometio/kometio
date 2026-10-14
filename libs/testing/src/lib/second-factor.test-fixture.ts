@@ -88,6 +88,7 @@ export class InMemorySecondFactorRepository implements SecondFactorRepositoryPor
   >();
 
   private readonly failures = new Map<string, number>();
+  private readonly lockedUntil = new Map<string, Date>();
 
   private key(tenantId: string, userId: string): string {
     return `${tenantId}:${userId}`;
@@ -122,7 +123,6 @@ export class InMemorySecondFactorRepository implements SecondFactorRepositoryPor
       sealedSecret,
       confirmedAt: null,
       lastUsedStep: null,
-      lockedUntil: null,
     });
     this.failures.delete(this.key(tenantId, userId));
     this.codes.delete(this.key(tenantId, userId));
@@ -142,7 +142,6 @@ export class InMemorySecondFactorRepository implements SecondFactorRepositoryPor
       ...factor,
       confirmedAt: new Date(),
       lastUsedStep: firstStep,
-      lockedUntil: null,
     });
     this.codes.set(
       key,
@@ -158,43 +157,35 @@ export class InMemorySecondFactorRepository implements SecondFactorRepositoryPor
     if (factor.lastUsedStep !== null && factor.lastUsedStep >= step) {
       return Promise.resolve(false);
     }
-    this.factors.set(key, {
-      ...factor,
-      lastUsedStep: step,
-      lockedUntil: null,
-    });
+    this.factors.set(key, { ...factor, lastUsedStep: step });
     this.failures.delete(key);
+    this.lockedUntil.delete(key);
     return Promise.resolve(true);
   }
 
-  recordFailedAttempt(
+  reserveAttempt(
     tenantId: string,
     userId: string,
     now: Date,
     policy: { maxAttempts: number; lockMs: number },
-  ): Promise<void> {
+  ): Promise<boolean> {
     const key = this.key(tenantId, userId);
-    const factor = this.factors.get(key);
-    if (!factor) return Promise.resolve();
-    const lockHasRunOut =
-      factor.lockedUntil !== null && factor.lockedUntil <= now;
-    const count = (lockHasRunOut ? 0 : (this.failures.get(key) ?? 0)) + 1;
+    if (!this.factors.get(key)?.confirmedAt) return Promise.resolve(false);
+    const until = this.lockedUntil.get(key);
+    if (until && until > now) return Promise.resolve(false);
+    const count = (until ? 0 : (this.failures.get(key) ?? 0)) + 1;
+    this.lockedUntil.delete(key);
     this.failures.set(key, count);
-    this.factors.set(key, {
-      ...factor,
-      lockedUntil:
-        count >= policy.maxAttempts
-          ? new Date(now.getTime() + policy.lockMs)
-          : null,
-    });
-    return Promise.resolve();
+    if (count >= policy.maxAttempts) {
+      this.lockedUntil.set(key, new Date(now.getTime() + policy.lockMs));
+    }
+    return Promise.resolve(true);
   }
 
   clearFailedAttempts(tenantId: string, userId: string): Promise<void> {
     const key = this.key(tenantId, userId);
-    const factor = this.factors.get(key);
-    if (factor) this.factors.set(key, { ...factor, lockedUntil: null });
     this.failures.delete(key);
+    this.lockedUntil.delete(key);
     return Promise.resolve();
   }
 

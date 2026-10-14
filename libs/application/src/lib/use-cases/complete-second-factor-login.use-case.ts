@@ -26,7 +26,7 @@ export interface CompleteSecondFactorLoginDeps {
     SecondFactorRepositoryPort,
     | 'findTotp'
     | 'useStep'
-    | 'recordFailedAttempt'
+    | 'reserveAttempt'
     | 'clearFailedAttempts'
     | 'spendRecoveryCode'
     | 'countUnspentRecoveryCodes'
@@ -106,19 +106,6 @@ export async function completeSecondFactorLogin(
     );
     throw new InvalidSecondFactorError(userId, next.token, locked);
   };
-  /** A wrong code of the app: counted against the person, and refused. */
-  const refuseWrongCode = async (): Promise<never> => {
-    await deps.secondFactorRepository.recordFailedAttempt(
-      tenantId,
-      userId,
-      now,
-      {
-        maxAttempts: SECOND_FACTOR_MAX_FAILED_ATTEMPTS,
-        lockMs: SECOND_FACTOR_LOCK_MS,
-      },
-    );
-    return refuse();
-  };
 
   let usedRecoveryCode = false;
   if (deps.totpPort.looksLikeRecoveryCode(input.code)) {
@@ -133,9 +120,20 @@ export async function completeSecondFactorLogin(
     // app again for the person it was held back from.
     await deps.secondFactorRepository.clearFailedAttempts(tenantId, userId);
   } else {
-    // Held back: the code is not even looked at, so a guesser learns nothing
-    // from the lock about whether a code was right.
-    if (factor.lockedUntil && factor.lockedUntil > now) return refuse(true);
+    // The try is taken before the code is looked at, in one statement: a
+    // count made after would be read as nothing by every request sent
+    // together. Held back, the code is not even compared, so a guesser learns
+    // nothing from the lock about whether it was right.
+    const allowed = await deps.secondFactorRepository.reserveAttempt(
+      tenantId,
+      userId,
+      now,
+      {
+        maxAttempts: SECOND_FACTOR_MAX_FAILED_ATTEMPTS,
+        lockMs: SECOND_FACTOR_LOCK_MS,
+      },
+    );
+    if (!allowed) return refuse(true);
     const secret = openSecret(deps.secretCipher, factor.sealedSecret);
     const accepted =
       secret === null
@@ -146,7 +144,7 @@ export async function completeSecondFactorLogin(
             at: now,
             notBeforeStep: (factor.lastUsedStep ?? -1) + 1,
           });
-    if (!accepted) return refuseWrongCode();
+    if (!accepted) return refuse();
     // The step is taken in the row, not in this process: a second request
     // with the same code, in the same moment, is the one that loses.
     const taken = await deps.secondFactorRepository.useStep(
@@ -154,7 +152,7 @@ export async function completeSecondFactorLogin(
       userId,
       accepted.step,
     );
-    if (!taken) return refuseWrongCode();
+    if (!taken) return refuse();
   }
 
   const session = await deps.authPort.createSession(userId, tenantId, {
