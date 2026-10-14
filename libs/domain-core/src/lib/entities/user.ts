@@ -258,9 +258,14 @@ export class User {
     this.props.isActive = true;
   }
 
-  /** The invitation was accepted: they have a real password now, and can sign in. */
-  acceptInvite(): void {
+  /**
+   * The invitation was accepted: they have a real password now, and can sign
+   * in. The link went to their address and was followed, which is what
+   * verifying it is, so they are not then asked to confirm it again.
+   */
+  acceptInvite(now: Date = new Date()): void {
     this.props.invitePending = false;
     this.props.isActive = true;
+    this.props.emailVerifiedAt ??= now;
   }
 }

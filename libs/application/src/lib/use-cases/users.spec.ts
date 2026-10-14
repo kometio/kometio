@@ -339,6 +339,7 @@ describe('acceptInvite', () => {
     const saved = await deps.userRepository.findById(tenantId, user.id);
     expect(saved?.isActive).toBe(true);
     expect(saved?.invitePending).toBe(false);
+    expect(saved?.isEmailVerified).toBe(true);
     expect(
       await deps.authPort.verifyPassword(
         'new-password',

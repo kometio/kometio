@@ -75,6 +75,16 @@ describe('User entity', () => {
       expect(user.isActive).toBe(true);
     });
 
+    it('verifies the address: the link that was followed went to it', () => {
+      const user = invited();
+      const at = new Date('2026-10-14T09:00:00Z');
+
+      user.acceptInvite(at);
+
+      expect(user.isEmailVerified).toBe(true);
+      expect(user.emailVerifiedAt).toEqual(at);
+    });
+
     it('cannot be switched on from outside while it is pending', () => {
       expect(() => invited().reactivate()).toThrow(InvitePendingError);
     });
