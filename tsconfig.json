@@ -164,6 +164,9 @@
     },
     {
       "path": "./libs/adapters/sentry-error-reporter"
+    },
+    {
+      "path": "./libs/adapters/postgres-audit-log-repository"
     }
   ],
   "compilerOptions": {}
