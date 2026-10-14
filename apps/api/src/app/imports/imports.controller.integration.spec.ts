@@ -119,9 +119,15 @@ ${body}
     // a refusal that walks away leaves it there — and the way to fill a
     // disk is then to keep uploading to a site you do not own, 512 MB at
     // a time.
-    const before = readdirSync(tmpdir()).filter((name) =>
-      name.startsWith('kometio-import-'),
-    ).length;
+    // What was there already is not this request's: an earlier test's file is
+    // removed when its analysis ends, a moment after the report says it has,
+    // and a count of the directory taken in between is a race (it failed CI
+    // once with 1 before and 0 after). Only what is new is the refusal's.
+    const uploads = () =>
+      readdirSync(tmpdir()).filter((name) =>
+        name.startsWith('kometio-import-'),
+      );
+    const before = new Set(uploads());
 
     await agent
       .post('/imports/wordpress/analysis')
@@ -134,10 +140,7 @@ ${body}
       .attach('file', wxrFile(''))
       .expect(400);
 
-    const after = readdirSync(tmpdir()).filter((name) =>
-      name.startsWith('kometio-import-'),
-    ).length;
-    expect(after).toBe(before);
+    expect(uploads().filter((name) => !before.has(name))).toEqual([]);
   });
 
   it('refuses an upload with no file', async () => {
