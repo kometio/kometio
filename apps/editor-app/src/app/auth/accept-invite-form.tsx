@@ -40,6 +40,7 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
             <Input
               id="invite-password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               minLength={MIN_PASSWORD_LENGTH}

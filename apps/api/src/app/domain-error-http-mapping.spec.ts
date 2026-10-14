@@ -29,6 +29,8 @@ const NOT_IN_THE_TABLE: Record<string, string> = {
   UserNotActiveError:
     'AuthErrorsFilter: one answer for a wrong password and a switched-off account',
   InvalidOrExpiredTokenError: 'AuthErrorsFilter: one 400 for any bad token',
+  InvalidSecondFactorError:
+    'AuthErrorsFilter: one 401 for any wrong second step, carrying the next challenge',
   ImportJobAlreadyFinishedError:
     'thrown by the job settling its own state in the background, never inside a request',
 };

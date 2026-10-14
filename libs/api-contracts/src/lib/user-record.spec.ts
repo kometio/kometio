@@ -69,10 +69,30 @@ describe('userRecordSchema', () => {
 });
 
 describe('paginatedUsersSchema', () => {
+  const row = { ...user, twoFactorEnabled: false };
+
   it('wraps the records with the total', () => {
-    expect(paginatedUsersSchema.parse({ items: [user], total: 1 }).total).toBe(
+    expect(paginatedUsersSchema.parse({ items: [row], total: 1 }).total).toBe(
       1,
     );
+  });
+
+  it('says whether each person has the second step of sign-in on', () => {
+    const parsed = paginatedUsersSchema.parse({
+      items: [row, { ...row, id: 'u2', twoFactorEnabled: true }],
+      total: 2,
+    });
+
+    expect(parsed.items.map((item) => item.twoFactorEnabled)).toEqual([
+      false,
+      true,
+    ]);
+  });
+
+  it('refuses a row that does not say it: an administrator would be offered no reset', () => {
+    expect(
+      paginatedUsersSchema.safeParse({ items: [user], total: 1 }).success,
+    ).toBe(false);
   });
 });
 

@@ -233,6 +233,7 @@ export function SetupWizardForm({
           <Input
             id="setup-email"
             type="email"
+            autoComplete="username"
             value={adminEmail}
             onChange={(e) => setAdminEmail(e.target.value)}
             required
@@ -244,6 +245,7 @@ export function SetupWizardForm({
           <Input
             id="setup-password"
             type="password"
+            autoComplete="new-password"
             value={adminPassword}
             onChange={(e) => setAdminPassword(e.target.value)}
             required
