@@ -102,6 +102,13 @@ const errorPageTranslations =
     ancestorSlugs: [],
   })) ?? [];
 
+// A term has its own flag (ADR-0078); a page asks in its SEO, per language
+// (ADR-0134).
+const staysOutOfSearchEngines = page
+  ? isTerm(page)
+    ? page.term.noindex
+    : page.seoMeta.noIndex === true
+  : false;
 ---
 
 {
@@ -117,7 +124,7 @@ const errorPageTranslations =
       ancestors={page.ancestors}
       instanceStyleCss={instanceStyleCss}
       editable={editable}
-      noindex={isTerm(page) && page.term.noindex}
+      noindex={staysOutOfSearchEngines}
       route="page"
     >
       {
