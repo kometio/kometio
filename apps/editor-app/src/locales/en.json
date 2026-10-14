@@ -506,6 +506,11 @@
       "saveFailed": "Publishing was not scheduled. Try again.",
       "removeFailed": "The schedule was not removed. Try again.",
       "failure": "The last attempt did not work: {{reason}}. It is tried again every minute until you change or remove the schedule.",
+      "blocked": {
+        "scheduler-gone": "It was not published: the person who scheduled it no longer has an account. Schedule it again.",
+        "scheduler-inactive": "It was not published: the account of the person who scheduled it has been deactivated. Schedule it again.",
+        "scheduler-cannot-publish": "It was not published: the person who scheduled it can no longer publish. Schedule it again from an account that can."
+      },
       "badge": "Scheduled: {{when}}"
     },
     "translations": {

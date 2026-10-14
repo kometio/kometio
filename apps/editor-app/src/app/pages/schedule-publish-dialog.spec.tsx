@@ -135,4 +135,17 @@ describe('SchedulePublishDialog', () => {
     ).toBeTruthy();
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
+
+  it('says in words that it was held back because the person who set it may no longer publish', () => {
+    renderDialog({
+      scheduledPublishAt: new Date(2026, 10, 3, 18, 15, 0).toISOString(),
+      scheduleFailure: 'scheduler-cannot-publish',
+    });
+
+    expect(
+      screen.getByText(/non può più pubblicare|can no longer publish/),
+    ).toBeTruthy();
+    // And not the word it is stored as.
+    expect(screen.queryByText(/scheduler-cannot-publish/)).toBeNull();
+  });
 });

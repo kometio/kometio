@@ -11,6 +11,7 @@ import type {
   SearchPort,
   SiteRepositoryPort,
   TaxonomyRepositoryPort,
+  UserRepositoryPort,
 } from '@kometio/ports';
 
 /** What the pages module's use cases are built from (see moduleDeps). */
@@ -27,4 +28,6 @@ export interface PagesDeps {
   contentSanitizer: ContentSanitizerPort;
   collectionRepository: CollectionRepositoryPort;
   reusableSectionVersionRepository: ReusableSectionVersionRepositoryPort;
+  /** Asked again, when a scheduled publication comes due, whether who scheduled it may still publish (docs/adr/0135). */
+  userRepository: UserRepositoryPort;
 }

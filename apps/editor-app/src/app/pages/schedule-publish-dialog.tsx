@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isScheduleBlockedReason } from '@kometio/shared-types';
 import { Button } from '../../components/ui/button';
 import {
   Dialog,
@@ -175,7 +176,11 @@ export function SchedulePublishDialog({
           </div>
           {scheduleFailure && (
             <InlineError>
-              {t('pages.schedule.failure', { reason: scheduleFailure })}
+              {/* A refusal has words of its own, in the person's language;
+                  anything else is the message of an error, shown as it is. */}
+              {isScheduleBlockedReason(scheduleFailure)
+                ? t(`pages.schedule.blocked.${scheduleFailure}`)
+                : t('pages.schedule.failure', { reason: scheduleFailure })}
             </InlineError>
           )}
           {error && <InlineError>{error}</InlineError>}

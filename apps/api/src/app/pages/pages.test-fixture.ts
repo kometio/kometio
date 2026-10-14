@@ -15,6 +15,7 @@ import {
   buildSite,
   FakeContentSanitizer,
   InMemorySiteRepository,
+  InMemoryUserRepository,
 } from '@kometio/testing';
 import { PageGroupsController } from './page-groups.controller';
 import { PageRecords } from './page-records';
@@ -137,6 +138,8 @@ export function setUpPages() {
     contentSanitizer: new FakeContentSanitizer(),
     collectionRepository,
     reusableSectionVersionRepository,
+    // Only the tick reads it, and the controllers' specs do not run the tick.
+    userRepository: new InMemoryUserRepository(),
   };
   const records = new PageRecords();
   return {

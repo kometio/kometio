@@ -13,8 +13,10 @@ import {
   InMemorySiteRepository,
   InMemoryTaxonomyRepository,
   InMemoryCollectionRepository,
+  InMemoryUserRepository,
   buildCollection,
   buildSite,
+  buildUser,
 } from '@kometio/testing';
 import { createPageGroup } from './create-page-group.use-case';
 import { createPageGroupTranslation } from './create-page-group-translation.use-case';
@@ -49,6 +51,7 @@ describe('publishing at a time (docs/adr/0135)', () => {
       collectionRepository: new InMemoryCollectionRepository(
         buildCollection({ id: 'news' }),
       ),
+      userRepository: new InMemoryUserRepository(),
     };
   }
 
@@ -167,12 +170,31 @@ describe('publishing at a time (docs/adr/0135)', () => {
   });
 
   describe('the tick', () => {
+    /** Somebody who may publish, unless a test says what they are instead. */
+    async function aPerson(
+      deps: ReturnType<typeof setup>,
+      id: string,
+      role: 'admin' | 'publisher' | 'editor' = 'publisher',
+    ) {
+      const user = buildUser({
+        id,
+        tenantId,
+        email: `${id}@example.test`,
+        role,
+      });
+      await deps.userRepository.add(user);
+      return user;
+    }
+
     async function scheduled(
       deps: ReturnType<typeof setup>,
       slug: string,
       at: Date,
       by = 'user-2',
     ) {
+      if (!(await deps.userRepository.findById(tenantId, by))) {
+        await aPerson(deps, by);
+      }
       const made = await aDraft(deps, slug);
       await schedulePageTranslationPublish(deps, {
         tenantId,
@@ -263,6 +285,97 @@ describe('publishing at a time (docs/adr/0135)', () => {
 
       expect(result).toEqual({ published: 0, failed: 0, notIndexed: 0 });
       expect(deps.searchPort.indexed).toHaveLength(1);
+    });
+
+    describe('asks again whether the person who scheduled it may publish', () => {
+      async function dueNow(
+        deps: ReturnType<typeof setup>,
+        change: (
+          deps: ReturnType<typeof setup>,
+          user: Awaited<ReturnType<typeof aPerson>>,
+        ) => void | Promise<void>,
+      ) {
+        const user = await aPerson(deps, 'user-2');
+        const { translation } = await scheduled(deps, 'novita', LATER);
+        await change(deps, user);
+        const result = await publishDuePageTranslations(deps, {
+          tenantId,
+          now: new Date(LATER.getTime() + 1000),
+        });
+        const after = await deps.pageTranslationRepository.findById(
+          tenantId,
+          translation.id,
+        );
+        return { result, after };
+      }
+
+      it('publishes when they still may, as a publisher or as an admin', async () => {
+        const { result, after } = await dueNow(setup(), () => undefined);
+
+        expect(result.published).toBe(1);
+        expect(after?.status).toBe('published');
+      });
+
+      it('holds it back when their role no longer allows publishing, and says so on the page', async () => {
+        const deps = setup();
+        const { result, after } = await dueNow(deps, (_, user) =>
+          user.changeRole('editor'),
+        );
+
+        expect(result).toEqual({ published: 0, failed: 1, notIndexed: 0 });
+        expect(after?.status).toBe('draft');
+        expect(after?.scheduledPublishAt).toEqual(LATER);
+        expect(after?.scheduleFailure).toBe('scheduler-cannot-publish');
+        expect(deps.searchPort.indexed).toEqual([]);
+      });
+
+      it('does not report the same refusal again at every tick', async () => {
+        const deps = setup();
+        const { result: first } = await dueNow(deps, (_, user) =>
+          user.changeRole('editor'),
+        );
+        expect(first.failed).toBe(1);
+
+        const second = await publishDuePageTranslations(deps, {
+          tenantId,
+          now: new Date(LATER.getTime() + 61_000),
+        });
+
+        expect(second).toEqual({ published: 0, failed: 0, notIndexed: 0 });
+      });
+
+      it('holds it back when their account was deactivated', async () => {
+        const { after } = await dueNow(setup(), (_, user) => user.deactivate());
+
+        expect(after?.status).toBe('draft');
+        expect(after?.scheduleFailure).toBe('scheduler-inactive');
+      });
+
+      it('holds it back when the account is gone', async () => {
+        const deps = setup();
+        const { translation } = await aDraft(deps, 'novita');
+        // What the foreign key leaves when the account is removed: nobody.
+        await schedulePageTranslationPublish(deps, {
+          tenantId,
+          pageTranslationId: translation.id,
+          publishAt: LATER,
+          actorUserId: null,
+          now: NOW,
+        });
+
+        const result = await publishDuePageTranslations(deps, {
+          tenantId,
+          now: new Date(LATER.getTime() + 1000),
+        });
+
+        expect(result.published).toBe(0);
+        const after = await deps.pageTranslationRepository.findById(
+          tenantId,
+          translation.id,
+        );
+        expect(after?.status).toBe('draft');
+        expect(after?.scheduleFailure).toBe('scheduler-gone');
+      });
     });
 
     it('records why one failed, keeps it scheduled, and goes on with the others', async () => {

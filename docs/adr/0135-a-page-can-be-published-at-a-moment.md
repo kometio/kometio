@@ -44,6 +44,16 @@ It is one of the table stakes an agency expects from the CMS it leaves
   names the zone under it every time.
 - **It is a publisher's** (`changeLiveSite`, as publishing is): a role that can
   only save a draft cannot schedule one.
+- **And it is asked again when the moment comes.** A schedule is a publication
+  made under somebody's name while nobody is looking, so the permission that
+  counts is the one they have at that minute, not the one they had when they
+  asked. Somebody demoted to editor, deactivated or removed in between does not
+  put a page online by having asked for it earlier: it is held back, stays
+  scheduled, and says why (`scheduler-gone`, `scheduler-inactive`,
+  `scheduler-cannot-publish`, which the editor words in the person's language).
+  Another account that can publish takes it over by setting the moment again.
+  The refusal is written once, not at every tick. An automated review of the
+  first version of this change found the gap.
 
 ## What this does not do
 

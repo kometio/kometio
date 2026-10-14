@@ -506,6 +506,11 @@
       "saveFailed": "La pubblicazione non è stata programmata. Riprova.",
       "removeFailed": "La programmazione non è stata tolta. Riprova.",
       "failure": "L’ultimo tentativo non è riuscito: {{reason}}. Si riprova ogni minuto, finché non cambi o togli la programmazione.",
+      "blocked": {
+        "scheduler-gone": "Non è stata pubblicata: chi l’aveva programmata non ha più un account. Programmala di nuovo.",
+        "scheduler-inactive": "Non è stata pubblicata: l’account di chi l’aveva programmata è stato disattivato. Programmala di nuovo.",
+        "scheduler-cannot-publish": "Non è stata pubblicata: chi l’aveva programmata non può più pubblicare. Programmala di nuovo da un account che può."
+      },
       "badge": "Programmata: {{when}}"
     },
     "translations": {

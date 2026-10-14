@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
+import type { UserRepositoryPort } from '@kometio/ports';
+import { USER_REPOSITORY } from '../adapters/port.tokens';
 import type { PageTranslationRepositoryPort } from '@kometio/ports';
 import { PAGE_TRANSLATION_REPOSITORY } from '../adapters/port.tokens';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
@@ -177,5 +179,46 @@ describe('publishing at a moment (integration)', () => {
       .send({ publishAt: inAMinute(120) })
       .expect(200);
     expect(again.body.scheduleFailure).toBeNull();
+  });
+
+  it('is held back, and says why, when the person who set it may no longer publish', async () => {
+    const scheduler = await integration.createUser({ role: 'publisher' });
+    const asScheduler = await integration.login(scheduler);
+    const group = await asScheduler
+      .post('/page-groups')
+      .send({ siteId, content: [] })
+      .expect(201);
+    const translation = await asScheduler
+      .post(`/page-groups/${group.body.id}/translations`)
+      .send({
+        locale: 'it',
+        slug: `novita-${randomUUID()}`,
+        seoMeta: { title: 'Novità', description: '' },
+      })
+      .expect(201);
+    await asScheduler
+      .put(`/page-groups/translations/${translation.body.id}/schedule`)
+      .send({ publishAt: inAMinute(10) })
+      .expect(200);
+    // Between asking and the minute it comes, they are made an editor.
+    const userRepository =
+      integration.app.get<UserRepositoryPort>(USER_REPOSITORY);
+    const person = await userRepository.findById(
+      integration.tenantId,
+      scheduler.id,
+    );
+    person?.changeRole('editor');
+    if (person) await userRepository.saveAccess(person);
+
+    await integration.app
+      .get(ScheduledPublishService)
+      .publishDue(integration.tenantId, new Date(Date.now() + 11 * 60_000));
+
+    const after = await agent
+      .get(`/page-groups/${group.body.id}/translations`)
+      .expect(200);
+    expect(after.body[0].status).toBe('draft');
+    expect(after.body[0].scheduleFailure).toBe('scheduler-cannot-publish');
+    expect(after.body[0].scheduledPublishAt).not.toBeNull();
   });
 });
