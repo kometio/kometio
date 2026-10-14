@@ -68,6 +68,12 @@ export function SecondFactorForm({
     try {
       await onSubmit(current, code);
     } catch (caught) {
+      // Asked too often from this address: the challenge was not read (the
+      // limit comes first), so it is still good. Said, and kept.
+      if (caught instanceof ApiError && caught.status === 429) {
+        setError(t('auth.secondFactor.tooManyTries'));
+        return;
+      }
       const { challenge: next, locked } = refusalOf(caught);
       if (next) {
         setCurrent(next);

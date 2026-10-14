@@ -69,7 +69,7 @@ export function SecondFactorSection() {
           </dd>
         </dl>
         {status.enabled ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex shrink-0 flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"

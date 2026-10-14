@@ -240,7 +240,7 @@ describe('UsersListView', () => {
         }),
       ]);
 
-      expect(await screen.findByText('2 passaggi')).toBeTruthy();
+      expect(await screen.findByText('2 passaggi attivi')).toBeTruthy();
       expect(
         screen.getAllByRole('button', { name: /azzera i 2 passaggi/i }),
       ).toHaveLength(1);
@@ -280,7 +280,7 @@ describe('UsersListView', () => {
       });
       renderView([{ ...userOne, twoFactorEnabled: true }]);
 
-      expect(await screen.findByText('2 passaggi')).toBeTruthy();
+      expect(await screen.findByText('2 passaggi attivi')).toBeTruthy();
       // Who is looking is read from the session, which arrives a moment after
       // the list: the button is there until it does.
       await waitFor(() =>

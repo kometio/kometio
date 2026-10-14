@@ -92,7 +92,8 @@
       "startAgain": "Ricomincia dalla password",
       "recoveryCodeUsed_one": "Hai acceduto con un codice di recupero. Te ne resta {{count}}: creane di nuovi dal tuo account.",
       "recoveryCodeUsed_other": "Hai acceduto con un codice di recupero. Te ne restano {{count}}: creane di nuovi dal tuo account.",
-      "locked": "Troppi codici sbagliati. Aspetta qualche minuto, oppure usa uno dei tuoi codici di recupero."
+      "locked": "Troppi codici sbagliati. Aspetta qualche minuto, oppure usa uno dei tuoi codici di recupero.",
+      "tooManyTries": "Troppi tentativi in poco tempo. Aspetta un minuto e riprova."
     }
   },
   "emailNotice": {
@@ -1497,7 +1498,7 @@
       },
       "language": "Lingua: {{name}}",
       "languageOfTheSite": "Lingua: quella del sito",
-      "secondFactorOn": "2 passaggi",
+      "secondFactorOn": "2 passaggi attivi",
       "resetSecondFactor": "Azzera i 2 passaggi",
       "resetSecondFactorConfirm": {
         "title": "Azzerare la verifica in due passaggi?",

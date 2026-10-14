@@ -92,7 +92,8 @@
       "startAgain": "Start again with the password",
       "recoveryCodeUsed_one": "You signed in with a recovery code. You have {{count}} left: make new ones from your account.",
       "recoveryCodeUsed_other": "You signed in with a recovery code. You have {{count}} left: make new ones from your account.",
-      "locked": "Too many wrong codes. Wait a few minutes, or use one of your recovery codes."
+      "locked": "Too many wrong codes. Wait a few minutes, or use one of your recovery codes.",
+      "tooManyTries": "Too many attempts in a short time. Wait a minute and try again."
     }
   },
   "emailNotice": {
@@ -1497,7 +1498,7 @@
       },
       "language": "Language: {{name}}",
       "languageOfTheSite": "Language: the site's",
-      "secondFactorOn": "2-step",
+      "secondFactorOn": "2-step on",
       "resetSecondFactor": "Reset 2-step",
       "resetSecondFactorConfirm": {
         "title": "Reset two-step verification?",

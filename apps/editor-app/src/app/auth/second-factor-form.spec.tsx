@@ -85,6 +85,28 @@ describe('SecondFactorForm', () => {
     );
   });
 
+  it('says so when the address has asked too often, and keeps the challenge it has', async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new ApiError(429, { message: 'Too Many Requests' }),
+      )
+      .mockResolvedValue(undefined);
+    const { onStartAgain } = renderForm(onSubmit);
+
+    typeCode('123456');
+
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      expect.stringMatching(/troppi tentativi/i),
+    );
+    expect(onStartAgain).not.toHaveBeenCalled();
+    typeCode('123456');
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenLastCalledWith('challenge-1', '123456'),
+    );
+  });
+
   it('goes back to the password when there is no new challenge to give', async () => {
     const onSubmit = vi
       .fn()
