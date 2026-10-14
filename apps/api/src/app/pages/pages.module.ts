@@ -13,8 +13,14 @@ import {
   SEARCH_PORT,
   SITE_REPOSITORY,
   TAXONOMY_REPOSITORY,
+  USER_REPOSITORY,
 } from '../adapters/port.tokens';
 import { AuthModule } from '../auth/auth.module';
+import { DeploymentTenantModule } from '../deployment-tenant.module';
+import {
+  DEPLOYMENT_TENANT_RESOLVER,
+  type DeploymentTenantResolver,
+} from '../deployment-tenant.resolver';
 import { moduleDeps } from '../module-deps';
 import { ReusableSectionRecords } from '../reusable-sections/reusable-section-records';
 import { PageGroupsController } from './page-groups.controller';
@@ -22,9 +28,10 @@ import { PageRecords } from './page-records';
 import { PageTranslationsController } from './page-translations.controller';
 import type { PagesDeps } from './pages.deps';
 import { PAGES_DEPS } from './pages.tokens';
+import { ScheduledPublishService } from './scheduled-publish.service';
 
 @Module({
-  imports: [AdaptersModule, AuthModule],
+  imports: [AdaptersModule, AuthModule, DeploymentTenantModule],
   controllers: [PageGroupsController, PageTranslationsController],
   providers: [
     moduleDeps<PagesDeps>(PAGES_DEPS, {
@@ -40,11 +47,19 @@ import { PAGES_DEPS } from './pages.tokens';
       contentSanitizer: CONTENT_SANITIZER,
       collectionRepository: COLLECTION_REPOSITORY,
       reusableSectionVersionRepository: REUSABLE_SECTION_VERSION_REPOSITORY,
+      userRepository: USER_REPOSITORY,
     }),
     // "Save as template" answers with a section, in the same shape the
     // sections module does (docs/adr/0072).
     ReusableSectionRecords,
     PageRecords,
+    // Publishing at a moment (docs/adr/0135): a tick of the API.
+    {
+      provide: ScheduledPublishService,
+      useFactory: (deps: PagesDeps, tenant: DeploymentTenantResolver) =>
+        new ScheduledPublishService(deps, () => tenant.resolve()),
+      inject: [PAGES_DEPS, DEPLOYMENT_TENANT_RESOLVER],
+    },
   ],
 })
 export class PagesModule {}

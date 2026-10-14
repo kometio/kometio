@@ -88,12 +88,9 @@ describe('every API entrance that accepts block content sanitises it', () => {
   it.each(entrances)(
     '%s strips a script from rich text',
     (_name, schema, hostile) => {
-      const parsed = schema.parse(hostile) as {
-        content?: { props: Record<string, string> }[];
-      };
-      const body = parsed.content?.[0].props['body'];
-      expect(body).toBe('<p>ciao</p>');
-      expect(body).not.toContain('steal');
+      const parsed = schema.parse(hostile);
+      // Exactly the paragraph, so nothing of the script is left in it.
+      expect(parsed).toHaveProperty('content[0].props.body', '<p>ciao</p>');
     },
   );
 });

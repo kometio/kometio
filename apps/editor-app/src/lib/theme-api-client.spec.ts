@@ -1,17 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import {
   fetchBlockStyleDefaults,
   fetchThemeForegroundTokens,
   fetchThemeIcons,
 } from './theme-api-client';
-
-function jsonResponse(body: unknown, ok = true, status = 200) {
-  return {
-    ok,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 describe('theme-api-client', () => {
   beforeEach(() => {
@@ -35,7 +28,7 @@ describe('theme-api-client', () => {
   });
 
   it('fetchThemeIcons throws on a non-ok response', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, false, 500));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 500));
 
     await expect(fetchThemeIcons('classic')).rejects.toThrow(
       /themes\/current\/icons API error: 500/,
@@ -55,7 +48,7 @@ describe('theme-api-client', () => {
   });
 
   it('fetchBlockStyleDefaults throws on a non-ok response', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, false, 404));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 404));
 
     await expect(fetchBlockStyleDefaults('classic')).rejects.toThrow(
       /themes\/current\/block-style-defaults API error: 404/,
@@ -78,7 +71,7 @@ describe('theme-api-client', () => {
   });
 
   it('fetchThemeForegroundTokens throws on a non-ok response', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, false, 500));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 500));
 
     await expect(fetchThemeForegroundTokens('classic')).rejects.toThrow(
       /themes\/current\/foreground-tokens API error: 500/,

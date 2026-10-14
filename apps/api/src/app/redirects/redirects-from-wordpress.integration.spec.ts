@@ -9,6 +9,7 @@ import { ImportsModule } from '../imports/imports.module';
 import { PagesModule } from '../pages/pages.module';
 import { PublicRedirectsModule } from './public-redirects.module';
 import { RedirectsModule } from './redirects.module';
+import { idOf } from '../../test/response-body.test-fixture';
 
 /**
  * Runs against a real Postgres — see docs/development.md. The whole way of a
@@ -84,7 +85,7 @@ ${items.join('\n')}
       .expect(202);
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const res = await agent.get(`/imports/${started.body.id}`).expect(200);
-      if (res.body.status === 'analyzed') return started.body.id as string;
+      if (res.body.status === 'analyzed') return idOf(started.body);
       if (res.body.status === 'failed') throw new Error(res.body.failureReason);
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
@@ -107,7 +108,7 @@ ${items.join('\n')}
     await agent
       .post(`/page-groups/translations/${translation.body.id}/publish`)
       .expect(201);
-    return group.body.id as string;
+    return idOf(group.body);
   }
 
   const resolve = (path: string, search = '') =>

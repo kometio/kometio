@@ -18,10 +18,26 @@ import { useTranslation } from 'react-i18next';
 const STYLES = {
   date: { dateStyle: 'medium' },
   dateTime: { dateStyle: 'medium', timeStyle: 'short' },
+  /** Where there is no room for the year: a chip on the bar, a mark on a row. The day and the hour, in the person's language. */
+  dayAndTime: {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  },
   time: { timeStyle: 'short' },
 } as const satisfies Record<string, Intl.DateTimeFormatOptions>;
 
 export type DateFormatStyle = keyof typeof STYLES;
+
+/**
+ * The time zone of this browser, by name ("Europe/Rome"): what a time typed
+ * into a `datetime-local` field is in, so that a dialog can say whose "09:00"
+ * it is. Here with the rest of what the editor asks `Intl` for.
+ */
+export function browserTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
 
 export function useFormatDate(
   style: DateFormatStyle = 'date',

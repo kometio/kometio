@@ -130,6 +130,10 @@ export async function listPublishedPagesForSitemap(
   return {
     items: [
       ...paths
+        // A translation that asked to stay out of search engines is left out
+        // of the map that invites them in, as a term is (ADR-0078): the page
+        // tells the crawler to go away, and the file must not say otherwise.
+        .filter((path) => !path.noIndex)
         .filter((path) => !claimed.has(`${path.groupId}:${path.locale}`))
         .map((path) => ({
           slug: path.slug,

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TooltipProvider } from '../../components/ui/tooltip';
 import { LocaleListEditor } from './locale-list-editor';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 function renderEditor(
   enabledLocales: string[],
@@ -117,9 +118,12 @@ describe('LocaleListEditor', () => {
     const onChange = vi.fn();
     renderEditor(['it-it', 'en-us'], 'it-it', onChange);
 
-    const remove = screen.getByRole('button', {
-      name: /^rimuovi italiano/i,
-    }) as HTMLButtonElement;
+    const remove = instanceOf(
+      screen.getByRole('button', {
+        name: /^rimuovi italiano/i,
+      }),
+      HTMLButtonElement,
+    );
     expect(remove.disabled).toBe(true);
     expect(
       screen.getByText(/scegline prima un’altra come predefinita/i),
@@ -137,9 +141,12 @@ describe('LocaleListEditor', () => {
   it('cannot remove the last remaining locale, and says why', () => {
     renderEditor(['it-it'], 'it-it');
 
-    const removeButton = screen.getByRole('button', {
-      name: /^rimuovi italiano/i,
-    }) as HTMLButtonElement;
+    const removeButton = instanceOf(
+      screen.getByRole('button', {
+        name: /^rimuovi italiano/i,
+      }),
+      HTMLButtonElement,
+    );
     expect(removeButton.disabled).toBe(true);
     expect(
       screen.getByText('Il sito ha bisogno di almeno una lingua.'),

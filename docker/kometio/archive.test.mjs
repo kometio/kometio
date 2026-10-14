@@ -96,6 +96,41 @@ describe('what an archive says about itself', () => {
   });
 });
 
+describe('a database from before the baseline', () => {
+  // The journal's first entry is a squash of the history before it
+  // (docs/adr/0004): a database that went through it still has the rows of the
+  // migrations the baseline replaced, older than the baseline and not in the
+  // journal. They are applied and replaced, not a newer version's.
+  const legacy = [500, 999];
+
+  it('is not a newer one: its rows older than the baseline are the lineage the baseline replaced', () => {
+    assert.doesNotThrow(() =>
+      assertDatabaseIsNotNewer(journal, [...legacy, 1000, 2000, 3000]),
+    );
+  });
+
+  it('is still refused when a newer version has migrated it as well', () => {
+    assert.throws(
+      () => assertDatabaseIsNotNewer(journal, [...legacy, 1000, 9999]),
+      /1 migration that this version does not know/,
+    );
+  });
+
+  it('refuses one that is between the baseline and the newest, which no version of this lineage wrote', () => {
+    assert.throws(
+      () => assertDatabaseIsNotNewer(journal, [1000, 1500, 2000]),
+      /1 migration that this version does not know/,
+    );
+  });
+
+  it('has its rows older than the baseline left out of the names an archive lists', () => {
+    assert.deepEqual(
+      appliedMigrationTags(journal, [...legacy, 1000, 2000, 3000]),
+      KNOWN,
+    );
+  });
+});
+
 describe('the migrations of a database, by name', () => {
   it('turns what the database recorded into the names the journal gives them', () => {
     assert.deepEqual(appliedMigrationTags(journal, [1000, '2000']), [

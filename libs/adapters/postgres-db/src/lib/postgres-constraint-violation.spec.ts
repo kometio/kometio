@@ -13,9 +13,8 @@ function buildPostgresError(
   // reflect the real runtime constructor (`Object.assign(this, x)`, see
   // node_modules/postgres/src/errors.js), which is how the driver actually
   // builds these errors (confirmed live against a real Postgres in
-  // drizzle-page.repository.integration.spec.ts). An isolated, commented
-  // cast bridging exactly that type/runtime gap — there is no "typed" way
-  // to construct this fixture.
+  // drizzle-page.repository.integration.spec.ts). Hence the assignment of
+  // the fields after construction, which is how the driver does it too.
   const error = new postgres.PostgresError(
     'duplicate key value violates unique constraint',
   );
@@ -23,7 +22,7 @@ function buildPostgresError(
     code: '23505',
     constraint_name: 'pages_tenant_id_site_id_locale_slug_unique',
     ...overrides,
-  }) as postgres.PostgresError;
+  });
 }
 
 describe('isUniqueViolation', () => {

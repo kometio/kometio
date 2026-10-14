@@ -181,9 +181,7 @@ function readableDate(value: string | null): string | null {
     display: grid;
     @kometio-bridge gap background color border-radius;
     /* Zero width by default, so the frame is there to be turned on. */
-    border-width: var(--kometio-override-border-width, 0);
-    border-style: var(--kometio-override-border-style, solid);
-    border-color: var(--kometio-override-border-color, var(--border));
+    @kometio-bridge border-width border-style border-color;
     /* Measured by its own children, so the grid can answer to the space
        it actually has rather than to the viewport (ADR-0050). */
     container-type: inline-size;

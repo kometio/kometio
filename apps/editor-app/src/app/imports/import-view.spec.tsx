@@ -4,8 +4,10 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import type { WordPressAnalysis } from '@kometio/shared-types';
 import * as api from '../../lib/imports-api-client';
 import type { ImportJobRecord } from '../../lib/imports-api-client';
+import { TooltipProvider } from '../../components/ui/tooltip';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { ImportView } from './import-view';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/imports-api-client', async (importOriginal) => {
   const actual =
@@ -15,6 +17,7 @@ vi.mock('../../lib/imports-api-client', async (importOriginal) => {
     startWordPressAnalysis: vi.fn(),
     getImportJob: vi.fn(),
     listImportJobs: vi.fn(),
+    deleteImportJob: vi.fn(),
   };
 });
 
@@ -71,7 +74,9 @@ function renderView(items: ImportJobRecord[] = []) {
   vi.mocked(api.listImportJobs).mockResolvedValue({ items });
   render(
     <QueryClientProvider client={createTestQueryClient()}>
-      <ImportView siteId="site-1" />
+      <TooltipProvider>
+        <ImportView siteId="site-1" />
+      </TooltipProvider>
     </QueryClientProvider>,
   );
 }
@@ -178,7 +183,9 @@ describe('ImportView', () => {
 
     const input = document.querySelector('input[type="file"]');
     const file = new File(['<rss/>'], 'export.xml', { type: 'text/xml' });
-    fireEvent.change(input as HTMLInputElement, { target: { files: [file] } });
+    fireEvent.change(instanceOf(input, HTMLInputElement), {
+      target: { files: [file] },
+    });
 
     await waitFor(() =>
       expect(api.startWordPressAnalysis).toHaveBeenCalledWith('site-1', file),
@@ -191,7 +198,75 @@ describe('ImportView', () => {
 
     expect(await screen.findByText('export-wordpress.xml')).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: /primo-tentativo\.xml/ }),
+      screen.getByRole('button', { name: /^primo-tentativo\.xml/ }),
     ).toBeTruthy();
+  });
+
+  it('forgets an earlier attempt once asked and sure', async () => {
+    vi.mocked(api.deleteImportJob).mockResolvedValue(undefined);
+    renderView([job(), job({ id: 'job-0', fileName: 'primo-tentativo.xml' })]);
+    await screen.findByText('export-wordpress.xml');
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /(Elimina|Delete).*primo-tentativo\.xml/,
+      }),
+    );
+    // Nothing goes before the question is answered.
+    expect(api.deleteImportJob).not.toHaveBeenCalled();
+    fireEvent.click(
+      await screen.findByRole('button', { name: /^(Elimina|Delete)$/ }),
+    );
+
+    await waitFor(() =>
+      expect(api.deleteImportJob).toHaveBeenCalledWith('job-0'),
+    );
+  });
+
+  it('forgets the newest one too, and then shows what is left', async () => {
+    vi.mocked(api.deleteImportJob).mockResolvedValue(undefined);
+    renderView([job(), job({ id: 'job-0', fileName: 'primo-tentativo.xml' })]);
+    await screen.findByText('export-wordpress.xml');
+    // The list is read again after the deletion: the newest is gone.
+    vi.mocked(api.listImportJobs).mockResolvedValue({
+      items: [job({ id: 'job-0', fileName: 'primo-tentativo.xml' })],
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /(Elimina|Delete).*export-wordpress\.xml/,
+      }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /^(Elimina|Delete)$/ }),
+    );
+
+    await waitFor(() =>
+      expect(api.deleteImportJob).toHaveBeenCalledWith('job-1'),
+    );
+    expect(await screen.findByText('primo-tentativo.xml')).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.queryByText('export-wordpress.xml')).toBeNull(),
+    );
+  });
+
+  it('says so when the attempt could not be deleted, and keeps it', async () => {
+    vi.mocked(api.deleteImportJob).mockRejectedValue(new Error('boom'));
+    renderView([job(), job({ id: 'job-0', fileName: 'primo-tentativo.xml' })]);
+    await screen.findByText('export-wordpress.xml');
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /(Elimina|Delete).*primo-tentativo\.xml/,
+      }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /^(Elimina|Delete)$/ }),
+    );
+
+    expect(
+      await screen.findByText(/non è stato eliminato|was not deleted/i),
+    ).toBeTruthy();
+    expect(screen.getByText('primo-tentativo.xml')).toBeTruthy();
   });
 });

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { RouteError } from './route-error';
-import { ApiError } from '../../lib/http-client';
+import { ApiError, ServerUnreachableError } from '../../lib/http-client';
 
 describe('RouteError', () => {
   it('says something went wrong, and calls reset when retrying', () => {
@@ -28,6 +28,29 @@ describe('RouteError', () => {
     );
 
     expect(screen.getByText('Forbidden resource')).toBeTruthy();
+  });
+
+  it('names both addresses when the server did not answer, and what to do', () => {
+    const reset = vi.fn();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    render(
+      <RouteError
+        error={new ServerUnreachableError('http://localhost:3000/api')}
+        reset={reset}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { name: /non raggiunge il server/i }),
+    ).toBeTruthy();
+    // The page's own address, and the server's: the two that must agree.
+    expect(screen.getByText(window.location.origin)).toBeTruthy();
+    expect(screen.getByText('http://localhost:3000/api')).toBeTruthy();
+    expect(screen.getByText(/log del container/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: /riprova/i }));
+    expect(reset).toHaveBeenCalled();
   });
 
   it('logs the error, so it does not disappear without a trace', () => {

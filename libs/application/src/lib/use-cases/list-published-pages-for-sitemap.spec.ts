@@ -100,6 +100,47 @@ describe('listPublishedPagesForSitemap', () => {
     return group;
   }
 
+  it('leaves out a page that asked to stay out of search engines, and only that language of it', async () => {
+    const deps = setup();
+    await seedSite(deps.siteRepository, { enabledLocales: ['it', 'en'] });
+    const group = await createPageGroup(deps, {
+      tenantId,
+      siteId: 'site-1',
+      parentId: null,
+      createdBy: 'user-1',
+    });
+    const published = [];
+    for (const [locale, noIndex] of [
+      ['it', true],
+      ['en', false],
+    ] as const) {
+      const translation = await createPageGroupTranslation(deps, {
+        tenantId,
+        pageGroupId: group.id,
+        locale,
+        slug: 'grazie',
+        seoMeta: { title: 'Grazie', description: '', noIndex },
+        createdBy: 'user-1',
+      });
+      await publishPageTranslation(deps, {
+        tenantId,
+        pageTranslationId: translation.id,
+        actorUserId: null,
+      });
+      published.push(translation);
+    }
+    await createAndPublish(deps, 'chi-siamo');
+
+    const result = await listPublishedPagesForSitemap(deps, {
+      tenantId,
+      domain: 'example.com',
+    });
+
+    expect(
+      result?.items.map((entry) => `${entry.locale}/${entry.slug}`).sort(),
+    ).toEqual(['en/grazie', 'it/chi-siamo']);
+  });
+
   it('lists only published pages for the domain, skipping drafts', async () => {
     const deps = setup();
     await seedSite(deps.siteRepository);

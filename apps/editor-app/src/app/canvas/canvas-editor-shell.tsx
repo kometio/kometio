@@ -65,6 +65,7 @@ export function CanvasEditorShell({
   siteId,
   title,
   publicationState,
+  scheduled,
   pageMenu,
   statusText,
   isSaving = false,
@@ -491,6 +492,7 @@ export function CanvasEditorShell({
         languageSwitcher={languageSwitcher}
         title={title}
         publicationState={publicationState}
+        scheduled={scheduled}
         pageMenu={flushedPageMenu}
         // The caller's status records the last write that LANDED; a
         // change still in the debounce has not been written at all, and

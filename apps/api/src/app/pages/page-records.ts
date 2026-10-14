@@ -58,6 +58,8 @@ export class PageRecords {
       createdBy: props.createdBy,
       createdAt: props.createdAt.toISOString(),
       updatedAt: props.updatedAt.toISOString(),
+      scheduledPublishAt: props.scheduledPublishAt?.toISOString() ?? null,
+      scheduleFailure: props.scheduleFailure,
     });
   }
 

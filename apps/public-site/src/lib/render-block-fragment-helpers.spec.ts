@@ -5,6 +5,7 @@ import {
   isValidRenderBlockFragmentBody,
   renderBlockFragmentCorsHeaders,
 } from './render-block-fragment-helpers';
+import { publishedPage } from '../test/published-site.test-fixture';
 
 describe('isValidRenderBlockFragmentBody', () => {
   const valid = {
@@ -20,9 +21,10 @@ describe('isValidRenderBlockFragmentBody', () => {
   });
 
   it('rejects a body missing any required field', () => {
-    for (const key of Object.keys(valid) as (keyof typeof valid)[]) {
-      const rest = { ...valid };
-      delete rest[key];
+    for (const missing of Object.keys(valid)) {
+      const rest = Object.fromEntries(
+        Object.entries(valid).filter(([key]) => key !== missing),
+      );
       expect(isValidRenderBlockFragmentBody(rest)).toBe(false);
     }
   });
@@ -88,7 +90,7 @@ describe('renderBlockFragmentCorsHeaders', () => {
  * section plainly published and visible further up the same page.
  */
 describe('buildFragmentBlock', () => {
-  const page = {
+  const page = publishedPage({
     content: [
       {
         id: 'placed',
@@ -97,18 +99,11 @@ describe('buildFragmentBlock', () => {
         children: [{ id: 'placed--h', type: 'Heading', props: { text: 'Hi' } }],
       },
     ],
-    seoMeta: { title: '', description: '' },
     locale: 'en',
-    translations: [],
-    ancestors: [],
-    site: {} as never,
-    header: null,
-    footer: null,
-    headerSticky: false,
     sections: {
       cta: [{ id: 'h', type: 'Heading', props: { text: 'Hi' } }],
     },
-  } as never;
+  });
 
   it('grafts the blocks of a section the page uses', () => {
     const block = buildFragmentBlock(
@@ -221,7 +216,7 @@ describe('buildFragmentBlock — a block the server fills', () => {
     avatar: null,
     path: '/it/autore/giulia-rossi',
   };
-  const page = {
+  const page = publishedPage({
     content: [
       {
         id: 'box',
@@ -246,15 +241,7 @@ describe('buildFragmentBlock — a block the server fills', () => {
         },
       },
     ],
-    seoMeta: { title: '', description: '' },
-    locale: 'it',
-    translations: [],
-    ancestors: [],
-    site: {} as never,
-    header: null,
-    footer: null,
-    headerSticky: false,
-  } as never;
+  });
 
   /*
    * Found live: switching off an article's date re-rendered the byline from

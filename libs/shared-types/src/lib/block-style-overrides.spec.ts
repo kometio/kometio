@@ -283,8 +283,9 @@ describe('per-breakpoint overrides', () => {
         id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
         type: 'Hero',
         props: {},
+        // @ts-expect-error the value the type forbids is the case under test
         styleOverride,
-      } as Block,
+      },
     ],
   ];
 
@@ -511,8 +512,14 @@ describe("a theme's own style properties", () => {
 describe('the motion set on a root block (docs/adr/0060)', () => {
   const wrapperFor = (styleOverride: unknown) =>
     buildRootBlockSpacingCss([
-      { id: 'abc', type: 'Hero', props: {}, styleOverride },
-    ] as never);
+      {
+        id: 'abc',
+        type: 'Hero',
+        props: {},
+        // @ts-expect-error the value the type forbids is the case under test
+        styleOverride,
+      },
+    ]);
 
   it('emits the keyframe name the stylesheet defines, not the stored word', () => {
     const css = wrapperFor({ base: { animation: 'slide-up' } });

@@ -58,6 +58,9 @@ export function pageTranslationRow(
     updatedBy: props.updatedBy,
     contentUpdatedAt: props.contentUpdatedAt,
     publishedAt: props.publishedAt,
+    scheduledPublishAt: props.scheduledPublishAt,
+    scheduledBy: props.scheduledBy,
+    scheduleFailure: props.scheduleFailure,
   };
 }
 

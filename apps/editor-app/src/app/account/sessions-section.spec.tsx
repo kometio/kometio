@@ -12,6 +12,7 @@ import * as api from '../../lib/account-api-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { WithToasts } from '../../test/toasts.test-fixture';
 import { SessionsSection } from './sessions-section';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/account-api-client', async (importOriginal) => {
   const actual =
@@ -75,13 +76,15 @@ describe('SessionsSection', () => {
     const phone = screen.getByText('Safari on iPhone').closest('li');
     expect(phone).not.toBeNull();
     expect(
-      within(phone as HTMLElement).getByRole('button', {
+      within(instanceOf(phone, HTMLElement)).getByRole('button', {
         name: 'Scollega Safari on iPhone',
       }),
     ).toBeTruthy();
     // This device: no way to end it from its own list.
     const here = screen.getByText('Chrome on macOS').closest('li');
-    expect(within(here as HTMLElement).queryByRole('button')).toBeNull();
+    expect(
+      within(instanceOf(here, HTMLElement)).queryByRole('button'),
+    ).toBeNull();
   });
 
   it('says a device used a minute ago is active now, and one used days ago when it was', async () => {

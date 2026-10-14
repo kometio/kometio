@@ -40,10 +40,9 @@ describe('BLOCK_CONTRACTS', () => {
     );
 
     expect(declared.length).toBeGreaterThan(0);
+    const listed = new Set<unknown>(BLOCK_CONTRACTS);
     const unlisted = declared
-      .filter(
-        ({ value }) => !(BLOCK_CONTRACTS as readonly unknown[]).includes(value),
-      )
+      .filter(({ value }) => !listed.has(value))
       .map(({ file, name }) => `${file}: ${name}`);
 
     expect(unlisted).toEqual([]);

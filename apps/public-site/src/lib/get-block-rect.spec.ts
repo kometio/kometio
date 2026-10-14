@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getBlockRect } from './get-block-rect';
+import { rect } from '../test/dom.test-fixture';
 
 describe('getBlockRect', () => {
   afterEach(() => {
@@ -16,11 +17,11 @@ describe('getBlockRect', () => {
     // prove getBlockRect never relies on it. jsdom doesn't implement
     // Range.getBoundingClientRect at all, so it's assigned directly rather
     // than spied on (spyOn requires the method to already exist).
-    wrapper.getBoundingClientRect = vi.fn(
-      () => ({ top: 0, left: 0, width: 0, height: 0 }) as DOMRect,
+    wrapper.getBoundingClientRect = vi.fn(() =>
+      rect({ top: 0, left: 0, width: 0, height: 0 }),
     );
-    const rangeRect = vi.fn(
-      () => ({ top: 10, left: 20, width: 300, height: 40 }) as DOMRect,
+    const rangeRect = vi.fn(() =>
+      rect({ top: 10, left: 20, width: 300, height: 40 }),
     );
     Range.prototype.getBoundingClientRect = rangeRect;
 
@@ -35,8 +36,8 @@ describe('getBlockRect', () => {
     const el = document.createElement('span');
     document.body.append(el);
     const selectSpy = vi.spyOn(Range.prototype, 'selectNodeContents');
-    Range.prototype.getBoundingClientRect = vi.fn(
-      () => ({ top: 0, left: 0, width: 0, height: 0 }) as DOMRect,
+    Range.prototype.getBoundingClientRect = vi.fn(() =>
+      rect({ top: 0, left: 0, width: 0, height: 0 }),
     );
 
     getBlockRect(el);

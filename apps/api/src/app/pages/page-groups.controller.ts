@@ -162,6 +162,11 @@ export class PageGroupsController {
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
         lastEditedAt: item.lastEditedAt.toISOString(),
+        translations: item.translations.map((translation) => ({
+          ...translation,
+          scheduledPublishAt:
+            translation.scheduledPublishAt?.toISOString() ?? null,
+        })),
       })),
     });
   }

@@ -35,6 +35,8 @@ const translation = {
   isDiverged: false,
   divergedContent: null,
   createdBy: null,
+  scheduledPublishAt: null,
+  scheduleFailure: null,
   ...stamps,
 };
 
@@ -80,6 +82,7 @@ describe('the pages list', () => {
         status: 'published',
         isDiverged: false,
         hasUnpublishedChanges: true,
+        scheduledPublishAt: null,
       },
     ],
   };

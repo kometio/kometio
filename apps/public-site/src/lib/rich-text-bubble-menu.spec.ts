@@ -7,6 +7,7 @@ import {
   applyPageLink,
   createRichTextBubbleMenu,
 } from './rich-text-bubble-menu';
+import { instanceOf } from '../test/dom.test-fixture';
 
 // jsdom does no layout, and `focus()` scrolls the selection into view, which
 // asks the range where it is — some time after the test that triggered it
@@ -106,7 +107,7 @@ describe('createRichTextBubbleMenu', () => {
 
     expect(menuElement().style.all).toBe('initial');
     for (const button of menuElement().querySelectorAll('button')) {
-      expect((button as HTMLElement).style.all).toBe('initial');
+      expect(instanceOf(button, HTMLElement).style.all).toBe('initial');
     }
   });
 

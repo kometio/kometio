@@ -108,8 +108,12 @@ export async function duplicatePageGroup(
       updatedBy: input.createdBy,
       contentUpdatedAt: group.updatedAt,
       // A copy is a draft nobody has published yet, whatever the
-      // original's state.
+      // original's state — and whatever the original is waiting to do: a
+      // schedule is the original's own (docs/adr/0135).
       publishedAt: null,
+      scheduledPublishAt: null,
+      scheduledBy: null,
+      scheduleFailure: null,
     });
     await deps.pageTranslationRepository.add(translation, group.parentId);
     translations.push(translation);

@@ -9,6 +9,7 @@ import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { buildTaxonomyRecord, buildTermRecord } from '@kometio/testing/records';
 import { chooseOption } from '../../test/select.test-fixture';
 import { TermTreeEditor } from './term-tree-editor';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('@tanstack/react-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@tanstack/react-router')>()),
@@ -175,24 +176,27 @@ describe('TermTreeEditor', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Riordina' }));
 
       expect(
-        (
+        instanceOf(
           screen.getByRole('button', {
             name: 'Sposta A più in alto',
-          }) as HTMLButtonElement
+          }),
+          HTMLButtonElement,
         ).disabled,
       ).toBe(true);
       expect(
-        (
+        instanceOf(
           screen.getByRole('button', {
             name: 'Sposta B più in basso',
-          }) as HTMLButtonElement
+          }),
+          HTMLButtonElement,
         ).disabled,
       ).toBe(true);
       expect(
-        (
+        instanceOf(
           screen.getByRole('button', {
             name: 'Sposta A più in basso',
-          }) as HTMLButtonElement
+          }),
+          HTMLButtonElement,
         ).disabled,
       ).toBe(false);
       fireEvent.click(screen.getByRole('button', { name: 'Fatto' }));

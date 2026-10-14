@@ -7,6 +7,7 @@ import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { TooltipProvider } from '../../components/ui/tooltip';
 import { ToastProvider } from '../shell/toast-provider';
 import { GeneralSettingsSection } from './general-settings-section';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // The save bar asks before an in-app link throws work away, which needs a
 // router; here nothing is being left.
@@ -36,7 +37,8 @@ function renderSection(overrides = {}) {
   );
 }
 
-const domain = () => screen.getByLabelText('Dominio') as HTMLInputElement;
+const domain = () =>
+  instanceOf(screen.getByLabelText('Dominio'), HTMLInputElement);
 
 describe('GeneralSettingsSection', () => {
   afterEach(() => {

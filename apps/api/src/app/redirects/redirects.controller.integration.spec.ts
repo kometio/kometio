@@ -7,6 +7,7 @@ import { IntegrationApp } from '../../test/integration-app.test-fixture';
 import { PublicRedirectsModule } from './public-redirects.module';
 import { RedirectsModule } from './redirects.module';
 import { REDIRECT_TRAFFIC } from './redirects.tokens';
+import { idOf } from '../../test/response-body.test-fixture';
 
 /**
  * Runs against a real Postgres — see docs/development.md. The rules are
@@ -63,7 +64,7 @@ describe('Redirects (integration)', () => {
     await agent
       .post(`/page-groups/translations/${translation.body.id}/publish`)
       .expect(201);
-    return group.body.id as string;
+    return idOf(group.body);
   }
 
   it('is for people who can change the live site, and for nobody else', async () => {

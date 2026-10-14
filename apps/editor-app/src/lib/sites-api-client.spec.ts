@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { buildSiteRecord } from '@kometio/testing/records';
 import {
   getCurrentSite,
@@ -9,14 +10,6 @@ import {
 } from './sites-api-client';
 
 const sampleSite = buildSiteRecord();
-
-function jsonResponse(body: unknown) {
-  return {
-    ok: true,
-    status: 200,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 describe('sites-api-client', () => {
   beforeEach(() => {

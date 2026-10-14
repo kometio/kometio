@@ -12,6 +12,9 @@
   "references": [
     {
       "path": "../../ports/tsconfig.lib.json"
+    },
+    {
+      "path": "../../testing/tsconfig.lib.json"
     }
   ],
   "exclude": [

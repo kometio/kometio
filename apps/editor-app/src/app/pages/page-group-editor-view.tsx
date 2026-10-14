@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
+  CalendarClock,
   ExternalLink,
   GitFork,
   History,
@@ -22,7 +23,10 @@ import { useCurrentSession } from '../auth/use-current-session';
 import { FormListProvider } from '../forms/form-list-provider';
 import { IconListProvider } from '../style/icon-list-provider';
 import { MediaPickerProvider } from '../media/media-picker-provider';
+import { useFormatDate } from '../../lib/use-format-date';
 import { PageGroupSeoPanelDialog } from './page-group-seo-panel-dialog';
+import { SchedulePublishDialog } from './schedule-publish-dialog';
+import { usePageTranslationSchedule } from './use-page-translation-schedule';
 import { PageGroupTermsDialog } from './page-group-terms-dialog';
 import { PageGroupTranslationsDialog } from './page-group-translations-dialog';
 import { PageListProvider } from './page-list-provider';
@@ -145,6 +149,7 @@ export function PageGroupEditorView({
         : undefined,
   });
   const [isSeoOpen, setIsSeoOpen] = useState(false);
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isTranslationsOpen, setIsTranslationsOpen] = useState(false);
@@ -189,6 +194,10 @@ export function PageGroupEditorView({
     onRestored,
   });
   const languageLabel = activeLocale.toUpperCase();
+  const schedule = usePageTranslationSchedule(groupId, activeTranslation.id);
+  const formatDateTime = useFormatDate('dateTime');
+  const formatDayAndTime = useFormatDate('dayAndTime');
+  const scheduledAt = activeTranslation.scheduledPublishAt;
 
   /**
    * The canvas sends any change still waiting out its debounce before it
@@ -268,6 +277,13 @@ export function PageGroupEditorView({
                         icon: Tags,
                         onSelect: () => setIsTermsOpen(true),
                       },
+                      {
+                        label: activeTranslation.scheduledPublishAt
+                          ? t('pages.schedule.menuChange')
+                          : t('pages.schedule.menuOpen'),
+                        icon: CalendarClock,
+                        onSelect: () => setIsScheduleOpen(true),
+                      },
                     ]
                   : []),
                 {
@@ -309,6 +325,21 @@ export function PageGroupEditorView({
                     ]
                   : []),
               ]}
+              // What is set is said on the bar and is the way back into the
+              // dialog: a state nobody can see is one that stays set.
+              scheduled={
+                scheduledAt
+                  ? {
+                      prefix: t('pages.schedule.chip'),
+                      text: formatDayAndTime(scheduledAt) ?? '',
+                      label: t('pages.schedule.badge', {
+                        when: formatDateTime(scheduledAt) ?? '',
+                      }),
+                      failed: activeTranslation.scheduleFailure !== null,
+                      onOpen: () => setIsScheduleOpen(true),
+                    }
+                  : undefined
+              }
               registry={registry}
               categories={categories}
               blocks={displayedBlocks}
@@ -344,6 +375,19 @@ export function PageGroupEditorView({
                 seoMeta={activeTranslation.seoMeta}
                 open={isSeoOpen}
                 onOpenChange={setIsSeoOpen}
+              />
+              <SchedulePublishDialog
+                open={isScheduleOpen}
+                onOpenChange={setIsScheduleOpen}
+                scheduledPublishAt={activeTranslation.scheduledPublishAt}
+                scheduleFailure={activeTranslation.scheduleFailure}
+                onSchedule={async (publishAt) => {
+                  await schedule.schedule(publishAt);
+                }}
+                onCancelSchedule={async () => {
+                  await schedule.cancelSchedule();
+                }}
+                isSaving={schedule.isSaving}
               />
               <PageGroupTermsDialog
                 groupId={groupId}

@@ -11,6 +11,7 @@ import { PUBLIC_SITE_URL } from '../../lib/public-site-url';
 import { TooltipProvider } from '../../components/ui/tooltip';
 import { ToastProvider } from '../shell/toast-provider';
 import { AccountProfileView } from './account-profile-view';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // The save bar asks before a link throws unsaved work away, which needs a
 // router; nothing is being left here.
@@ -71,10 +72,10 @@ describe('AccountProfileView', () => {
     renderView();
 
     expect(
-      (screen.getByLabelText('italiano') as HTMLTextAreaElement).value,
+      instanceOf(screen.getByLabelText('italiano'), HTMLTextAreaElement).value,
     ).toBe('Scrive di caffè.');
     expect(
-      (screen.getByLabelText('inglese') as HTMLTextAreaElement).value,
+      instanceOf(screen.getByLabelText('inglese'), HTMLTextAreaElement).value,
     ).toBe('');
     expect(screen.queryByLabelText('francese')).toBeNull();
     expect(screen.getByText('giulia@example.com').tagName).toBe('DD');
@@ -123,9 +124,10 @@ describe('AccountProfileView', () => {
       target: { value: 'a-new-password' },
     });
     fireEvent.submit(
-      screen
-        .getByLabelText('Nuova password')
-        .closest('form') as HTMLFormElement,
+      instanceOf(
+        screen.getByLabelText('Nuova password').closest('form'),
+        HTMLFormElement,
+      ),
     );
 
     await waitFor(() => expect(accountApi.changePassword).toHaveBeenCalled());
@@ -219,7 +221,7 @@ describe('AccountProfileView', () => {
     fireEvent.change(field, { target: { value: 'Giulia Rossì Blog' } });
     fireEvent.blur(field);
 
-    expect((field as HTMLInputElement).value).toBe('giulia-rossi-blog');
+    expect(instanceOf(field, HTMLInputElement).value).toBe('giulia-rossi-blog');
   });
 
   it('writes the address the way an address is written when saved straight after typing', async () => {
@@ -246,7 +248,7 @@ describe('AccountProfileView', () => {
     expect(await screen.findByText('Modifiche non salvate')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
 
-    expect((name as HTMLInputElement).value).toBe('Giulia Rossi');
+    expect(instanceOf(name, HTMLInputElement).value).toBe('Giulia Rossi');
     expect(screen.queryByRole('button', { name: 'Salva' })).toBeNull();
   });
 

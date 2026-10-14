@@ -12,6 +12,8 @@ import { formQueryOptions } from './forms-queries';
 import { FormEditorView, type FormEditorViewProps } from './form-editor-view';
 import { useCurrentSession } from '../auth/use-current-session';
 import { sessionAs } from '../../test/current-session.test-fixture';
+import { instanceOf } from '../../test/dom.test-fixture';
+import { chooseOption } from '../../test/select.test-fixture';
 
 vi.mock('../auth/use-current-session', () => ({ useCurrentSession: vi.fn() }));
 
@@ -285,9 +287,13 @@ describe('FormEditorView — multi-step', () => {
       steps: [{ id: 'step-1', title: 'Dati' }],
     });
 
-    const [fieldStepSelect] = screen.getAllByLabelText('Step');
-    fireEvent.change(fieldStepSelect, { target: { value: 'step-1' } });
-    expect((fieldStepSelect as HTMLSelectElement).value).toBe('step-1');
+    const fieldStepSelect = instanceOf(
+      screen.getAllByLabelText('Step')[0],
+      HTMLElement,
+      'the first field’s step dropdown',
+    );
+    chooseOption(fieldStepSelect, 'Dati');
+    expect(fieldStepSelect.textContent).toContain('Dati');
 
     fireEvent.click(screen.getByRole('button', { name: /rimuovi step/i }));
 

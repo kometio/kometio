@@ -11,6 +11,7 @@ import { buildMediaRecord } from '@kometio/testing/records';
 import * as mediaApi from '../../lib/media-api-client';
 import { ApiError } from '../../lib/http-client';
 import { MediaLibraryView } from './media-library-view';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual =
@@ -181,7 +182,7 @@ describe('MediaLibraryView', () => {
     fireEvent.change(box, { target: { value: 'rep' } });
 
     // What was typed is on screen straight away, whatever the address says.
-    expect((box as HTMLInputElement).value).toBe('rep');
+    expect(instanceOf(box, HTMLInputElement).value).toBe('rep');
     expect(navigate).not.toHaveBeenCalled();
 
     await waitFor(() => expect(navigate).toHaveBeenCalledTimes(1));

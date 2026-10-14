@@ -4,6 +4,7 @@ import {
   pageBlockCategories,
   headerFooterBlocks,
 } from '@kometio/block-registry';
+import { isRecord } from '@kometio/shared-types';
 import en from './en.json';
 import itLocale from './it.json';
 
@@ -26,10 +27,7 @@ function resolveKey(dict: unknown, key: string): unknown {
   return key
     .split('.')
     .reduce<unknown>(
-      (node, segment) =>
-        node && typeof node === 'object'
-          ? (node as Record<string, unknown>)[segment]
-          : undefined,
+      (node, segment) => (isRecord(node) ? node[segment] : undefined),
       dict,
     );
 }
@@ -84,11 +82,11 @@ describe('block i18n key coverage', () => {
  */
 describe('the two locales carry the same keys', () => {
   function leafKeys(node: unknown, prefix = ''): string[] {
-    if (typeof node !== 'object' || node === null) {
+    if (!isRecord(node)) {
       return [prefix];
     }
-    return Object.entries(node as Record<string, unknown>).flatMap(
-      ([key, value]) => leafKeys(value, prefix ? `${prefix}.${key}` : key),
+    return Object.entries(node).flatMap(([key, value]) =>
+      leafKeys(value, prefix ? `${prefix}.${key}` : key),
     );
   }
 

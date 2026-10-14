@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { isRecord } from '@kometio/shared-types';
 
 /**
  * Every block on a page renders through the same `BlockRenderer.astro`,
@@ -59,7 +60,7 @@ describe('a block that cannot be validated', () => {
 
   it('names the block type in both languages the runtime speaks', () => {
     for (const locale of ['en', 'it']) {
-      const catalogue = JSON.parse(
+      const catalogue: unknown = JSON.parse(
         readFileSync(
           join(
             import.meta.dirname,
@@ -68,7 +69,9 @@ describe('a block that cannot be validated', () => {
           ),
           'utf8',
         ),
-      ) as Record<string, string>;
+      );
+      if (!isRecord(catalogue))
+        throw new Error(`${locale}.json is not an object`);
       expect(catalogue['blockRenderer.unrenderable'], locale).toContain(
         '{type}',
       );

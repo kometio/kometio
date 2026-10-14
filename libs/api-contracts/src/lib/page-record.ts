@@ -15,6 +15,8 @@ export const pageGroupListItemTranslationSchema = z.object({
   isDiverged: z.boolean(),
   /** Published, but the draft has moved on since — the rule lives in @kometio/domain-core's hasUnpublishedChanges, never re-derived on the client. */
   hasUnpublishedChanges: z.boolean(),
+  /** The moment it is to be published by itself (docs/adr/0135), as an ISO instant. */
+  scheduledPublishAt: z.string().nullable(),
 });
 
 export type PageGroupListItemTranslation = z.infer<
@@ -92,6 +94,10 @@ export const pageTranslationRecordSchema = z.object({
   createdBy: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  /** The moment this language is to be published by itself (docs/adr/0135), as an ISO instant. */
+  scheduledPublishAt: z.string().nullable(),
+  /** Why the last attempt at that did not happen, until one does. */
+  scheduleFailure: z.string().nullable(),
 });
 
 export type PageTranslationRecord = z.infer<typeof pageTranslationRecordSchema>;

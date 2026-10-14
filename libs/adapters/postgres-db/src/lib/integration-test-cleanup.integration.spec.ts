@@ -12,6 +12,7 @@ import {
 } from './integration-test-fixtures';
 import { sites, tenants, users } from './schema';
 import { withTenant } from './client';
+import { requireEnv } from '@kometio/env-config';
 
 /** Runs against a real Postgres — see docs/development.md. */
 describe('integration-test-cleanup (integration)', () => {
@@ -43,7 +44,7 @@ describe('integration-test-cleanup (integration)', () => {
   });
 
   it('deleteIntegrationFixtures deletes only the given site/user ids, scoped to the tenant', async () => {
-    const tenantId = process.env.DEFAULT_TENANT_ID as string;
+    const tenantId = requireEnv('DEFAULT_TENANT_ID');
     const siteId = await createIntegrationSite(db, tenantId);
     const userId = await createIntegrationUser(db, tenantId);
 
@@ -65,7 +66,7 @@ describe('integration-test-cleanup (integration)', () => {
   });
 
   it('deleteIntegrationFixtures is a no-op when both id lists are empty', async () => {
-    const tenantId = process.env.DEFAULT_TENANT_ID as string;
+    const tenantId = requireEnv('DEFAULT_TENANT_ID');
     await expect(
       deleteIntegrationFixtures(db, tenantId, {}),
     ).resolves.toBeUndefined();

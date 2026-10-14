@@ -7,6 +7,7 @@ import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { TooltipProvider } from '../../components/ui/tooltip';
 import { ToastProvider } from '../shell/toast-provider';
 import { FormSubmissionRetentionSection } from './form-submission-retention-section';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual =
@@ -45,7 +46,7 @@ const afterDays = () =>
     name: 'Elimina le risposte dopo un numero di giorni',
   });
 const daysField = () =>
-  screen.getByLabelText('Numero di giorni') as HTMLInputElement;
+  instanceOf(screen.getByLabelText('Numero di giorni'), HTMLInputElement);
 const save = () => screen.findByRole('button', { name: 'Salva' });
 
 describe('FormSubmissionRetentionSection', () => {

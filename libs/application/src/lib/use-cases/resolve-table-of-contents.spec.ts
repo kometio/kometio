@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { PageContent } from '@kometio/shared-types';
+import {
+  tableOfContentsEntrySchema,
+  type PageContent,
+} from '@kometio/shared-types';
 import { resolveTableOfContents } from './resolve-table-of-contents';
 
 const heading = (id: string, text: string, level: 'h1' | 'h2' | 'h3') => ({
@@ -48,9 +51,10 @@ describe('resolveTableOfContents', () => {
     ]);
 
     expect(
-      (resolved[0].props['entries'] as { anchorId: string }[]).map(
-        (entry) => entry.anchorId,
-      ),
+      tableOfContentsEntrySchema
+        .array()
+        .parse(resolved[0].props['entries'])
+        .map((entry) => entry.anchorId),
     ).toEqual(['dettagli', 'dettagli-2']);
   });
 

@@ -113,9 +113,8 @@ const label = isFilter ? i18n.t('termList.label') : i18n.t('termList.browseLabel
      nobody has styled still reads as a set of controls. */
   .kometio-term-list {
     @kometio-bridge padding background color border-radius;
-    border-width: var(--kometio-override-border-width, 0);
-    border-style: var(--kometio-override-border-style, solid);
-    border-color: var(--kometio-override-border-color, var(--border));
+    /* Zero width by default, so the frame is there to be turned on. */
+    @kometio-bridge border-width border-style border-color;
   }
 
   .kometio-term-list__items {

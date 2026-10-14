@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { Button } from '../../components/ui/button';
-import { actionErrorMessage } from '../../lib/http-client';
+import {
+  actionErrorMessage,
+  ServerUnreachableError,
+} from '../../lib/http-client';
+import { ServerUnreachable } from './server-unreachable';
 import { InlineError } from '../../components/ui/inline-error';
 
 export function RouteError({ error, reset }: ErrorComponentProps) {
@@ -17,6 +21,10 @@ export function RouteError({ error, reset }: ErrorComponentProps) {
   useEffect(() => {
     console.error('[route error]', error);
   }, [error]);
+
+  if (error instanceof ServerUnreachableError) {
+    return <ServerUnreachable error={error} onRetry={reset} />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 p-4 text-sm">

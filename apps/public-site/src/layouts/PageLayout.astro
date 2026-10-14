@@ -86,6 +86,12 @@ const {
 // docs/adr/0042 — every theme ships in the same image now; `site.themeName`
 // (Tier 2, DB-backed) picks which one this request renders, resolved
 // fresh per request instead of a single build-time `~theme` alias.
+// A page that asked to stay out of search engines says so in the header too
+// (docs/adr/0134), for a crawler that reads that before the markup. The site's
+// own switch is not repeated here: it is robots.txt's and the tag's.
+if (noindex) {
+	Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+}
 const resolvedThemeName = resolveBundledThemeName(site.themeName);
 const themeManifest = getThemeManifest(site.themeName);
 

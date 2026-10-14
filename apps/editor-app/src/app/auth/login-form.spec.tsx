@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LoginForm } from './login-form';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 function fillAndSubmit(email: string, password: string) {
   fireEvent.change(screen.getByLabelText('Email'), {
@@ -80,16 +81,21 @@ describe('LoginForm', () => {
     render(<LoginForm onLogin={onLogin} onForgotPassword={vi.fn()} />);
 
     fillAndSubmit('lele@example.com', 'correct-horse-battery');
-    const submitButton = screen.getByRole('button', {
-      name: /accesso in corso/i,
-    }) as HTMLButtonElement;
+    const submitButton = instanceOf(
+      screen.getByRole('button', {
+        name: /accesso in corso/i,
+      }),
+      HTMLButtonElement,
+    );
     expect(submitButton.disabled).toBe(true);
 
     resolveLogin();
     await waitFor(() =>
       expect(
-        (screen.getByRole('button', { name: /^accedi$/i }) as HTMLButtonElement)
-          .disabled,
+        instanceOf(
+          screen.getByRole('button', { name: /^accedi$/i }),
+          HTMLButtonElement,
+        ).disabled,
       ).toBe(false),
     );
   });

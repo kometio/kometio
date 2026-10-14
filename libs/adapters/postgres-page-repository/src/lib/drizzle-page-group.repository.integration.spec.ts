@@ -419,6 +419,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
             status: 'draft',
             isDiverged: false,
             hasUnpublishedChanges: false,
+            scheduledPublishAt: null,
           },
           {
             locale: 'it',
@@ -427,6 +428,7 @@ describe('DrizzlePageGroupRepository / DrizzlePageTranslationRepository (integra
             status: 'draft',
             isDiverged: false,
             hasUnpublishedChanges: false,
+            scheduledPublishAt: null,
           },
         ]);
       });

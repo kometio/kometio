@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CASCADE_LAYER_ORDER, CASCADE_LAYER_ORDER_CSS } from './cascade-layers';
 
-const rank = (layer: string) =>
-  CASCADE_LAYER_ORDER.indexOf(layer as (typeof CASCADE_LAYER_ORDER)[number]);
+const order: readonly string[] = CASCADE_LAYER_ORDER;
+const rank = (layer: string) => order.indexOf(layer);
 
 describe('CASCADE_LAYER_ORDER', () => {
   it("ranks every kometio layer above Tailwind's, so its reset cannot beat a block rule", () => {

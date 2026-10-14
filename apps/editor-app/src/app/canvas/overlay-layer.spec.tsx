@@ -10,6 +10,7 @@ import {
   toPillStyle,
   toToolbarStyle,
 } from './overlay-layer';
+import { rect } from '../../test/dom.test-fixture';
 
 describe('toOverlayStyle', () => {
   it("adds the iframe's own offset to a viewport-relative block rect", () => {
@@ -153,8 +154,8 @@ describe('OverlayLayer', () => {
   function setup() {
     const iframe = document.createElement('iframe');
     document.body.append(iframe);
-    iframe.getBoundingClientRect = vi.fn(
-      () => ({ top: 100, left: 50, width: 800, height: 600 }) as DOMRect,
+    iframe.getBoundingClientRect = vi.fn(() =>
+      rect({ top: 100, left: 50, width: 800, height: 600 }),
     );
     const ref = createRef<HTMLIFrameElement>();
     ref.current = iframe;

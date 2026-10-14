@@ -14,6 +14,7 @@ describe('TranslationAvailabilityBadges', () => {
             status: 'published',
             isDiverged: false,
             hasUnpublishedChanges: false,
+            scheduledPublishAt: null,
           },
         ]}
         enabledLocales={['it', 'en']}
@@ -47,6 +48,7 @@ describe('TranslationAvailabilityBadges', () => {
             status: 'published',
             isDiverged: false,
             hasUnpublishedChanges: false,
+            scheduledPublishAt: null,
           },
         ]}
         enabledLocales={['it']}
@@ -75,6 +77,7 @@ describe('TranslationAvailabilityBadges', () => {
             status: 'published',
             isDiverged: false,
             hasUnpublishedChanges: true,
+            scheduledPublishAt: null,
           },
         ]}
         enabledLocales={['it']}
@@ -97,6 +100,7 @@ describe('TranslationAvailabilityBadges', () => {
             status: 'draft',
             isDiverged: false,
             hasUnpublishedChanges: false,
+            scheduledPublishAt: null,
           },
         ]}
         enabledLocales={['it']}
@@ -118,6 +122,7 @@ describe('TranslationAvailabilityBadges', () => {
             status: 'published',
             isDiverged: true,
             hasUnpublishedChanges: false,
+            scheduledPublishAt: null,
           },
           {
             locale: 'en',
@@ -126,6 +131,7 @@ describe('TranslationAvailabilityBadges', () => {
             status: 'published',
             isDiverged: false,
             hasUnpublishedChanges: false,
+            scheduledPublishAt: null,
           },
         ]}
         enabledLocales={['it', 'en']}
@@ -136,5 +142,29 @@ describe('TranslationAvailabilityBadges', () => {
     const enBadge = screen.getByText('en').closest('[data-slot="badge"]');
     expect(itBadge?.querySelector('svg')).toBeTruthy();
     expect(enBadge?.querySelector('svg')).toBeNull();
+  });
+
+  it('says when a schedule will put a language online, whatever state it is in', () => {
+    render(
+      <TranslationAvailabilityBadges
+        translations={[
+          {
+            locale: 'it',
+            slug: 'home',
+            title: 'home',
+            status: 'draft',
+            isDiverged: false,
+            hasUnpublishedChanges: false,
+            scheduledPublishAt: new Date(2026, 10, 2, 9, 30).toISOString(),
+          },
+        ]}
+        enabledLocales={['it']}
+      />,
+    );
+
+    const badge = screen.getByText('it').closest('[data-slot="badge"]');
+    expect(badge?.getAttribute('aria-label')).toMatch(
+      /IT — .*(programmata per|scheduled for)/,
+    );
   });
 });

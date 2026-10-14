@@ -42,6 +42,24 @@ export class ApiError extends Error {
 }
 
 /**
+ * The request never got an answer: the server is not running, or the
+ * browser refused to ask it because this page is not at the address the
+ * installation was set up for (CORS). The browser says the same
+ * `TypeError` for both and nothing a person can read, so this carries the
+ * address that was asked, for the screen that names both.
+ */
+export class ServerUnreachableError extends Error {
+  constructor(
+    public readonly apiBaseUrl: string,
+    /** What the browser rejected with, for the console. */
+    public readonly cause?: unknown,
+  ) {
+    super(`The server at ${apiBaseUrl} did not answer`);
+    this.name = 'ServerUnreachableError';
+  }
+}
+
+/**
  * What to put in front of a person when an action fails: the server's
  * explanation when it gave one, and the caller's own fallback when it
  * did not (a timeout, the network, a bug).
@@ -133,6 +151,10 @@ export async function request(
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
       throw new Error(`Request timed out: ${path}`);
+    }
+    // `fetch` rejects with a TypeError when there was no answer to read.
+    if (error instanceof TypeError) {
+      throw new ServerUnreachableError(API_BASE_URL, error);
     }
     throw error;
   }

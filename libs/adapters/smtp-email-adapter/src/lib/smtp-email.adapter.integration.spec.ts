@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { SmtpEmailAdapter } from './smtp-email.adapter';
 
 /**
@@ -8,16 +9,22 @@ import { SmtpEmailAdapter } from './smtp-email.adapter';
  */
 const MAILPIT_API = 'http://localhost:8025/api/v1';
 
-interface MailpitMessage {
-  From: { Address: string };
-  To: { Address: string }[];
-  Subject: string;
-  ID: string;
-}
+/** What Mailpit's API answers with — read through a schema, so a spec fails on the answer it did not get rather than on a property of `undefined`. */
+const mailpitMessageSchema = z.object({
+  From: z.object({ Address: z.string() }),
+  To: z.array(z.object({ Address: z.string() })),
+  Subject: z.string(),
+  ID: z.string(),
+});
+type MailpitMessage = z.infer<typeof mailpitMessageSchema>;
+const mailpitListSchema = z.object({
+  messages: z.array(mailpitMessageSchema),
+});
+const mailpitBodySchema = z.object({ HTML: z.string(), Text: z.string() });
 
 async function latestMessage(): Promise<MailpitMessage> {
   const res = await fetch(`${MAILPIT_API}/messages`);
-  const body = (await res.json()) as { messages: MailpitMessage[] };
+  const body = mailpitListSchema.parse(await res.json());
   const [message] = body.messages;
   if (!message) {
     throw new Error('No message arrived at Mailpit');
@@ -29,7 +36,7 @@ async function messageBody(
   id: string,
 ): Promise<{ HTML: string; Text: string }> {
   const res = await fetch(`${MAILPIT_API}/message/${id}`);
-  return (await res.json()) as { HTML: string; Text: string };
+  return mailpitBodySchema.parse(await res.json());
 }
 
 describe('SmtpEmailAdapter (integration)', () => {

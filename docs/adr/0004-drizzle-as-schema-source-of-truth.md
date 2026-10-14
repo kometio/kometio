@@ -92,3 +92,14 @@ migration file's _effect_ (as opposed to its literal SQL) is preserved
 because the baseline reflects the schema's final, current state — anything
 added and later reverted by a subsequent migration (e.g. `sites.theme_tokens`,
 added in `0023` and dropped in `0026`) correctly never appears at all.
+
+## Amended (2026-10-14): what a squash leaves in a database
+
+A database that had applied the history before a squash keeps those rows in
+`drizzle.__drizzle_migrations`, older than the baseline and in no journal. The
+single image's guard against a database a newer version has migrated used to
+refuse any applied migration it did not list, which refused such a database as
+"made by a newer Kometio" (and its export with it). It now refuses only what is
+not older than the journal's first entry: the baseline stands for everything
+before it. A newer version's migrations are newer than the baseline and are
+refused as before.

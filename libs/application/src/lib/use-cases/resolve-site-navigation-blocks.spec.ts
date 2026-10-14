@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { PageContent, SiteMapNode } from '@kometio/shared-types';
+import {
+  pageGridItemSchema,
+  siteMapNodeSchema,
+  type PageContent,
+} from '@kometio/shared-types';
 import { createPageGroup } from './create-page-group.use-case';
 import { createPageGroupTranslation } from './create-page-group-translation.use-case';
 import { resolveSiteNavigationBlocks } from './resolve-site-navigation-blocks';
@@ -80,7 +84,10 @@ async function seedManual(deps: ReturnType<typeof setup>) {
 }
 
 const titles = (items: unknown) =>
-  (items as { title: string }[]).map((item) => item.title);
+  pageGridItemSchema
+    .array()
+    .parse(items)
+    .map((item) => item.title);
 
 describe('resolveSiteNavigationBlocks', () => {
   it("lists the current page's children, in the order the tree gives them", async () => {
@@ -108,9 +115,9 @@ describe('resolveSiteNavigationBlocks', () => {
       'configurare',
       'pubblicare',
     ]);
-    expect((resolved[0].props['items'] as { path: string }[])[0].path).toBe(
-      '/it/manuale/installare',
-    );
+    expect(
+      pageGridItemSchema.array().parse(resolved[0].props['items'])[0].path,
+    ).toBe('/it/manuale/installare');
   });
 
   it('lists the children of a page chosen by hand, capped at the limit', async () => {
@@ -176,10 +183,10 @@ describe('resolveSiteNavigationBlocks', () => {
       [nav()],
     );
 
-    expect((middle[0].props['previous'] as { title: string }).title).toBe(
+    expect(pageGridItemSchema.parse(middle[0].props['previous']).title).toBe(
       'installare',
     );
-    expect((middle[0].props['next'] as { title: string }).title).toBe(
+    expect(pageGridItemSchema.parse(middle[0].props['next']).title).toBe(
       'pubblicare',
     );
     expect(first[0].props['previous']).toBeNull();
@@ -207,7 +214,7 @@ describe('resolveSiteNavigationBlocks', () => {
       [page],
     );
 
-    const tree = resolved[0].props['tree'] as SiteMapNode[];
+    const tree = siteMapNodeSchema.array().parse(resolved[0].props['tree']);
     expect(tree.map((node) => node.title)).toEqual(['manuale']);
     expect(tree[0].children.map((node) => node.title)).toEqual([
       'installare',

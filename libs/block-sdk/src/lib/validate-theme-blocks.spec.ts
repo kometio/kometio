@@ -136,7 +136,8 @@ describe('validateThemeBlockSet', () => {
               kind: 'custom',
               key: 'picker',
               label: 'blocks.faq.fields.picker.fieldLabel',
-              control: 'spreadsheet' as never,
+              // @ts-expect-error a control the type forbids is the case under test
+              control: 'spreadsheet',
             },
           ],
         }),

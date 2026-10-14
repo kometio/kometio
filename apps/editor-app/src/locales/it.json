@@ -17,6 +17,13 @@
     },
     "selection": {
       "clear": "Deseleziona"
+    },
+    "unreachable": {
+      "title": "L’editor non raggiunge il server",
+      "explanation": "Il server potrebbe essere spento, oppure hai aperto questa pagina a un indirizzo diverso da quello per cui Kometio è configurato.",
+      "thisPage": "Indirizzo di questa pagina",
+      "theServer": "Indirizzo del server",
+      "whatToDo": "Apri l’editor all’indirizzo che Kometio ha scritto all’avvio (lo trovi nel log del container), poi riprova."
     }
   },
   "auth": {
@@ -410,7 +417,8 @@
       "deleted_one": "Pagina eliminata",
       "deleted_other": "{{count}} pagine eliminate",
       "reorderOffFiltered": "Per riordinare le pagine togli i filtri.",
-      "reorderOffPaged": "Per riordinare le pagine devono stare tutte in una pagina dell’elenco."
+      "reorderOffPaged": "Per riordinare le pagine devono stare tutte in una pagina dell’elenco.",
+      "statusScheduled": "programmata per {{when}}"
     },
     "newPageDialog": {
       "title": "Nuova pagina",
@@ -484,11 +492,36 @@
       "chooseOgImage": "Scegli immagine",
       "changeOgImage": "Cambia immagine",
       "canonicalLabel": "URL canonico",
+      "noIndexLabel": "Nascondi ai motori di ricerca",
+      "noIndexHint": "Chi conosce l’indirizzo la apre comunque. Esce dalla sitemap e si chiede ai motori di ricerca di non elencarla; nella ricerca del sito resta.",
       "cancel": "Annulla",
       "save": "Salva",
       "saving": "Salvataggio in corso...",
       "saved": "Impostazioni SEO salvate",
       "saveFailed": "Le impostazioni SEO non sono state salvate. Riprova."
+    },
+    "schedule": {
+      "menuOpen": "Programma la pubblicazione…",
+      "menuChange": "Cambia la programmazione…",
+      "title": "Programma la pubblicazione",
+      "description": "La pagina esce all’ora che scegli, con il contenuto che avrà in quel momento: le modifiche che fai nel frattempo ci saranno.",
+      "whenLabel": "Data e ora",
+      "timeZoneHint": "Ora di {{timeZone}}, quella del tuo computer.",
+      "notAhead": "Scegli un momento che non sia già passato.",
+      "submit": "Programma",
+      "remove": "Togli la programmazione",
+      "saved": "Pubblicazione programmata per {{when}}",
+      "removed": "Programmazione tolta",
+      "saveFailed": "La pubblicazione non è stata programmata. Riprova.",
+      "removeFailed": "La programmazione non è stata tolta. Riprova.",
+      "failure": "L’ultimo tentativo non è riuscito: {{reason}}. Si riprova ogni minuto, finché non cambi o togli la programmazione.",
+      "blocked": {
+        "scheduler-gone": "Non è stata pubblicata: chi l’aveva programmata non ha più un account. Programmala di nuovo.",
+        "scheduler-inactive": "Non è stata pubblicata: l’account di chi l’aveva programmata è stato disattivato. Programmala di nuovo.",
+        "scheduler-cannot-publish": "Non è stata pubblicata: chi l’aveva programmata non può più pubblicare. Programmala di nuovo da un account che può."
+      },
+      "badge": "Programmata: {{when}}",
+      "chip": "Programmata"
     },
     "translations": {
       "open": "Traduzioni",
@@ -3748,6 +3781,12 @@
       "unsupported-post-types": "{{count}} voci sono in tipi di contenuto che non importo: resterebbero fuori.",
       "menus": "{{count}} voci di menu. I menu si ricostruiscono a mano nell’editor.",
       "fields-not-described": "{{count}} blocchi tengono i propri campi nel codice del tema, non nella base dati: arriva il loro contenuto, ma senza sapere che cosa sia ciascun pezzo."
+    },
+    "delete": {
+      "label": "Elimina {{name}}",
+      "title": "Eliminare «{{name}}»?",
+      "description": "Sparisce il resoconto di questo file, e con lui gli indirizzi da cui ricavare i reindirizzamenti. Il sito non cambia. Per riaverlo, carica di nuovo il file.",
+      "failed": "Non è stato eliminato. Riprova."
     }
   },
   "datePicker": {

@@ -18,6 +18,7 @@ import {
   scrollBlockIntoView,
   toBlockRects,
 } from './preview-bridge-client';
+import { instanceOf, rect } from '../test/dom.test-fixture';
 
 function requireElement(id: string): Element {
   const el = document.getElementById(id);
@@ -95,7 +96,7 @@ describe('collectBlockElements', () => {
       <div data-kometio-no-block></div>
     `;
     const ids = collectBlockElements(document).map(
-      (el) => (el as HTMLElement).dataset['kometioBlockId'],
+      (el) => instanceOf(el, HTMLElement).dataset['kometioBlockId'],
     );
     expect(ids).toEqual(['a', 'b']);
   });
@@ -130,8 +131,8 @@ describe('toBlockRects', () => {
   it('pairs each element with its own rect, keyed by its block id', () => {
     // jsdom doesn't implement Range.getBoundingClientRect at all, so it's
     // assigned directly rather than spied on.
-    Range.prototype.getBoundingClientRect = vi.fn(
-      () => ({ top: 1, left: 2, width: 3, height: 4 }) as DOMRect,
+    Range.prototype.getBoundingClientRect = vi.fn(() =>
+      rect({ top: 1, left: 2, width: 3, height: 4 }),
     );
     document.body.innerHTML = `<div data-kometio-block-id="a"></div>`;
     const el = requireQuery('[data-kometio-block-id]');
@@ -256,7 +257,7 @@ describe('applyBlockInsert', () => {
   const rootList = (...blocks: string[]) =>
     '<main data-kometio-root-blocks="page" class="flex flex-col">' +
     blocks
-      .map((block, index) => `<div class="kometio-root-block">${block}</div>`)
+      .map((block) => `<div class="kometio-root-block">${block}</div>`)
       .join('') +
     '</main>';
 
@@ -492,7 +493,7 @@ describe('applyBlockInsert', () => {
     expect(wrapper.children[0]?.getAttribute('data-kometio-block-id')).toBe(
       'countdown-1',
     );
-    const script = wrapper.children[1] as HTMLScriptElement;
+    const script = instanceOf(wrapper.children[1], HTMLScriptElement);
     expect(script.tagName).toBe('SCRIPT');
     expect(script.textContent).toBe('window.__kometioTestFlag = 1;');
   });
@@ -693,8 +694,8 @@ describe('scrollBlockIntoView', () => {
 
   it("scrolls the window to center the block, measured via a Range (a direct scrollIntoView on the block's display:contents wrapper would be a no-op)", () => {
     document.body.innerHTML = '<div data-kometio-block-id="a">block</div>';
-    Range.prototype.getBoundingClientRect = vi.fn(
-      () => ({ top: 500, left: 0, width: 100, height: 50 }) as DOMRect,
+    Range.prototype.getBoundingClientRect = vi.fn(() =>
+      rect({ top: 500, left: 0, width: 100, height: 50 }),
     );
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(200);
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
@@ -710,8 +711,8 @@ describe('scrollBlockIntoView', () => {
 
   it('clamps the scroll target to 0 instead of going negative for a block already near the top', () => {
     document.body.innerHTML = '<div data-kometio-block-id="a">block</div>';
-    Range.prototype.getBoundingClientRect = vi.fn(
-      () => ({ top: 10, left: 0, width: 100, height: 50 }) as DOMRect,
+    Range.prototype.getBoundingClientRect = vi.fn(() =>
+      rect({ top: 10, left: 0, width: 100, height: 50 }),
     );
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(0);
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
