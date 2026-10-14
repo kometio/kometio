@@ -1,6 +1,14 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  configure,
+  fireEvent,
+  getConfig,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { chooseOption } from '../test/select.test-fixture';
 import {
+  afterAll,
   afterEach,
   beforeAll,
   beforeEach,
@@ -237,6 +245,22 @@ function renderApp(initialPath: string) {
     ),
   };
 }
+
+/*
+ * Every test here opens a route: the router resolves it, its loaders run, the
+ * shell and the screen render. A second is the default a `findBy` is given and
+ * it is enough on an idle machine and not on the one that is running the whole
+ * workspace's suites; the failures were this and nothing else. What is raised
+ * is how long the wait is; what is waited for is as it was.
+ */
+const SLOW_ROUTE_MS = 10_000;
+const defaultTimeout = getConfig().asyncUtilTimeout;
+beforeAll(() => {
+  configure({ asyncUtilTimeout: SLOW_ROUTE_MS });
+});
+afterAll(() => {
+  configure({ asyncUtilTimeout: defaultTimeout });
+});
 
 describe('router', () => {
   // Each route's component is its own chunk (autoCodeSplitting), imported
