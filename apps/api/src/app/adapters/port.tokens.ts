@@ -43,6 +43,8 @@ export const SITE_LAYOUT_SECTION_VERSION_REPOSITORY = Symbol(
 export const TAXONOMY_REPOSITORY = Symbol('TAXONOMY_REPOSITORY');
 export const SEARCH_PORT = Symbol('SEARCH_PORT');
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
+/** Each person's second step of sign-in and its recovery codes (docs/adr/0137). */
+export const SECOND_FACTOR_REPOSITORY = Symbol('SECOND_FACTOR_REPOSITORY');
 export const FORM_REPOSITORY = Symbol('FORM_REPOSITORY');
 export const FORM_SUBMISSION_REPOSITORY = Symbol('FORM_SUBMISSION_REPOSITORY');
 export const MEDIA_REPOSITORY = Symbol('MEDIA_REPOSITORY');
@@ -59,6 +61,8 @@ export const DEPLOYMENT_BOOTSTRAP_PORT = Symbol('DEPLOYMENT_BOOTSTRAP_PORT');
 // Sessions and one-time tokens.
 export const AUTH_PORT = Symbol('AUTH_PORT');
 export const VERIFICATION_TOKEN_PORT = Symbol('VERIFICATION_TOKEN_PORT');
+/** The codes of the second step, and the recovery codes that stand in for them. */
+export const TOTP_PORT = Symbol('TOTP_PORT');
 export const PREVIEW_TOKEN_PORT = Symbol('PREVIEW_TOKEN_PORT');
 
 // Files.

@@ -11,6 +11,7 @@ import {
   type SiteLayoutSectionVersionRecord,
   type TaxonomyRecord,
   type TermRecord,
+  type UserListItem,
   type UserRecord,
   type PageGroupListItemRecord,
   type PageGroupListItemTranslation,
@@ -300,6 +301,13 @@ export function buildUserRecord(
     createdAt: CREATED_AT,
     ...overrides,
   };
+}
+
+/** The same person as a row of the users list, which also says whether the second step of sign-in is on. */
+export function buildUserListItem(
+  overrides: Partial<UserListItem> = {},
+): UserListItem {
+  return { ...buildUserRecord(), twoFactorEnabled: false, ...overrides };
 }
 
 /** A header nobody has published yet — what `SiteLayoutSection.create` leaves. */

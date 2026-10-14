@@ -23,6 +23,24 @@ export const loginBodySchema = z.object({
 });
 export type LoginBody = z.infer<typeof loginBodySchema>;
 
+/**
+ * What `POST /auth/login` answers. A person who has the second step on has
+ * no session yet: they are given a challenge and send it back, with a code,
+ * to `/auth/login/second-factor` (docs/adr/0137).
+ */
+export const loginAnswerSchema = z.union([
+  z.object({ userId: z.string() }),
+  z.object({ secondFactorRequired: z.literal(true), challenge: z.string() }),
+]);
+export type LoginAnswer = z.infer<typeof loginAnswerSchema>;
+
+export const secondFactorLoginBodySchema = z.object({
+  challenge: z.string().min(1),
+  /** The six digits of the app, or a recovery code: which is told by its look. */
+  code: z.string().trim().min(1).max(64),
+});
+export type SecondFactorLoginBody = z.infer<typeof secondFactorLoginBodySchema>;
+
 export const verifyEmailBodySchema = z.object({
   token: z.string().min(1),
 });

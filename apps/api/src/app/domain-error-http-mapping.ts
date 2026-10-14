@@ -22,6 +22,11 @@ import {
   SiteArchiveUnavailableError,
   PageGenerationFailedError,
   SecretUnreadableError,
+  SecondFactorAlreadyEnabledError,
+  SecondFactorCodeMismatchError,
+  SecondFactorNotAvailableError,
+  SecondFactorNotEnabledError,
+  NoSecondFactorEnrolmentError,
   ThemeUploadRejectedError,
   ImportJobHasNoPermalinksError,
   ImportJobNotAnalyzedError,
@@ -216,6 +221,15 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   // the editor says in words exactly as it does one from the stream.
   [PageGenerationFailedError, (m) => new ConflictException(m)],
   [SecretUnreadableError, (m) => new ConflictException(m)],
+  // Two-step verification (docs/adr/0137). 404: this deployment has nowhere to
+  // seal a secret, the same answer as a route that is not there. 400: the code
+  // that confirms an enrolment is what is wrong. 409: the request is well
+  // formed and the account is not in the state it asks of.
+  [SecondFactorNotAvailableError, (m) => new NotFoundException(m)],
+  [SecondFactorCodeMismatchError, (m) => new BadRequestException(m)],
+  [SecondFactorAlreadyEnabledError, (m) => new ConflictException(m)],
+  [SecondFactorNotEnabledError, (m) => new ConflictException(m)],
+  [NoSecondFactorEnrolmentError, (m) => new ConflictException(m)],
   // 404: this deployment has no archive to give, the same answer as a route that is not there.
   [SiteArchiveUnavailableError, (m) => new NotFoundException(m)],
   // 409: the server is able, and not now — one is being made, or there is no site yet.

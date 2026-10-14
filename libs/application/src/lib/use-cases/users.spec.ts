@@ -22,6 +22,7 @@ import { FakeVerificationTokenPort } from '@kometio/testing';
 import { FakeEmailPort } from '@kometio/testing';
 import { FakeAuthPort } from '@kometio/testing';
 import { FakeDeploymentLocale } from '@kometio/testing';
+import { InMemorySecondFactorRepository } from '@kometio/testing';
 
 const tenantId = 'tenant-1';
 
@@ -36,6 +37,7 @@ function setup() {
     emailPort,
     authPort,
     deploymentLocale: new FakeDeploymentLocale(),
+    secondFactorRepository: new InMemorySecondFactorRepository(),
   };
 }
 
@@ -1030,5 +1032,29 @@ describe('listUsers', () => {
 
     expect(result.items).toHaveLength(2);
     expect(result.total).toBe(3);
+  });
+
+  it('says which of the people it lists have the second step of sign-in on', async () => {
+    const deps = setup();
+    for (const id of ['with', 'without']) {
+      await deps.userRepository.add(
+        User.create({
+          id,
+          tenantId,
+          email: `${id}@example.com`,
+          displayName: id,
+          passwordHash: 'irrelevant',
+          role: 'editor',
+        }),
+      );
+    }
+    await deps.secondFactorRepository.savePendingTotp(tenantId, 'with', 's');
+    await deps.secondFactorRepository.confirmTotp(tenantId, 'with', 1, []);
+    // Begun and not finished is not on.
+    await deps.secondFactorRepository.savePendingTotp(tenantId, 'without', 's');
+
+    const result = await listUsers(deps, { tenantId, page: 1, pageSize: 10 });
+
+    expect([...result.withSecondFactor]).toEqual(['with']);
   });
 });

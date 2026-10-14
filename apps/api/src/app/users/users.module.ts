@@ -6,6 +6,7 @@ import {
   DEPLOYMENT_LOCALE,
   EMAIL_PORT,
   MEDIA_STORAGE,
+  SECOND_FACTOR_REPOSITORY,
   USER_REPOSITORY,
   VERIFICATION_TOKEN_PORT,
 } from '../adapters/port.tokens';
@@ -40,6 +41,7 @@ import { USERS_DEPS } from './users.tokens';
       emailPort: EMAIL_PORT,
       deploymentLocale: DEPLOYMENT_LOCALE,
       mediaStorage: MEDIA_STORAGE,
+      secondFactorRepository: SECOND_FACTOR_REPOSITORY,
     }),
   ],
 })

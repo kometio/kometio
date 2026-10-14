@@ -804,3 +804,68 @@ export class RedirectLimitReachedError extends Error {
     this.name = 'RedirectLimitReachedError';
   }
 }
+
+/**
+ * The code typed at the second step of a sign-in is not right, or the step
+ * ran out (docs/adr/0137).
+ *
+ * `nextChallenge` is what the person is given to try again with, when they
+ * may: a wrong code is a typo more often than an attack, and sending them
+ * back to the password for it would be a way to teach them to turn the whole
+ * thing off. It is `null` once the tries of one challenge are spent, or when
+ * the challenge itself was no good, and then they begin again.
+ *
+ * `userId` is the account it was a try at, for the activity log and nothing
+ * else: the answer is the same sentence either way.
+ */
+export class InvalidSecondFactorError extends Error {
+  constructor(
+    readonly userId: string | null,
+    readonly nextChallenge: string | null,
+    /** The codes of the app are held back for a while (too many wrong ones): said, so that a right code that is refused is not a mystery. */
+    readonly locked = false,
+  ) {
+    super('The code is not right');
+    this.name = 'InvalidSecondFactorError';
+  }
+}
+
+/** The code that confirms an enrolment does not fit the secret that was shown: a typo, or the app's clock. */
+export class SecondFactorCodeMismatchError extends Error {
+  constructor() {
+    super('The code does not match: check the app and try again');
+    this.name = 'SecondFactorCodeMismatchError';
+  }
+}
+
+/** This deployment has nowhere to keep a secret sealed (no `KOMETIO_SECRETS_DIR` or `KOMETIO_SECRETS_KEY`), so it cannot ask for a second step. */
+export class SecondFactorNotAvailableError extends Error {
+  constructor() {
+    super('Two-step verification is not available on this server');
+    this.name = 'SecondFactorNotAvailableError';
+  }
+}
+
+/** It is already on: turn it off first, so that a second secret never replaces a working one by accident. */
+export class SecondFactorAlreadyEnabledError extends Error {
+  constructor() {
+    super('Two-step verification is already on');
+    this.name = 'SecondFactorAlreadyEnabledError';
+  }
+}
+
+/** There is nothing to turn off, regenerate or reset. */
+export class SecondFactorNotEnabledError extends Error {
+  constructor() {
+    super('Two-step verification is not on');
+    this.name = 'SecondFactorNotEnabledError';
+  }
+}
+
+/** A code to confirm, and no enrolment begun (or it was replaced by another one meanwhile). */
+export class NoSecondFactorEnrolmentError extends Error {
+  constructor() {
+    super('No two-step verification is being set up: start again');
+    this.name = 'NoSecondFactorEnrolmentError';
+  }
+}

@@ -8,6 +8,7 @@ import {
 import {
   InvalidCredentialsError,
   InvalidOrExpiredTokenError,
+  InvalidSecondFactorError,
   UserNotActiveError,
 } from '@kometio/domain-core';
 import { HttpExceptionFilter } from '../http-exception.filter';
@@ -26,15 +27,33 @@ import { HttpExceptionFilter } from '../http-exception.filter';
  * table's (domain-error-http-mapping.ts), and the response keeps the one
  * shape HttpExceptionFilter gives every error.
  */
-@Catch(InvalidCredentialsError, UserNotActiveError, InvalidOrExpiredTokenError)
+@Catch(
+  InvalidCredentialsError,
+  UserNotActiveError,
+  InvalidOrExpiredTokenError,
+  InvalidSecondFactorError,
+)
 export class AuthErrorsFilter implements ExceptionFilter {
   private readonly responder = new HttpExceptionFilter();
 
   catch(error: Error, host: ArgumentsHost): void {
-    const answer =
-      error instanceof InvalidOrExpiredTokenError
-        ? new BadRequestException(error.message)
-        : new UnauthorizedException(new InvalidCredentialsError().message);
-    this.responder.catch(answer, host);
+    this.responder.catch(this.answerTo(error), host);
+  }
+
+  private answerTo(error: Error): Error {
+    if (error instanceof InvalidOrExpiredTokenError) {
+      return new BadRequestException(error.message);
+    }
+    if (error instanceof InvalidSecondFactorError) {
+      // The same 401 whatever was wrong with the code. `challenge` is what a
+      // person who may try again tries with, and absent when they may not.
+      return new UnauthorizedException({
+        statusCode: 401,
+        message: error.message,
+        ...(error.nextChallenge ? { challenge: error.nextChallenge } : {}),
+        ...(error.locked ? { locked: true } : {}),
+      });
+    }
+    return new UnauthorizedException(new InvalidCredentialsError().message);
   }
 }

@@ -3,6 +3,7 @@ import type {
   DeploymentLocalePort,
   EmailPort,
   MediaStoragePort,
+  SecondFactorRepositoryPort,
   UserRepositoryPort,
   VerificationTokenPort,
 } from '@kometio/ports';
@@ -16,4 +17,6 @@ export interface UsersDeps {
   /** The language an email falls back to for somebody who has not chosen one (docs/adr/0100). */
   deploymentLocale: DeploymentLocalePort;
   mediaStorage: MediaStoragePort;
+  /** Who has the second step of sign-in on, and the reset an administrator may make (docs/adr/0137). */
+  secondFactorRepository: SecondFactorRepositoryPort;
 }

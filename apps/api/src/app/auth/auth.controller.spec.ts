@@ -15,7 +15,11 @@ import type {
   VerificationToken,
   VerificationTokenPort,
 } from '@kometio/ports';
-import { InMemoryAuditLog } from '@kometio/testing';
+import {
+  FakeTotp,
+  InMemoryAuditLog,
+  InMemorySecondFactorRepository,
+} from '@kometio/testing';
 import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
 import { AuthController } from './auth.controller';
 import { testApiEnv } from '../../test/api-env.test-fixture';
@@ -101,6 +105,11 @@ describe('AuthController', () => {
         emailPort,
         deploymentLocale: { defaultLocale: async () => 'it' },
         captchaPort,
+        // Nobody in this file has the second step on (its own spec is the
+        // integration one, over real HTTP).
+        secondFactorRepository: new InMemorySecondFactorRepository(),
+        totpPort: new FakeTotp(),
+        secretCipher: null,
         // The controller takes the resolver, not a raw id — a self-hosted
         // deployment does not know its tenant until the first-run wizard
         // creates one. Here it is always resolved, which is what every test
@@ -669,6 +678,9 @@ describe('AuthController', () => {
           emailPort,
           deploymentLocale: { defaultLocale: async () => 'it' },
           captchaPort,
+          secondFactorRepository: new InMemorySecondFactorRepository(),
+          totpPort: new FakeTotp(),
+          secretCipher: null,
           tenant: { require: async () => tenantId } as DeploymentTenantResolver,
         },
         env,

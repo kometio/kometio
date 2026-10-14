@@ -44,10 +44,14 @@ import {
   DrizzleSiteThemeBlockStylesRepository,
 } from '@kometio/postgres-site-repository';
 import { DrizzleTaxonomyRepository } from '@kometio/postgres-taxonomy-repository';
-import { DrizzleUserRepository } from '@kometio/postgres-user-repository';
+import {
+  DrizzleSecondFactorRepository,
+  DrizzleUserRepository,
+} from '@kometio/postgres-user-repository';
 import type { PageGeneratorConnection } from '@kometio/ports';
 import { PreviewTokenAdapter } from '@kometio/preview-token-adapter';
 import { SessionAuthAdapter } from '@kometio/session-auth-adapter';
+import { TotpAuthenticator } from '@kometio/totp-authenticator';
 import { SharpImageOptimizer } from '@kometio/sharp-image-optimizer';
 import { VerificationTokenAdapter } from '@kometio/verification-token-adapter';
 import { WxrExportReader } from '@kometio/wordpress-wxr';
@@ -150,6 +154,10 @@ const PROVIDERS = [
   stored(port.TAXONOMY_REPOSITORY, (db) => new DrizzleTaxonomyRepository(db)),
   stored(port.SEARCH_PORT, (db) => new DrizzleSearchRepository(db)),
   stored(port.USER_REPOSITORY, (db) => new DrizzleUserRepository(db)),
+  stored(
+    port.SECOND_FACTOR_REPOSITORY,
+    (db) => new DrizzleSecondFactorRepository(db),
+  ),
   stored(port.FORM_REPOSITORY, (db) => new DrizzleFormRepository(db)),
   stored(
     port.FORM_SUBMISSION_REPOSITORY,
@@ -186,6 +194,7 @@ const PROVIDERS = [
     port.VERIFICATION_TOKEN_PORT,
     (db, tenantId) => new VerificationTokenAdapter(db, tenantId),
   ),
+  { provide: port.TOTP_PORT, useFactory: () => new TotpAuthenticator() },
   configured(
     port.PREVIEW_TOKEN_PORT,
     (env) => new PreviewTokenAdapter(env.PREVIEW_TOKEN_SECRET),
