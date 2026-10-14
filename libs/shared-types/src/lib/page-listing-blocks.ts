@@ -94,6 +94,9 @@ export const pageGridBlockContract = defineBlockContract({
     paddingX: '0',
     paddingY: '0',
     gap: '0.75rem',
+    borderWidth: '0',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
   },
   search: {
     none: "what it draws is other pages' titles, which are indexed on those pages themselves: indexing them again would make one page answer for words that are not on it (ADR-0064)",
@@ -254,6 +257,9 @@ export const termListBlockContract = defineBlockContract({
     paddingX: '0',
     paddingY: '0',
     gap: '0.5rem',
+    borderWidth: '0',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
   },
   search: {
     none: "the names of terms, which the term's own page already answers for: a filter is a way to move through a list, not words this page says",

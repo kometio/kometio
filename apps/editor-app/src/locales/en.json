@@ -484,6 +484,8 @@
       "chooseOgImage": "Choose image",
       "changeOgImage": "Change image",
       "canonicalLabel": "Canonical URL",
+      "noIndexLabel": "Hide from search engines",
+      "noIndexHint": "Anyone with the address can still open it. It leaves the sitemap and search engines are asked not to list it; the site’s own search keeps it.",
       "cancel": "Cancel",
       "save": "Save",
       "saving": "Saving...",
@@ -3748,6 +3750,12 @@
       "unsupported-post-types": "{{count}} entries are in post types this does not import: they would be left out.",
       "menus": "{{count}} menu items. Menus are rebuilt by hand in the editor.",
       "fields-not-described": "{{count}} blocks keep their fields in the theme’s code rather than in the database: their content comes across, without knowing what each piece of it is."
+    },
+    "delete": {
+      "label": "Delete {{name}}",
+      "title": "Delete “{{name}}”?",
+      "description": "The report on this file goes, and with it the addresses the redirects could be made from. Your site does not change. To get it back, upload the file again.",
+      "failed": "It was not deleted. Try again."
     }
   },
   "datePicker": {

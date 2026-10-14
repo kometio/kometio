@@ -112,5 +112,12 @@ export const seoMetaSchema = z.object({
   description: z.string(),
   ogTags: z.record(z.string(), z.string()).optional(),
   canonical: z.string().optional(),
+  /**
+   * Asks search engines to leave this translation out (docs/adr/0134): the
+   * page says so itself and leaves the sitemap, as a term can (ADR-0078). It
+   * is still there for whoever has the address, and in the site's own search.
+   * Absent is false, so no existing page changes.
+   */
+  noIndex: z.boolean().optional(),
 });
 export type SeoMeta = z.infer<typeof seoMetaSchema>;
