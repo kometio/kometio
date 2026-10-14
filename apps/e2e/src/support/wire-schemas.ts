@@ -62,6 +62,7 @@ export const formSchema = z.object({
 export const mediaSchema = z.object({
   id: z.string(),
   filename: z.string(),
+  url: z.string(),
 });
 
 export const taxonomySchema = z.object({

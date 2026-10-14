@@ -69,12 +69,22 @@ const showNav = scrollable && hasChildren;
       single item to place — measured on the built page as one 976px
       column and three empty ones, which is exactly what that mistake
       looks like.
+
+      It is focusable, so that the keyboard can scroll it (WCAG 2.1.1): the
+      prev/next buttons are beside the track, not inside it, and axe's
+      `scrollable-region-focusable` is right that a region a person can scroll
+      with a pointer has to be one they can scroll with a key.
     */
   }
   {hasChildren && !scrollable && <slot />}
   {
     hasChildren && scrollable && (
-      <div class="kometio-collection__track">
+      <div
+        class="kometio-collection__track"
+        tabindex="0"
+        role="group"
+        aria-label={i18n.t('collection.region')}
+      >
         <slot />
       </div>
     )

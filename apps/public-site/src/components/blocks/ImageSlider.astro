@@ -32,7 +32,13 @@ const pictured = images.filter(isPictured);
       ]}
       data-kometio-collection-step="track"
     >
-      <div class="kometio-collection__track kometio-slider__track">
+      {/* Focusable, so that the keyboard can scroll it (WCAG 2.1.1): the buttons are beside the track, not in it. */}
+      <div
+        class="kometio-collection__track kometio-slider__track"
+        tabindex="0"
+        role="group"
+        aria-label={i18n.t('imageSlider.region')}
+      >
         {pictured.map((image, index) => (
           <OptimizedImage
             media={image.media}
