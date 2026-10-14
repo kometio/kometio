@@ -40,6 +40,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             <Input
               id="new-password"
               type="password"
+              autoComplete="new-password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
               minLength={MIN_PASSWORD_LENGTH}
