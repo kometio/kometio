@@ -484,6 +484,8 @@
       "chooseOgImage": "Scegli immagine",
       "changeOgImage": "Cambia immagine",
       "canonicalLabel": "URL canonico",
+      "noIndexLabel": "Nascondi ai motori di ricerca",
+      "noIndexHint": "Chi conosce l’indirizzo la apre comunque. Esce dalla sitemap e si chiede ai motori di ricerca di non elencarla; nella ricerca del sito resta.",
       "cancel": "Annulla",
       "save": "Salva",
       "saving": "Salvataggio in corso...",

@@ -484,6 +484,8 @@
       "chooseOgImage": "Choose image",
       "changeOgImage": "Change image",
       "canonicalLabel": "Canonical URL",
+      "noIndexLabel": "Hide from search engines",
+      "noIndexHint": "Anyone with the address can still open it. It leaves the sitemap and search engines are asked not to list it; the site’s own search keeps it.",
       "cancel": "Cancel",
       "save": "Save",
       "saving": "Saving...",

@@ -25,6 +25,8 @@ export interface PublishedPagePath {
   description: string;
   /** The picture it already shows when shared — the same one a card wants. */
   image: string | null;
+  /** It asked search engines to leave it out (docs/adr/0134): it stays reachable and listed on the site, and leaves the sitemap. */
+  noIndex: boolean;
   /** When this language went live. `null` only for a page published before the column existed. */
   publishedAt: Date | null;
   updatedAt: Date;
@@ -107,6 +109,7 @@ export async function listPublishedPagePaths(
       title: translation.seoMeta.title.trim() || translation.slug,
       description: translation.seoMeta.description,
       image: translation.seoMeta.ogTags?.['image'] ?? null,
+      noIndex: translation.seoMeta.noIndex === true,
       publishedAt: translation.publishedAt,
       updatedAt: translation.updatedAt,
       collectionId: collectionIdByGroup.get(translation.pageGroupId) ?? null,
