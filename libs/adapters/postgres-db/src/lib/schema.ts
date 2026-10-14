@@ -978,6 +978,82 @@ export const auditEvents = pgTable(
   (table) => [index('audit_events_tenant_at_idx').on(table.tenantId, table.at)],
 );
 
+/**
+ * The second step of a person's sign-in (docs/adr/0137): the secret an
+ * authenticator app makes its codes from, sealed with the server's own key
+ * (`SecretCipherPort`), so a dump of the database opens nothing.
+ *
+ * One row per person and kind of factor; `kind` is text because a second kind
+ * (a passkey) is a line in a list and not a migration. A row whose
+ * `confirmed_at` is null is an enrolment somebody has begun and not finished:
+ * it is not asked at sign-in, and starting again replaces it.
+ */
+export const userSecondFactors = pgTable(
+  'user_second_factors',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull().default('totp'),
+    sealedSecret: text('sealed_secret').notNull(),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    // The last time step a code was accepted for: a code is good once
+    // (RFC 6238 §5.2), and a request that arrives with the same step again is
+    // refused here, in the row, whichever process it reached.
+    lastUsedStep: bigint('last_used_step', { mode: 'number' }),
+    // Wrong codes since the last right one, and until when the codes of the
+    // app are refused because there were too many: the count that matters is
+    // per person and not per challenge, since a challenge costs only a password
+    // and a captcha. A recovery code is not held back by it.
+    failedAttempts: integer('failed_attempts').notNull().default(0),
+    lockedUntil: timestamp('locked_until', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('user_second_factors_user_kind_idx').on(
+      table.userId,
+      table.kind,
+    ),
+  ],
+);
+
+/**
+ * The way back in for a person who has lost their authenticator: ten codes,
+ * each good once, shown when the second step is turned on and never again.
+ * Only the hash is kept (SHA-256: a code is 50 random bits, there is nothing
+ * to slow down), and a spent one stays as a row so that the count of what is
+ * left can be told.
+ */
+export const userRecoveryCodes = pgTable(
+  'user_recovery_codes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    codeHash: text('code_hash').notNull(),
+    spentAt: timestamp('spent_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('user_recovery_codes_user_hash_idx').on(
+      table.userId,
+      table.codeHash,
+    ),
+  ],
+);
+
 export const verificationTokens = pgTable(
   'verification_tokens',
   {

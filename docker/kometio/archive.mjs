@@ -49,6 +49,12 @@ export const TRANSIENT_TABLES = [
   // archive is a file that is handed around, which the log of who signed in
   // when is not to be copied into, outside the clock that bounds it.
   'audit_events',
+  // Each person's second step of sign-in (docs/adr/0137): the secret is sealed
+  // with a key of the server it was made on, which does not travel, so on
+  // another one it would be a row that cannot be read and that locks the
+  // person out. A copy starts without it, and they turn it on again.
+  'user_second_factors',
+  'user_recovery_codes',
 ];
 
 export const archiveFileName = (date) =>
@@ -111,6 +117,7 @@ export function buildManifest({ createdAt, site, migrations, uploads }) {
       'sessions and links in flight (a reset, an invitation, a confirmation)',
       'form submissions',
       "the AI provider's API key: it is sealed with a key of the server, which does not travel",
+      "each person's two-step verification and recovery codes, for the same reason: they are turned on again on the new server",
     ],
   };
 }

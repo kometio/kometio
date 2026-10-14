@@ -33,19 +33,10 @@
       "path": "../../libs/adapters/turnstile-captcha/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/adapters/totp-authenticator/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/theme-archive/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/adapters/log-email-adapter/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/adapters/sentry-error-reporter/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/adapters/altcha-captcha/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/adapters/launcher-site-archive/tsconfig.lib.json"
     },
     {
       "path": "../../libs/adapters/smtp-email-adapter/tsconfig.lib.json"
@@ -57,13 +48,19 @@
       "path": "../../libs/shared-types/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/adapters/sharp-image-optimizer/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/adapters/session-auth-adapter/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/adapters/s3-media-storage/tsconfig.lib.json"
+      "path": "../../libs/adapters/sentry-error-reporter/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/adapters/sharp-image-optimizer/tsconfig.lib.json"
+      "path": "../../libs/adapters/log-email-adapter/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/s3-media-storage/tsconfig.lib.json"
     },
     {
       "path": "../../libs/adapters/s3-attachment-storage/tsconfig.lib.json"
@@ -93,6 +90,12 @@
       "path": "../../libs/adapters/postgres-reusable-section-repository/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/adapters/postgres-redirect-repository/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/postgres-audit-log-repository/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/adapters/postgres-page-repository/tsconfig.lib.json"
     },
     {
@@ -103,12 +106,6 @@
     },
     {
       "path": "../../libs/adapters/postgres-form-repository/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/adapters/postgres-audit-log-repository/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/adapters/postgres-redirect-repository/tsconfig.lib.json"
     },
     {
       "path": "../../libs/adapters/postgres-db/tsconfig.lib.json"
@@ -135,6 +132,9 @@
       "path": "../../libs/adapters/local-disk-attachment-storage/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/adapters/launcher-site-archive/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/adapters/filesystem-theme-catalog/tsconfig.lib.json"
     },
     {
@@ -154,6 +154,9 @@
     },
     {
       "path": "../../libs/adapters/anthropic-page-generator/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/adapters/altcha-captcha/tsconfig.lib.json"
     },
     {
       "path": "../../libs/adapters/aes-secret-cipher/tsconfig.lib.json"

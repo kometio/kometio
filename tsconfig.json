@@ -167,6 +167,9 @@
     },
     {
       "path": "./libs/adapters/postgres-audit-log-repository"
+    },
+    {
+      "path": "./libs/adapters/totp-authenticator"
     }
   ],
   "compilerOptions": {}

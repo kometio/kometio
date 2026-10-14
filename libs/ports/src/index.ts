@@ -43,6 +43,8 @@ export * from './lib/wordpress-export-reader.port';
 export * from './lib/page-generator.port';
 export * from './lib/page-generator-answer';
 export * from './lib/secret-cipher.port';
+export * from './lib/totp.port';
+export * from './lib/second-factor-repository.port';
 export * from './lib/site-ai-settings-repository.port';
 export * from './lib/content-sanitizer.port';
 export * from './lib/database-health.port';

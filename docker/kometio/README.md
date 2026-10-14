@@ -416,6 +416,10 @@ What you should know:
 - **The AI provider's key does not travel.** It is sealed with a key that belongs to
   the server it was made on; enter it again in Settings (the provider and the model
   are kept).
+- **Two-step verification does not travel.** Each person's authenticator secret is
+  sealed the same way, so on the new server it could not be read and would only lock
+  them out. They turn it on again from their account (Account → Security); until
+  then the new installation asks for the password alone.
 - **It opens only into a new volume.** An installation that already has a site, or
   uploaded files, refuses, and nothing is changed: the database is made again under
   an import, and nothing here is thrown away to make room. To redo one, start from a
