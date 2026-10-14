@@ -150,6 +150,18 @@ export type RenamePageTranslationBody = z.infer<
   typeof renamePageTranslationBodySchema
 >;
 
+/**
+ * When to publish a language by itself (docs/adr/0135): an instant, with its
+ * offset, so that nothing depends on where the server is. The use case checks
+ * that it is ahead; the schema only that it is an instant.
+ */
+export const schedulePageTranslationPublishBodySchema = z.object({
+  publishAt: z.string().datetime({ offset: true }),
+});
+export type SchedulePageTranslationPublishBody = z.infer<
+  typeof schedulePageTranslationPublishBodySchema
+>;
+
 /** Restoring a version, of the shared structure or of one language alike. */
 export const rollbackToVersionBodySchema = z.object({
   versionId: z.string().uuid(),

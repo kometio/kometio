@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, isNull, lte, sql } from 'drizzle-orm';
 import {
   PageTranslation,
   type PageTranslationVersion,
@@ -41,6 +41,9 @@ function fromRow(row: typeof pageTranslations.$inferSelect): PageTranslation {
     updatedBy: row.updatedBy,
     contentUpdatedAt: row.contentUpdatedAt,
     publishedAt: row.publishedAt,
+    scheduledPublishAt: row.scheduledPublishAt,
+    scheduledBy: row.scheduledBy,
+    scheduleFailure: row.scheduleFailure,
   });
 }
 
@@ -97,9 +100,45 @@ export class DrizzlePageTranslationRepository implements PageTranslationReposito
         publishedSnapshot: props.publishedSnapshot,
         status: props.status,
         publishedAt: props.publishedAt,
+        scheduledPublishAt: props.scheduledPublishAt,
+        scheduledBy: props.scheduledBy,
+        scheduleFailure: props.scheduleFailure,
         ...editStamp(props),
       }),
     );
+  }
+
+  async saveSchedule(translation: PageTranslation): Promise<void> {
+    const props = translation.toProps();
+    await withTenant(this.db, props.tenantId, (tx) =>
+      updatePageTranslationTx(tx, props, {
+        scheduledPublishAt: props.scheduledPublishAt,
+        scheduledBy: props.scheduledBy,
+        scheduleFailure: props.scheduleFailure,
+        ...editStamp(props),
+      }),
+    );
+  }
+
+  async listDueForPublish(
+    tenantId: string,
+    now: Date,
+    limit: number,
+  ): Promise<PageTranslation[]> {
+    const rows = await withTenant(this.db, tenantId, (tx) =>
+      tx
+        .select()
+        .from(pageTranslations)
+        .where(
+          and(
+            eq(pageTranslations.tenantId, tenantId),
+            lte(pageTranslations.scheduledPublishAt, now),
+          ),
+        )
+        .orderBy(asc(pageTranslations.scheduledPublishAt))
+        .limit(limit),
+    );
+    return rows.map(fromRow);
   }
 
   async saveSeoMeta(translation: PageTranslation): Promise<void> {

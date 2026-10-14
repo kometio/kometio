@@ -44,6 +44,12 @@ export interface PageTranslationProps {
   contentUpdatedAt: Date;
   /** When this language was last published, or null if it never was. */
   publishedAt: Date | null;
+  /** The moment this language is to be published by itself (docs/adr/0135), or null. Publishing by hand clears it. */
+  scheduledPublishAt: Date | null;
+  /** Who set `scheduledPublishAt`: the publication is recorded as theirs, since nobody is there at the time. Null when nothing is scheduled, or when that account is gone. */
+  scheduledBy: string | null;
+  /** Why the last attempt at publishing it at its time did not happen, until one does. Null otherwise. */
+  scheduleFailure: string | null;
 }
 
 export interface CreatePageTranslationProps {
@@ -91,6 +97,9 @@ export class PageTranslation {
       updatedBy: input.createdBy ?? null,
       contentUpdatedAt: now,
       publishedAt: null,
+      scheduledPublishAt: null,
+      scheduledBy: null,
+      scheduleFailure: null,
     });
   }
 
@@ -180,6 +189,18 @@ export class PageTranslation {
 
   get publishedAt(): Date | null {
     return this.props.publishedAt;
+  }
+
+  get scheduledPublishAt(): Date | null {
+    return this.props.scheduledPublishAt;
+  }
+
+  get scheduledBy(): string | null {
+    return this.props.scheduledBy;
+  }
+
+  get scheduleFailure(): string | null {
+    return this.props.scheduleFailure;
   }
 
   /**
@@ -282,6 +303,46 @@ export class PageTranslation {
     this.props.publishedSnapshot = mergedContent;
     this.props.status = 'published';
     this.props.publishedAt = this.touch(edit);
+    // Done, however it was done: a publication at its time, or one by hand
+    // that got there first.
+    this.clearSchedule();
+  }
+
+  /**
+   * Asks for this language to be published at `at` (docs/adr/0135). What is
+   * published then is the draft as it stands then, as `publish` freezes it
+   * now — not the draft of today.
+   *
+   * It is the moment, and who set it: the publication that follows is
+   * recorded as that person's work. The use case checks that `at` is ahead.
+   */
+  schedulePublish(at: Date, edit: EditContext): void {
+    this.props.scheduledPublishAt = at;
+    this.props.scheduledBy = edit.by;
+    this.props.scheduleFailure = null;
+    this.touch(edit);
+  }
+
+  /** Takes the schedule back. What is online, and the draft, are as they were. */
+  cancelSchedule(edit: EditContext): void {
+    this.clearSchedule();
+    this.touch(edit);
+  }
+
+  /**
+   * An attempt at publishing at the scheduled time did not happen. The
+   * schedule stays, so that the next tick tries again, and the reason is for
+   * whoever opens the page: it is what makes "scheduled" a state that cannot
+   * silently stay one.
+   */
+  recordScheduleFailure(reason: string): void {
+    this.props.scheduleFailure = reason;
+  }
+
+  private clearSchedule(): void {
+    this.props.scheduledPublishAt = null;
+    this.props.scheduledBy = null;
+    this.props.scheduleFailure = null;
   }
 
   /**

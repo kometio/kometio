@@ -417,7 +417,8 @@
       "deleted_one": "Page deleted",
       "deleted_other": "{{count}} pages deleted",
       "reorderOffFiltered": "To reorder pages, remove the filters.",
-      "reorderOffPaged": "To reorder pages, they all have to fit on one page of the list."
+      "reorderOffPaged": "To reorder pages, they all have to fit on one page of the list.",
+      "statusScheduled": "scheduled for {{when}}"
     },
     "newPageDialog": {
       "title": "New page",
@@ -498,6 +499,29 @@
       "saving": "Saving...",
       "saved": "SEO settings saved",
       "saveFailed": "The SEO settings were not saved. Try again."
+    },
+    "schedule": {
+      "menuOpen": "Schedule publishing…",
+      "menuChange": "Change the schedule…",
+      "title": "Schedule publishing",
+      "description": "The page goes live at the time you choose, with the content it has then: edits you make in the meantime are included.",
+      "whenLabel": "Date and time",
+      "timeZoneHint": "{{timeZone}} time, your computer’s.",
+      "notAhead": "Choose a time that has not passed yet.",
+      "submit": "Schedule",
+      "remove": "Remove the schedule",
+      "saved": "Publishing scheduled for {{when}}",
+      "removed": "Schedule removed",
+      "saveFailed": "Publishing was not scheduled. Try again.",
+      "removeFailed": "The schedule was not removed. Try again.",
+      "failure": "The last attempt did not work: {{reason}}. It is tried again every minute until you change or remove the schedule.",
+      "blocked": {
+        "scheduler-gone": "It was not published: the person who scheduled it no longer has an account. Schedule it again.",
+        "scheduler-inactive": "It was not published: the account of the person who scheduled it has been deactivated. Schedule it again.",
+        "scheduler-cannot-publish": "It was not published: the person who scheduled it can no longer publish. Schedule it again from an account that can."
+      },
+      "badge": "Scheduled: {{when}}",
+      "chip": "Scheduled"
     },
     "translations": {
       "open": "Translations",

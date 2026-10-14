@@ -38,6 +38,8 @@ export interface PageGroupListItemTranslation {
   isDiverged: boolean;
   /** Published, but the draft has moved on since — see hasUnpublishedChanges in @kometio/domain-core, which is where the rule lives. */
   hasUnpublishedChanges: boolean;
+  /** The moment it is to be published by itself (docs/adr/0135), or null. */
+  scheduledPublishAt: Date | null;
 }
 
 /**

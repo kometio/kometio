@@ -53,6 +53,7 @@ export * from './lib/page-location';
 export * from './lib/block-props-schemas';
 export * from './lib/page-generation';
 export * from './lib/permissions';
+export * from './lib/publish-schedule';
 export * from './lib/import-job-status';
 export * from './lib/page-status';
 export * from './lib/site-layout-section-kinds';

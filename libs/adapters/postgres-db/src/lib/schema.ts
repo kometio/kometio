@@ -634,9 +634,25 @@ export const pageTranslations = pgTable(
       .notNull()
       .defaultNow(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
+    // "Publish this language at that moment" (docs/adr/0135). Nothing else
+    // here changes until a tick of the API finds it due and publishes it as
+    // `scheduled_by`, which is who set it and so whose work it is; `set null`
+    // for an account that went before its time came.
+    scheduledPublishAt: timestamp('scheduled_publish_at', {
+      withTimezone: true,
+    }),
+    scheduledBy: uuid('scheduled_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    // Why the last attempt did not happen, for whoever opens the page.
+    scheduleFailure: text('schedule_failure'),
   },
   (table) => [
     unique().on(table.tenantId, table.pageGroupId, table.locale),
+    // What the tick asks for, every minute: almost every row is null.
+    index('page_translations_due_idx')
+      .on(table.tenantId, table.scheduledPublishAt)
+      .where(sql`${table.scheduledPublishAt} is not null`),
     // Sibling-scoped (the same scheme as pages above) but keyed on
     // parentGroupId rather than a per-locale parentId — see the comment on
     // the column. The same Postgres NULL <> NULL gap, closed the same way

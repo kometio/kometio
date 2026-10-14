@@ -43,6 +43,8 @@ export const pageTranslationSchema = z.object({
   slug: z.string(),
   status: z.string(),
   fieldValues: z.record(z.string(), z.unknown()),
+  /** When it is to be published by itself (docs/adr/0135), as an ISO instant. */
+  scheduledPublishAt: z.string().nullable(),
 });
 
 export interface FormField {

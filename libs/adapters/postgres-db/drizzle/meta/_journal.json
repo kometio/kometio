@@ -99,6 +99,13 @@
       "when": 1791970150461,
       "tag": "0013_audit_events",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791997109347,
+      "tag": "0014_page_translation_schedule",
+      "breakpoints": true
     }
   ]
 }

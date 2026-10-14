@@ -124,6 +124,14 @@ export class PageTranslationNotDivergedError extends Error {
   }
 }
 
+/** Asked to publish at a moment that is not ahead: it would be done by the next tick, and that is "publish", which has a button of its own. */
+export class PublishScheduleNotAheadError extends Error {
+  constructor() {
+    super('The moment to publish at has to be in the future');
+    this.name = 'PublishScheduleNotAheadError';
+  }
+}
+
 /** A page's (tenant, site, locale, parentId, slug) must be unique, sibling-scoped (WP-style) — see the composite unique constraint + the page_translations_root_slug_unique partial index (root-level pages only) in schema.ts. */
 export class PageSlugAlreadyExistsError extends Error {
   constructor(slug: string) {

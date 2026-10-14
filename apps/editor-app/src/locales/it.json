@@ -417,7 +417,8 @@
       "deleted_one": "Pagina eliminata",
       "deleted_other": "{{count}} pagine eliminate",
       "reorderOffFiltered": "Per riordinare le pagine togli i filtri.",
-      "reorderOffPaged": "Per riordinare le pagine devono stare tutte in una pagina dell’elenco."
+      "reorderOffPaged": "Per riordinare le pagine devono stare tutte in una pagina dell’elenco.",
+      "statusScheduled": "programmata per {{when}}"
     },
     "newPageDialog": {
       "title": "Nuova pagina",
@@ -498,6 +499,29 @@
       "saving": "Salvataggio in corso...",
       "saved": "Impostazioni SEO salvate",
       "saveFailed": "Le impostazioni SEO non sono state salvate. Riprova."
+    },
+    "schedule": {
+      "menuOpen": "Programma la pubblicazione…",
+      "menuChange": "Cambia la programmazione…",
+      "title": "Programma la pubblicazione",
+      "description": "La pagina esce all’ora che scegli, con il contenuto che avrà in quel momento: le modifiche che fai nel frattempo ci saranno.",
+      "whenLabel": "Data e ora",
+      "timeZoneHint": "Ora di {{timeZone}}, quella del tuo computer.",
+      "notAhead": "Scegli un momento che non sia già passato.",
+      "submit": "Programma",
+      "remove": "Togli la programmazione",
+      "saved": "Pubblicazione programmata per {{when}}",
+      "removed": "Programmazione tolta",
+      "saveFailed": "La pubblicazione non è stata programmata. Riprova.",
+      "removeFailed": "La programmazione non è stata tolta. Riprova.",
+      "failure": "L’ultimo tentativo non è riuscito: {{reason}}. Si riprova ogni minuto, finché non cambi o togli la programmazione.",
+      "blocked": {
+        "scheduler-gone": "Non è stata pubblicata: chi l’aveva programmata non ha più un account. Programmala di nuovo.",
+        "scheduler-inactive": "Non è stata pubblicata: l’account di chi l’aveva programmata è stato disattivato. Programmala di nuovo.",
+        "scheduler-cannot-publish": "Non è stata pubblicata: chi l’aveva programmata non può più pubblicare. Programmala di nuovo da un account che può."
+      },
+      "badge": "Programmata: {{when}}",
+      "chip": "Programmata"
     },
     "translations": {
       "open": "Traduzioni",
