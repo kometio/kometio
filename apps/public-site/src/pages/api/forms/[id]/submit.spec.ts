@@ -1,13 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { bodyOf } from '../../../../test/request.test-fixture';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { POST } from './submit';
-
-function jsonResponse(body: unknown, status = 200) {
-  return {
-    ok: status < 400,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 function formDataRequest(fields: Record<string, string>): Request {
   return new Request('http://localhost:4321/api/forms/form-1/submit', {
@@ -64,7 +58,7 @@ describe('POST /api/forms/[id]/submit', () => {
     expect(res.headers.get('Location')).toBe('/contatti?formSubmitted=form-1');
 
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(JSON.parse(init?.body as string)).toEqual({
+    expect(JSON.parse(bodyOf(init))).toEqual({
       pageId: null,
       values: { email: 'visitor@example.com', consenso: true },
       honeypot: '',
@@ -87,7 +81,7 @@ describe('POST /api/forms/[id]/submit', () => {
     await POST({ params: { id: 'form-1' }, request, redirect });
 
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    const body = JSON.parse(init?.body as string);
+    const body = JSON.parse(bodyOf(init));
     expect(body.pageId).toBe('translation-1');
     // `_`-prefixed like every other hint field, so it stays out of what
     // the visitor is recorded as having typed.
@@ -109,7 +103,7 @@ describe('POST /api/forms/[id]/submit', () => {
     await POST({ params: { id: 'form-1' }, request, redirect });
 
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    const body = JSON.parse(init?.body as string);
+    const body = JSON.parse(bodyOf(init));
     expect(body.captchaToken).toBe('widget-token');
     // Must not leak into the form's own field values.
     expect(body.values).not.toHaveProperty('cf-turnstile-response');
@@ -132,7 +126,7 @@ describe('POST /api/forms/[id]/submit', () => {
     await POST({ params: { id: 'form-1' }, request, redirect });
 
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    const body = JSON.parse(init?.body as string);
+    const body = JSON.parse(bodyOf(init));
     expect(body.captchaToken).toBe('built-in-solution');
     expect(body.values).toEqual({ email: 'visitor@example.com' });
   });
@@ -152,7 +146,7 @@ describe('POST /api/forms/[id]/submit', () => {
     await POST({ params: { id: 'form-1' }, request, redirect });
 
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(JSON.parse(init?.body as string).values.consenso).toBe(false);
+    expect(JSON.parse(bodyOf(init)).values.consenso).toBe(false);
   });
 
   it('uploads a selected file first, then sends its {url, filename} in the values', async () => {
@@ -179,7 +173,7 @@ describe('POST /api/forms/[id]/submit', () => {
       '/public/forms/form-1/attachments',
     );
     const [, submitInit] = vi.mocked(fetch).mock.calls[1] ?? [];
-    const body = JSON.parse(submitInit?.body as string);
+    const body = JSON.parse(bodyOf(submitInit));
     expect(body.values.cv).toEqual({
       url: 'http://localhost:3000/api/uploads/attachments/abc.pdf',
       filename: 'cv.pdf',
@@ -206,7 +200,7 @@ describe('POST /api/forms/[id]/submit', () => {
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
     // Not a { url, filename } object — submitForm's own isBlank() already
     // treats '' as missing, same as any other untouched optional field.
-    expect(JSON.parse(init?.body as string).values.cv).toBe('');
+    expect(JSON.parse(bodyOf(init)).values.cv).toBe('');
   });
 
   it('never uploads a file for a honeypot-filled submission', async () => {

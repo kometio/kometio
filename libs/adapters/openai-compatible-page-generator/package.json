@@ -23,5 +23,8 @@
     "@kometio/ports": "workspace:*",
     "undici": "^7.30.0",
     "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@kometio/testing": "workspace:*"
   }
 }

@@ -1,13 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { ApiError, applyApiFieldErrors, request } from './http-client';
-
-function jsonResponse(body: unknown, ok = true, status = 200) {
-  return {
-    ok,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 describe('http-client', () => {
   beforeEach(() => {
@@ -37,13 +30,13 @@ describe('http-client', () => {
 
   it('throws an ApiError carrying the status and the parsed error body', async () => {
     vi.mocked(fetch).mockResolvedValue(
-      jsonResponse({ message: 'Not found' }, false, 404),
+      jsonResponse({ message: 'Not found' }, 404),
     );
 
     await expect(request('/missing')).rejects.toThrow(/API 404.*Not found/);
     const error = await request('/missing').catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ApiError);
-    expect((error as ApiError).status).toBe(404);
+    expect(error).toMatchObject({ status: 404 });
   });
 
   it('throws even when the error body cannot be parsed as JSON', async () => {
@@ -67,11 +60,8 @@ describe('http-client', () => {
 
     await request('/media', { method: 'POST', body });
 
-    const headers = vi.mocked(fetch).mock.calls[0][1]?.headers as Record<
-      string,
-      string
-    >;
-    expect(headers['Content-Type']).toBeUndefined();
+    const init = vi.mocked(fetch).mock.calls[0][1];
+    expect(new Headers(init?.headers).get('Content-Type')).toBeNull();
   });
 
   it('passes an AbortSignal, so a hung backend eventually rejects instead of leaving the caller stuck forever', async () => {

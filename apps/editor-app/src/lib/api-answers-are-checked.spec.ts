@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { getAccountProfile } from './account-api-client';
 import { currentSession } from './auth-api-client';
 import { getDashboardStats } from './dashboard-api-client';
@@ -15,11 +16,7 @@ import { request, send } from './http-client';
  * being believed and breaking somewhere far from its cause.
  */
 function answered(body: unknown, status = 200) {
-  vi.mocked(fetch).mockResolvedValue({
-    ok: status < 400,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response);
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(body, status));
 }
 
 describe('answers the editor reads', () => {

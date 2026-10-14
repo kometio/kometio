@@ -1,10 +1,10 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { staticAssets } from '../../static-assets.mjs';
+import { portOf } from '@kometio/testing/http-server';
 
 let directory: string;
 let server: Server;
@@ -24,7 +24,7 @@ beforeAll(async () => {
     });
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-  base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  base = `http://127.0.0.1:${portOf(server)}`;
 });
 
 afterAll(async () => {

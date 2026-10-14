@@ -7,6 +7,7 @@ import {
   OpenAiCompatiblePageGenerator,
   type OpenAiCompatiblePageGeneratorOptions,
 } from './openai-compatible-page-generator.adapter';
+import { portOf } from '@kometio/testing/http-server';
 
 type FakeFetch = NonNullable<OpenAiCompatiblePageGeneratorOptions['fetch']>;
 
@@ -225,11 +226,7 @@ describe('OpenAiCompatiblePageGenerator inside the network', () => {
       );
     });
     await new Promise<void>((resolve) => local?.listen(0, resolve));
-    const address = local.address();
-    if (address === null || typeof address === 'string') {
-      throw new Error('The test server has no port.');
-    }
-    return { port: address.port, hits: () => hits };
+    return { port: portOf(local), hits: () => hits };
   }
 
   it('refuses an address written as a private IP without trying it', async () => {
