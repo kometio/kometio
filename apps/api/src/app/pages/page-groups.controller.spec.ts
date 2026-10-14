@@ -137,6 +137,7 @@ describe('PageGroupsController (unit)', () => {
               status: 'published',
               isDiverged: false,
               hasUnpublishedChanges: false,
+              scheduledPublishAt: null,
             },
           ],
         },

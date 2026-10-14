@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Post,
   Patch,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -13,8 +15,10 @@ import {
   divergePageTranslation,
   listPageGroupTranslations,
   listPageTranslationVersions,
+  cancelPageTranslationSchedule,
   publishPageTranslation,
   relinkPageTranslation,
+  schedulePageTranslationPublish,
   rollbackPageTranslationToVersion,
   saveDivergedPageTranslationContent,
   savePageTranslationFieldValues,
@@ -36,6 +40,8 @@ import {
   type RenamePageTranslationBody,
   type UpdatePageTranslationSeoMetaBody,
   renamePageTranslationBodySchema,
+  type SchedulePageTranslationPublishBody,
+  schedulePageTranslationPublishBodySchema,
   updatePageTranslationSeoMetaBodySchema,
 } from '@kometio/api-contracts';
 import { saveDivergedPageTranslationContentBodySchema } from './page-groups.schemas';
@@ -181,6 +187,44 @@ export class PageTranslationsController {
     @UuidParam('translationId') translationId: string,
   ) {
     const translation = await publishPageTranslation(this.deps, {
+      tenantId,
+      pageTranslationId: translationId,
+      actorUserId: userId,
+    });
+    return this.records.toTranslation(translation);
+  }
+
+  /**
+   * Publish this language at a moment of its own (docs/adr/0135). Publishing
+   * is a publisher's, and so is asking for it later: the same gate, since a
+   * schedule is a publication nobody has to be present for.
+   */
+  @Put('translations/:translationId/schedule')
+  @Allowed('changeLiveSite')
+  async schedule(
+    @TenantId() tenantId: string,
+    @UserId() userId: string,
+    @UuidParam('translationId') translationId: string,
+    @Body(new ZodValidationPipe(schedulePageTranslationPublishBodySchema))
+    body: SchedulePageTranslationPublishBody,
+  ) {
+    const translation = await schedulePageTranslationPublish(this.deps, {
+      tenantId,
+      pageTranslationId: translationId,
+      publishAt: new Date(body.publishAt),
+      actorUserId: userId,
+    });
+    return this.records.toTranslation(translation);
+  }
+
+  @Delete('translations/:translationId/schedule')
+  @Allowed('changeLiveSite')
+  async cancelSchedule(
+    @TenantId() tenantId: string,
+    @UserId() userId: string,
+    @UuidParam('translationId') translationId: string,
+  ) {
+    const translation = await cancelPageTranslationSchedule(this.deps, {
       tenantId,
       pageTranslationId: translationId,
       actorUserId: userId,

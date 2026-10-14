@@ -51,6 +51,8 @@ export function setUpPages() {
       add: jest.fn(),
       saveContent: jest.fn(),
       publish: jest.fn(),
+      saveSchedule: jest.fn(),
+      listDueForPublish: jest.fn().mockResolvedValue([]),
       saveSeoMeta: jest.fn(),
       rename: jest.fn(),
       findById: jest.fn(),

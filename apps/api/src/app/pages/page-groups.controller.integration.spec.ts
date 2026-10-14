@@ -1010,6 +1010,7 @@ describe('PageGroupsController (integration)', () => {
         status: 'draft',
         isDiverged: false,
         hasUnpublishedChanges: false,
+        scheduledPublishAt: null,
       },
       {
         locale: 'it',
@@ -1018,6 +1019,7 @@ describe('PageGroupsController (integration)', () => {
         status: 'draft',
         isDiverged: false,
         hasUnpublishedChanges: false,
+        scheduledPublishAt: null,
       },
     ]);
   });
