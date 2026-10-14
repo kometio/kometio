@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { CircleDot, GitFork } from 'lucide-react';
+import { CalendarClock, CircleDot, GitFork } from 'lucide-react';
 import type { PageGroupListItemTranslation } from '@kometio/api-contracts';
 import { Badge } from '../../components/ui/badge';
+import { useFormatDate } from '../../lib/use-format-date';
 
 export interface TranslationAvailabilityBadgesProps {
   translations: PageGroupListItemTranslation[];
@@ -26,18 +27,29 @@ export function TranslationAvailabilityBadges({
   enabledLocales,
 }: TranslationAvailabilityBadgesProps) {
   const { t } = useTranslation();
+  const formatDateTime = useFormatDate('dateTime');
 
   return (
     <div className="flex flex-wrap gap-1">
       {enabledLocales.map((locale) => {
         const translation = translations.find((tr) => tr.locale === locale);
+        // What a schedule adds to any of the states: when it goes live by
+        // itself (docs/adr/0135).
+        const scheduledFor = translation?.scheduledPublishAt
+          ? formatDateTime(translation.scheduledPublishAt)
+          : null;
         const label = (
           status:
             | 'pages.list.statusPublished'
             | 'pages.list.statusDraft'
             | 'pages.list.statusPending'
             | 'pages.list.statusMissing',
-        ) => `${locale.toUpperCase()} — ${t(status)}`;
+        ) =>
+          `${locale.toUpperCase()} — ${t(status)}${
+            scheduledFor
+              ? `, ${t('pages.list.statusScheduled', { when: scheduledFor })}`
+              : ''
+          }`;
         if (!translation) {
           return (
             <Badge
@@ -80,6 +92,7 @@ export function TranslationAvailabilityBadges({
           >
             <span className="uppercase">{locale}</span>
             {translation.hasUnpublishedChanges && <CircleDot size={10} />}
+            {scheduledFor && <CalendarClock size={10} />}
             {translation.isDiverged && (
               <GitFork size={10} aria-label={t('canvas.language.diverged')} />
             )}

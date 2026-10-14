@@ -23,6 +23,15 @@ const STYLES = {
 
 export type DateFormatStyle = keyof typeof STYLES;
 
+/**
+ * The time zone of this browser, by name ("Europe/Rome"): what a time typed
+ * into a `datetime-local` field is in, so that a dialog can say whose "09:00"
+ * it is. Here with the rest of what the editor asks `Intl` for.
+ */
+export function browserTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 export function useFormatDate(
   style: DateFormatStyle = 'date',
 ): (value: string | number | Date) => string | null {

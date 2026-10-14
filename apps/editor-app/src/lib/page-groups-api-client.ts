@@ -11,6 +11,7 @@ import {
   type MoveToParentBody,
   type RelinkPageTranslationBody,
   type RenamePageTranslationBody,
+  type SchedulePageTranslationPublishBody,
   type ReorderPageGroupsBody,
   type RollbackToVersionBody,
   type SaveAsTemplateBody,
@@ -297,6 +298,34 @@ export function publishPageTranslation(
   return requestTranslation(
     `/page-groups/translations/${translationId}/publish`,
     { method: 'POST' },
+  );
+}
+
+/**
+ * Publish this language at a moment of its own (docs/adr/0135). The moment
+ * goes as an instant: the server has no time zone to guess.
+ */
+export function schedulePageTranslationPublish(
+  translationId: string,
+  publishAt: Date,
+): Promise<PageTranslationRecord> {
+  return requestTranslation(
+    `/page-groups/translations/${translationId}/schedule`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({
+        publishAt: publishAt.toISOString(),
+      } satisfies SchedulePageTranslationPublishBody),
+    },
+  );
+}
+
+export function cancelPageTranslationSchedule(
+  translationId: string,
+): Promise<PageTranslationRecord> {
+  return requestTranslation(
+    `/page-groups/translations/${translationId}/schedule`,
+    { method: 'DELETE' },
   );
 }
 
