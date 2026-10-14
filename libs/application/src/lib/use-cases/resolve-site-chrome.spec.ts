@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Site, SiteLayoutSection } from '@kometio/domain-core';
-import type { SiteLayoutSectionKind } from '@kometio/shared-types';
+import type { PageContent, SiteLayoutSectionKind } from '@kometio/shared-types';
 import { resolveSiteChrome } from './resolve-site-chrome';
 import {
   InMemoryTaxonomyRepository,
@@ -32,7 +32,7 @@ describe('resolveSiteChrome', () => {
     input: {
       locale: string;
       kind: SiteLayoutSectionKind;
-      content: unknown[];
+      content: PageContent;
     },
   ) {
     const section = SiteLayoutSection.create({
@@ -44,12 +44,12 @@ describe('resolveSiteChrome', () => {
     });
     const draft = SiteLayoutSection.fromProps({
       ...section.toProps(),
-      content: input.content as never,
+      content: input.content,
     });
     const published = SiteLayoutSection.fromProps({
       ...draft.toProps(),
       status: 'published',
-      publishedContent: input.content as never,
+      publishedContent: input.content,
     });
     await repository.add(published);
   }

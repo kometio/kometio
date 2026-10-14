@@ -14,10 +14,11 @@ import {
   createIntegrationTenant,
   deleteIntegrationTenants,
 } from '@kometio/postgres-db/testing';
+import type { PageContent } from '@kometio/shared-types';
 import { DrizzleMediaUsageRepository } from './drizzle-media-usage.repository';
 
 /** A block holding a picked file, as `pickedMediaSchema` stores it. */
-const blockWith = (mediaId: string) => [
+const blockWith = (mediaId: string): PageContent => [
   {
     id: randomUUID(),
     type: 'image',
@@ -61,9 +62,9 @@ describe('DrizzleMediaUsageRepository (integration)', () => {
     tenantId: string,
     siteId: string,
     fields: {
-      shared?: unknown;
-      published?: unknown;
-      diverged?: unknown;
+      shared?: PageContent;
+      published?: PageContent;
+      diverged?: PageContent;
       locale?: string;
       slug?: string;
       title?: string;
@@ -75,7 +76,7 @@ describe('DrizzleMediaUsageRepository (integration)', () => {
         id: groupId,
         tenantId,
         siteId,
-        content: (fields.shared ?? []) as never,
+        content: fields.shared ?? [],
       });
       await tx.insert(pageTranslations).values({
         tenantId,
@@ -85,8 +86,8 @@ describe('DrizzleMediaUsageRepository (integration)', () => {
         slug: fields.slug ?? `pagina-${randomUUID().slice(0, 8)}`,
         seoMeta: { title: fields.title ?? '', description: '' },
         status: fields.published ? 'published' : 'draft',
-        publishedSnapshot: (fields.published ?? null) as never,
-        divergedContent: (fields.diverged ?? null) as never,
+        publishedSnapshot: fields.published ?? null,
+        divergedContent: fields.diverged ?? null,
       });
     });
     return groupId;
@@ -157,8 +158,8 @@ describe('DrizzleMediaUsageRepository (integration)', () => {
         name: `Sezione ${randomUUID().slice(0, 6)}`,
         kind: 'shared',
         status: 'published',
-        content: [] as never,
-        publishedContent: blockWith(mediaId) as never,
+        content: [],
+        publishedContent: blockWith(mediaId),
       });
       await tx.insert(siteLayoutSections).values([
         {
@@ -167,7 +168,7 @@ describe('DrizzleMediaUsageRepository (integration)', () => {
           locale: 'it',
           kind: 'header',
           status: 'draft',
-          content: blockWith(mediaId) as never,
+          content: blockWith(mediaId),
         },
         {
           tenantId: tenantAId,
@@ -175,7 +176,7 @@ describe('DrizzleMediaUsageRepository (integration)', () => {
           locale: 'it',
           kind: 'footer',
           status: 'draft',
-          content: [] as never,
+          content: [],
         },
       ]);
     });

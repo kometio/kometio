@@ -84,7 +84,8 @@ describe('validateThemeStyleProperties', () => {
           properties: [
             {
               ...elevation,
-              control: 'slider' as ThemeStyleProperty['control'],
+              // @ts-expect-error a control the type forbids is the case under test
+              control: 'slider',
             },
           ],
         },

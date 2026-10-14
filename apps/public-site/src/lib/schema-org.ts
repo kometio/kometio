@@ -16,6 +16,14 @@ const SCHEMA_ORG_DAY: Record<DayOfWeek, string> = {
   sunday: 'Sunday',
 };
 
+/** One node of the graph: a schema.org type carries the properties that type has, so the keys are open. */
+export type SchemaOrgNode = Record<string, unknown>;
+
+export interface SchemaOrgGraph {
+  '@context': 'https://schema.org';
+  '@graph': SchemaOrgNode[];
+}
+
 /**
  * An address as schema.org wants it — absolute — or `undefined` when there
  * is none worth giving.
@@ -83,7 +91,7 @@ function buildPostalAddress(
   return Object.keys(node).length > 1 ? node : null;
 }
 
-function buildLocalBusinessNode(site: PublishedSite): object {
+function buildLocalBusinessNode(site: PublishedSite): SchemaOrgNode {
   const business: Record<string, unknown> = {
     // Falls back to the generic schema.org type when the site hasn't set
     // a more specific one (e.g. "Restaurant") — see docs/adr/0014,
@@ -124,7 +132,9 @@ function buildLocalBusinessNode(site: PublishedSite): object {
  * filled in gets a plain WebSite/WebPage graph, not a broken/empty
  * LocalBusiness node.
  */
-export function buildSchemaOrgGraph(input: BuildSchemaOrgGraphInput): object {
+export function buildSchemaOrgGraph(
+  input: BuildSchemaOrgGraphInput,
+): SchemaOrgGraph {
   const { site, seoMeta, pageUrl } = input;
 
   const website = {
@@ -142,7 +152,7 @@ export function buildSchemaOrgGraph(input: BuildSchemaOrgGraphInput): object {
     isPartOf: { '@id': '#website' },
   };
 
-  const graph: object[] = [website, webPage];
+  const graph: SchemaOrgNode[] = [website, webPage];
   if (hasBusinessInfo(site)) {
     graph.push(buildLocalBusinessNode(site));
   }

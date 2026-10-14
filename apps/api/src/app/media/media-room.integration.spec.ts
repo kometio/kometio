@@ -3,6 +3,7 @@ import request from 'supertest';
 import sharp from 'sharp';
 import { MediaModule } from './media.module';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
+import { requireEnv } from '@kometio/env-config';
 
 /**
  * A disk with less room than the server keeps back for itself refuses the
@@ -30,7 +31,7 @@ describe('Uploads to a disk with no room kept back (integration)', () => {
   });
 
   it('answers 507 in words, and writes nothing', async () => {
-    const uploadDir = process.env.MEDIA_UPLOAD_DIR as string;
+    const uploadDir = requireEnv('MEDIA_UPLOAD_DIR');
     const before = await readdir(uploadDir).catch(() => []);
     const png = await sharp({
       create: {

@@ -7,6 +7,8 @@ import sharp from 'sharp';
 import { MediaModule } from './media.module';
 import { mountMediaStatic } from '../media-static';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
+import { requireEnv } from '@kometio/env-config';
+import { mediaRecordSchema } from '@kometio/api-contracts';
 
 /**
  * Runs against a real Postgres and writes real files under MEDIA_UPLOAD_DIR
@@ -32,7 +34,7 @@ describe('MediaController (integration)', () => {
       // The real serving configuration, not a bare static mount: a test
       // that sets up its own headers is testing itself.
       beforeInit: (nestApp) =>
-        mountMediaStatic(nestApp, process.env.MEDIA_UPLOAD_DIR as string),
+        mountMediaStatic(nestApp, requireEnv('MEDIA_UPLOAD_DIR')),
     });
     app = integration.app;
     siteId = await integration.createSite();
@@ -40,7 +42,7 @@ describe('MediaController (integration)', () => {
   });
 
   afterAll(async () => {
-    const uploadDir = process.env.MEDIA_UPLOAD_DIR as string;
+    const uploadDir = requireEnv('MEDIA_UPLOAD_DIR');
     for (const key of uploadedStorageKeys) {
       await unlink(`${uploadDir}/${key}`).catch(() => undefined);
       if (key.startsWith('files/')) {
@@ -203,7 +205,7 @@ describe('MediaController (integration)', () => {
   });
 
   it('keeps a form attachment a download under a disguised address too', async () => {
-    const uploadDir = process.env.MEDIA_UPLOAD_DIR as string;
+    const uploadDir = requireEnv('MEDIA_UPLOAD_DIR');
     const name = `${randomUUID()}.pdf`;
     await mkdir(join(uploadDir, 'attachments'), { recursive: true });
     await writeFile(join(uploadDir, 'attachments', name), '%PDF-1.7\n');
@@ -227,7 +229,7 @@ describe('MediaController (integration)', () => {
 
     await agent.delete(`/media/${uploadRes.body.id}`).expect(204);
 
-    const uploadDir = process.env.MEDIA_UPLOAD_DIR as string;
+    const uploadDir = requireEnv('MEDIA_UPLOAD_DIR');
     await expect(stat(join(uploadDir, dirname(key)))).rejects.toThrow();
   });
 
@@ -327,8 +329,9 @@ describe('MediaController (integration)', () => {
         .field('siteId', siteId)
         .attach('file', Buffer.from('%PDF-1.7\n'), name)
         .expect(201);
-      uploadedStorageKeys.push(res.body.storageKey);
-      return res.body as { id: string; filename: string };
+      const media = mediaRecordSchema.parse(res.body);
+      uploadedStorageKeys.push(media.storageKey);
+      return media;
     }
 
     it('reads one file by its id — what a link that names it needs', async () => {

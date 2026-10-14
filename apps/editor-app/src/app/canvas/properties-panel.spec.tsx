@@ -2,7 +2,6 @@ import type { ReactElement } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClientProvider } from '@tanstack/react-query';
-import type { Block } from '@kometio/shared-types';
 import { buildSiteRecord } from '@kometio/testing/records';
 import type { BlockDescriptor } from '@kometio/block-registry';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
@@ -60,7 +59,7 @@ const heroDescriptor: BlockDescriptor = {
 
 function baseProps() {
   return {
-    block: { id: 'block-1', type: 'Button', props: {} } as Block,
+    block: { id: 'block-1', type: 'Button', props: {} },
     descriptor: buttonDescriptor,
     isRootLevel: true,
     onChangeProp: vi.fn(),
@@ -112,14 +111,12 @@ describe('PropertiesPanel style fields', () => {
     renderPanel(
       <PropertiesPanel
         {...baseProps()}
-        block={
-          {
-            id: 'block-1',
-            type: 'Button',
-            props: {},
-            styleOverride: { base: { borderRadius: '6px' } },
-          } as Block
-        }
+        block={{
+          id: 'block-1',
+          type: 'Button',
+          props: {},
+          styleOverride: { base: { borderRadius: '6px' } },
+        }}
         onChangeInstanceStyle={onChangeInstanceStyle}
       />,
     );

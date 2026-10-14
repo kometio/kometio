@@ -97,11 +97,9 @@ describe('Redirect', () => {
     ['an address sent to itself', '/old', toUrl('/old'), 'target'],
   ] as const)('refuses %s', (_label, from, to, side) => {
     expect(() => create(from, to)).toThrowError(InvalidRedirectError);
-    try {
-      create(from, to);
-    } catch (error) {
-      expect((error as InvalidRedirectError).side).toBe(side);
-    }
+    expect(() => create(from, to)).toThrowError(
+      expect.objectContaining({ side }),
+    );
   });
 
   it('may send an address to the same path on another host: that is the move', () => {

@@ -7,6 +7,7 @@ import { PagesModule } from '../pages/pages.module';
 import { PublicFormsModule } from './public-forms.module';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
 import { CAPTCHA_PORT, NEWSLETTER_PORT } from '../adapters/port.tokens';
+import { idOf } from '../../test/response-body.test-fixture';
 
 /**
  * Runs against a real Postgres and a real SMTP relay (Mailpit in dev, see
@@ -57,7 +58,7 @@ describe('PublicFormsController (integration)', () => {
       .patch(`/forms/${createRes.body.id}`)
       .send({ name: 'Contatti', fields, notificationEmails })
       .expect(200);
-    return updateRes.body.id as string;
+    return idOf(updateRes.body);
   }
 
   /** A real page, created the authenticated way — returns its translation's id. */
@@ -74,7 +75,7 @@ describe('PublicFormsController (integration)', () => {
         seoMeta: { title, description: '' },
       })
       .expect(201);
-    return translationRes.body.id as string;
+    return idOf(translationRes.body);
   }
 
   it('serves a form definition without the notification email, without a session', async () => {

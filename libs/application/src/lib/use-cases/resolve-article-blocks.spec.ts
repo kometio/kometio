@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { PageContent } from '@kometio/shared-types';
+import {
+  pageGridItemSchema,
+  publicAuthorSchema,
+  type PageContent,
+} from '@kometio/shared-types';
 import { Term, User } from '@kometio/domain-core';
 import { createPageGroup } from './create-page-group.use-case';
 import { createPageGroupTranslation } from './create-page-group-translation.use-case';
@@ -238,10 +242,9 @@ describe('resolveArticleBlocks', () => {
     const content = await renderArticle(deps, middle);
 
     const nav = propsOf(content, 'nav');
-    expect((nav['previous'] as { title: string } | null)?.title).toBe(
-      'Vecchio',
-    );
-    expect((nav['next'] as { title: string } | null)?.title).toBe('Nuovo');
+    const neighbour = pageGridItemSchema.nullable();
+    expect(neighbour.parse(nav['previous'])?.title).toBe('Vecchio');
+    expect(neighbour.parse(nav['next'])?.title).toBe('Nuovo');
     expect(older.group.id).not.toBe(newer.group.id);
   });
 
@@ -309,7 +312,9 @@ describe('resolveArticleBlocks', () => {
 
     const content = await renderArticle(deps, self);
 
-    const items = propsOf(content, 'related')['items'] as { title: string }[];
+    const items = pageGridItemSchema
+      .array()
+      .parse(propsOf(content, 'related')['items']);
     // Capped at the block's own limit of two, newest first, and never the
     // page it is sitting on.
     expect(items.map((item) => item.title)).toEqual(['Terza', 'Nuova']);
@@ -389,10 +394,9 @@ describe('resolveArticleBlocks', () => {
 
       const content = await renderArticle(deps, page, withBox);
 
-      const author = propsOf(content, 'box')['author'] as {
-        path: string | null;
-        avatar: unknown;
-      };
+      const author = publicAuthorSchema.parse(
+        propsOf(content, 'box')['author'],
+      );
       expect(author.path).toBeNull();
       // No storage to ask: the box draws the initial instead.
       expect(author.avatar).toBeNull();

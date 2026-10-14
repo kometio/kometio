@@ -4,6 +4,8 @@ import request from 'supertest';
 import { PagesModule } from '../pages/pages.module';
 import { TaxonomiesModule } from './taxonomies.module';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
+import { idOf } from '../../test/response-body.test-fixture';
+import { termRecordSchema } from '@kometio/api-contracts';
 
 /**
  * Runs against a real Postgres, through the real HTTP stack — the same
@@ -242,15 +244,17 @@ describe('TaxonomiesController (integration)', () => {
           .post(`/taxonomies/${taxonomy.body.id}/terms`)
           .send({ name: { en: `${name} ${suffix}` } })
           .expect(201);
-        terms.push({ id: made.body.id as string, name: `${name} ${suffix}` });
+        terms.push({ id: idOf(made.body), name: `${name} ${suffix}` });
       }
-      return { taxonomyId: taxonomy.body.id as string, terms, suffix };
+      return { taxonomyId: idOf(taxonomy.body), terms, suffix };
     }
     const listedNames = async (taxonomyId: string) =>
-      (
-        (await agent.get(`/taxonomies/${taxonomyId}/terms`).expect(200))
-          .body as { name: { en: string } }[]
-      ).map((term) => term.name.en);
+      termRecordSchema
+        .array()
+        .parse(
+          (await agent.get(`/taxonomies/${taxonomyId}/terms`).expect(200)).body,
+        )
+        .map((term) => term.name['en']);
 
     it('reads terms in the order they were made', async () => {
       const { taxonomyId, terms } = await dimensionWithTerms(['A', 'B', 'C']);

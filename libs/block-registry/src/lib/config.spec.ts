@@ -69,37 +69,26 @@ describe('translatable field audit spot-checks', () => {
     return field;
   }
 
+  /** `undefined` for a kind of field that has no say in it. */
+  function translatableOf(type: string, key: string): boolean | undefined {
+    const field = fieldOf(type, key);
+    return 'translatable' in field ? field.translatable : undefined;
+  }
+
   it('marks ordinary text content as translatable', () => {
-    expect(
-      (fieldOf('Hero', 'title') as { translatable?: boolean }).translatable,
-    ).toBe(true);
-    expect(
-      (fieldOf('Text', 'body') as { translatable?: boolean }).translatable,
-    ).toBe(true);
-    expect(
-      (fieldOf('Image', 'alt') as { translatable?: boolean }).translatable,
-    ).toBe(true);
+    expect(translatableOf('Hero', 'title')).toBe(true);
+    expect(translatableOf('Text', 'body')).toBe(true);
+    expect(translatableOf('Image', 'alt')).toBe(true);
   });
 
   it("leaves a person's proper name untranslated (shared across locales)", () => {
-    expect(
-      (fieldOf('Testimonial', 'author') as { translatable?: boolean })
-        .translatable,
-    ).not.toBe(true);
-    expect(
-      (fieldOf('TeamMember', 'name') as { translatable?: boolean })
-        .translatable,
-    ).not.toBe(true);
+    expect(translatableOf('Testimonial', 'author')).not.toBe(true);
+    expect(translatableOf('TeamMember', 'name')).not.toBe(true);
   });
 
   it('leaves structural/data fields (video/date) untranslated', () => {
-    expect(
-      (fieldOf('VideoEmbed', 'url') as { translatable?: boolean }).translatable,
-    ).not.toBe(true);
-    expect(
-      (fieldOf('Countdown', 'targetDate') as { translatable?: boolean })
-        .translatable,
-    ).not.toBe(true);
+    expect(translatableOf('VideoEmbed', 'url')).not.toBe(true);
+    expect(translatableOf('Countdown', 'targetDate')).not.toBe(true);
   });
 
   // Found live during the i18n backfill against real docs-showcase content
@@ -107,12 +96,8 @@ describe('translatable field audit spot-checks', () => {
   // hand-typed internal path ("/it/docs"), not just a true external link —
   // marked translatable after the fact, this locks the correction in.
   it("marks ctaLinkFields()'s shared `url` field as translatable — internal relative paths must vary by locale", () => {
-    expect(
-      (fieldOf('Button', 'url') as { translatable?: boolean }).translatable,
-    ).toBe(true);
-    expect(
-      (fieldOf('Banner', 'url') as { translatable?: boolean }).translatable,
-    ).toBe(true);
+    expect(translatableOf('Button', 'url')).toBe(true);
+    expect(translatableOf('Banner', 'url')).toBe(true);
   });
 
   // Found live during round-trip verification of the i18n backfill (not
@@ -120,9 +105,7 @@ describe('translatable field audit spot-checks', () => {
   // snippet (e.g. "# overrides Hero") that were hand-translated per locale
   // under the old duplicated-page model — locks the correction in.
   it('marks Code.code as translatable — snippets can embed human-language comments', () => {
-    expect(
-      (fieldOf('Code', 'code') as { translatable?: boolean }).translatable,
-    ).toBe(true);
+    expect(translatableOf('Code', 'code')).toBe(true);
   });
 });
 
@@ -191,9 +174,8 @@ describe('search-text.ts prose-field coverage', () => {
   });
 
   it('never double-counts a type as both searchable and explicitly excluded', () => {
-    const overlap = SEARCHABLE_BLOCK_TYPES.filter((type) =>
-      (BLOCKS_WITHOUT_SEARCHABLE_TEXT as readonly string[]).includes(type),
-    );
+    const excluded = new Set<string>(BLOCKS_WITHOUT_SEARCHABLE_TEXT);
+    const overlap = SEARCHABLE_BLOCK_TYPES.filter((type) => excluded.has(type));
     expect(overlap).toEqual([]);
   });
 });
