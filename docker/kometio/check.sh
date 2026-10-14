@@ -93,6 +93,13 @@ DOWNGRADE_VOLUME=kometio-check-downgrade-data
 LOGJSON=kometio-check-logjson
 LOGJSON_VOLUME=kometio-check-logjson-data
 LOGJSON_API_PORT=22000
+# The ninth, a server with a name that is asked one request carrying a secret in
+# every place a request has one, to read what the proxy wrote (docs/adr/0126).
+PROXYLOG=kometio-check-proxylog
+PROXYLOG_VOLUME=kometio-check-proxylog-data
+PROXYLOG_DOMAIN=kometio-check-proxylog.localhost
+PROXYLOG_HTTP_PORT=19080
+PROXYLOG_HTTPS_PORT=19443
 EDITOR_PORT=15200
 API_PORT=15000
 SITE_PORT=15322
@@ -132,16 +139,16 @@ cleanup() {
   if [ "$status" -ne 0 ] || [ "$failed" -ne 0 ]; then
     printf '\n== the last lines of the image log\n'
     docker logs --tail 40 "$NAME" 2>&1 || true
-    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE"; do
+    for other in "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE" "$PROXYLOG"; do
       if docker ps -a --format '{{.Names}}' | grep -qx "$other"; then
         printf '\n== the last lines of the log of %s\n' "$other"
         docker logs --tail 40 "$other" 2>&1 || true
       fi
     done
   fi
-  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE" >/dev/null 2>&1 || true
+  docker rm -fv "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$LOGJSON" "$DOWNGRADE" "$PROXYLOG" >/dev/null 2>&1 || true
   # Only the volumes this script made: the checks below guarantee they did not exist.
-  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME" >/dev/null 2>&1 || true
+  docker volume rm "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME" "$PROXYLOG_VOLUME" >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 
@@ -150,13 +157,13 @@ cleanup() {
 # These come BEFORE the trap that cleans up: stopping here because a name is
 # taken must not remove the thing that holds it.
 
-for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$DOWNGRADE"; do
+for taken in "$NAME" "$MAILPIT" "$FIRST" "$HTTPS" "$MOVED" "$IMPORTED" "$UPGRADE" "$DOWNGRADE" "$PROXYLOG"; do
   if docker ps -a --format '{{.Names}}' | grep -qx "$taken"; then
     echo "A container named $taken already exists: remove it first (this script removes what it creates, and would remove that too)." >&2
     exit 2
   fi
 done
-for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME"; do
+for taken in "$VOLUME" "$FIRST_VOLUME" "$HTTPS_VOLUME" "$MOVED_VOLUME" "$IMPORTED_VOLUME" "$HOSTILE_VOLUME" "$LINKED_VOLUME" "$BACKUP_VOLUME" "$UPGRADE_VOLUME" "$LOGJSON_VOLUME" "$DOWNGRADE_VOLUME" "$PROXYLOG_VOLUME"; do
   if docker volume ls -q | grep -qx "$taken"; then
     echo "A volume named $taken already exists: remove it first." >&2
     exit 2
@@ -197,6 +204,22 @@ setup_token() {
 
 status_code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 
+# The major version of the Postgres an image carries: a volume that one major made
+# is not opened by another (docs/adr/0125).
+postgres_major() {
+  docker run --rm --entrypoint postgres "$1" --version | sed -E 's/.*\(PostgreSQL\) ([0-9]+).*/\1/'
+}
+
+# Waits for a container that is expected to stop by itself, up to $2 seconds. A
+# container still running after that is for the check after it to report.
+until_exited() {
+  local waited=0
+  until [ "$(docker inspect -f '{{.State.Status}}' "$1")" != "running" ] || [ "$waited" -ge "$2" ]; do
+    sleep 1
+    waited=$((waited + 1))
+  done
+}
+
 # --- the part of the launcher that is only logic ---------------------------------
 #
 # What DOMAIN may be and the addresses it makes (docs/adr/0104), and when an
@@ -214,6 +237,8 @@ check "a site opened from an archive is stopped, restored and started again as d
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/site-import.test.mjs"
 check "every table of the schema is a site's or a moment's, so that no new one is carried by accident" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/archive-tables.test.mjs"
+check "a volume that another major version of Postgres made is refused with what to do, and one of the same major is not" \
+  node --test "$(git rev-parse --show-toplevel)/docker/kometio/embedded-postgres.test.mjs"
 check "the healthcheck looks at the three parts, on the ports the launcher gives them" \
   node --test "$(git rev-parse --show-toplevel)/docker/kometio/healthcheck.test.mjs"
 check "the processes live and die together as documented: one that stops takes the others, one stopped on purpose does not, every stop is in the same order with the same time to leave" \
@@ -450,11 +475,7 @@ UP_TO_DATE_BEFORE="$(docker logs "$DOWNGRADE" 2>&1 | grep -c 'migrations are up 
 docker start "$DOWNGRADE" >/dev/null
 # It stops by itself, which is a refusal and not a part that died: a container
 # that is still running after this long is the check failing.
-downgrade_waited=0
-until [ "$(docker inspect -f '{{.State.Status}}' "$DOWNGRADE")" != "running" ] || [ "$downgrade_waited" -ge 90 ]; do
-  sleep 1
-  downgrade_waited=$((downgrade_waited + 1))
-done
+until_exited "$DOWNGRADE" 90
 check "an image that does not know a migration of the volume stops, with an error" \
   test "$(docker inspect -f '{{.State.Status}} {{.State.ExitCode}}' "$DOWNGRADE")" = "exited 1"
 check "and says that the volume was made by a newer Kometio" \
@@ -475,6 +496,11 @@ docker rm -fv "$DOWNGRADE" >/dev/null
 # differently. This one makes a site with the version people have, and does what
 # the README's "Update to a newer version" says: export, stop with thirty seconds,
 # start this image on the same volume. Asked for with --upgrade-from.
+#
+# When the two images carry different majors of Postgres, which do not read each
+# other's files (docs/adr/0125), the same volume is refused and the way across is
+# the export: it is opened into a new volume. That is what is run then, and what
+# is checked of the site is the same.
 if [ -n "$UPGRADE_FROM" ]; then
   step "an upgrade: a site made by ${UPGRADE_FROM}, opened by this image"
   UPGRADE_EDITOR_URL="http://localhost:${UPGRADE_EDITOR_PORT}"
@@ -524,10 +550,35 @@ if [ -n "$UPGRADE_FROM" ]; then
   MIGRATIONS_BEFORE="$(docker exec "$UPGRADE" psql -h /run/postgresql -U kometio -d kometio -Atc 'select count(*) from drizzle.__drizzle_migrations')"
 
   # What the README's step 1 asks for, made by the version that is being left.
+  UPGRADE_EXPORT="${WORK}/upgrade-export.tar.gz"
   check "the old version exports its site first, as the README says" \
-    sh -c "docker exec '$UPGRADE' node /opt/kometio/cli.mjs export | tar tzf - | grep -q manifest.json"
+    sh -c "docker exec '$UPGRADE' node /opt/kometio/cli.mjs export > '$UPGRADE_EXPORT' && tar tzf '$UPGRADE_EXPORT' | grep -q manifest.json"
   docker stop -t 30 "$UPGRADE" >/dev/null
   docker rm "$UPGRADE" >/dev/null
+
+  UPGRADE_POSTGRES_BEFORE="$(postgres_major "$UPGRADE_FROM")"
+  UPGRADE_POSTGRES_AFTER="$(postgres_major "$IMAGE")"
+  if [ "$UPGRADE_POSTGRES_BEFORE" != "$UPGRADE_POSTGRES_AFTER" ]; then
+    pass "Postgres goes from ${UPGRADE_POSTGRES_BEFORE} to ${UPGRADE_POSTGRES_AFTER}: the volume is refused, and the export is the way across"
+    start_upgrade "$IMAGE"
+    until_exited "$UPGRADE" 90
+    check "this image stops on the old volume, with an error" \
+      test "$(docker inspect -f '{{.State.Status}} {{.State.ExitCode}}' "$UPGRADE")" = "exited 1"
+    check "and says which Postgres made it, which this one is, and what to do: export, then open it into a new volume" \
+      sh -c "docker logs '$UPGRADE' 2>&1 | grep -q 'made by PostgreSQL ${UPGRADE_POSTGRES_BEFORE}, and this image carries ${UPGRADE_POSTGRES_AFTER}' && docker logs '$UPGRADE' 2>&1 | grep -q 'cli.mjs export' && docker logs '$UPGRADE' 2>&1 | grep -q 'into a new volume'"
+    check "it started nothing: no banner" \
+      test "$(banners "$UPGRADE")" = 0
+    check "and the volume is as it was: still the old Postgres's files" \
+      test "$(docker run --rm -v "${UPGRADE_VOLUME}:/data" --entrypoint cat "$IMAGE" /data/postgres/PG_VERSION)" = "$UPGRADE_POSTGRES_BEFORE"
+    docker rm "$UPGRADE" >/dev/null
+    # The README's way across: a volume that has never been used, into which the
+    # export is opened. (The same name, for the rest of this scenario: the old
+    # volume is gone, which is what a person who has checked the export does.)
+    docker volume rm "$UPGRADE_VOLUME" >/dev/null
+    check "the export is opened into a new volume with this image" \
+      sh -c "docker run --rm -i -v '${UPGRADE_VOLUME}:/data' '$IMAGE' import < '$UPGRADE_EXPORT'"
+  fi
+
   start_upgrade "$IMAGE"
   seconds="$(wait_for_banners 1 "$UPGRADE")"
   pass "this image is ready on that volume after ${seconds}s"
@@ -536,8 +587,11 @@ if [ -n "$UPGRADE_FROM" ]; then
     sh -c "curl -s '${UPGRADE_API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":true'"
   check "no setup token is asked for" \
     test "$(docker logs "$UPGRADE" 2>&1 | grep -c 'enter this setup token' || true)" = 0
-  check "the session made before is still valid" \
-    test "$(status_code -b "$UPGRADE_COOKIES" "${UPGRADE_API_URL}/auth/session")" = 200
+  # What an import does not carry is a moment (docs/adr/0105): a session is one.
+  if [ "$UPGRADE_POSTGRES_BEFORE" = "$UPGRADE_POSTGRES_AFTER" ]; then
+    check "the session made before is still valid" \
+      test "$(status_code -b "$UPGRADE_COOKIES" "${UPGRADE_API_URL}/auth/session")" = 200
+  fi
   check "the same password signs in" \
     test "$(status_code -H 'content-type: application/json' \
       -d "$UPGRADE_LOGIN_BODY" "${UPGRADE_API_URL}/auth/login")" = 200
@@ -897,6 +951,71 @@ while IFS= read -r answer; do
   esac
 done < <(docker logs "$LOGJSON" 2>&1 | node "$(git rev-parse --show-toplevel)/docker/kometio/json-log-check.mjs" "$LOGJSON_REQUEST_ID" "$LOGJSON_QUERY_SECRET" || true)
 docker rm -fv "$LOGJSON" >/dev/null
+
+# --- what the proxy writes of a request ---------------------------------------------
+#
+# docs/adr/0126. A server with a name has Caddy in front of the three parts. Its
+# own access line carries what a request did but the credentials it redacts: every
+# other header, the address, the query. And the line for a name that has no site
+# (the machine's address, the redirect from port 80) goes to a log that no site's
+# filter sees.
+# Two runs on the same volume: without KOMETIO_ACCESS_LOG there is no line of a
+# request and nothing a request carried; with it there is a line for each, and
+# the container's whole log is searched for what they carried.
+step "the proxy's access log: nothing unless asked, and then none of what a request carried (docs/adr/0126)"
+PROXYLOG_SECRET="proxy-secret-$(openssl rand -hex 8)"
+PROXYLOG_HOST="api.${PROXYLOG_DOMAIN}:${PROXYLOG_HTTPS_PORT}"
+
+# One container, started with the arguments after the first, asked what a
+# request carrying a secret in every place has: through the name that has a site,
+# over HTTP to the address (no site at all), and to a name over HTTP (the
+# redirect). `--resolve` and not DNS: the name only has to reach this machine,
+# and Caddy's certificate for it is its own authority's (-k).
+proxylog_run() {
+  docker run -d --name "$PROXYLOG" \
+    -p "${PROXYLOG_HTTP_PORT}:80" -p "${PROXYLOG_HTTPS_PORT}:443" \
+    -e "DOMAIN=${PROXYLOG_DOMAIN}" \
+    -e "EDITOR_APP_URL=https://admin.${PROXYLOG_DOMAIN}:${PROXYLOG_HTTPS_PORT}" \
+    -e "API_PUBLIC_URL=https://${PROXYLOG_HOST}/api" \
+    -e "PUBLIC_SITE_URL=https://${PROXYLOG_DOMAIN}:${PROXYLOG_HTTPS_PORT}" \
+    -v "${PROXYLOG_VOLUME}:/data" "$@" "$IMAGE" >/dev/null
+  wait_for_banners 1 "$PROXYLOG" >/dev/null
+  curl -sk -o /dev/null \
+    --resolve "${PROXYLOG_HOST}:127.0.0.1" \
+    -H "Cookie: session=${PROXYLOG_SECRET}-cookie" \
+    -H "Authorization: Bearer ${PROXYLOG_SECRET}-bearer" \
+    -H "X-Preview-Token: ${PROXYLOG_SECRET}-header" \
+    -H "Referer: https://elsewhere.test/page?t=${PROXYLOG_SECRET}-referer" \
+    -A "Browser/${PROXYLOG_SECRET}-agent" \
+    "https://${PROXYLOG_HOST}/api/proxy-log-check?token=${PROXYLOG_SECRET}-query"
+  curl -s -o /dev/null \
+    -H "Cookie: session=${PROXYLOG_SECRET}-cookie" \
+    -A "Browser/${PROXYLOG_SECRET}-agent" \
+    "http://127.0.0.1:${PROXYLOG_HTTP_PORT}/no-site-here?token=${PROXYLOG_SECRET}-query"
+  # The line is written when the response has gone: a moment, not none.
+  sleep 1
+}
+proxy_lines() { docker logs "$PROXYLOG" 2>&1 | grep 'http.log.access' || true; }
+
+proxylog_run
+check "without the variable the proxy writes no line of a request" \
+  test "$(proxy_lines | grep -c .)" = 0
+check "and nothing a request carried is anywhere in the log" \
+  sh -c "! docker logs '$PROXYLOG' 2>&1 | grep -q '${PROXYLOG_SECRET}'"
+docker rm -fv "$PROXYLOG" >/dev/null
+
+proxylog_run -e KOMETIO_ACCESS_LOG=true
+check "with it, the proxy wrote a line for the request: its host, its path and its status" \
+  sh -c "docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep '\"host\":\"${PROXYLOG_HOST}\"' | grep '\"uri\":\"/api/proxy-log-check\"' | grep -q '\"status\":404'"
+check "its line has what a log of requests is asked: duration and size" \
+  sh -c "docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep -q '\"duration\":.*\"size\":'"
+check "a request to an address that has no site is a line too (the default logger's)" \
+  sh -c "docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep -q '\"uri\":\"/no-site-here\"'"
+check "no cookie, no token, no header of its own, no referer, no browser, no query: none of the six secrets is anywhere in the log" \
+  sh -c "! docker logs '$PROXYLOG' 2>&1 | grep -q '${PROXYLOG_SECRET}'"
+check "and no line of the proxy's has an address, a port, a header or a response header" \
+  sh -c "! docker logs '$PROXYLOG' 2>&1 | grep 'http.log.access' | grep -Eq 'remote_ip|client_ip|remote_port|\"headers\"|resp_headers'"
+docker rm -fv "$PROXYLOG" >/dev/null
 
 # --- the browser suite ----------------------------------------------------------
 

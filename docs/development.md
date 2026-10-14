@@ -53,6 +53,31 @@ pnpm --filter @kometio/postgres-db run db:migrate
 pnpm --filter @kometio/postgres-db run db:seed
 ```
 
+#### A database made before Postgres 18
+
+The compose file moved from Postgres 16 to 18 on 2026-10-13
+([ADR-0125](adr/0125-the-image-carries-postgres-18.md)). A major version does not open the files
+of another, so the database is now in a new volume, `postgres18-data`, and starts
+empty; the old one, `postgres-data`, is untouched and keeps what it had until
+you remove it. To bring a database that matters (the documentation site's, say)
+across, take the dump **before** the new container is started, with the old one
+still running:
+
+```sh
+./tools/dump-database.sh before-18        # into _data/, which is not committed
+docker compose up -d postgres             # now 18, and empty: db/init makes the role
+gunzip -c _data/before-18-*.sql.gz | docker compose exec -T postgres \
+  sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+pnpm --filter @kometio/postgres-db run db:migrate   # if the branch has migrations the dump does not
+```
+
+If the new container is already up, the old data is still in the volume:
+`docker run --rm -d --name pg16 -v <project>_postgres-data:/var/lib/postgresql/data postgres:16-alpine`
+serves it for long enough to dump it
+(`docker exec pg16 pg_dump --no-owner --clean --if-exists -U kometio kometio | gzip > _data/before-18.sql.gz`,
+then `docker stop pg16`), and `docker volume rm <project>_postgres-data` is what
+removes it once you have checked what came across.
+
 After changing `libs/adapters/postgres-db/src/lib/schema.ts`, generate a new
 migration (review the generated SQL before committing it — Drizzle can't see
 RLS policies or grants, those stay hand-written in
@@ -152,7 +177,13 @@ field, submission, notification emails in Mailpit), the canvas (Layers
 drag by mouse and keyboard, restoring a header version, a page that does
 not answer and Retry), and the
 accessibility gate (axe on every editor screen, both themes, 1440 and
-390px wide, plus any API error a screen runs into).
+390px wide, plus any API error a screen runs into), and the same gate on
+the public site: a published page of every block the picker offers, one
+for each category, plus the page that is not found and the search
+(`public-accessibility.e2e.ts`). The blocks come from
+`apps/e2e/src/fixtures/block-samples.json`, made from the registry —
+`pnpm run e2e:block-samples` rewrites it, and the registry's own spec
+fails, naming that command, when a block has been added and it has not.
 
 Locally it uses whatever is already running on the addresses in `.env`:
 the API on :3000, the editor on :4200 and the **built** public site on

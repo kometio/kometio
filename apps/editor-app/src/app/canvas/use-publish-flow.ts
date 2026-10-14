@@ -1,10 +1,23 @@
 import { useState } from 'react';
-import { findPlaceholders, type Block } from '@kometio/shared-types';
+import {
+  auditBlockProps,
+  findPlaceholders,
+  type Block,
+  type InvalidBlockProps,
+} from '@kometio/shared-types';
 
 /**
- * Publishing from the canvas. What a generated page left to fill in is
- * asked about before it goes live, so an invented name never goes out
- * unseen; everything else publishes at once.
+ * Publishing from the canvas. Two things are asked about before the page goes
+ * live, each once and in this order, and everything else publishes at once:
+ *
+ *  1. what the site would leave out. A block whose props its type's schema
+ *     refuses is skipped by the public site, alone, and a visitor sees the
+ *     page without it (docs/adr/0124). It is judged here as the site judges it,
+ *     on the tree that is about to be published. It is a question and not a
+ *     refusal: a page with an unfinished block is a page in progress, and
+ *     whoever publishes it may mean to.
+ *  2. what a generated page left to fill in, so that an invented name never
+ *     goes out unseen.
  */
 export function usePublishFlow({
   localBlocks,
@@ -22,6 +35,10 @@ export function usePublishFlow({
   const placeholders = findPlaceholders(localBlocks);
   const [isPlaceholderConfirmOpen, setIsPlaceholderConfirmOpen] =
     useState(false);
+  // Judged when Publish is pressed and not on every keystroke: it is a parse
+  // of every block, and the answer is only wanted then.
+  const [skipped, setSkipped] = useState<InvalidBlockProps[]>([]);
+  const [isSkippedConfirmOpen, setIsSkippedConfirmOpen] = useState(false);
 
   /**
    * Fires any still-pending debounced save NOW instead of waiting out its
@@ -38,6 +55,21 @@ export function usePublishFlow({
   }
 
   function requestPublish(): void {
+    const refused = auditBlockProps(localBlocksRef.current).invalid;
+    if (refused.length > 0) {
+      setSkipped(refused);
+      setIsSkippedConfirmOpen(true);
+      return;
+    }
+    if (placeholders.size > 0) {
+      setIsPlaceholderConfirmOpen(true);
+      return;
+    }
+    handlePublish();
+  }
+
+  /** "Publish anyway" to the first question: the second is asked if it applies, and otherwise it goes. */
+  function confirmSkipped(): void {
     if (placeholders.size > 0) {
       setIsPlaceholderConfirmOpen(true);
       return;
@@ -49,6 +81,10 @@ export function usePublishFlow({
     placeholders,
     isPlaceholderConfirmOpen,
     setIsPlaceholderConfirmOpen,
+    skipped,
+    isSkippedConfirmOpen,
+    setIsSkippedConfirmOpen,
+    confirmSkipped,
     handlePublish,
     requestPublish,
   };

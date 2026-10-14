@@ -1370,6 +1370,56 @@ describe('CanvasEditorShell', () => {
     expect(onPublish).toHaveBeenCalledWith(blocks);
   });
 
+  describe('publishing a page the site would leave a block out of (docs/adr/0124)', () => {
+    // A Column's span is 1 to 12; 99 is what the site refuses and skips.
+    const withARefusedBlock: Block[] = [
+      { id: 'ok', type: 'Column', props: { span: 6 } },
+      { id: 'bad', type: 'Column', props: { span: 99 } },
+    ];
+
+    it('asks first, naming the block and the prop, and publishes when it is answered "Publish anyway"', async () => {
+      const { onPublish } = renderShell({ blocks: withARefusedBlock });
+      await findCanvasIframe();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Pubblica' }));
+
+      const dialog = await screen.findByRole('alertdialog');
+      expect(onPublish).not.toHaveBeenCalled();
+      expect(within(dialog).getByText(/1 blocco non è compilato/)).toBeTruthy();
+      // The block by the name it is picked by, and the prop by its key (this
+      // descriptor has no field of that name to take a label from).
+      expect(within(dialog).getByText(/Colonna \(span\)/)).toBeTruthy();
+
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Pubblica comunque' }),
+      );
+      expect(onPublish).toHaveBeenCalledTimes(1);
+    });
+
+    it('publishes nothing when the question is cancelled', async () => {
+      const { onPublish } = renderShell({ blocks: withARefusedBlock });
+      await findCanvasIframe();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Pubblica' }));
+      const dialog = await screen.findByRole('alertdialog');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+
+      expect(onPublish).not.toHaveBeenCalled();
+    });
+
+    it('asks nothing of a page whose blocks all pass', async () => {
+      const { onPublish } = renderShell({
+        blocks: [{ id: 'ok', type: 'Column', props: { span: 6 } }],
+      });
+      await findCanvasIframe();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Pubblica' }));
+
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(onPublish).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('double-clicking an inlineEditable field enters text edit on the iframe', async () => {
     renderShell();
     const iframe = await findCanvasIframe();

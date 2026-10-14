@@ -16,7 +16,7 @@
  * `page_translations`, so it could not run at all — while ADR-0046 tells
  * self-hosters to run it. `scripts/` was outside the typecheck target,
  * which is why nothing said so; it is inside it now. The table list lives
- * in `visit-stored-content.ts`, shared with the other one-off script
+ * in `src/lib/visit-stored-content.ts`, shared with the other one-off script
  * rather than copied.
  *
  * `tenants` has no RLS (it is the root table, see schema.ts) — readable
@@ -26,7 +26,7 @@
 import { backfillBlockIds } from '@kometio/shared-types';
 import { createAppDb, withTenant, type KometioDb } from '../src/lib/client';
 import { tenants } from '../src/lib/schema';
-import { visitStoredContent } from './visit-stored-content';
+import { visitStoredContent } from '../src/lib/visit-stored-content';
 
 async function main(): Promise<void> {
   const db: KometioDb = createAppDb();

@@ -1,0 +1,856 @@
+{
+  "categories": [
+    {
+      "category": "layout",
+      "blocks": [
+        {
+          "type": "Columns",
+          "props": { "stackBelow": "mobile", "verticalAlign": "stretch" },
+          "children": [
+            {
+              "type": "Column",
+              "props": {},
+              "children": [
+                { "type": "Text", "props": { "body": "Testo del blocco..." } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Container",
+          "props": { "background": "none", "padding": "md" },
+          "children": [
+            { "type": "Text", "props": { "body": "Testo del blocco..." } }
+          ]
+        },
+        {
+          "type": "Card",
+          "props": { "media": null, "alt": "", "isDecorative": false },
+          "children": [
+            { "type": "Text", "props": { "body": "Testo del blocco..." } }
+          ]
+        },
+        { "type": "Section", "props": { "section": null } },
+        {
+          "type": "Carousel",
+          "props": { "display": "carousel" },
+          "children": [
+            { "type": "Text", "props": { "body": "Testo del blocco..." } }
+          ]
+        },
+        { "type": "Divider", "props": {} },
+        { "type": "Spacer", "props": {} },
+        { "type": "Anchor", "props": { "name": "" } }
+      ]
+    },
+    {
+      "category": "content",
+      "blocks": [
+        {
+          "type": "Hero",
+          "props": {
+            "eyebrow": "",
+            "title": "Titolo",
+            "subtitle": "Sottotitolo"
+          },
+          "children": [
+            { "type": "Text", "props": { "body": "Testo del blocco..." } }
+          ]
+        },
+        {
+          "type": "Heading",
+          "props": { "text": "Section heading", "level": "h2" }
+        },
+        { "type": "Text", "props": { "body": "Testo del blocco..." } },
+        {
+          "type": "Link",
+          "props": {
+            "label": "Scopri di più",
+            "linkType": "page",
+            "page": null,
+            "url": ""
+          }
+        },
+        {
+          "type": "Image",
+          "props": {
+            "media": null,
+            "alt": "",
+            "isDecorative": false,
+            "caption": "",
+            "linkType": "none",
+            "page": null,
+            "url": "",
+            "lightbox": false,
+            "alignment": "center",
+            "aspectRatio": "original"
+          }
+        },
+        {
+          "type": "Gallery",
+          "props": {
+            "images": [],
+            "columns": "auto",
+            "aspectRatio": "square",
+            "lightbox": false
+          }
+        },
+        {
+          "type": "Quote",
+          "props": {
+            "quote": "Testo della citazione...",
+            "author": "",
+            "role": ""
+          }
+        },
+        {
+          "type": "Callout",
+          "props": { "message": "Your message here", "tone": "info" }
+        },
+        {
+          "type": "Table",
+          "props": {
+            "rows": [
+              ["Column 1", "Column 2"],
+              ["", ""]
+            ]
+          }
+        },
+        { "type": "EmbedHtml", "props": { "html": "" } },
+        { "type": "Code", "props": { "code": "", "language": "typescript" } },
+        {
+          "type": "Breadcrumb",
+          "props": { "homeLabel": "Home", "visibility": "always" }
+        },
+        {
+          "type": "Icon",
+          "props": { "icon": null, "size": "md", "label": "" }
+        },
+        {
+          "type": "PageGrid",
+          "props": {
+            "termId": null,
+            "authorId": null,
+            "layout": "list",
+            "order": "title",
+            "limit": 0,
+            "perPage": 0,
+            "emptyText": "",
+            "items": []
+          }
+        },
+        {
+          "type": "ArticleMeta",
+          "props": {
+            "showDate": true,
+            "showAuthor": true,
+            "publishedAt": null,
+            "authorName": "",
+            "authorPath": null
+          }
+        },
+        {
+          "type": "AuthorBox",
+          "props": {
+            "showBio": true,
+            "showArticlesLink": true,
+            "author": null,
+            "isProfilePage": false
+          }
+        },
+        { "type": "ArticleNav", "props": { "previous": null, "next": null } },
+        {
+          "type": "RelatedPages",
+          "props": { "layout": "cards", "limit": 3, "items": [] }
+        },
+        {
+          "type": "TermList",
+          "props": {
+            "taxonomyId": null,
+            "behaviour": "filter",
+            "style": "chips",
+            "showAll": true,
+            "choices": []
+          }
+        },
+        {
+          "type": "TableOfContents",
+          "props": {
+            "title": "",
+            "depth": "h3",
+            "numbered": false,
+            "entries": []
+          }
+        },
+        {
+          "type": "SubPages",
+          "props": { "parent": null, "layout": "list", "limit": 0, "items": [] }
+        },
+        { "type": "SiblingPages", "props": { "previous": null, "next": null } },
+        { "type": "SiteMap", "props": { "depth": 3, "tree": [] } },
+        {
+          "type": "List",
+          "props": { "marker": "bullet", "icon": "star" },
+          "children": [{ "type": "ListItem", "props": { "text": "" } }]
+        },
+        {
+          "type": "Steps",
+          "props": { "orientation": "horizontal" },
+          "children": [
+            { "type": "Step", "props": { "title": "", "description": "" } }
+          ]
+        },
+        {
+          "type": "SpecList",
+          "props": { "columns": "one" },
+          "children": [
+            { "type": "SpecItem", "props": { "label": "", "value": "" } }
+          ]
+        },
+        {
+          "type": "ProgressBar",
+          "props": { "label": "", "value": 50, "showValue": true }
+        },
+        {
+          "type": "ProfileCard",
+          "props": {
+            "photo": null,
+            "name": "",
+            "role": "",
+            "bio": "",
+            "email": "",
+            "phone": ""
+          }
+        },
+        {
+          "type": "Glossary",
+          "props": { "showIndex": true },
+          "children": [
+            {
+              "type": "GlossaryTerm",
+              "props": { "term": "", "definition": "" }
+            }
+          ]
+        },
+        {
+          "type": "PullQuote",
+          "props": { "quote": "", "author": "", "role": "", "align": "center" }
+        },
+        {
+          "type": "ComparisonTable",
+          "props": { "columns": "", "highlightColumn": 0 },
+          "children": [
+            {
+              "type": "ComparisonRow",
+              "props": { "feature": "", "values": "" }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "conversion",
+      "blocks": [
+        { "type": "Form", "props": { "form": null } },
+        {
+          "type": "NewsletterSignup",
+          "props": {
+            "title": "Iscriviti alla newsletter",
+            "buttonLabel": "Iscrivimi"
+          }
+        },
+        {
+          "type": "Button",
+          "props": {
+            "label": "Scopri di più",
+            "linkType": "page",
+            "page": null,
+            "url": "",
+            "icon": null,
+            "size": "md",
+            "fullWidth": false,
+            "openInNewTab": false
+          }
+        },
+        {
+          "type": "SearchBox",
+          "props": {
+            "placeholder": "Cerca nel sito...",
+            "visibility": "always"
+          }
+        },
+        {
+          "type": "Countdown",
+          "props": {
+            "targetDate": "2099-12-31T00:00",
+            "label": "Offerta valida fino a"
+          }
+        },
+        {
+          "type": "Banner",
+          "props": {
+            "title": "Titolo del banner",
+            "text": "Testo del banner...",
+            "buttonLabel": "Scopri di più",
+            "linkType": "page",
+            "page": null,
+            "url": ""
+          }
+        },
+        {
+          "type": "SocialLinks",
+          "props": { "display": "grid" },
+          "children": [
+            {
+              "type": "SocialLink",
+              "props": { "icon": null, "label": "", "url": "" }
+            }
+          ]
+        },
+        {
+          "type": "SocialLink",
+          "props": { "icon": null, "label": "", "url": "" }
+        },
+        {
+          "type": "ShareButtons",
+          "props": {
+            "label": "",
+            "whatsapp": true,
+            "facebook": true,
+            "linkedin": true,
+            "x": false,
+            "email": true,
+            "copyLink": true
+          }
+        },
+        {
+          "type": "TrustBadges",
+          "props": {
+            "visa": true,
+            "mastercard": true,
+            "americanexpress": false,
+            "paypal": true,
+            "applepay": false,
+            "googlepay": false,
+            "klarna": false,
+            "stripe": false,
+            "text": ""
+          }
+        }
+      ]
+    },
+    {
+      "category": "shop",
+      "blocks": [
+        {
+          "type": "ProductGrid",
+          "props": { "display": "grid" },
+          "children": [
+            {
+              "type": "ProductCard",
+              "props": {
+                "image": null,
+                "alt": "",
+                "name": "",
+                "description": "",
+                "price": null,
+                "compareAtPrice": null,
+                "currency": "EUR",
+                "badge": "",
+                "linkType": "url",
+                "page": null,
+                "url": "",
+                "structuredData": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "ProductCard",
+          "props": {
+            "image": null,
+            "alt": "",
+            "name": "",
+            "description": "",
+            "price": null,
+            "compareAtPrice": null,
+            "currency": "EUR",
+            "badge": "",
+            "linkType": "url",
+            "page": null,
+            "url": "",
+            "structuredData": true
+          }
+        },
+        {
+          "type": "ProductGallery",
+          "props": { "images": [], "aspectRatio": "square" }
+        },
+        {
+          "type": "DiscountPrice",
+          "props": {
+            "price": null,
+            "compareAtPrice": null,
+            "currency": "EUR",
+            "note": ""
+          }
+        },
+        {
+          "type": "BuyButton",
+          "props": { "label": "", "url": "", "price": null, "currency": "EUR" }
+        },
+        { "type": "ProductVariants", "props": { "label": "", "options": "" } },
+        {
+          "type": "ProductReviews",
+          "props": {
+            "display": "grid",
+            "structuredData": false,
+            "productName": ""
+          },
+          "children": [
+            {
+              "type": "ProductReview",
+              "props": {
+                "quote": "",
+                "author": "",
+                "role": "",
+                "avatar": null,
+                "rating": 5
+              }
+            }
+          ]
+        },
+        {
+          "type": "ProductReview",
+          "props": {
+            "quote": "",
+            "author": "",
+            "role": "",
+            "avatar": null,
+            "rating": 5
+          }
+        },
+        {
+          "type": "PromoCode",
+          "props": { "code": "", "description": "", "expiresOn": "" }
+        },
+        {
+          "type": "ShippingReturns",
+          "props": {
+            "shippingTitle": "",
+            "shippingText": "",
+            "returnsTitle": "",
+            "returnsText": "",
+            "supportTitle": "",
+            "supportText": ""
+          }
+        }
+      ]
+    },
+    {
+      "category": "localBusiness",
+      "blocks": [
+        {
+          "type": "ContactDetails",
+          "props": {
+            "showAddress": true,
+            "showPhone": true,
+            "showEmail": true,
+            "showMapLink": true
+          }
+        },
+        { "type": "OpeningHours", "props": { "title": "" } },
+        {
+          "type": "RestaurantMenu",
+          "props": { "columns": "one" },
+          "children": [
+            {
+              "type": "MenuItem",
+              "props": {
+                "name": "",
+                "description": "",
+                "price": "",
+                "dietary": "",
+                "allergens": ""
+              }
+            }
+          ]
+        },
+        {
+          "type": "MenuItem",
+          "props": {
+            "name": "",
+            "description": "",
+            "price": "",
+            "dietary": "",
+            "allergens": ""
+          }
+        },
+        {
+          "type": "EventList",
+          "props": { "display": "grid" },
+          "children": [
+            {
+              "type": "EventItem",
+              "props": {
+                "title": "",
+                "startDate": "",
+                "startTime": "",
+                "endDate": "",
+                "location": "",
+                "description": "",
+                "image": null,
+                "linkType": "url",
+                "page": null,
+                "url": "",
+                "hideWhenPast": true,
+                "structuredData": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "EventItem",
+          "props": {
+            "title": "",
+            "startDate": "",
+            "startTime": "",
+            "endDate": "",
+            "location": "",
+            "description": "",
+            "image": null,
+            "linkType": "url",
+            "page": null,
+            "url": "",
+            "hideWhenPast": true,
+            "structuredData": true
+          }
+        },
+        {
+          "type": "StickyContactBar",
+          "props": {
+            "showCall": true,
+            "whatsappNumber": "",
+            "showDirections": true,
+            "showEmail": false
+          }
+        }
+      ]
+    },
+    {
+      "category": "media",
+      "blocks": [
+        {
+          "type": "VideoEmbed",
+          "props": {
+            "url": "",
+            "poster": null,
+            "aspectRatio": "wide",
+            "caption": ""
+          }
+        },
+        { "type": "MapEmbed", "props": { "address": "Via Roma 1, Milano" } },
+        { "type": "ImageSlider", "props": { "images": [] } },
+        {
+          "type": "BeforeAfter",
+          "props": {
+            "beforeImage": null,
+            "afterImage": null,
+            "beforeLabel": "Prima",
+            "afterLabel": "Dopo"
+          }
+        },
+        { "type": "LogoStrip", "props": { "logos": [] } },
+        {
+          "type": "Rating",
+          "props": { "rating": 5, "label": "Valutazione clienti" }
+        },
+        {
+          "type": "VideoFile",
+          "props": {
+            "media": null,
+            "poster": null,
+            "autoplay": false,
+            "loop": false,
+            "muted": false,
+            "controls": true
+          }
+        },
+        {
+          "type": "Audio",
+          "props": { "media": null, "title": "", "loop": false }
+        },
+        {
+          "type": "MediaText",
+          "props": {
+            "media": null,
+            "alt": "",
+            "heading": "",
+            "body": "",
+            "mediaSide": "start",
+            "mediaWidth": "half",
+            "verticalAlign": "center"
+          }
+        },
+        {
+          "type": "FileDownload",
+          "props": { "file": null, "label": "", "showDetails": true }
+        },
+        {
+          "type": "FileList",
+          "props": { "title": "" },
+          "children": [
+            {
+              "type": "FileDownload",
+              "props": { "file": null, "label": "", "showDetails": true }
+            }
+          ]
+        },
+        {
+          "type": "BookingEmbed",
+          "props": { "provider": "calendly", "url": "", "height": "medium" }
+        },
+        {
+          "type": "ImageHotspots",
+          "props": { "image": null, "alt": "" },
+          "children": [
+            {
+              "type": "Hotspot",
+              "props": { "x": 50, "y": 50, "title": "", "text": "" }
+            }
+          ]
+        },
+        {
+          "type": "MasonryGallery",
+          "props": { "images": [], "columns": "3", "lightbox": true }
+        },
+        {
+          "type": "VideoPlaylist",
+          "props": {},
+          "children": [
+            {
+              "type": "VideoEmbed",
+              "props": {
+                "url": "",
+                "poster": null,
+                "aspectRatio": "wide",
+                "caption": ""
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "socialProof",
+      "blocks": [
+        {
+          "type": "Testimonials",
+          "props": { "display": "slider" },
+          "children": [
+            {
+              "type": "Testimonial",
+              "props": {
+                "quote": "Testo della recensione...",
+                "author": "Nome Cognome",
+                "role": "",
+                "avatar": null,
+                "rating": 5
+              }
+            }
+          ]
+        },
+        {
+          "type": "Testimonial",
+          "props": {
+            "quote": "Testo della recensione...",
+            "author": "Nome Cognome",
+            "role": "",
+            "avatar": null,
+            "rating": 5
+          }
+        },
+        {
+          "type": "Team",
+          "props": { "display": "grid" },
+          "children": [
+            {
+              "type": "TeamMember",
+              "props": {
+                "photo": null,
+                "name": "Nome Cognome",
+                "role": "Ruolo",
+                "bio": ""
+              }
+            }
+          ]
+        },
+        {
+          "type": "TeamMember",
+          "props": {
+            "photo": null,
+            "name": "Nome Cognome",
+            "role": "Ruolo",
+            "bio": ""
+          }
+        },
+        {
+          "type": "PricingTable",
+          "props": { "display": "grid" },
+          "children": [
+            {
+              "type": "PricingPlan",
+              "props": {
+                "name": "Base",
+                "price": "9€",
+                "period": "/mese",
+                "features": ["Caratteristica 1", "Caratteristica 2"],
+                "highlighted": false,
+                "buttonLabel": "Scegli piano",
+                "linkType": "page",
+                "page": null,
+                "url": ""
+              }
+            }
+          ]
+        },
+        {
+          "type": "PricingPlan",
+          "props": {
+            "name": "Base",
+            "price": "9€",
+            "period": "/mese",
+            "features": ["Caratteristica 1", "Caratteristica 2"],
+            "highlighted": false,
+            "buttonLabel": "Scegli piano",
+            "linkType": "page",
+            "page": null,
+            "url": ""
+          }
+        },
+        {
+          "type": "StatsCounter",
+          "props": { "display": "grid" },
+          "children": [
+            {
+              "type": "Stat",
+              "props": {
+                "value": 100,
+                "prefix": "",
+                "suffix": "",
+                "label": "Etichetta"
+              }
+            }
+          ]
+        },
+        {
+          "type": "Stat",
+          "props": {
+            "value": 100,
+            "prefix": "",
+            "suffix": "",
+            "label": "Etichetta"
+          }
+        },
+        {
+          "type": "Timeline",
+          "props": {},
+          "children": [
+            {
+              "type": "TimelineStep",
+              "props": {
+                "label": "Fase 1",
+                "title": "Titolo della fase",
+                "description": "Descrizione della fase..."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "interactive",
+      "blocks": [
+        {
+          "type": "Accordion",
+          "props": {},
+          "children": [
+            {
+              "type": "AccordionItem",
+              "props": { "question": "Domanda...", "answer": "Risposta..." }
+            }
+          ]
+        },
+        {
+          "type": "AccordionItem",
+          "props": { "question": "Domanda...", "answer": "Risposta..." }
+        },
+        {
+          "type": "Tabs",
+          "props": {},
+          "children": [
+            {
+              "type": "Tab",
+              "props": { "label": "Tab" },
+              "children": [
+                {
+                  "type": "Hero",
+                  "props": {
+                    "eyebrow": "",
+                    "title": "Titolo",
+                    "subtitle": "Sottotitolo"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "FeatureGrid",
+          "props": { "display": "grid" },
+          "children": [
+            {
+              "type": "Feature",
+              "props": {
+                "icon": null,
+                "title": "Titolo della feature",
+                "text": "Descrizione della feature..."
+              }
+            }
+          ]
+        },
+        {
+          "type": "Feature",
+          "props": {
+            "icon": null,
+            "title": "Titolo della feature",
+            "text": "Descrizione della feature..."
+          }
+        },
+        { "type": "ReadingProgress", "props": { "position": "top" } },
+        {
+          "type": "Faq",
+          "props": { "structuredData": true },
+          "children": [
+            {
+              "type": "AccordionItem",
+              "props": { "question": "Domanda...", "answer": "Risposta..." }
+            }
+          ]
+        },
+        {
+          "type": "Marquee",
+          "props": {
+            "speed": "normal",
+            "direction": "forward",
+            "pauseOnHover": true
+          },
+          "children": [
+            { "type": "Text", "props": { "body": "Testo del blocco..." } }
+          ]
+        },
+        { "type": "CookiePreferences", "props": { "label": "" } }
+      ]
+    }
+  ]
+}

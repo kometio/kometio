@@ -71,6 +71,10 @@ unchanged), and the filter's spec has the case.
   where each service is its own container, the site's and Postgres's lines stay
   text. Caddy's access log needs its request headers filtered (the cookie is one)
   before it is a thing to turn on.
+
+  _Updated 2026-10-13:_ Caddy's is added, on the same variable, with every header,
+  the address and the query left out: [ADR-0126](0126-the-proxy-access-log-is-filtered.md).
+
 - **No metrics, alerts or status page.** The rest of the review's OPS-3 is not
   this.
 - **The format of foreign JSON is not unified.** Caddy's `ts`/`msg` are not

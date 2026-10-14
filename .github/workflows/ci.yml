@@ -219,7 +219,7 @@ jobs:
           # newer than themselves (hit this exact error running the same
           # commands locally: the runner's own postgresql-client version is
           # whatever Ubuntu's default repo ships, not guaranteed to match
-          # postgres:16-alpine). Running inside the container guarantees a
+          # postgres:18-alpine). Running inside the container guarantees a
           # client that's always the exact same build as the server.
           docker exec -e PGPASSWORD -u postgres postgres \
             pg_dump --no-owner -U "$POSTGRES_USER" "$POSTGRES_DB" \

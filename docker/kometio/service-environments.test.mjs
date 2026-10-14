@@ -236,6 +236,27 @@ describe('what the proxy of a server is told', () => {
     assert.equal(environment.API_UPSTREAM, '127.0.0.1:3000');
   });
 
+  // The Caddyfile imports `access_log_<value>`: the process is started with an
+  // environment of its own, and the value has to be one of the two snippets.
+  it('is told whether a request is a line of its log, by the variable the API reads', () => {
+    assert.equal(
+      caddyEnvironment({ ...input, env: { KOMETIO_ACCESS_LOG: 'true' } })
+        .KOMETIO_ACCESS_LOG,
+      'true',
+    );
+    for (const env of [
+      {},
+      { KOMETIO_ACCESS_LOG: '' },
+      { KOMETIO_ACCESS_LOG: 'false' },
+      { KOMETIO_ACCESS_LOG: 'yes' },
+    ]) {
+      assert.equal(
+        caddyEnvironment({ ...input, env }).KOMETIO_ACCESS_LOG,
+        'false',
+      );
+    }
+  });
+
   it('is given the owner’s email for the certificates only when there is one', () => {
     assert.equal(
       caddyEnvironment(input).KOMETIO_ACME_EMAIL_LINE,
