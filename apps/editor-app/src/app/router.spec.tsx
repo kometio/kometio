@@ -56,6 +56,7 @@ import { routeTree } from '../routeTree.gen';
 import { deploymentRecord } from '../test/deployment.test-fixture';
 import { createTestQueryClient } from '../test/query-client.test-fixture';
 import { ToastProvider } from './shell/toast-provider';
+import { instanceOf } from '../test/dom.test-fixture';
 
 // The login route asks whether this deployment has been set up before it
 // will render a form (a fresh install has no account to log into, so it
@@ -451,7 +452,7 @@ describe('router', () => {
     const { router } = renderApp('/pages?search=chi&status=draft');
 
     const field = await screen.findByLabelText('Cerca per titolo');
-    expect((field as HTMLInputElement).value).toBe('chi');
+    expect(instanceOf(field, HTMLInputElement).value).toBe('chi');
     // The search text reaches the server, not only the input.
     await waitFor(() =>
       expect(pageGroupsApi.listPageGroups).toHaveBeenCalledWith(

@@ -6,7 +6,15 @@ import {
   waitFor,
   act,
 } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type Mock,
+} from 'vitest';
 import type { MutableRefObject, ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import * as router from '@tanstack/react-router';
@@ -34,6 +42,7 @@ import { PageListContext } from '../pages/page-list-context';
 import { IconListContext, type IconListPort } from '../style/icon-list-context';
 import { useCurrentSession } from '../auth/use-current-session';
 import { sessionAs } from '../../test/current-session.test-fixture';
+import { windowOf } from '../../test/dom.test-fixture';
 
 vi.mock('../auth/use-current-session', () => ({ useCurrentSession: vi.fn() }));
 
@@ -274,6 +283,13 @@ function openPalette() {
     fireEvent.click(rail().getByRole('button', { name: 'Aggiungi' }));
   }
   return screen.getByRole('complementary', { name: 'Inserisci blocco' });
+}
+
+/** The tree the shell last handed to `onChange`: the spec asks about a write, so one that never happened is a failure, not an `undefined`. */
+function lastTree(onChange: Mock<(tree: Block[]) => void>): Block[] {
+  const tree = onChange.mock.calls.at(-1)?.[0];
+  if (!tree) throw new Error('The shell never called onChange');
+  return tree;
 }
 
 describe('CanvasEditorShell', () => {
@@ -741,10 +757,7 @@ describe('CanvasEditorShell', () => {
     );
     const { onChange } = renderShell();
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
     focusPropertiesPanel();
@@ -781,10 +794,7 @@ describe('CanvasEditorShell', () => {
   it('removing the selected block calls onChange with it gone, and patches the canvas to actually remove it', async () => {
     const { onChange } = renderShell();
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
@@ -816,10 +826,7 @@ describe('CanvasEditorShell', () => {
       ],
     });
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'column-1', {
       top: 0,
@@ -915,10 +922,7 @@ describe('CanvasEditorShell', () => {
     renderShell({ blocks: [] });
     const iframe = await findCanvasIframe();
     markCanvasReady(iframe);
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     // Scoped to the inserter: since the layers tree started naming blocks
     // the way a person picked them, a Text block on the canvas is also
@@ -959,10 +963,7 @@ describe('CanvasEditorShell', () => {
     );
     renderShell();
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
@@ -996,10 +997,7 @@ describe('CanvasEditorShell', () => {
       ],
     });
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     act(() => {
       dispatchFromIframe(iframe, 'preview:ready', {
@@ -1071,10 +1069,7 @@ describe('CanvasEditorShell', () => {
       blocks: [{ id: 'columns-1', type: 'Columns', props: {}, children: [] }],
     });
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'columns-1', {
       top: 0,
@@ -1160,10 +1155,7 @@ describe('CanvasEditorShell', () => {
       ],
     });
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'columns-1', {
       top: 0,
@@ -1265,10 +1257,7 @@ describe('CanvasEditorShell', () => {
       ],
     });
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
     fireEvent.click(screen.getByRole('button', { name: 'Sposta giù' }));
@@ -1310,10 +1299,7 @@ describe('CanvasEditorShell', () => {
       ],
     });
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     selectBlockWithRect(iframe, 'column-1', {
       top: 0,
@@ -1421,10 +1407,7 @@ describe('CanvasEditorShell', () => {
   it('double-clicking an inlineEditable field enters text edit on the iframe', async () => {
     renderShell();
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     act(() => {
       dispatchFromIframe(iframe, 'preview:dblclick', {
@@ -1454,10 +1437,7 @@ describe('CanvasEditorShell', () => {
   it('double-clicking a field that is not inlineEditable does nothing', async () => {
     renderShell();
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     act(() => {
       dispatchFromIframe(iframe, 'preview:dblclick', {
@@ -1513,10 +1493,7 @@ describe('CanvasEditorShell', () => {
       ],
     });
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     act(() => {
       dispatchFromIframe(iframe, 'preview:ready', {
@@ -1608,10 +1585,7 @@ describe('CanvasEditorShell', () => {
   it('pressing Escape exits text edit on the iframe', async () => {
     renderShell();
     const iframe = await findCanvasIframe();
-    const postMessageSpy = vi.spyOn(
-      iframe.contentWindow as Window,
-      'postMessage',
-    );
+    const postMessageSpy = vi.spyOn(windowOf(iframe), 'postMessage');
 
     fireEvent.keyDown(window, { key: 'Escape' });
 
@@ -1718,7 +1692,7 @@ describe('CanvasEditorShell', () => {
     vi.mocked(blockFragmentApi.renderBlockFragment).mockResolvedValue(
       '<section>hero</section>',
     );
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     const { switchPage } = renderShell({ blocks: italian, onChange });
     const iframe = await findCanvasIframe();
 
@@ -1738,7 +1712,7 @@ describe('CanvasEditorShell', () => {
     });
 
     const saved = onChange.mock.calls
-      .map(([tree]) => tree as Block[])
+      .map(([tree]) => tree)
       .filter((tree) => tree[0]?.props?.title === 'Ciao a tutti');
     expect(saved.length).toBeGreaterThan(0);
     for (const tree of saved) {
@@ -1790,7 +1764,7 @@ describe('CanvasEditorShell keyboard shortcuts', () => {
   });
 
   it('deletes the selected block with Delete', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange });
     const iframe = await findCanvasIframe();
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
@@ -1801,14 +1775,14 @@ describe('CanvasEditorShell keyboard shortcuts', () => {
   });
 
   it('duplicates the selected block with Cmd+D', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange });
     const iframe = await findCanvasIframe();
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
 
     fireEvent.keyDown(window, { key: 'd', metaKey: true });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next).toHaveLength(2);
     // A copy, not the same block twice: the ids key the per-instance style
     // rule and the translation overlay.
@@ -1822,7 +1796,7 @@ describe('CanvasEditorShell keyboard shortcuts', () => {
    * would put a wall of JSON into whatever the person pastes into next.
    */
   it('copies and pastes a block with Cmd+C then Cmd+V', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange });
     const iframe = await findCanvasIframe();
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
@@ -1832,13 +1806,13 @@ describe('CanvasEditorShell keyboard shortcuts', () => {
 
     fireEvent.keyDown(window, { key: 'v', metaKey: true });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next).toHaveLength(2);
     expect(next[1].id).not.toBe('hero-1');
   });
 
   it('pastes nothing when nothing was copied', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange });
     const iframe = await findCanvasIframe();
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
@@ -1853,7 +1827,7 @@ describe('CanvasEditorShell keyboard shortcuts', () => {
    * somebody reading a long page would be the wrong trade.
    */
   it('moves the selected block with Alt+Arrow', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({
       onChange,
       blocks: [
@@ -1866,7 +1840,7 @@ describe('CanvasEditorShell keyboard shortcuts', () => {
 
     fireEvent.keyDown(window, { key: 'ArrowUp', altKey: true });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next.map((block) => block.id)).toEqual(['hero-2', 'hero-1']);
   });
 
@@ -1875,7 +1849,7 @@ describe('CanvasEditorShell keyboard shortcuts', () => {
    * editor's own inputs, not the block behind the dialog.
    */
   it('leaves the editor’s own inputs alone', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange });
     const iframe = await findCanvasIframe();
     selectBlockWithRect(iframe, 'hero-1', HERO_RECT);
@@ -1924,7 +1898,7 @@ describe('CanvasEditorShell nested canvas drag', () => {
   ];
 
   it('reorders a nested block among its own siblings, not at the root', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange, blocks: nested });
     const iframe = await findCanvasIframe();
 
@@ -1959,7 +1933,7 @@ describe('CanvasEditorShell nested canvas drag', () => {
       dispatchFromIframe(iframe, 'preview:drag-end', {});
     });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next).toHaveLength(1);
     expect(next[0].children?.map((child) => child.id)).toEqual([
       'col-b',
@@ -2017,19 +1991,19 @@ describe('CanvasEditorShell multi-select', () => {
   }
 
   it('deletes every selected block in one go', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange, blocks: three });
     const iframe = await findCanvasIframe();
     selectMany(iframe, ['a', 'b']);
 
     fireEvent.keyDown(window, { key: 'Delete' });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next.map((block) => block.id)).toEqual(['c']);
   });
 
   it('undoes a multi-delete in one step, not one per block', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange, blocks: three });
     const iframe = await findCanvasIframe();
     selectMany(iframe, ['a', 'b']);
@@ -2037,21 +2011,21 @@ describe('CanvasEditorShell multi-select', () => {
     fireEvent.keyDown(window, { key: 'Delete' });
     fireEvent.keyDown(window, { key: 'z', metaKey: true });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     // Somebody who selected two things and pressed Delete asked for one
     // action; two undos to get back would be two surprises.
     expect(next.map((block) => block.id)).toEqual(['a', 'b', 'c']);
   });
 
   it('duplicates every selected block, each after itself', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange, blocks: three });
     const iframe = await findCanvasIframe();
     selectMany(iframe, ['a', 'c']);
 
     fireEvent.keyDown(window, { key: 'd', metaKey: true });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next).toHaveLength(5);
     expect(next[0].id).toBe('a');
     expect(next[1].id).not.toBe('a');
@@ -2060,7 +2034,7 @@ describe('CanvasEditorShell multi-select', () => {
   });
 
   it('copies and pastes a whole selection, in the order it was copied', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange, blocks: three });
     const iframe = await findCanvasIframe();
     selectMany(iframe, ['a', 'b']);
@@ -2068,12 +2042,10 @@ describe('CanvasEditorShell multi-select', () => {
     fireEvent.keyDown(window, { key: 'c', metaKey: true });
     fireEvent.keyDown(window, { key: 'v', metaKey: true });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next).toHaveLength(5);
-    expect(
-      (next[2].props as { title: string }).title +
-        (next[3].props as { title: string }).title,
-    ).toBe('AB');
+    expect(next[2]).toMatchObject({ props: { title: 'A' } });
+    expect(next[3]).toMatchObject({ props: { title: 'B' } });
   });
 
   /*
@@ -2082,7 +2054,7 @@ describe('CanvasEditorShell multi-select', () => {
    * the selection over.
    */
   it('toggles a block out of the selection when it is picked again', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange, blocks: three });
     const iframe = await findCanvasIframe();
     selectMany(iframe, ['a', 'b']);
@@ -2095,12 +2067,12 @@ describe('CanvasEditorShell multi-select', () => {
 
     fireEvent.keyDown(window, { key: 'Delete' });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next.map((block) => block.id)).toEqual(['b', 'c']);
   });
 
   it('a plain click replaces the selection instead of adding to it', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(tree: Block[]) => void>();
     renderShell({ onChange, blocks: three });
     const iframe = await findCanvasIframe();
     selectMany(iframe, ['a', 'b']);
@@ -2110,7 +2082,7 @@ describe('CanvasEditorShell multi-select', () => {
 
     fireEvent.keyDown(window, { key: 'Delete' });
 
-    const next = onChange.mock.calls.at(-1)?.[0] as Block[];
+    const next = lastTree(onChange);
     expect(next.map((block) => block.id)).toEqual(['a', 'b']);
   });
 });

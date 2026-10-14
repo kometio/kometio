@@ -1,7 +1,7 @@
 import { createServer, type Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SentryErrorReporter } from './sentry-error-reporter';
+import { portOf } from '@kometio/testing/http-server';
 
 /*
  * The real SDK, against a stand-in for Sentry's ingest endpoint on a local
@@ -30,13 +30,13 @@ beforeAll(async () => {
         lines: body
           .split('\n')
           .filter(Boolean)
-          .map((line) => JSON.parse(line) as unknown),
+          .map((line): unknown => JSON.parse(line)),
       });
       response.end('{}');
     });
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-  const { port } = server.address() as AddressInfo;
+  const port = portOf(server);
   reporter = new SentryErrorReporter({
     dsn: `http://publickey@127.0.0.1:${port}/7`,
     environment: 'test',

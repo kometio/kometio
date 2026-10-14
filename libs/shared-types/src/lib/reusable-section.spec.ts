@@ -100,7 +100,8 @@ describe('resolveSectionBlocks', () => {
       instance({ [sectionOverrideKey('__proto__', 'polluted')]: 'yes' }),
       new Map([[SECTION_ID, published]]),
     );
-    expect(({} as Record<string, unknown>)['polluted']).toBeUndefined();
+    const untouched: Record<string, unknown> = {};
+    expect(untouched['polluted']).toBeUndefined();
   });
 
   /*

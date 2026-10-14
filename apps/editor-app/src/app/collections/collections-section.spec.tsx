@@ -12,6 +12,7 @@ import * as collectionsApi from '../../lib/collections-api-client';
 import * as sectionsApi from '../../lib/reusable-sections-api-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { CollectionsSection } from './collections-section';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/reusable-sections-api-client', async (importOriginal) => {
   const actual =
@@ -152,7 +153,7 @@ describe('CollectionsSection — a new collection', () => {
     fireEvent.change(await screen.findByPlaceholderText('News'), {
       target: { value: 'Eventi' },
     });
-    chooseOption((await newIcon()) as HTMLElement, 'In evidenza');
+    chooseOption(instanceOf(await newIcon(), HTMLElement), 'In evidenza');
     expect((await newIcon())?.textContent).toContain('In evidenza');
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
@@ -171,9 +172,10 @@ describe('CollectionsSection — a new collection', () => {
   it('names each icon by what it is used for, not by its shape', async () => {
     renderSection();
 
-    const icon = (await screen.findAllByRole('combobox', { name: 'Icona' })).at(
-      -1,
-    ) as HTMLElement;
+    const icon = instanceOf(
+      (await screen.findAllByRole('combobox', { name: 'Icona' })).at(-1),
+      HTMLElement,
+    );
     fireEvent.click(icon);
 
     const names = screen
@@ -191,7 +193,7 @@ describe('CollectionsSection — changing a collection', () => {
   });
 
   const nameField = async () =>
-    (await screen.findByLabelText('Nome')) as HTMLInputElement;
+    instanceOf(await screen.findByLabelText('Nome'), HTMLInputElement);
 
   it('does not save a name on leaving the field', async () => {
     renderSection();

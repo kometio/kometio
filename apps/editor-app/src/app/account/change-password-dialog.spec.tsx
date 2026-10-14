@@ -5,6 +5,7 @@ import { ApiError } from '../../lib/http-client';
 import { TooltipProvider } from '../../components/ui/tooltip';
 import { ToastProvider } from '../shell/toast-provider';
 import { ChangePasswordDialog } from './change-password-dialog';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 const CURRENT = 'Password attuale';
 const NEW = 'Nuova password';
@@ -120,7 +121,7 @@ describe('ChangePasswordDialog', () => {
     expect(
       await screen.findByText('Questa non è la tua password attuale.'),
     ).toBeTruthy();
-    expect((screen.getByLabelText(NEW) as HTMLInputElement).value).toBe(
+    expect(instanceOf(screen.getByLabelText(NEW), HTMLInputElement).value).toBe(
       'a-new-password',
     );
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
@@ -148,8 +149,10 @@ describe('ChangePasswordDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'reopen' }));
 
     expect(
-      ((await screen.findByLabelText(CURRENT)) as HTMLInputElement).value,
+      instanceOf(await screen.findByLabelText(CURRENT), HTMLInputElement).value,
     ).toBe('');
-    expect((screen.getByLabelText(NEW) as HTMLInputElement).value).toBe('');
+    expect(instanceOf(screen.getByLabelText(NEW), HTMLInputElement).value).toBe(
+      '',
+    );
   });
 });

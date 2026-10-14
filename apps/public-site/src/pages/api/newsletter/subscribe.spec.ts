@@ -1,13 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { bodyOf } from '../../../test/request.test-fixture';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { POST } from './subscribe';
-
-function jsonResponse(body: unknown, status = 200) {
-  return {
-    ok: status < 400,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 function formDataRequest(fields: Record<string, string>): Request {
   return new Request('http://localhost:4321/api/newsletter/subscribe', {
@@ -46,7 +40,7 @@ describe('POST /api/newsletter/subscribe', () => {
     expect(res.headers.get('Location')).toBe('/?newsletterSubscribed=1');
 
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(JSON.parse(init?.body as string)).toEqual({
+    expect(JSON.parse(bodyOf(init))).toEqual({
       email: 'visitor@example.com',
       honeypot: '',
       captchaToken: 'widget-token',
@@ -67,9 +61,7 @@ describe('POST /api/newsletter/subscribe', () => {
     await POST({ request, redirect });
 
     const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(JSON.parse(init?.body as string).captchaToken).toBe(
-      'built-in-solution',
-    );
+    expect(JSON.parse(bodyOf(init)).captchaToken).toBe('built-in-solution');
   });
 
   it('redirects with newsletterError when the API rejects the subscription', async () => {

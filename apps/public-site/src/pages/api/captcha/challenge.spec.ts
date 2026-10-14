@@ -1,13 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { GET } from './challenge';
-
-function jsonResponse(body: unknown, status = 200) {
-  return {
-    ok: status < 400,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 async function ask(): Promise<Response> {
   // @ts-expect-error deliberately partial APIContext

@@ -647,6 +647,9 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.10
         version: 0.9.10(prettier@3.9.10)(typescript@6.0.3)
+      '@kometio/testing':
+        specifier: workspace:*
+        version: link:../../libs/testing
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.0(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.8.1)(sass-embedded@1.105.1)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
@@ -726,6 +729,10 @@ importers:
       '@kometio/ports':
         specifier: workspace:*
         version: link:../../ports
+    devDependencies:
+      '@kometio/testing':
+        specifier: workspace:*
+        version: link:../../testing
 
   libs/adapters/filesystem-theme-catalog:
     dependencies:
@@ -778,6 +785,10 @@ importers:
       '@kometio/ports':
         specifier: workspace:*
         version: link:../../ports
+    devDependencies:
+      '@kometio/testing':
+        specifier: workspace:*
+        version: link:../../testing
 
   libs/adapters/openai-compatible-page-generator:
     dependencies:
@@ -793,6 +804,10 @@ importers:
       zod:
         specifier: ^4.6.5
         version: 4.6.5
+    devDependencies:
+      '@kometio/testing':
+        specifier: workspace:*
+        version: link:../../testing
 
   libs/adapters/postgres-audit-log-repository:
     dependencies:
@@ -1139,6 +1154,10 @@ importers:
       '@sentry/node-core':
         specifier: ^10.75.2
         version: 10.75.2(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))
+    devDependencies:
+      '@kometio/testing':
+        specifier: workspace:*
+        version: link:../../testing
 
   libs/adapters/session-auth-adapter:
     dependencies:
@@ -1189,6 +1208,9 @@ importers:
       '@types/nodemailer':
         specifier: ^8.0.2
         version: 8.0.2
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
 
   libs/adapters/totp-authenticator:
     dependencies:
@@ -1201,6 +1223,10 @@ importers:
       '@kometio/ports':
         specifier: workspace:*
         version: link:../../ports
+    devDependencies:
+      '@kometio/testing':
+        specifier: workspace:*
+        version: link:../../testing
 
   libs/adapters/verification-token-adapter:
     dependencies:

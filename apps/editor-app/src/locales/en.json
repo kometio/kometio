@@ -17,6 +17,13 @@
     },
     "selection": {
       "clear": "Deselect"
+    },
+    "unreachable": {
+      "title": "The editor cannot reach its server",
+      "explanation": "The server may be stopped, or this page was opened at an address Kometio was not set up for.",
+      "thisPage": "Address of this page",
+      "theServer": "Address of the server",
+      "whatToDo": "Open the editor at the address Kometio printed when it started (it is in the container’s log), then try again."
     }
   },
   "auth": {

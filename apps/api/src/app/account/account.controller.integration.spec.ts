@@ -18,6 +18,7 @@ import {
   IntegrationApp,
   type IntegrationUser,
 } from '../../test/integration-app.test-fixture';
+import { requireEnv } from '@kometio/env-config';
 
 // The email-change tests wait on a real Mailpit (mailpit.test-fixture.ts).
 jest.setTimeout(30_000);
@@ -52,7 +53,7 @@ describe('AccountController (integration)', () => {
   });
 
   afterAll(async () => {
-    const uploadDir = process.env.MEDIA_UPLOAD_DIR as string;
+    const uploadDir = requireEnv('MEDIA_UPLOAD_DIR');
     for (const key of storedKeys) {
       await unlink(join(uploadDir, key)).catch(() => undefined);
     }
@@ -144,7 +145,7 @@ describe('AccountController (integration)', () => {
     })
       .png()
       .toBuffer();
-    const uploadDir = process.env.MEDIA_UPLOAD_DIR as string;
+    const uploadDir = requireEnv('MEDIA_UPLOAD_DIR');
 
     const first = await agent
       .post('/account/avatar')

@@ -1,14 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { renderBlockFragment } from './block-fragment-api-client';
 import { PUBLIC_SITE_URL } from './public-site-url';
-
-function jsonResponse(body: unknown, status = 200) {
-  return {
-    ok: status < 400,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 describe('renderBlockFragment', () => {
   beforeEach(() => {

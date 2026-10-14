@@ -6,7 +6,7 @@ import './i18n';
 import './styles.css';
 import { TooltipProvider } from './components/ui/tooltip';
 import { setupGlobalErrorHandlers } from './global-error-handlers';
-import { ApiError } from './lib/http-client';
+import { shouldRetry } from './lib/should-retry';
 import { routeTree } from './routeTree.gen';
 import { ToastProvider } from './app/shell/toast-provider';
 import { applyTheme, getInitialTheme } from './theme';
@@ -17,18 +17,6 @@ setupGlobalErrorHandlers();
 // page would flash the light theme for a frame before a dark preference
 // (see app/use-theme.ts, app/account-menu.tsx) took effect.
 applyTheme(getInitialTheme());
-
-// Retrying a 4xx can't succeed — "you're not logged in" (401) or "this name
-// is already taken" (409) aren't transient network hiccups, retrying just
-// resends the same bad request. Every guarded route loader is also waiting
-// on a 401 to reject before it can redirect to /login (see
-// routes/-require-auth.ts), so retrying it would only delay that redirect.
-function shouldRetry(failureCount: number, error: unknown): boolean {
-  if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
-    return false;
-  }
-  return failureCount < 3;
-}
 
 const queryClient = new QueryClient({
   defaultOptions: {

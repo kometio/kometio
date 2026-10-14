@@ -10,6 +10,7 @@ import { sessionAs } from '../../test/current-session.test-fixture';
 import { WithToasts } from '../../test/toasts.test-fixture';
 import { useCurrentSession } from '../auth/use-current-session';
 import { MediaDetailSheet } from './media-detail-sheet';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // The usages list links to where the file is used, which needs a router.
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -374,9 +375,9 @@ describe('MediaDetailSheet', () => {
       expect(
         await screen.findByText('Invalid media filename: it contains a slash'),
       ).toBeTruthy();
-      expect((screen.getByLabelText('Nome') as HTMLInputElement).value).toBe(
-        'a/b.png',
-      );
+      expect(
+        instanceOf(screen.getByLabelText('Nome'), HTMLInputElement).value,
+      ).toBe('a/b.png');
     });
 
     it('puts the file back on Cancel', () => {
@@ -387,9 +388,9 @@ describe('MediaDetailSheet', () => {
       });
       fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
 
-      expect((screen.getByLabelText('Nome') as HTMLInputElement).value).toBe(
-        'listino.png',
-      );
+      expect(
+        instanceOf(screen.getByLabelText('Nome'), HTMLInputElement).value,
+      ).toBe('listino.png');
       expect(screen.queryByRole('button', { name: 'Salva' })).toBeNull();
     });
   });

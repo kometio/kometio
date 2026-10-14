@@ -20,5 +20,8 @@
   },
   "dependencies": {
     "@kometio/ports": "workspace:*"
+  },
+  "devDependencies": {
+    "@kometio/testing": "workspace:*"
   }
 }

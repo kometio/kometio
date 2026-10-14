@@ -6,6 +6,7 @@ import { formSubmissions, withTenant } from '@kometio/postgres-db';
 import { ATTACHMENT_STORAGE } from '../adapters/port.tokens';
 import { FormsModule } from './forms.module';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
+import { idOf } from '../../test/response-body.test-fixture';
 
 /**
  * Runs against a real Postgres — see docs/development.md. Same
@@ -127,7 +128,7 @@ describe('FormsController (integration)', () => {
         .post('/forms')
         .send({ siteId, name: 'Contatti' })
         .expect(201);
-      const formId = created.body.id as string;
+      const formId = idOf(created.body);
       await agent
         .patch(`/forms/${formId}`)
         .send({
@@ -212,7 +213,7 @@ describe('FormsController (integration)', () => {
           }),
         );
       }
-      return { formId: form.body.id as string, ids };
+      return { formId: idOf(form.body), ids };
     }
 
     it('deletes one answer, and the list and the count show it gone', async () => {

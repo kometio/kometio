@@ -18,6 +18,7 @@ import {
   READY_TIMEOUT_MS,
 } from './canvas-frame';
 import type { PreviewBridgeState } from './use-preview-bridge';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/preview-token-api-client', async (importOriginal) => {
   const actual =
@@ -288,7 +289,7 @@ describe('CanvasFrame', () => {
     const iframe = await waitFor(() => screen.getByTitle('Anteprima pagina'));
     // Full width, with the stage showing around it: the width comes from
     // the frame's margins rather than from a fixed 100%.
-    const frame = iframe.parentElement as HTMLElement;
+    const frame = instanceOf(iframe.parentElement, HTMLElement);
     expect(frame.style.width).toBe('');
     expect(frame.className).toContain('mx-6');
   });
@@ -305,7 +306,7 @@ describe('CanvasFrame', () => {
     // Read from the table rather than repeated here: the width moved once
     // already (ADR-0047 lifted tablet to the top of its band) and a copy
     // in the assertion only turns that into a failing test to edit.
-    expect((iframe.parentElement as HTMLElement).style.width).toBe(
+    expect(instanceOf(iframe.parentElement, HTMLElement).style.width).toBe(
       `${BREAKPOINT_WIDTHS.tablet}px`,
     );
   });
@@ -319,6 +320,8 @@ describe('CanvasFrame', () => {
     renderFrame({ breakpoint: 'mobile' });
 
     const iframe = await waitFor(() => screen.getByTitle('Anteprima pagina'));
-    expect((iframe.parentElement as HTMLElement).style.width).toBe('375px');
+    expect(instanceOf(iframe.parentElement, HTMLElement).style.width).toBe(
+      '375px',
+    );
   });
 });

@@ -21,6 +21,7 @@ import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { deploymentRecord } from '../../test/deployment.test-fixture';
 import { chooseOption } from '../../test/select.test-fixture';
 import { RedirectDialog, type RedirectDialogProps } from './redirect-dialog';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/deployment-api-client', () => ({
   getDeployment: vi.fn(),
@@ -131,7 +132,9 @@ describe('RedirectDialog', () => {
     it('starts with an address that was handed to it, as what was not found', () => {
       renderDialog({ initialFrom: '/2019/05/lost' });
 
-      expect((oldAddress() as HTMLInputElement).value).toBe('/2019/05/lost');
+      expect(instanceOf(oldAddress(), HTMLInputElement).value).toBe(
+        '/2019/05/lost',
+      );
     });
   });
 
@@ -289,7 +292,9 @@ describe('RedirectDialog', () => {
       expect((await screen.findByRole('alert')).textContent).toBe(
         'C’è già un reindirizzamento per questo indirizzo.',
       );
-      expect((oldAddress() as HTMLInputElement).value).toBe('/old-page');
+      expect(instanceOf(oldAddress(), HTMLInputElement).value).toBe(
+        '/old-page',
+      );
       expect(onOpenChange).not.toHaveBeenCalled();
     });
 
@@ -302,7 +307,7 @@ describe('RedirectDialog', () => {
         ),
       ).toBeTruthy();
       expect(
-        (screen.getByLabelText('Indirizzo') as HTMLInputElement).value,
+        instanceOf(screen.getByLabelText('Indirizzo'), HTMLInputElement).value,
       ).toBe('/it/new-page');
     });
 
@@ -386,7 +391,9 @@ describe('RedirectDialog', () => {
         }),
       });
 
-      expect((oldAddress() as HTMLInputElement).value).toBe('/old-about');
+      expect(instanceOf(oldAddress(), HTMLInputElement).value).toBe(
+        '/old-about',
+      );
       expect(screen.getByText('Chi siamo')).toBeTruthy();
       expect(
         screen

@@ -87,7 +87,7 @@ describe('SharpImageOptimizer', () => {
 
       expect(error).toBeInstanceOf(UnreadableImageError);
       // What the decoder said is kept for whoever reads the log.
-      expect((error as UnreadableImageError).cause).toBeInstanceOf(Error);
+      expect(error).toMatchObject({ cause: expect.any(Error) });
     });
   });
 });

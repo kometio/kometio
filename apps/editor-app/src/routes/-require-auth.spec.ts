@@ -11,7 +11,7 @@ describe('requireAuth', () => {
   });
 
   it('redirects to /login when the loader rejects with a 401 ApiError', async () => {
-    expect.assertions(3);
+    expect.assertions(2);
 
     try {
       await requireAuth(() =>
@@ -19,8 +19,7 @@ describe('requireAuth', () => {
       );
     } catch (error) {
       expect(isRedirect(error)).toBe(true);
-      expect(error).toHaveProperty('options');
-      expect((error as { options: { to: string } }).options.to).toBe('/login');
+      expect(error).toMatchObject({ options: { to: '/login' } });
     }
   });
 

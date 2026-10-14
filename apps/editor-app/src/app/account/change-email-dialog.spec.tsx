@@ -7,6 +7,7 @@ import { ApiError } from '../../lib/http-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { ChangeEmailDialog } from './change-email-dialog';
 import { deploymentRecord } from '../../test/deployment.test-fixture';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/deployment-api-client', () => ({
   getDeployment: vi.fn(),
@@ -156,9 +157,9 @@ describe('ChangeEmailDialog', () => {
     ).toBeTruthy();
     expect(onRequestEmailChange).toHaveBeenCalledTimes(2);
     // Still the form, with what was typed.
-    expect((screen.getByLabelText(NEW_EMAIL) as HTMLInputElement).value).toBe(
-      'nuova@example.com',
-    );
+    expect(
+      instanceOf(screen.getByLabelText(NEW_EMAIL), HTMLInputElement).value,
+    ).toBe('nuova@example.com');
   });
 
   it('closes from the confirmation', async () => {

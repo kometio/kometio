@@ -11,6 +11,7 @@ import {
 } from '../../test/mailpit.test-fixture';
 import type { UserRepositoryPort } from '@kometio/ports';
 import { USER_REPOSITORY } from '../adapters/port.tokens';
+import { idOf } from '../../test/response-body.test-fixture';
 
 /** The invite link's token, out of the mail Mailpit received. */
 const fetchInviteToken = (toEmail: string) =>
@@ -290,7 +291,7 @@ describe('Invite -> accept-invite (integration)', () => {
         .send({ email, displayName, role: 'editor' })
         .expect(201);
       integration.trackUser(res.body.user.id);
-      return { email, id: res.body.user.id as string };
+      return { email, id: idOf(res.body.user) };
     }
 
     it('cancels one nobody has accepted: the person is gone and the link no longer works', async () => {

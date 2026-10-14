@@ -61,22 +61,43 @@ export const archiveFileName = (date) =>
   `kometio-site-${date.toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-')}.tar.gz`;
 
 /**
+ * What a database has applied that this version's journal does not list, and
+ * that a version newer than this one could have written.
+ *
+ * The journal's first entry is a baseline, which stands for the whole history
+ * before it (docs/adr/0004): a database that went through that squash still has
+ * the rows of the migrations it replaced, older than the baseline and not in
+ * the journal. They are applied and replaced, and a database with them is no
+ * newer than the image: they are left out here. What is unknown and not older
+ * than the baseline is not of this lineage, and is the newer version's.
+ */
+function migrationsThisVersionDoesNotKnow(journal, appliedWhen) {
+  const known = new Set(journal.entries.map((entry) => entry.when));
+  const baseline = Math.min(...journal.entries.map((entry) => entry.when));
+  return appliedWhen
+    .map(Number)
+    .filter((when) => !known.has(when) && when >= baseline);
+}
+
+/**
  * The migrations a database has applied, by name. drizzle records each one by
  * the time its journal gave it (`when`), not by its name, so the journal of the
- * code that is running is what says which is which.
+ * code that is running is what says which is which. The rows of the history a
+ * baseline replaced have no name here and are not listed.
  */
 export function appliedMigrationTags(journal, appliedWhen) {
+  const unknown = migrationsThisVersionDoesNotKnow(journal, appliedWhen);
+  if (unknown.length > 0) {
+    throw new Refusal(
+      `this database has a migration that this version of Kometio does not know (${unknown[0]}): it was made by a newer one`,
+    );
+  }
   const byWhen = new Map(
     journal.entries.map((entry) => [entry.when, entry.tag]),
   );
-  return appliedWhen.map((when) => {
+  return appliedWhen.flatMap((when) => {
     const tag = byWhen.get(Number(when));
-    if (!tag) {
-      throw new Refusal(
-        `this database has a migration that this version of Kometio does not know (${when}): it was made by a newer one`,
-      );
-    }
-    return tag;
+    return tag === undefined ? [] : [tag];
   });
 }
 
@@ -90,8 +111,7 @@ export function appliedMigrationTags(journal, appliedWhen) {
  * what makes it likely. The refusal says what to do instead.
  */
 export function assertDatabaseIsNotNewer(journal, appliedWhen) {
-  const known = new Set(journal.entries.map((entry) => entry.when));
-  const unknown = appliedWhen.filter((when) => !known.has(Number(when)));
+  const unknown = migrationsThisVersionDoesNotKnow(journal, appliedWhen);
   if (unknown.length > 0) {
     throw new Refusal(
       `this volume was made by a newer Kometio than this image: its database has ${unknown.length} migration${unknown.length === 1 ? '' : 's'} that this version does not know, and migrations only go forward. Start the version that made it (or a newer one) on this volume; to be on this version again, open the export (or the backup) made before the update into a new volume (docker run … import, see the README, "Move a site")`,

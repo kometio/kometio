@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { consentGatedEmbedBehaviors } from './consent-gated-embed';
 import { runBlockBehaviors } from './run-block-behaviors';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 function renderTrigger(src: string, title: string): HTMLElement {
   document.body.innerHTML = `
@@ -14,7 +15,11 @@ function renderTrigger(src: string, title: string): HTMLElement {
       >Load</button>
     </div>
   `;
-  return document.querySelector<HTMLElement>('.kometio-consent-embed')!;
+  return instanceOf(
+    document.querySelector('.kometio-consent-embed'),
+    HTMLElement,
+    'the embed container',
+  );
 }
 
 describe('consentGatedEmbedBehaviors', () => {
@@ -81,7 +86,7 @@ describe('consentGatedEmbedBehaviors', () => {
         has: (category: string) => categories.includes(category),
         apply: () => undefined,
         openPreferences: () => undefined,
-      } as Window['kometioConsent'];
+      };
     }
 
     it('gets the embed without being asked', () => {
@@ -115,7 +120,7 @@ describe('consentGatedEmbedBehaviors', () => {
         has: (category: string) => granted && category === 'experience',
         apply: () => undefined,
         openPreferences: () => undefined,
-      } as Window['kometioConsent'];
+      };
       const container = renderTrigger('https://example.com/embed', 'A video');
       runBlockBehaviors(document, consentGatedEmbedBehaviors);
       expect(container.querySelector('iframe')).toBeNull();

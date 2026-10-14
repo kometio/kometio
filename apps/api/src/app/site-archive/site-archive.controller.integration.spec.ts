@@ -17,6 +17,7 @@ import {
 import { SITE_ARCHIVE } from '../adapters/port.tokens';
 import { AuthModule } from '../auth/auth.module';
 import { SiteArchiveModule } from './site-archive.module';
+import { portOf } from '@kometio/testing/http-server';
 
 type Launcher = (request: IncomingMessage, response: ServerResponse) => void;
 
@@ -188,16 +189,13 @@ describe('SiteArchiveController when the launcher cannot make the archive (integ
       response.write('half of it');
       setTimeout(() => response.destroy(), 20);
     });
-    const address = app.integration.app.getHttpServer().address();
-    if (typeof address === 'string' || address === null) {
-      throw new Error('the app is not listening on a port');
-    }
+    const port = portOf(app.integration.app.getHttpServer());
 
     const outcome = await new Promise<string>((resolve) => {
       const outgoing = httpRequest(
         {
           host: '127.0.0.1',
-          port: address.port,
+          port,
           path: '/site-archive',
           headers: { cookie: app.adminCookie },
         },

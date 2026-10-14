@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { markEmptyBlocks } from './preview-bridge-client';
+import { instanceOf, rect } from '../test/dom.test-fixture';
 
 /**
  * Nineteen block types render their root conditionally, and the editor's
@@ -10,9 +11,9 @@ import { markEmptyBlocks } from './preview-bridge-client';
  * as the only sign it existed.
  */
 /** jsdom reports zero for every box, so a rendered child has to say so itself. */
-function withBox(el: HTMLElement, height: number): void {
+function withBox(el: Element, height: number): void {
   Object.defineProperty(el, 'getBoundingClientRect', {
-    value: () => ({ width: 100, height }) as DOMRect,
+    value: () => rect({ width: 100, height }),
     configurable: true,
   });
 }
@@ -61,7 +62,7 @@ describe('markEmptyBlocks', () => {
     // Filled in — and the answer comes from what is UNDER the block, so
     // a block marked once does not keep measuring as its own placeholder.
     el.innerHTML = '<svg></svg>';
-    withBox(el.firstElementChild as HTMLElement, 24);
+    withBox(instanceOf(el.firstElementChild, Element), 24);
     markEmptyBlocks(root);
 
     expect(el.dataset['kometioEmpty']).toBeUndefined();
@@ -88,7 +89,7 @@ describe('markEmptyBlocks', () => {
     const root = document.createElement('div');
     const empty = wrapper('Icon', '');
     const filled = wrapper('Hero', '<h1>Titolo</h1>');
-    withBox(filled.firstElementChild as HTMLElement, 40);
+    withBox(instanceOf(filled.firstElementChild, Element), 40);
     root.append(empty, filled);
     markEmptyBlocks(root);
 

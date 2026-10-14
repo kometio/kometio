@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { instanceOf } from '../../test/dom.test-fixture';
 import { chooseOption, optionNames } from '../../test/select.test-fixture';
 import { describe, expect, it, vi } from 'vitest';
 import type { Block } from '@kometio/shared-types';
@@ -137,7 +138,9 @@ describe('InspectorPanel', () => {
     );
 
     expect(screen.getByRole('radiogroup')).toBeTruthy();
-    const options = screen.getAllByRole('radio') as HTMLInputElement[];
+    const options = screen
+      .getAllByRole('radio')
+      .map((radio) => instanceOf(radio, HTMLInputElement));
     expect(options).toHaveLength(2);
     expect(options[0].checked).toBe(true);
 

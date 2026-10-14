@@ -4,7 +4,7 @@ import { KometioApi } from './support/kometio-api';
 import { Cleanup } from './support/cleanup';
 import { environment } from './support/environment';
 import { expect, test } from './support/test';
-import type { Block } from './support/wire-schemas';
+import { blockSchema } from './support/wire-schemas';
 import samples from './fixtures/block-samples.json' with { type: 'json' };
 
 /**
@@ -121,10 +121,13 @@ test.beforeAll(async ({ playwright }) => {
       slug,
       title: `Every ${category} block`,
       // One level of children is part of a sample; the wire type is the same.
-      content: (blocks as Block[]).map((block) => ({
-        ...block,
-        props: { ...block.props, ...fills[block.type] },
-      })),
+      content: blockSchema
+        .array()
+        .parse(blocks)
+        .map((block) => ({
+          ...block,
+          props: { ...block.props, ...fills[block.type] },
+        })),
     });
     cleanup.add(() => api.deletePage(group.id));
     await api.publishTranslation(translation.id);

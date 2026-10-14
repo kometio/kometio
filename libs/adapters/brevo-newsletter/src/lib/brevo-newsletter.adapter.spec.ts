@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { BrevoNewsletterAdapter } from './brevo-newsletter.adapter';
-
-function jsonResponse(ok: boolean) {
-  return { ok } as Response;
-}
 
 describe('BrevoNewsletterAdapter', () => {
   beforeEach(() => {
@@ -15,7 +12,7 @@ describe('BrevoNewsletterAdapter', () => {
   });
 
   it('posts the email and list id with updateEnabled so a repeat signup is idempotent', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(true));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}));
     const adapter = new BrevoNewsletterAdapter({ apiKey: 'secret', listId: 7 });
 
     await adapter.subscribe('visitor@example.com');
@@ -35,7 +32,7 @@ describe('BrevoNewsletterAdapter', () => {
   });
 
   it('throws when Brevo rejects the request', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(false));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 400));
     const adapter = new BrevoNewsletterAdapter({ apiKey: 'secret', listId: 7 });
 
     await expect(adapter.subscribe('visitor@example.com')).rejects.toThrow();

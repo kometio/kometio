@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { TurnstileCaptchaAdapter } from './turnstile-captcha.adapter';
-
-function jsonResponse(body: unknown, ok = true) {
-  return { ok, json: () => Promise.resolve(body) } as Response;
-}
 
 describe('TurnstileCaptchaAdapter', () => {
   beforeEach(() => {
@@ -72,7 +69,7 @@ describe('TurnstileCaptchaAdapter', () => {
   });
 
   it('returns false when the HTTP call itself fails', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, false));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 500));
     const adapter = new TurnstileCaptchaAdapter({ secretKey: 'secret' });
 
     const result = await adapter.verify({ token: 'abc' });

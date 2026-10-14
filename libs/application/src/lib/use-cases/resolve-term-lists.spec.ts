@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PageContent } from '@kometio/shared-types';
+import { termChoiceSchema, type PageContent } from '@kometio/shared-types';
 import { Taxonomy, Term } from '@kometio/domain-core';
 import { resolveTermLists } from './resolve-term-lists';
 import { InMemoryTaxonomyRepository } from '@kometio/testing';
@@ -104,7 +104,9 @@ describe('resolveTermLists', () => {
       pageWithFilter(),
     ]);
 
-    const choices = contents[0][0].props['choices'] as { id: string }[];
+    const choices = termChoiceSchema
+      .array()
+      .parse(contents[0][0].props['choices']);
     expect(choices.map((choice) => choice.id)).toEqual(['term-2']);
   });
 

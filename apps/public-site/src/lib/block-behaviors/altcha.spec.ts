@@ -13,10 +13,6 @@ vi.mock('altcha/workers/pbkdf2?worker', () => ({
 }));
 vi.mock('altcha/i18n/it', () => ({}));
 
-type AltchaGlobal = {
-  algorithms: { set: (name: string, worker: () => unknown) => void };
-};
-
 async function importFreshBehaviors() {
   vi.resetModules();
   return (await import('./altcha')).altchaBehaviors;
@@ -35,14 +31,12 @@ let registered = vi.fn();
 describe('altchaBehaviors', () => {
   beforeEach(() => {
     registered = vi.fn();
-    (globalThis as { $altcha?: AltchaGlobal }).$altcha = {
-      algorithms: { set: registered },
-    };
+    vi.stubGlobal('$altcha', { algorithms: { set: registered } });
   });
 
   afterEach(() => {
     document.body.innerHTML = '';
-    delete (globalThis as { $altcha?: AltchaGlobal }).$altcha;
+    vi.unstubAllGlobals();
   });
 
   it('puts the widget in its slot, asking this site for the challenge and naming its field so the proxy finds it', async () => {

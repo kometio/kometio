@@ -192,7 +192,9 @@ describe('UsersListView', () => {
     renderView([userOne]);
     fireEvent.click(screen.getByRole('button', { name: /^disattiva$/i }));
     fireEvent.click(
-      screen.getAllByRole('button', { name: /^disattiva$/i }).at(-1) as Element,
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: /^disattiva$/i,
+      }),
     );
 
     await waitFor(() =>

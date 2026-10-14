@@ -24,6 +24,7 @@ import { buildSiteRecord } from '@kometio/testing/records';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { ToastProvider } from '../shell/toast-provider';
 import { BusinessInfoSection } from './business-info-section';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // The save bar asks before an in-app link throws work away, which needs a
 // router; here nothing is being left.
@@ -255,15 +256,17 @@ describe('BusinessInfoSection', () => {
       ),
     ).toBeTruthy();
     const save = await screen.findByRole('button', { name: /^salva$/i });
-    expect((save as HTMLButtonElement).disabled).toBe(true);
+    expect(instanceOf(save, HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.change(screen.getByLabelText('Chiusura, Lunedì'), {
       target: { value: '18:00' },
     });
     await waitFor(() =>
       expect(
-        (screen.getByRole('button', { name: /^salva$/i }) as HTMLButtonElement)
-          .disabled,
+        instanceOf(
+          screen.getByRole('button', { name: /^salva$/i }),
+          HTMLButtonElement,
+        ).disabled,
       ).toBe(false),
     );
   });
