@@ -1,11 +1,13 @@
 import {
   bigint,
   boolean,
+  check,
   index,
   integer,
   pgEnum,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -19,6 +21,9 @@ import {
   IMPORT_JOB_STATUSES,
   PAGE_GENERATOR_PROVIDERS,
   PAGE_TRANSLATION_STATUSES,
+  REDIRECT_KINDS,
+  REDIRECT_ORIGINS,
+  REDIRECT_TARGET_KINDS,
   REUSABLE_SECTION_KINDS,
   REUSABLE_SECTION_STATUSES,
   SITE_LAYOUT_SECTION_KINDS,
@@ -106,6 +111,12 @@ export const importJobStatusEnum = pgEnum(
   'import_job_status',
   IMPORT_JOB_STATUSES,
 );
+export const redirectKindEnum = pgEnum('redirect_kind', REDIRECT_KINDS);
+export const redirectTargetKindEnum = pgEnum(
+  'redirect_target_kind',
+  REDIRECT_TARGET_KINDS,
+);
+export const redirectOriginEnum = pgEnum('redirect_origin', REDIRECT_ORIGINS);
 export const verificationTokenPurposeEnum = pgEnum(
   'verification_token_purpose',
   VERIFICATION_TOKEN_PURPOSES,
@@ -1273,5 +1284,124 @@ export const pageGroupTerms = pgTable(
     // "Everything filed under this term", which is what the term's own
     // page is a list of.
     index('page_group_terms_term_idx').on(table.termId),
+  ],
+);
+
+/**
+ * An address that used to answer and is sent somewhere (docs/adr/0127).
+ *
+ * One row is one rule. The source is the path a visitor asks for and, for a
+ * WordPress `/?p=123`, the query pairs that must come with it; a pattern keeps
+ * its `:name` and `*` segments in `source_path`. The target is a page of this
+ * site, held by id and language so that renaming the page does not break the
+ * rule, or an address. A rule that says the address is gone (410) has none.
+ */
+export const redirects = pgTable(
+  'redirects',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    siteId: uuid('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    /** Lower case, no trailing slash — see `parseRedirectSource`. */
+    sourcePath: text('source_path').notNull(),
+    /** Sorted `key=value` pairs, `''` for none: part of the key, so a column and not nullable. */
+    sourceQuery: text('source_query').notNull().default(''),
+    kind: redirectKindEnum('kind').notNull(),
+    /** `null` when the rule says the address is gone. */
+    targetKind: redirectTargetKindEnum('target_kind'),
+    /**
+     * `set null` and not a cascade: a page deleted must not delete what was
+     * said about its old address. The rule stays, `target_kind` still says
+     * `page`, and the list shows it as needing a new target.
+     */
+    targetPageGroupId: uuid('target_page_group_id').references(
+      () => pageGroups.id,
+      { onDelete: 'set null' },
+    ),
+    targetLocale: text('target_locale'),
+    /** A path of this site or an address; a template (`/en/blog/:slug`) for a pattern. */
+    targetUrl: text('target_url'),
+    status: smallint('status').notNull().default(301),
+    origin: redirectOriginEnum('origin').notNull().default('manual'),
+    /** Counted as visitors arrive (batched), so the list says which old addresses are still asked for. */
+    hits: bigint('hits', { mode: 'number' }).notNull().default(0),
+    lastHitAt: timestamp('last_hit_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    // One rule per address: the second one is the same question answered
+    // twice, and which won would depend on the order of a scan.
+    unique('redirects_site_source_unique').on(
+      table.siteId,
+      table.sourcePath,
+      table.sourceQuery,
+    ),
+    index('redirects_tenant_site_idx').on(table.tenantId, table.siteId),
+    check('redirects_status_check', sql`${table.status} in (301, 302, 410)`),
+    // Gone says where to go to nobody; everything else says where.
+    check(
+      'redirects_target_check',
+      sql`(${table.status} = 410) = (${table.targetKind} is null)`,
+    ),
+    check(
+      'redirects_target_shape_check',
+      sql`(${table.targetKind} is distinct from 'page' or (${table.targetLocale} is not null and ${table.targetUrl} is null))
+        and (${table.targetKind} is distinct from 'url' or (${table.targetUrl} is not null and ${table.targetPageGroupId} is null and ${table.targetLocale} is null))`,
+    ),
+    // A pattern asks for no query, and sends to an address (its template).
+    check(
+      'redirects_pattern_check',
+      sql`${table.kind} <> 'pattern' or (${table.sourceQuery} = '' and ${table.targetKind} is distinct from 'page')`,
+    ),
+  ],
+);
+
+/**
+ * What visitors asked for and the site did not have, counted — the list a
+ * person turns into redirects after a migration (docs/adr/0127).
+ *
+ * The path only: no query, no address, no browser. A moment's data and not a
+ * site's, so it does not travel in an archive (`TRANSIENT_TABLES`).
+ */
+export const missingPaths = pgTable(
+  'missing_paths',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    siteId: uuid('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    path: text('path').notNull(),
+    hits: bigint('hits', { mode: 'number' }).notNull().default(0),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    /** Hidden from the list, and kept so that it does not come back as new. */
+    dismissed: boolean('dismissed').notNull().default(false),
+  },
+  (table) => [
+    unique('missing_paths_site_path_unique').on(table.siteId, table.path),
+    index('missing_paths_tenant_site_hits_idx').on(
+      table.tenantId,
+      table.siteId,
+      table.hits,
+    ),
   ],
 );

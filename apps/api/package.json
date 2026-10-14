@@ -123,6 +123,7 @@
     "@kometio/postgres-import-job-repository": "workspace:*",
     "@kometio/postgres-media-repository": "workspace:*",
     "@kometio/postgres-page-repository": "workspace:*",
+    "@kometio/postgres-redirect-repository": "workspace:*",
     "@kometio/postgres-reusable-section-repository": "workspace:*",
     "@kometio/postgres-search-repository": "workspace:*",
     "@kometio/postgres-site-layout-section-repository": "workspace:*",

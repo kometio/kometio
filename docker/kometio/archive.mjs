@@ -40,6 +40,10 @@ export const TRANSIENT_TABLES = [
   'verification_tokens',
   'form_submissions',
   'import_jobs',
+  // What visitors asked for and the site did not have (docs/adr/0127): a
+  // count of a moment on the server that was asked, which a copy of the site
+  // does not start with — and which the new server's own visitors rewrite.
+  'missing_paths',
 ];
 
 export const archiveFileName = (date) =>

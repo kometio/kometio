@@ -362,7 +362,7 @@ log forget an hour ago.
 ## Move a site to another installation
 
 One file carries a site — its pages and their history, forms, categories,
-settings, accounts and uploaded files — from one installation to another: from
+redirects, settings, accounts and uploaded files — from one installation to another: from
 your machine to a server, from a server to another, or as a backup you can open
 anywhere. It is made by the running server and opened into a new one.
 

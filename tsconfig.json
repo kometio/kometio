@@ -67,6 +67,9 @@
       "path": "./libs/adapters/postgres-form-repository"
     },
     {
+      "path": "./libs/adapters/postgres-redirect-repository"
+    },
+    {
       "path": "./libs/adapters/postgres-search-repository"
     },
     {

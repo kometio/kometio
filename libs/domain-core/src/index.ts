@@ -18,6 +18,7 @@ export * from './lib/entities/media';
 export * from './lib/entities/form';
 export * from './lib/entities/form-submission';
 export * from './lib/entities/import-job';
+export * from './lib/entities/redirect';
 export * from './lib/errors';
 export type { VerificationTokenPurpose } from '@kometio/shared-types';
 export * from './lib/preview-content-type';

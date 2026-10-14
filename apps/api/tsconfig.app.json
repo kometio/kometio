@@ -105,6 +105,9 @@
       "path": "../../libs/adapters/postgres-form-repository/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/adapters/postgres-redirect-repository/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/adapters/postgres-db/tsconfig.lib.json"
     },
     {

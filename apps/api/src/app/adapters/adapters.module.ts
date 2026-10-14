@@ -12,6 +12,10 @@ import {
   DrizzleFormRepository,
   DrizzleFormSubmissionRepository,
 } from '@kometio/postgres-form-repository';
+import {
+  DrizzleMissingPathRepository,
+  DrizzleRedirectRepository,
+} from '@kometio/postgres-redirect-repository';
 import { DrizzleImportJobRepository } from '@kometio/postgres-import-job-repository';
 import {
   DrizzleMediaRepository,
@@ -149,6 +153,11 @@ const PROVIDERS = [
   stored(
     port.FORM_SUBMISSION_REPOSITORY,
     (db) => new DrizzleFormSubmissionRepository(db),
+  ),
+  stored(port.REDIRECT_REPOSITORY, (db) => new DrizzleRedirectRepository(db)),
+  stored(
+    port.MISSING_PATH_REPOSITORY,
+    (db) => new DrizzleMissingPathRepository(db),
   ),
   stored(port.MEDIA_REPOSITORY, (db) => new DrizzleMediaRepository(db)),
   stored(port.MEDIA_USAGE_PORT, (db) => new DrizzleMediaUsageRepository(db)),
