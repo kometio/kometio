@@ -1,16 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
+import { instanceOf } from '../test/dom.test-fixture';
 import { deleteMedia, listMedia, uploadMedia } from './media-api-client';
 import { buildMediaRecord } from '@kometio/testing/records';
 
 const sampleMedia = buildMediaRecord();
-
-function jsonResponse(body: unknown) {
-  return {
-    ok: true,
-    status: 200,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 describe('media-api-client', () => {
   beforeEach(() => {
@@ -46,8 +40,7 @@ describe('media-api-client', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     const call = vi.mocked(fetch).mock.calls[0];
-    const body = call[1]?.body as FormData;
-    expect(body).toBeInstanceOf(FormData);
+    const body = instanceOf(call[1]?.body, FormData, 'the upload body');
     expect(body.get('siteId')).toBe('site-1');
     expect(body.get('file')).toBe(file);
     expect(result).toEqual(sampleMedia);

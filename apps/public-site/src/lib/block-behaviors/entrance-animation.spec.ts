@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { initEntranceAnimations } from './entrance-animation';
+import { rect } from '../../test/dom.test-fixture';
 
 type ObserverCallback = (
   entries: { isIntersecting: boolean; target: Element }[],
@@ -45,8 +46,7 @@ function setReducedMotion(reduce: boolean): void {
 function offScreenWrapper(): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.className = 'kometio-root-block';
-  wrapper.getBoundingClientRect = () =>
-    ({ top: 5000, bottom: 5400 }) as DOMRect;
+  wrapper.getBoundingClientRect = () => rect({ top: 5000, height: 400 });
   document.body.append(wrapper);
   return wrapper;
 }
@@ -101,7 +101,7 @@ describe('entrance animations', () => {
   it('does not make the first screenful wait for a callback', () => {
     const wrapper = document.createElement('div');
     wrapper.className = 'kometio-root-block';
-    wrapper.getBoundingClientRect = () => ({ top: 10, bottom: 400 }) as DOMRect;
+    wrapper.getBoundingClientRect = () => rect({ top: 10, height: 390 });
     document.body.append(wrapper);
 
     initEntranceAnimations();

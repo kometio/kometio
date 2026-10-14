@@ -45,10 +45,7 @@ describe('phpUnserialize', () => {
     // thing nobody notices until a page is wrong.
     const value = phpUnserialize('a:2:{s:1:"a";i:1;i:2;s:1:"b";}');
 
-    expect([...(value as Map<string | number, unknown>).keys()]).toEqual([
-      'a',
-      2,
-    ]);
+    expect(value instanceof Map ? [...value.keys()] : null).toEqual(['a', 2]);
     expect(Object.keys({ a: 1, 2: 'b' })).toEqual(['2', 'a']);
   });
 

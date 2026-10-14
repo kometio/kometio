@@ -29,9 +29,11 @@ describe('every registered block has a picture of its own', () => {
     const seen = new Map<string, string>();
     const clashes: string[] = [];
     for (const [type, icon] of byType) {
-      const already = seen.get(icon as string);
+      // A type with no picture is reported by the test above, by name.
+      if (icon === undefined) continue;
+      const already = seen.get(icon);
       if (already) clashes.push(`${already} and ${type} both use ${icon}`);
-      else seen.set(icon as string, type);
+      else seen.set(icon, type);
     }
     expect(clashes).toEqual([]);
   });

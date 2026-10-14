@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { PageGroup, PageTranslation } from '@kometio/domain-core';
-import type { Block, PageGridItem } from '@kometio/shared-types';
+import {
+  pageGridItemSchema,
+  type Block,
+  type PageGridItem,
+} from '@kometio/shared-types';
 import {
   InMemoryPageGroupRepository,
   InMemoryPageTranslationRepository,
@@ -82,7 +86,7 @@ async function itemsFor(
   const [content] = await resolvePageGridItems(deps, tenantId, siteId, 'it', [
     [grid(order)],
   ]);
-  return content[0].props['items'] as PageGridItem[];
+  return pageGridItemSchema.array().parse(content[0].props['items']);
 }
 
 describe('resolvePageGridItems', () => {
@@ -183,7 +187,10 @@ describe('resolvePageGridItems', () => {
     ]);
 
     const titles = (block: Block) =>
-      (block.props['items'] as PageGridItem[]).map((one) => one.title);
+      pageGridItemSchema
+        .array()
+        .parse(block.props['items'])
+        .map((one) => one.title);
     expect(titles(content[0])).toEqual(['Alfa', 'Zeta']);
     expect(titles(content[1])).toEqual(['Zeta', 'Alfa']);
   });
@@ -264,7 +271,10 @@ describe('resolvePageGridItems', () => {
       );
 
       expect(
-        (content[0].props['items'] as PageGridItem[]).map((item) => item.title),
+        pageGridItemSchema
+          .array()
+          .parse(content[0].props['items'])
+          .map((item) => item.title),
       ).toEqual(['Alfa', 'Beta']);
     });
 
@@ -291,7 +301,10 @@ describe('resolvePageGridItems', () => {
       );
 
       expect(
-        (content[0].props['items'] as PageGridItem[]).map((item) => item.title),
+        pageGridItemSchema
+          .array()
+          .parse(content[0].props['items'])
+          .map((item) => item.title),
       ).toEqual(['Nel termine']);
     });
 

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { DEFAULT_COOKIE_BANNER_SETTINGS } from '@kometio/shared-types';
 import { type PublishedPage } from '@kometio/api-contracts';
 import type { PublishedSiteChromeDto } from './public-api-client';
@@ -59,14 +60,6 @@ const samplePage: PublishedPage = {
   footer: null,
   headerSticky: false,
 };
-
-function jsonResponse(body: unknown, status = 200) {
-  return {
-    ok: status < 400,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 describe('public-api-client', () => {
   beforeEach(() => {

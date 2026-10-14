@@ -7,6 +7,7 @@ import type { BlockDescriptor } from '@kometio/block-registry';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { BlockToolbarOverlay } from './block-toolbar-overlay';
 import { TooltipProvider } from '../../components/ui/tooltip';
+import { rect } from '../../test/dom.test-fixture';
 
 function renderOverlay(ui: ReactElement) {
   return render(
@@ -28,8 +29,8 @@ const RECT: BlockRect = {
 function buildIframeRef() {
   const iframe = document.createElement('iframe');
   document.body.append(iframe);
-  iframe.getBoundingClientRect = vi.fn(
-    () => ({ top: 0, left: 0, width: 800, height: 600 }) as DOMRect,
+  iframe.getBoundingClientRect = vi.fn(() =>
+    rect({ top: 0, left: 0, width: 800, height: 600 }),
   );
   const ref = createRef<HTMLIFrameElement>();
   ref.current = iframe;

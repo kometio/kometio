@@ -22,12 +22,10 @@ describe('setupGlobalErrorHandlers', () => {
 
   it('logs unhandled promise rejections dispatched on window', () => {
     const rejectedPromise = Promise.reject(new Error('rejected'));
-    const event = new Event('unhandledrejection') as PromiseRejectionEvent & {
-      reason: unknown;
-      promise: Promise<unknown>;
-    };
-    Object.defineProperty(event, 'reason', { value: 'rejected' });
-    Object.defineProperty(event, 'promise', { value: rejectedPromise });
+    const event = Object.assign(new Event('unhandledrejection'), {
+      reason: 'rejected',
+      promise: rejectedPromise,
+    });
     window.dispatchEvent(event);
     rejectedPromise.catch(() => undefined);
 

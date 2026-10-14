@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../../lib/http-client';
 import type { RedirectImportReport } from '../../lib/redirects-api-client';
 import { ImportRedirectsDialog } from './import-redirects-dialog';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 function report(overrides: Partial<RedirectImportReport> = {}) {
   return {
@@ -70,10 +71,11 @@ describe('ImportRedirectsDialog', () => {
     renderDialog();
 
     expect(
-      (
+      instanceOf(
         screen.getByRole('button', {
           name: 'Controlla l’elenco',
-        }) as HTMLButtonElement
+        }),
+        HTMLButtonElement,
       ).disabled,
     ).toBe(true);
   });
@@ -90,10 +92,9 @@ describe('ImportRedirectsDialog', () => {
 
     await waitFor(() =>
       expect(
-        (
-          screen.getByLabelText(
-            'Oppure incolla qui l’elenco',
-          ) as HTMLTextAreaElement
+        instanceOf(
+          screen.getByLabelText('Oppure incolla qui l’elenco'),
+          HTMLTextAreaElement,
         ).value,
       ).toBe('from,to\n/a,/b\n'),
     );
@@ -127,10 +128,9 @@ describe('ImportRedirectsDialog', () => {
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Indietro' }));
     expect(
-      (
-        screen.getByLabelText(
-          'Oppure incolla qui l’elenco',
-        ) as HTMLTextAreaElement
+      instanceOf(
+        screen.getByLabelText('Oppure incolla qui l’elenco'),
+        HTMLTextAreaElement,
       ).value,
     ).toBe('/a,/b');
   });
@@ -144,7 +144,7 @@ describe('ImportRedirectsDialog', () => {
     const button = await screen.findByRole('button', {
       name: 'Niente da importare',
     });
-    expect((button as HTMLButtonElement).disabled).toBe(true);
+    expect(instanceOf(button, HTMLButtonElement).disabled).toBe(true);
   });
 
   it('says a file that was cut short, and each line that cannot be used', async () => {
@@ -220,10 +220,9 @@ describe('ImportRedirectsDialog', () => {
 
     expect(await screen.findByText('The list is not valid')).toBeTruthy();
     expect(
-      (
-        screen.getByLabelText(
-          'Oppure incolla qui l’elenco',
-        ) as HTMLTextAreaElement
+      instanceOf(
+        screen.getByLabelText('Oppure incolla qui l’elenco'),
+        HTMLTextAreaElement,
       ).value,
     ).toBe('/a,/b');
   });

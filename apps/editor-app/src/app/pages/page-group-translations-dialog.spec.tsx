@@ -10,6 +10,7 @@ import { PageGroupTranslationsDialog } from './page-group-translations-dialog';
 import { useCurrentSession } from '../auth/use-current-session';
 import { sessionAs } from '../../test/current-session.test-fixture';
 import { ApiError } from '../../lib/http-client';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../auth/use-current-session', () => ({ useCurrentSession: vi.fn() }));
 
@@ -143,7 +144,10 @@ describe('renaming a page from the translations dialog', () => {
     );
     renderDialog([translation({ id: 'tr-1', locale: 'it' })]);
 
-    const field = screen.getByLabelText('URL in IT') as HTMLInputElement;
+    const field = instanceOf(
+      screen.getByLabelText('URL in IT'),
+      HTMLInputElement,
+    );
     fireEvent.blur(field, { target: { value: 'contatti' } });
 
     expect((await screen.findByRole('alert')).textContent).toMatch(

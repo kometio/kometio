@@ -13,6 +13,15 @@ import {
   InMemoryCollectionRepository,
 } from '@kometio/testing';
 
+function translationIdFor(
+  translations: { locale: string; translationId: string }[],
+  locale: string,
+): string {
+  const found = translations.find((t) => t.locale === locale);
+  if (!found) throw new Error(`No ${locale} translation was generated`);
+  return found.translationId;
+}
+
 describe('generateLegalDocuments', () => {
   const tenantId = 'tenant-1';
   const siteId = 'site-1';
@@ -208,10 +217,8 @@ describe('generateLegalDocuments', () => {
     });
 
     const doc = result.documents[0];
-    const itTranslationId = doc.translations.find((t) => t.locale === 'it')
-      ?.translationId as string;
-    const enTranslationId = doc.translations.find((t) => t.locale === 'en')
-      ?.translationId as string;
+    const itTranslationId = translationIdFor(doc.translations, 'it');
+    const enTranslationId = translationIdFor(doc.translations, 'en');
 
     const itTranslation = await deps.pageTranslationRepository.findById(
       tenantId,
@@ -246,8 +253,10 @@ describe('generateLegalDocuments', () => {
       result.documents[0].pageGroupId,
     );
 
-    expect(group?.content[0]).toMatchObject({ type: 'Callout' });
-    expect((group?.content[0].props as { tone: string }).tone).toBe('warning');
+    expect(group?.content[0]).toMatchObject({
+      type: 'Callout',
+      props: { tone: 'warning' },
+    });
     const remainingTypes = group?.content.slice(1).map((b) => b.type) ?? [];
     // Every section is one Heading followed by at least one Text.
     expect(remainingTypes[0]).toBe('Heading');

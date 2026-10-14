@@ -23,7 +23,7 @@ type Agent = ReturnType<typeof request.agent>;
  */
 describe('Who may do what (integration)', () => {
   let integration: IntegrationApp;
-  const agents = {} as Record<UserRole, Agent>;
+  let agents: Record<UserRole, Agent>;
   const id = randomUUID();
 
   beforeAll(async () => {
@@ -41,11 +41,13 @@ describe('Who may do what (integration)', () => {
         UsersModule,
       ],
     });
-    for (const role of ['admin', 'publisher', 'editor'] as const) {
-      agents[role] = await integration.login(
-        await integration.createUser({ role }),
-      );
-    }
+    const loginAs = async (role: UserRole) =>
+      integration.login(await integration.createUser({ role }));
+    agents = {
+      admin: await loginAs('admin'),
+      publisher: await loginAs('publisher'),
+      editor: await loginAs('editor'),
+    };
   });
 
   afterAll(async () => {

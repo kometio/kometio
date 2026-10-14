@@ -10,6 +10,12 @@ const outline: LegalDocumentOutline = {
   ],
 };
 
+/** The id of a block the page was built with: every one is given one, so a block without it is the failure. */
+function idOf(block: { id?: string } | undefined): string {
+  if (block?.id === undefined) throw new Error('The block has no id');
+  return block.id;
+}
+
 describe('buildLegalPageContent', () => {
   it('starts with a warning Callout carrying the draft notice', () => {
     const { content } = buildLegalPageContent(outline, 'DRAFT NOTICE');
@@ -63,26 +69,29 @@ describe('buildLegalPageContent', () => {
 
       expect(overlay).not.toBeNull();
       // content = [Callout, Heading, Text (section 1), Heading, Text, Text (section 2)]
-      const calloutId = content[0].id as string;
-      const headingIds = [content[1].id, content[3].id];
-      const textIds = [content[2].id, content[4].id, content[5].id];
+      const calloutId = idOf(content[0]);
+      const firstHeadingId = idOf(content[1]);
+      const secondHeadingId = idOf(content[3]);
+      const firstTextId = idOf(content[2]);
+      const secondTextId = idOf(content[4]);
+      const thirdTextId = idOf(content[5]);
 
       expect(overlay?.[calloutId]).toEqual({
         message: '<p>AVVISO BOZZA (it)</p>',
       });
-      expect(overlay?.[headingIds[0] as string]).toEqual({
+      expect(overlay?.[firstHeadingId]).toEqual({
         text: 'Titolare del trattamento',
       });
-      expect(overlay?.[headingIds[1] as string]).toEqual({
+      expect(overlay?.[secondHeadingId]).toEqual({
         text: 'Dati raccolti',
       });
-      expect(overlay?.[textIds[0] as string]).toEqual({
+      expect(overlay?.[firstTextId]).toEqual({
         body: '<p>Par 1 IT.</p>',
       });
-      expect(overlay?.[textIds[1] as string]).toEqual({
+      expect(overlay?.[secondTextId]).toEqual({
         body: '<p>Par 2a IT.</p>',
       });
-      expect(overlay?.[textIds[2] as string]).toEqual({
+      expect(overlay?.[thirdTextId]).toEqual({
         body: '<p>Par 2b IT.</p>',
       });
     });

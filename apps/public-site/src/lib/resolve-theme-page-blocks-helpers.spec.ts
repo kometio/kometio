@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BlockDescriptor } from '@kometio/block-sdk';
+import { isRecord } from '@kometio/shared-types';
 import {
   buildDispatchEntry,
   buildThemeBlocksResponseEntry,
@@ -59,7 +60,10 @@ describe('buildDispatchEntry', () => {
   const component: Parameters<typeof buildDispatchEntry>[1] = () =>
     new Response();
   const schema = {
-    parse: (props: unknown) => props as Record<string, unknown>,
+    parse: (props: unknown) => {
+      if (!isRecord(props)) throw new Error('The props are not an object');
+      return props;
+    },
   };
 
   it('marks the block stylable only when stylableProperties is non-empty', () => {

@@ -16,7 +16,7 @@ import type {
   VerificationTokenPort,
 } from '@kometio/ports';
 import { InMemoryAuditLog } from '@kometio/testing';
-import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
+import { DeploymentTenantResolver } from '../deployment-tenant.resolver';
 import { AuthController } from './auth.controller';
 import { testApiEnv } from '../../test/api-env.test-fixture';
 import { SESSION_COOKIE_NAME, SessionCookies } from './session-cookies';
@@ -24,6 +24,11 @@ import { AuditRecorder } from '../audit/audit-recorder';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 
 const tenantId = 'tenant-1';
+
+/** The deployment's tenant, already known: with DEFAULT_TENANT_ID set the directory is never asked. */
+function resolvedTenant(id: string): DeploymentTenantResolver {
+  return new DeploymentTenantResolver({ listIds: async () => [] }, id);
+}
 const editorAppUrl = 'https://editor.example.com';
 
 /** What a cookie is written through, with the calls kept to be read back. */
@@ -105,7 +110,7 @@ describe('AuthController', () => {
         // deployment does not know its tenant until the first-run wizard
         // creates one. Here it is always resolved, which is what every test
         // in this file assumes.
-        tenant: { require: async () => tenantId } as DeploymentTenantResolver,
+        tenant: resolvedTenant(tenantId),
       },
       env,
       new SessionCookies(env),
@@ -669,7 +674,7 @@ describe('AuthController', () => {
           emailPort,
           deploymentLocale: { defaultLocale: async () => 'it' },
           captchaPort,
-          tenant: { require: async () => tenantId } as DeploymentTenantResolver,
+          tenant: resolvedTenant(tenantId),
         },
         env,
         new SessionCookies(env),

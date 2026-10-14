@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  isPreviewBridgeMessage,
   PREVIEW_BRIDGE_SOURCE,
   PREVIEW_BRIDGE_VERSION,
+  type PreviewToParentMessage,
 } from '@kometio/shared-types';
 import { initPreviewBridge } from './init-preview-bridge';
+import { instanceOf, rect } from '../test/dom.test-fixture';
 
 const EDITOR_APP_URL = 'http://localhost:4200';
 
@@ -29,40 +32,19 @@ class FakeResizeObserver {
  * load gives it.
  */
 function trackListeners() {
-  const originalDocAdd = document.addEventListener.bind(document);
-  const originalWinAdd = window.addEventListener.bind(window);
-  const added: {
-    target: EventTarget;
-    type: string;
-    handler: EventListenerOrEventListenerObject;
-    options?: boolean | AddEventListenerOptions;
-  }[] = [];
-
-  document.addEventListener = ((
-    type: string,
-    handler: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
-  ) => {
-    added.push({ target: document, type, handler, options });
-    return originalDocAdd(type, handler, options);
-  }) as typeof document.addEventListener;
-
-  window.addEventListener = ((
-    type: string,
-    handler: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
-  ) => {
-    added.push({ target: window, type, handler, options });
-    return originalWinAdd(type, handler, options);
-  }) as typeof window.addEventListener;
+  const spies = [
+    { target: document, spy: vi.spyOn(document, 'addEventListener') },
+    { target: window, spy: vi.spyOn(window, 'addEventListener') },
+  ];
 
   return {
     cleanup(): void {
-      for (const { target, type, handler, options } of added) {
-        target.removeEventListener(type, handler, options);
+      for (const { target, spy } of spies) {
+        for (const [type, handler, options] of spy.mock.calls) {
+          target.removeEventListener(type, handler, options);
+        }
+        spy.mockRestore();
       }
-      document.addEventListener = originalDocAdd;
-      window.addEventListener = originalWinAdd;
     },
   };
 }
@@ -84,13 +66,20 @@ function dispatchPostMessage(
   window.dispatchEvent(new MessageEvent('message', { data, origin }));
 }
 
-function messagesOfType(
+function isMessageOfType<T extends PreviewToParentMessage['type']>(
+  message: unknown,
+  type: T,
+): message is Extract<PreviewToParentMessage, { type: T }> {
+  return isPreviewBridgeMessage(message) && message.type === type;
+}
+
+function messagesOfType<T extends PreviewToParentMessage['type']>(
   spy: { mock: { calls: unknown[][] } },
-  type: string,
-): unknown[] {
-  return spy.mock.calls
-    .map(([msg]) => msg as { type?: string })
-    .filter((msg) => msg?.type === type);
+  type: T,
+): Extract<PreviewToParentMessage, { type: T }>[] {
+  return spy.mock.calls.flatMap(([message]) =>
+    isMessageOfType(message, type) ? [message] : [],
+  );
 }
 
 describe('initPreviewBridge', () => {
@@ -103,8 +92,8 @@ describe('initPreviewBridge', () => {
     // directly rather than spied on (spyOn requires the method to
     // pre-exist), same fix as preview-bridge-client.spec.ts's own
     // toBlockRects tests.
-    Range.prototype.getBoundingClientRect = vi.fn(
-      () => ({ top: 0, left: 0, width: 100, height: 20 }) as DOMRect,
+    Range.prototype.getBoundingClientRect = vi.fn(() =>
+      rect({ top: 0, left: 0, width: 100, height: 20 }),
     );
     document.body.innerHTML = heroFixture();
     document.body.dataset['kometioEditorAppUrl'] = EDITOR_APP_URL;
@@ -132,15 +121,13 @@ describe('initPreviewBridge', () => {
   it('sends preview:ready on init, with the block rects collected from the document', () => {
     initPreviewBridge();
 
-    const [ready] = messagesOfType(postMessageSpy, 'preview:ready') as {
-      payload: { blockRects: { id: string }[] };
-    }[];
+    const [ready] = messagesOfType(postMessageSpy, 'preview:ready');
     expect(ready?.payload.blockRects.map((r) => r.id)).toEqual(['hero-1']);
   });
 
   it('sends preview:hover with the hovered block id, but only when it changes', () => {
     initPreviewBridge();
-    const title = document.querySelector('h1') as HTMLElement;
+    const title = instanceOf(document.querySelector('h1'), HTMLElement);
 
     title.dispatchEvent(
       new MouseEvent('mouseover', { bubbles: true, clientX: 5, clientY: 6 }),
@@ -149,23 +136,19 @@ describe('initPreviewBridge', () => {
       new MouseEvent('mouseover', { bubbles: true, clientX: 5, clientY: 6 }),
     );
 
-    const hovers = messagesOfType(postMessageSpy, 'preview:hover') as {
-      payload: { blockId: string | null };
-    }[];
+    const hovers = messagesOfType(postMessageSpy, 'preview:hover');
     expect(hovers).toHaveLength(1);
     expect(hovers[0]?.payload.blockId).toBe('hero-1');
   });
 
   it('sends preview:hover with blockId null when the pointer leaves every tracked block', () => {
     initPreviewBridge();
-    const title = document.querySelector('h1') as HTMLElement;
+    const title = instanceOf(document.querySelector('h1'), HTMLElement);
     title.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
     document.body.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
-    const hovers = messagesOfType(postMessageSpy, 'preview:hover') as {
-      payload: { blockId: string | null };
-    }[];
+    const hovers = messagesOfType(postMessageSpy, 'preview:hover');
     expect(hovers.at(-1)?.payload.blockId).toBeNull();
   });
 
@@ -175,27 +158,23 @@ describe('initPreviewBridge', () => {
       '<a href="/somewhere">Vai</a>' +
       '</div>';
     initPreviewBridge();
-    const anchor = document.querySelector('a') as HTMLAnchorElement;
+    const anchor = instanceOf(document.querySelector('a'), HTMLAnchorElement);
 
     const event = new MouseEvent('click', { bubbles: true, cancelable: true });
     const prevented = !anchor.dispatchEvent(event);
 
     expect(prevented).toBe(true);
-    const clicks = messagesOfType(postMessageSpy, 'preview:click') as {
-      payload: { blockId: string };
-    }[];
+    const clicks = messagesOfType(postMessageSpy, 'preview:click');
     expect(clicks[0]?.payload.blockId).toBe('link-1');
   });
 
   it('sends preview:dblclick with the field under the pointer', () => {
     initPreviewBridge();
-    const title = document.querySelector('h1') as HTMLElement;
+    const title = instanceOf(document.querySelector('h1'), HTMLElement);
 
     title.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
 
-    const dblclicks = messagesOfType(postMessageSpy, 'preview:dblclick') as {
-      payload: { blockId: string; field: string | null };
-    }[];
+    const dblclicks = messagesOfType(postMessageSpy, 'preview:dblclick');
     expect(dblclicks[0]?.payload).toEqual({
       blockId: 'hero-1',
       field: 'title',
@@ -204,7 +183,7 @@ describe('initPreviewBridge', () => {
 
   it('does not start a drag on mousedown+mouseup alone (a plain click)', () => {
     initPreviewBridge();
-    const title = document.querySelector('h1') as HTMLElement;
+    const title = instanceOf(document.querySelector('h1'), HTMLElement);
 
     title.dispatchEvent(
       new MouseEvent('mousedown', {
@@ -223,7 +202,7 @@ describe('initPreviewBridge', () => {
 
   it('does not start a drag when the pointer moves less than the threshold', () => {
     initPreviewBridge();
-    const title = document.querySelector('h1') as HTMLElement;
+    const title = instanceOf(document.querySelector('h1'), HTMLElement);
 
     title.dispatchEvent(
       new MouseEvent('mousedown', {
@@ -244,7 +223,7 @@ describe('initPreviewBridge', () => {
 
   it('starts a drag once the pointer moves past the threshold, and ends it on mouseup', () => {
     initPreviewBridge();
-    const title = document.querySelector('h1') as HTMLElement;
+    const title = instanceOf(document.querySelector('h1'), HTMLElement);
 
     title.dispatchEvent(
       new MouseEvent('mousedown', {
@@ -263,9 +242,7 @@ describe('initPreviewBridge', () => {
       }),
     );
 
-    const starts = messagesOfType(postMessageSpy, 'preview:drag-start') as {
-      payload: { blockId: string; pointer: { x: number; y: number } };
-    }[];
+    const starts = messagesOfType(postMessageSpy, 'preview:drag-start');
     expect(starts).toHaveLength(1);
     expect(starts[0]?.payload).toEqual({
       blockId: 'hero-1',
@@ -289,7 +266,7 @@ describe('initPreviewBridge', () => {
       '<div data-kometio-block-id="text-1" style="display:contents"><p>Testo</p></div>' +
       '</div>';
     initPreviewBridge();
-    const paragraph = document.querySelector('p') as HTMLElement;
+    const paragraph = instanceOf(document.querySelector('p'), HTMLElement);
 
     paragraph.dispatchEvent(
       new MouseEvent('mousedown', {
@@ -303,9 +280,7 @@ describe('initPreviewBridge', () => {
       new MouseEvent('mousemove', { bubbles: true, clientX: 40, clientY: 40 }),
     );
 
-    const started = messagesOfType(postMessageSpy, 'preview:drag-start') as {
-      payload: { blockId: string };
-    }[];
+    const started = messagesOfType(postMessageSpy, 'preview:drag-start');
     expect(started).toHaveLength(1);
     expect(started[0]?.payload.blockId).toBe('text-1');
   });
@@ -431,7 +406,7 @@ describe('initPreviewBridge', () => {
   it('prevents the default form submission', () => {
     document.body.innerHTML = '<form></form>';
     initPreviewBridge();
-    const form = document.querySelector('form') as HTMLFormElement;
+    const form = instanceOf(document.querySelector('form'), HTMLFormElement);
 
     const event = new Event('submit', { bubbles: true, cancelable: true });
     const prevented = !form.dispatchEvent(event);

@@ -1,10 +1,7 @@
 import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import { MailchimpNewsletterAdapter } from './mailchimp-newsletter.adapter';
-
-function jsonResponse(ok: boolean) {
-  return { ok } as Response;
-}
 
 describe('MailchimpNewsletterAdapter', () => {
   beforeEach(() => {
@@ -16,7 +13,7 @@ describe('MailchimpNewsletterAdapter', () => {
   });
 
   it('PUTs to the data-center-scoped URL keyed by the MD5 of the lowercased email', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(true));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}));
     const adapter = new MailchimpNewsletterAdapter({
       apiKey: 'abc123-us21',
       audienceId: 'audience-1',
@@ -41,7 +38,7 @@ describe('MailchimpNewsletterAdapter', () => {
   });
 
   it('sends HTTP Basic auth built from the API key', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(true));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}));
     const adapter = new MailchimpNewsletterAdapter({
       apiKey: 'abc123-us21',
       audienceId: 'audience-1',
@@ -50,14 +47,13 @@ describe('MailchimpNewsletterAdapter', () => {
     await adapter.subscribe('visitor@example.com');
 
     const [, init] = vi.mocked(fetch).mock.calls[0];
-    const headers = init?.headers as Record<string, string>;
-    expect(headers['Authorization']).toBe(
+    expect(new Headers(init?.headers).get('Authorization')).toBe(
       `Basic ${Buffer.from('anystring:abc123-us21').toString('base64')}`,
     );
   });
 
   it('throws when Mailchimp rejects the request', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(false));
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 400));
     const adapter = new MailchimpNewsletterAdapter({
       apiKey: 'abc123-us21',
       audienceId: 'audience-1',

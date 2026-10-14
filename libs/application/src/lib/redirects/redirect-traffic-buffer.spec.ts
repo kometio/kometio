@@ -89,7 +89,7 @@ describe('RedirectTrafficBuffer', () => {
 
     await buffer.flush();
 
-    const written = record.mock.calls[0]?.[0] as unknown[];
+    const written: unknown = record.mock.calls[0]?.[0];
     expect(written).toHaveLength(5000);
     await buffer.stop();
   });

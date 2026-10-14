@@ -1,41 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_COOKIE_BANNER_SETTINGS } from '@kometio/shared-types';
-import { type PublishedSite } from '@kometio/api-contracts';
 import { absoluteSchemaUrl, buildSchemaOrgGraph } from './schema-org';
+import { publishedSite } from '../test/published-site.test-fixture';
 
-const baseSite: PublishedSite = {
-  name: 'Il mio sito',
-  domain: 'example.com',
-  themeName: 'classic',
-  defaultLocale: 'it',
-  enabledLocales: ['it'],
-  untranslatedPageFallback: 'redirect-to-default',
-  businessAddress: null,
-  businessPhone: null,
-  businessEmail: null,
-  businessType: null,
-  openingHours: null,
-  searchEngineIndexingEnabled: false,
-  themeSettings: {
-    primaryColor: null,
-    secondaryColor: null,
-    fontFamily: null,
-    customCss: null,
-    contentWidth: null,
-    headScript: null,
-    bodyScript: null,
-    faviconUrl: null,
-    overridesEnabled: true,
-    allowedTrackerDomains: [],
-    trackerScripts: [],
-  },
-  themeTokens: {
-    blockStyles: {},
-  },
-  cookieBannerSettings: DEFAULT_COOKIE_BANNER_SETTINGS,
-  privacyPolicySlug: null,
-  cookiePolicySlug: null,
-};
+const baseSite = publishedSite();
 
 const seoMeta = { title: 'Chi siamo', description: 'La nostra storia' };
 
@@ -45,7 +12,7 @@ describe('buildSchemaOrgGraph', () => {
       site: baseSite,
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': { '@type': string }[] };
+    });
 
     const types = graph['@graph'].map((node) => node['@type']);
     expect(types).toEqual(['WebSite', 'WebPage']);
@@ -56,12 +23,12 @@ describe('buildSchemaOrgGraph', () => {
       site: { ...baseSite, businessPhone: '+39 02 1234567' },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': { '@type': string; telephone?: string }[] };
+    });
 
     const business = graph['@graph'].find(
       (node) => node['@type'] !== 'WebSite' && node['@type'] !== 'WebPage',
     );
-    expect(business?.telephone).toBe('+39 02 1234567');
+    expect(business?.['telephone']).toBe('+39 02 1234567');
   });
 
   it('declares the email on the LocalBusiness node, and a site with only an email still gets one', () => {
@@ -69,12 +36,12 @@ describe('buildSchemaOrgGraph', () => {
       site: { ...baseSite, businessEmail: 'ciao@example.com' },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': { '@type': string; email?: string }[] };
+    });
 
     const business = graph['@graph'].find(
       (node) => node['@type'] !== 'WebSite' && node['@type'] !== 'WebPage',
     );
-    expect(business?.email).toBe('ciao@example.com');
+    expect(business?.['email']).toBe('ciao@example.com');
   });
 
   it('uses the site businessType as the schema.org @type when set', () => {
@@ -87,7 +54,7 @@ describe('buildSchemaOrgGraph', () => {
       },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': { '@type': string }[] };
+    });
 
     const business = graph['@graph'][2];
     expect(business?.['@type']).toBe('Restaurant');
@@ -106,7 +73,7 @@ describe('buildSchemaOrgGraph', () => {
       },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': { '@type': string }[] };
+    });
 
     expect(graph['@graph'][2]?.['@type']).toBe('LocalBusiness');
   });
@@ -127,7 +94,7 @@ describe('buildSchemaOrgGraph', () => {
       },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': Record<string, unknown>[] };
+    });
 
     expect(graph['@graph'][2]?.['address']).toEqual({
       '@type': 'PostalAddress',
@@ -153,7 +120,7 @@ describe('buildSchemaOrgGraph', () => {
       },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': Record<string, unknown>[] };
+    });
 
     expect(graph['@graph'][2]?.['address']).toEqual({
       '@type': 'PostalAddress',
@@ -175,7 +142,7 @@ describe('buildSchemaOrgGraph', () => {
       },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as { '@graph': Record<string, unknown>[] };
+    });
 
     expect(graph['@graph'][2]).not.toHaveProperty('address');
   });
@@ -197,14 +164,10 @@ describe('buildSchemaOrgGraph', () => {
       },
       seoMeta,
       pageUrl: 'https://example.com/chi-siamo',
-    }) as {
-      '@graph': {
-        openingHoursSpecification?: { dayOfWeek: string; opens: string }[];
-      }[];
-    };
+    });
 
     const business = graph['@graph'][2];
-    expect(business?.openingHoursSpecification).toEqual([
+    expect(business?.['openingHoursSpecification']).toEqual([
       {
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: 'https://schema.org/Monday',

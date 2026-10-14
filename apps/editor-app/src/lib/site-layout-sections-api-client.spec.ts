@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { jsonResponse } from '@kometio/testing/fetch-response';
 import {
   getOrCreateSiteLayoutSection,
   listVersions,
@@ -10,14 +11,6 @@ import {
 import { buildSiteLayoutSectionRecord } from '@kometio/testing/records';
 
 const sampleSection = buildSiteLayoutSectionRecord();
-
-function jsonResponse(body: unknown) {
-  return {
-    ok: true,
-    status: 200,
-    json: () => Promise.resolve(body),
-  } as Response;
-}
 
 describe('site-layout-sections-api-client', () => {
   beforeEach(() => {

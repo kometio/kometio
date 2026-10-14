@@ -2,14 +2,16 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TooltipProvider } from '../../../components/ui/tooltip';
 import { ColorPickerField } from './color-picker-field';
+import { instanceOf } from '../../../test/dom.test-fixture';
 
 describe('ColorPickerField', () => {
   it('renders the theme-default swatch and empty text input when value is null', () => {
     render(<ColorPickerField value={null} onChange={vi.fn()} />);
 
-    const colorInput = document.querySelector(
-      'input[type="color"]',
-    ) as HTMLInputElement;
+    const colorInput = instanceOf(
+      document.querySelector('input[type="color"]'),
+      HTMLInputElement,
+    );
     expect(colorInput.value).toBe('#000000');
     expect(screen.getByPlaceholderText('Eredita dal tema')).toHaveProperty(
       'value',
@@ -22,9 +24,10 @@ describe('ColorPickerField', () => {
     const onChange = vi.fn();
     render(<ColorPickerField value="#123456" onChange={onChange} />);
 
-    const colorInput = document.querySelector(
-      'input[type="color"]',
-    ) as HTMLInputElement;
+    const colorInput = instanceOf(
+      document.querySelector('input[type="color"]'),
+      HTMLInputElement,
+    );
     fireEvent.change(colorInput, { target: { value: '#abcdef' } });
 
     expect(onChange).toHaveBeenCalledWith('#abcdef');
@@ -178,9 +181,10 @@ describe('ColorPickerField', () => {
       />,
     );
 
-    const colorInput = document.querySelector(
-      'input[type="color"]',
-    ) as HTMLInputElement;
+    const colorInput = instanceOf(
+      document.querySelector('input[type="color"]'),
+      HTMLInputElement,
+    );
     expect(colorInput.value).toBe('#336699');
   });
 

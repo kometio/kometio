@@ -26,9 +26,6 @@
       "path": "../../libs/api-contracts"
     },
     {
-      "path": "../../libs/shared-types"
-    },
-    {
       "path": "../../libs/adapters/sentry-error-reporter"
     },
     {
@@ -48,6 +45,12 @@
     },
     {
       "path": "../../libs/block-registry"
+    },
+    {
+      "path": "../../libs/testing"
+    },
+    {
+      "path": "../../libs/shared-types"
     }
   ]
 }

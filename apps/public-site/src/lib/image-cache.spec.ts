@@ -13,11 +13,11 @@ import {
   type Server,
   type ServerResponse,
 } from 'node:http';
-import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createImageCache } from '../../image-cache.mjs';
+import { portOf } from '@kometio/testing/http-server';
 
 /*
  * The cache is in front of Astro's handler, as server.mjs puts it. The
@@ -69,7 +69,7 @@ async function start(
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const harness: Harness = {
-    base: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
+    base: `http://127.0.0.1:${portOf(server)}`,
     directory,
     calls: () => calls.n,
     close: async () => {
@@ -269,7 +269,7 @@ describe('createImageCache', () => {
     await new Promise<void>((resolve) =>
       server.listen(0, '127.0.0.1', resolve),
     );
-    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const base = `http://127.0.0.1:${portOf(server)}`;
 
     const first = await fetch(`${base}${IMAGE}`);
     const second = await fetch(`${base}${IMAGE}`);
@@ -357,7 +357,7 @@ describe('createImageCache', () => {
     await new Promise<void>((resolve) =>
       server.listen(0, '127.0.0.1', resolve),
     );
-    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const base = `http://127.0.0.1:${portOf(server)}`;
 
     await fetch(`${base}${IMAGE}`);
     const second = await fetch(`${base}${IMAGE}`);
@@ -387,7 +387,7 @@ describe('createImageCache', () => {
     await new Promise<void>((resolve) =>
       server.listen(0, '127.0.0.1', resolve),
     );
-    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const base = `http://127.0.0.1:${portOf(server)}`;
 
     await fetch(`${base}${IMAGE}`);
     await fetch(`${base}${IMAGE}`); // a hit, so the first has been kept

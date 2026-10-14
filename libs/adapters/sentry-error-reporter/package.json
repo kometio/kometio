@@ -21,5 +21,8 @@
   "dependencies": {
     "@kometio/ports": "workspace:*",
     "@sentry/node-core": "^10.75.2"
+  },
+  "devDependencies": {
+    "@kometio/testing": "workspace:*"
   }
 }

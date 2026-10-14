@@ -25,7 +25,7 @@ describe('turnstileBehaviors', () => {
   afterEach(() => {
     document.head.innerHTML = '';
     document.body.innerHTML = '';
-    delete (window as { turnstile?: unknown }).turnstile;
+    Reflect.deleteProperty(window, 'turnstile');
   });
 
   it('loads the Turnstile script with render=explicit and renders the widget once loaded', async () => {

@@ -27,6 +27,7 @@ import {
   redirectsSearchSchema,
   type RedirectsSearch,
 } from './redirects-search';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../auth/use-current-session', () => ({
   useCurrentSession: vi.fn(),
@@ -151,7 +152,7 @@ describe('RedirectsSection', () => {
 
       const row = (await screen.findByText('/2019/05/chi-siamo')).closest('li');
       expect(row).not.toBeNull();
-      const inRow = within(row as HTMLElement);
+      const inRow = within(instanceOf(row, HTMLElement));
       expect(inRow.getByText('Chi siamo')).toBeTruthy();
       expect(inRow.getByText('/it/chi-siamo')).toBeTruthy();
       expect(inRow.getByText('Permanente')).toBeTruthy();
@@ -161,9 +162,10 @@ describe('RedirectsSection', () => {
     it('marks a pattern, and where a rule came from when it was not typed here', async () => {
       renderSection();
 
-      const row = (await screen.findByText('/:year/:month/:slug')).closest(
-        'li',
-      ) as HTMLElement;
+      const row = instanceOf(
+        (await screen.findByText('/:year/:month/:slug')).closest('li'),
+        HTMLElement,
+      );
 
       expect(within(row).getByText('Schema')).toBeTruthy();
       expect(within(row).getByText('Da WordPress')).toBeTruthy();
@@ -173,9 +175,10 @@ describe('RedirectsSection', () => {
     it('says in words what needs a look: a rule with no page, a page not yet published, an address that is gone', async () => {
       renderSection();
 
-      const orphanRow = (await screen.findByText('/vecchia-offerta')).closest(
-        'li',
-      ) as HTMLElement;
+      const orphanRow = instanceOf(
+        (await screen.findByText('/vecchia-offerta')).closest('li'),
+        HTMLElement,
+      );
       expect(
         within(orphanRow).getByText('Serve una destinazione'),
       ).toBeTruthy();
@@ -185,10 +188,16 @@ describe('RedirectsSection', () => {
         ),
       ).toBeTruthy();
 
-      const draftRow = screen.getByText('/bozza').closest('li') as HTMLElement;
+      const draftRow = instanceOf(
+        screen.getByText('/bozza').closest('li'),
+        HTMLElement,
+      );
       expect(within(draftRow).getByText('Pagina non pubblicata')).toBeTruthy();
 
-      const goneRow = screen.getByText('/rimossa').closest('li') as HTMLElement;
+      const goneRow = instanceOf(
+        screen.getByText('/rimossa').closest('li'),
+        HTMLElement,
+      );
       expect(
         within(goneRow).getByText('Rimosso per sempre (410)'),
       ).toBeTruthy();
@@ -234,9 +243,9 @@ describe('RedirectsSection', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Mostra tutti' }));
 
       expect(await screen.findByText('/2019/05/chi-siamo')).toBeTruthy();
-      expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe(
-        '',
-      );
+      expect(
+        instanceOf(screen.getByRole('searchbox'), HTMLInputElement).value,
+      ).toBe('');
     });
 
     it('narrows to what needs a destination, asking the server', async () => {
@@ -452,8 +461,10 @@ describe('RedirectsSection', () => {
         name: 'Aggiungi un reindirizzamento',
       });
       expect(
-        (within(dialog).getByLabelText('Indirizzo vecchio') as HTMLInputElement)
-          .value,
+        instanceOf(
+          within(dialog).getByLabelText('Indirizzo vecchio'),
+          HTMLInputElement,
+        ).value,
       ).toBe('/2019/05/old-post');
     });
 
@@ -519,8 +530,10 @@ describe('RedirectsSection', () => {
         name: 'Aggiungi un reindirizzamento',
       });
       expect(
-        (within(add).getByLabelText('Indirizzo vecchio') as HTMLInputElement)
-          .value,
+        instanceOf(
+          within(add).getByLabelText('Indirizzo vecchio'),
+          HTMLInputElement,
+        ).value,
       ).toBe('/lost');
     });
   });

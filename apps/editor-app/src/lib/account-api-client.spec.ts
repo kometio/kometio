@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { emptyResponse } from '@kometio/testing/fetch-response';
 import { changePassword, requestEmailChange } from './account-api-client';
-
-function emptyResponse() {
-  return { ok: true, status: 204 } as Response;
-}
 
 describe('account-api-client: how the person signs in', () => {
   beforeEach(() => {

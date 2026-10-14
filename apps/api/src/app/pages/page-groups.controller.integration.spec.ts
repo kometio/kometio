@@ -10,6 +10,8 @@ import { CollectionsModule } from '../collections/collections.module';
 import { ReusableSectionsModule } from '../reusable-sections/reusable-sections.module';
 import { PagesModule } from './pages.module';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
+import { idOf } from '../../test/response-body.test-fixture';
+import { pageContentSchema } from '@kometio/shared-types';
 
 /**
  * Runs against a real Postgres, through the real HTTP stack — same setup
@@ -196,7 +198,7 @@ describe('PageGroupsController (integration)', () => {
           seoMeta: { title: slug, description: '' },
         })
         .expect(201);
-      return group.body.id as string;
+      return idOf(group.body);
     }
     const parentOf = async (id: string) =>
       (await agent.get(`/page-groups/${id}`).expect(200)).body.parentId;
@@ -724,11 +726,7 @@ describe('PageGroupsController (integration)', () => {
     expect(
       fromTemplateTranslations.body.map((t: { slug: string }) => t.slug),
     ).toEqual([fromTemplateSlug]);
-    const content = fromTemplateRes.body.content as {
-      id: string;
-      type: string;
-      props: Record<string, unknown>;
-    }[];
+    const content = pageContentSchema.parse(fromTemplateRes.body.content);
     expect(content.map((block) => block.type)).toEqual(['Hero', 'Section']);
     expect(content[0].props).toEqual({ title: 'Plumber' });
     // The newsletter is still a reference to the shared section, not a copy.
@@ -879,8 +877,8 @@ describe('PageGroupsController (integration)', () => {
         })
         .expect(201);
       return {
-        groupId: group.body.id as string,
-        translationId: translation.body.id as string,
+        groupId: idOf(group.body),
+        translationId: idOf(translation.body),
       };
     }
 

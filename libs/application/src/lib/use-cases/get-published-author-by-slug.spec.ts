@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { PageGroup, PageTranslation, User } from '@kometio/domain-core';
+import { pageGridItemSchema } from '@kometio/shared-types';
 import {
   InMemoryMediaStorage,
   InMemoryPageGroupRepository,
@@ -172,7 +173,10 @@ describe('getPublishedAuthorBySlug', () => {
     expect(box?.props['isProfilePage']).toBe(true);
     expect(grid?.type).toBe('PageGrid');
     expect(
-      (grid?.props['items'] as { title: string }[]).map((item) => item.title),
+      pageGridItemSchema
+        .array()
+        .parse(grid?.props['items'])
+        .map((item) => item.title),
     ).toEqual(['Nuovo', 'Vecchio']);
   });
 
@@ -205,7 +209,10 @@ describe('getPublishedAuthorBySlug', () => {
 
     const grid = author?.content.find((block) => block.type === 'PageGrid');
     expect(
-      (grid?.props['items'] as { title: string }[]).map((item) => item.title),
+      pageGridItemSchema
+        .array()
+        .parse(grid?.props['items'])
+        .map((item) => item.title),
     ).toEqual(['Articolo']);
   });
 

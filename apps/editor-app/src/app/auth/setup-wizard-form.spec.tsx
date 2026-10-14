@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -6,18 +7,16 @@ import {
 } from '@kometio/shared-types';
 import { ApiError } from '../../lib/http-client';
 import { DEFAULT_SETUP_LOCALE, SetupWizardForm } from './setup-wizard-form';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // The suite runs pinned to Italian (test-setup.ts), so the queries below
 // match the Italian copy — same convention as every other dialog spec here.
 function fillAndSubmit(
-  onSubmit: (input: never) => Promise<void>,
+  onSubmit: ComponentProps<typeof SetupWizardForm>['onSubmit'],
   proposedDomain?: string,
 ) {
   render(
-    <SetupWizardForm
-      onSubmit={onSubmit as never}
-      proposedDomain={proposedDomain}
-    />,
+    <SetupWizardForm onSubmit={onSubmit} proposedDomain={proposedDomain} />,
   );
 
   fireEvent.change(screen.getByLabelText(/token di installazione/i), {
@@ -59,7 +58,7 @@ describe('SetupWizardForm', () => {
    */
   describe("the site's domain", () => {
     const domainField = () =>
-      screen.getByLabelText(/^dominio/i) as HTMLInputElement;
+      instanceOf(screen.getByLabelText(/^dominio/i), HTMLInputElement);
 
     it('starts on the domain it was proposed', () => {
       render(<SetupWizardForm onSubmit={vi.fn()} proposedDomain="localhost" />);
