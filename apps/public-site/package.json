@@ -47,7 +47,7 @@
     "@tiptap/pm": "^3.31.4",
     "altcha": "^3.3.0",
     "astro": "^7.3.8",
-    "lucide-static": "^1.53.0",
+    "lucide-static": "^1.55.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "sanitize-html": "^2.18.0",
