@@ -103,3 +103,23 @@ that `esbuild` uses only to serve a development page on the local machine
 quiet about `esbuild` by blindness and not by cleanliness, and a later
 `esbuild` built with a newer Go is what makes it true. The scan stays
 report-only for the reason above.
+
+## Update, 2026-10-14: the daily run is a gate
+
+The list it opened with is empty: the scan of `:main` (amd64, Alpine 3.24.2 and
+the Node.js packages, Trivy 0.74.0) finds no high or critical advisory with a
+fix. So the daily run now fails when it finds one, and the report-only
+sentence of the decision above no longer holds for it.
+
+- **Only the scheduled run fails**, as the last step, after the summary and the
+  alerts have been written. A pull request that edits `image-scan.yml` and a
+  run started by hand with a tag still only report: whoever starts them is
+  looking at the list.
+- **It is not a required check.** The advisory appears on a day nothing of ours
+  changed, and a required check would stop a merge for something the merge did
+  not do. What it gives is a red run, which the repository's notifications
+  deliver, where a table in a run's summary was opened by nobody.
+- **The blindness stays.** A green run does not say that the `esbuild`
+  binaries are clean: Trivy reads no Go version in 0.27 and 0.28 (see the
+  update above), so the gate cannot go red for them. An `esbuild` released
+  with a newer Go is still what makes that part true and not only quiet.
