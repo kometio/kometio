@@ -54,14 +54,14 @@ const href = message
     z-index: 30;
     width: 3.25rem;
     height: 3.25rem;
-    border-radius: var(--kometio-override-radius, 50%);
+    @kometio-bridge border-radius;
     /* WhatsApp's own green stays the default — a brand-recognition
        colour, as the comment above says — but it is a default now rather
        than a constant: a site whose palette clashes with it can say so. */
-    background: var(--kometio-override-bg, #25d366);
+    @kometio-bridge background;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--kometio-override-shadow, 0 4px 12px rgb(0 0 0 / 20%));
+    @kometio-bridge box-shadow;
   }
 </style>

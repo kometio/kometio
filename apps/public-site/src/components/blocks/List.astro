@@ -63,14 +63,12 @@ const markerStyle = mediaIcon
 <style>
   .kometio-list {
     display: grid;
-    gap: var(--kometio-override-gap, 0.5rem);
+    @kometio-bridge gap;
     margin: 0;
     /* Logical, so the markers sit on the right in a right-to-left page. */
     padding-inline-start: 1.5rem;
     padding-block: var(--kometio-override-padding-y, 0);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge background color border-radius;
   }
 
   /* Stated, not inherited: the global reset takes every list's markers

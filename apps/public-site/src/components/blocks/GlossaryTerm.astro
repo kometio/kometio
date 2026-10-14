@@ -35,11 +35,7 @@ const { term, definition, blockId, instanceClass } = Astro.props;
     gap: 0.25rem;
     /* A sticky header must not cover the term the index jumped to. */
     scroll-margin-block-start: 6rem;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-glossary-term__term {

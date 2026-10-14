@@ -119,12 +119,11 @@ const showLightbox = lightbox && !href;
      corners is not what anyone means by it. Fallbacks are what the block
      already rendered. */
   .kometio-image-figure {
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge border-radius;
     border: var(--kometio-override-border-width, 0)
       var(--kometio-override-border-style, solid)
       var(--kometio-override-border-color, var(--border));
-    box-shadow: var(--kometio-override-shadow, none);
-    max-width: var(--kometio-override-max-width, none);
+    @kometio-bridge box-shadow max-width;
     overflow: hidden;
     /* `margin: 0` is the browser default a <figure> does NOT have — it
        ships with 1em of inline margin, which is why an image never sat

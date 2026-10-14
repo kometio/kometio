@@ -49,17 +49,13 @@ const href = resolveLinkHref({ linkType, page, url });
   .kometio-nav-link {
     display: inline-flex;
     align-items: center;
-    gap: var(--kometio-override-gap, 0.4em);
+    @kometio-bridge gap;
     /* `var(--primary)`, NOT `inherit`: global.css gives a bare `<a>`
        `text-primary`, and a nav link IS one. A scoped rule here outranks
        that layer, so `inherit` turned every menu link the colour of its
        surrounding text — measured against the built site before and
        after, which is the only way this shows up. */
-    color: var(--kometio-override-text, var(--primary));
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge color background border-radius padding;
   }
   .kometio-nav-link--right {
     margin-left: auto;

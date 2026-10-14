@@ -1,6 +1,11 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import postcss from 'postcss';
 import { describe, expect, it } from 'vitest';
-import { BLOCK_STYLE_CUSTOM_PROPERTIES } from '@kometio/shared-types';
+import {
+  BLOCK_STYLE_CUSTOM_PROPERTIES,
+  BLOCK_STYLE_DEFAULTS,
+} from '@kometio/shared-types';
 import {
   BRIDGEABLE,
   blockBridge,
@@ -106,5 +111,73 @@ describe('@kometio-bridge', () => {
       }
     }
     expect(() => bridgedValue('Quote', 'gap', STYLE)).not.toThrow();
+  });
+});
+
+describe('the blocks that use it', () => {
+  const dir = join(import.meta.dirname, '../components/blocks');
+  const allStyleBlocks = readdirSync(dir)
+    .filter((file) => file.endsWith('.astro'))
+    .flatMap((file) =>
+      [
+        ...readFileSync(join(dir, file), 'utf8').matchAll(
+          /<style[^>]*>([\s\S]*?)<\/style>/g,
+        ),
+      ].map((match) => ({ file, css: match[1] ?? '' })),
+    );
+  const styleBlocks = allStyleBlocks.filter(({ css }) =>
+    css.includes('@kometio-bridge'),
+  );
+
+  it('are found, so that this is not a test of nothing', () => {
+    expect(styleBlocks.length).toBeGreaterThan(0);
+  });
+
+  it.each(styleBlocks)(
+    '$file asks only for what its contract declares',
+    async ({ file, css }) => {
+      const result = await postcss([blockBridge()]).process(css, {
+        from: join(dir, `${file}?astro&type=style&index=0&lang.css`),
+      });
+
+      expect(result.css).not.toContain('@kometio-bridge');
+      expect(BLOCK_STYLE_DEFAULTS[blockTypeOfFile(file)]).toBeDefined();
+    },
+  );
+
+  it('write by hand only what the directive cannot say', () => {
+    const squash = (value: string) =>
+      value
+        .replace(/\s+/g, ' ')
+        .replace(/\(\s+/g, '(')
+        .replace(/\s+\)/g, ')')
+        .trim();
+    const written: string[] = [];
+
+    for (const { file, css } of allStyleBlocks) {
+      const style = BLOCK_STYLE_DEFAULTS[blockTypeOfFile(file)];
+      if (style === undefined) continue;
+      postcss.parse(css).walkDecls((declaration) => {
+        const keys = BRIDGEABLE[declaration.prop];
+        if (keys === undefined || declaration.important) return;
+        if (!keys.every((key) => style[key] !== undefined)) return;
+        const bridgedForm = bridgedValue(
+          blockTypeOfFile(file),
+          declaration.prop,
+          style,
+        );
+        if (squash(declaration.value) === squash(bridgedForm)) {
+          const selector =
+            declaration.parent?.type === 'rule'
+              ? declaration.parent.selector
+              : '';
+          written.push(
+            `${file}: ${squash(selector)} { ${declaration.prop} } is what @kometio-bridge writes`,
+          );
+        }
+      });
+    }
+
+    expect(written).toEqual([]);
   });
 });

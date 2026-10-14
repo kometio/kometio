@@ -84,14 +84,7 @@ const expiryText = expiry
   .kometio-promo-code {
     display: grid;
     gap: 0.5rem;
-    background: var(--kometio-override-bg, var(--muted));
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, var(--radius));
-    padding: var(--kometio-override-padding-y, 0.75rem)
-      var(--kometio-override-padding-x, 1rem);
-    border-width: var(--kometio-override-border-width, 1px);
-    border-style: var(--kometio-override-border-style, dashed);
-    border-color: var(--kometio-override-border-color, var(--border));
+    @kometio-bridge background color border-radius padding border-width border-style border-color;
   }
 
   .kometio-promo-code__description,

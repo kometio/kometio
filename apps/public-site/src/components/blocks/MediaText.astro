@@ -46,16 +46,12 @@ const { media, alt, heading, body, mediaSide, mediaWidth, verticalAlign, instanc
      cannot query itself, hence the inner element (the trap from PR #162). */
   .kometio-media-text {
     container-type: inline-size;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-media-text__inner {
     display: grid;
-    gap: var(--kometio-override-gap, 2rem);
+    @kometio-bridge gap;
     grid-template-columns: minmax(0, 1fr);
   }
 

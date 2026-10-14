@@ -55,9 +55,7 @@ const { label, url, iconSvg, instanceClass } = Astro.props;
        icon inside stays 1.25rem. */
     width: 2.5rem;
     height: 2.5rem;
-    color: var(--kometio-override-text, inherit);
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 50%);
+    @kometio-bridge color background border-radius;
     border: var(--kometio-override-border-width, 1px)
       var(--kometio-override-border-style, solid)
       var(--kometio-override-border-color, var(--border));

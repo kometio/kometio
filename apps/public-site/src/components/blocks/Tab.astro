@@ -16,10 +16,7 @@ const { label, instanceClass } = Astro.props;
 
 <style>
   .kometio-tab-panel {
-    padding: var(--kometio-override-padding-y, 1rem) var(--kometio-override-padding-x, 0);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge padding background color border-radius;
   }
   .kometio-tab-panel[hidden] {
     display: none;

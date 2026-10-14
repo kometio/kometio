@@ -53,13 +53,12 @@ const [header, ...body] = rows;
     border: var(--kometio-override-border-width, 1px)
       var(--kometio-override-border-style, solid)
       var(--kometio-override-border-color, var(--border));
-    padding: var(--kometio-override-padding-y, 0.5rem)
-      var(--kometio-override-padding-x, 0.75rem);
+    @kometio-bridge padding;
     text-align: left;
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge color;
   }
   .kometio-table th {
-    background: var(--kometio-override-bg, var(--muted));
+    @kometio-bridge background;
     font-weight: 600;
   }
 </style>

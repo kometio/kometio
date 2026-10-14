@@ -62,12 +62,7 @@ const logos = PAYMENT_METHODS.filter((method) => props[method]).flatMap(
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--kometio-override-gap, 0.75rem);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge gap background color border-radius padding;
   }
 
   .kometio-trust-badges__logos {

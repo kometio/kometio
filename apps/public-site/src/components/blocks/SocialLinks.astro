@@ -47,14 +47,10 @@ const { display, editable, hasChildren, instanceClass, i18n } = Astro.props;
     /* Not `auto-fit` columns like the other collections: social icons are
        small and of one size, so a row that wraps reads far better than a
        grid that stretches six icons across a full-width section. */
-    gap: var(--kometio-override-gap, 0.75rem);
+    @kometio-bridge gap;
   }
   :global(.kometio-social-links) {
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   :global(.kometio-social-links[data-kometio-editable-outline]) {
     outline: 1px dashed var(--border);

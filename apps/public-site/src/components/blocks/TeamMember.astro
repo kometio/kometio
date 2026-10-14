@@ -29,9 +29,7 @@ const { name, role, bio, photo, instanceClass } = Astro.props;
 <style>
   .kometio-team-member {
     text-align: center;
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    @kometio-bridge background border-radius padding;
   }
   /* :global() because OptimizedImage (a child component) renders the
   actual <img> — see Image.astro's own style block for the full reasoning. */
@@ -48,7 +46,7 @@ const { name, role, bio, photo, instanceClass } = Astro.props;
   .kometio-team-member__name {
     margin-top: 0.75rem;
     font-weight: 600;
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge color;
   }
   .kometio-team-member__role {
     font-size: 0.875rem;

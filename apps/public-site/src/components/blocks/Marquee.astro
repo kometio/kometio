@@ -65,11 +65,7 @@ const content = animated ? await Astro.slots.render('default') : '';
 <style>
   .kometio-marquee {
     overflow: hidden;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
     --kometio-marquee-duration: 30s;
   }
 
@@ -84,7 +80,7 @@ const content = animated ? await Astro.slots.render('default') : '';
   .kometio-marquee__track {
     display: flex;
     width: max-content;
-    gap: var(--kometio-override-gap, 2.5rem);
+    @kometio-bridge gap;
     animation: kometio-marquee var(--kometio-marquee-duration) linear infinite;
   }
 
@@ -92,7 +88,7 @@ const content = animated ? await Astro.slots.render('default') : '';
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--kometio-override-gap, 2.5rem);
+    @kometio-bridge gap;
   }
 
   .kometio-marquee--animated .kometio-marquee__group {

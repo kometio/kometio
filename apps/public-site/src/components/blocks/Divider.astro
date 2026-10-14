@@ -26,7 +26,7 @@ const { instanceClass } = Astro.props;
       var(--kometio-override-border-color, var(--border));
     /* Not `width`: `max-width` lets a narrower divider still shrink on a
        small screen instead of overflowing it. */
-    max-width: var(--kometio-override-max-width, none);
+    @kometio-bridge max-width;
     margin-inline: auto;
   }
 </style>

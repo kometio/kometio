@@ -38,18 +38,14 @@ const { display, editable, hasChildren, instanceClass, emptyChildLabel, i18n } =
   /* `:global()` for Testimonials.astro's reason: CollectionLayout renders
      the element, so this file's scoped styles would never reach it. */
   :global(.kometio-product-grid) {
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   /* `min(15rem, 100%)`: a column narrower than 15rem cannot hold one, and
      a fixed 15rem minimum would overflow a phone-width sidebar. */
   :global(.kometio-product-grid.kometio-collection--grid) {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
-    gap: var(--kometio-override-gap, 1.5rem);
+    @kometio-bridge gap;
   }
   :global(.kometio-product-grid[data-kometio-editable-outline]) {
     outline: 1px dashed var(--border);

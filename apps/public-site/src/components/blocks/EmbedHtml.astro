@@ -169,9 +169,7 @@ ${safeHtml}
 
 <style>
   .kometio-embed-html {
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    @kometio-bridge background border-radius padding;
   }
   .kometio-embed-html__consent {
     margin: 0;

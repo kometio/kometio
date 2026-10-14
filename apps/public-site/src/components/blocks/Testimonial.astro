@@ -59,10 +59,7 @@ const STAR_POSITIONS = [1, 2, 3, 4, 5];
     flex: 0 0 min(320px, 85vw);
     scroll-snap-align: start;
     border: 1px solid var(--border);
-    border-radius: var(--kometio-override-radius, 12px);
-    padding: var(--kometio-override-padding-y, 1.5rem)
-      var(--kometio-override-padding-x, 1.5rem);
-    background: var(--kometio-override-bg, transparent);
+    @kometio-bridge border-radius padding background;
   }
   .kometio-testimonial__stars {
     display: flex;
@@ -71,7 +68,7 @@ const STAR_POSITIONS = [1, 2, 3, 4, 5];
   .kometio-testimonial__quote {
     margin: 0.75rem 0;
     font-size: 0.9375rem;
-    color: var(--kometio-override-text, var(--foreground));
+    @kometio-bridge color;
   }
   .kometio-testimonial__footer {
     display: flex;

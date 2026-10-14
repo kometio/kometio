@@ -125,15 +125,11 @@ const closeLabel = i18n.t('hamburgerMenu.close');
     left: 0;
     right: 0;
     z-index: 10;
-    padding: var(--kometio-override-padding-y, 1rem)
-      var(--kometio-override-padding-x, 1rem);
-    background: var(--kometio-override-bg, var(--background));
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge padding background color;
     border: var(--kometio-override-border-width, 1px)
       var(--kometio-override-border-style, solid)
       var(--kometio-override-border-color, var(--border));
-    border-radius: var(--kometio-override-radius, 8px);
-    box-shadow: var(--kometio-override-shadow, 0 8px 24px rgb(0 0 0 / 12%));
+    @kometio-bridge border-radius box-shadow;
   }
   .kometio-hamburger-menu.kometio-hamburger-menu--open .kometio-hamburger-menu__panel {
     display: block;

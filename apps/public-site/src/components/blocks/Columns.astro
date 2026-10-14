@@ -63,11 +63,7 @@ const gridTemplate =
     /* The fallback is what a row renders as before its tracks are known —
        one column, which is also what an empty row should look like. */
     grid-template-columns: var(--kometio-columns-template, 1fr);
-    gap: var(--kometio-override-gap, 1.5rem);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    @kometio-bridge gap background color border-radius padding;
   }
 
   /* Vertical alignment of columns against each other — `align-items` on a

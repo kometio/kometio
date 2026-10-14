@@ -61,16 +61,11 @@ const { label, position, visibility, instanceClass } = Astro.props;
     min-width: 12rem;
     display: flex;
     flex-direction: column;
-    gap: var(--kometio-override-gap, 0.25rem);
-    padding: var(--kometio-override-padding-y, 0.75rem)
-      var(--kometio-override-padding-x, 0.75rem);
-    background: var(--kometio-override-bg, var(--background));
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge gap padding background color;
     border: var(--kometio-override-border-width, 1px)
       var(--kometio-override-border-style, solid)
       var(--kometio-override-border-color, var(--border));
-    border-radius: var(--kometio-override-radius, 8px);
-    box-shadow: var(--kometio-override-shadow, 0 8px 24px rgb(0 0 0 / 12%));
+    @kometio-bridge border-radius box-shadow;
   }
   .kometio-nav-dropdown__panel :global(.kometio-nav-link) {
     display: block;

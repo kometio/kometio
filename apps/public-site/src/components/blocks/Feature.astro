@@ -23,10 +23,7 @@ const { title, text, iconSvg, instanceClass, variantClass } = Astro.props;
 <style>
   .kometio-feature {
     text-align: center;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   .kometio-feature__icon {
     display: inline-flex;
@@ -62,7 +59,7 @@ const { title, text, iconSvg, instanceClass, variantClass } = Astro.props;
   .kometio-feature--inline {
     display: flex;
     align-items: start;
-    gap: var(--kometio-override-gap, 1rem);
+    @kometio-bridge gap;
     text-align: start;
   }
   /* The icon must not shrink when the text is long — the classic defect

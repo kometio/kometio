@@ -16,10 +16,7 @@ const { question, answer, instanceClass } = Astro.props;
      NavDropdown.astro's own comment on this exact HTML pattern. */
   .kometio-accordion-item {
     border-bottom: 1px solid var(--border);
-    padding: var(--kometio-override-padding-y, 0.75rem) var(--kometio-override-padding-x, 0);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge padding background color border-radius;
   }
   .kometio-accordion-item__question {
     cursor: pointer;

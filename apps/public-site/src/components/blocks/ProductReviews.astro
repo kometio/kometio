@@ -95,16 +95,12 @@ const jsonLd =
 
 <style>
   :global(.kometio-product-reviews) {
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
   :global(.kometio-product-reviews.kometio-collection--grid) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-    gap: var(--kometio-override-gap, 1.5rem);
+    @kometio-bridge gap;
   }
   :global(.kometio-product-reviews .kometio-collection__track) {
     padding-block: 0.5rem;

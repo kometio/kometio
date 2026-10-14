@@ -20,10 +20,7 @@ const { label, value, instanceClass } = Astro.props;
     justify-content: space-between;
     gap: 0.25rem 1rem;
     border-block-end: 1px solid var(--border);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    padding: var(--kometio-override-padding-y, 0.5rem)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color padding;
   }
 
   .kometio-spec-item__label {

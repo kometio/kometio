@@ -90,10 +90,9 @@ const pictured = images.filter(isPictured);
      corners is not what rounding a slider means. */
   .kometio-slider {
     position: relative;
-    border-radius: var(--kometio-override-radius, 0);
+    @kometio-bridge border-radius;
     overflow: hidden;
-    max-width: var(--kometio-override-max-width, none);
-    box-shadow: var(--kometio-override-shadow, none);
+    @kometio-bridge max-width box-shadow;
   }
   .kometio-slider__track {
     display: flex;

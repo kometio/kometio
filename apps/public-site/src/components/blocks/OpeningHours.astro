@@ -83,11 +83,7 @@ const hasHours = hours.some((day) => day.ranges.length > 0);
 
 <style>
   .kometio-opening-hours {
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-opening-hours__title {

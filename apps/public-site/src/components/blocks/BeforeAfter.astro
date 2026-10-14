@@ -87,12 +87,11 @@ const canRender = beforeImage !== null && afterImage !== null;
     width: 100%;
     overflow: hidden;
     /* Fallbacks are what this block already rendered. */
-    border-radius: var(--kometio-override-radius, 8px);
+    @kometio-bridge border-radius;
     border: var(--kometio-override-border-width, 0)
       var(--kometio-override-border-style, solid)
       var(--kometio-override-border-color, var(--border));
-    box-shadow: var(--kometio-override-shadow, none);
-    max-width: var(--kometio-override-max-width, none);
+    @kometio-bridge box-shadow max-width;
   }
   /* :global() because OptimizedImage (a child component) renders the
   actual <img> — see Image.astro's own style block for the full reasoning. */

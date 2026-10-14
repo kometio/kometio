@@ -44,12 +44,9 @@ const enabled = site.cookieBannerSettings.enabled;
   /* A link in looks — it sits in a footer among links — and a button in
      fact, because it opens a panel and goes nowhere. */
   .kometio-cookie-preferences {
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge padding;
     border: 0;
-    border-radius: var(--kometio-override-radius, 0);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge border-radius background color;
     font: inherit;
     text-decoration: underline;
     text-underline-offset: 0.2em;

@@ -30,9 +30,7 @@ const { value, prefix, suffix, label, instanceClass } = Astro.props;
 <style>
   .kometio-stat {
     text-align: center;
-    background: var(--kometio-override-bg, transparent);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0) var(--kometio-override-padding-x, 0);
+    @kometio-bridge background border-radius padding;
   }
   /* A figure set large is display text: the theme's heading face. */
   .kometio-stat__value {
@@ -40,7 +38,7 @@ const { value, prefix, suffix, label, instanceClass } = Astro.props;
     letter-spacing: var(--kometio-heading-tracking);
     font-size: 2rem;
     font-weight: 700;
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge color;
   }
   .kometio-stat__label {
     margin-top: 0.25rem;

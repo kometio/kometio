@@ -49,16 +49,10 @@ const hasLink = href !== null;
 
 <style>
   .kometio-banner {
-    padding: var(--kometio-override-padding-y, 2.5rem)
-      var(--kometio-override-padding-x, 1.5rem);
-    border-radius: var(--kometio-override-radius, 12px);
-    background: var(--kometio-override-bg, var(--secondary));
-    color: var(--kometio-override-text, inherit);
+    @kometio-bridge padding border-radius background color;
     /* Zero width by default, so the frame is there to be turned on and
        the banner looks exactly as it did before. */
-    border-width: var(--kometio-override-border-width, 0);
-    border-style: var(--kometio-override-border-style, solid);
-    border-color: var(--kometio-override-border-color, var(--border));
+    @kometio-bridge border-width border-style border-color;
     text-align: center;
   }
   .kometio-banner__title {
@@ -96,7 +90,7 @@ const hasLink = href !== null;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--kometio-override-gap, 1.5rem);
+    @kometio-bridge gap;
     text-align: start;
   }
   /* The minimum below which the words stop being readable beside a

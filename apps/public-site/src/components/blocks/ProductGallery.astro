@@ -97,13 +97,9 @@ const shown = images.filter(
      Beside the product's words, in a column, the column decides. */
   .kometio-product-gallery {
     display: grid;
-    gap: var(--kometio-override-gap, 0.75rem);
+    @kometio-bridge gap;
     min-width: 0;
-    max-width: var(--kometio-override-max-width, 40rem);
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge max-width background color padding;
   }
 
   .kometio-product-gallery__slide {
@@ -114,7 +110,7 @@ const shown = images.filter(
     display: block;
     width: 100%;
     object-fit: cover;
-    border-radius: var(--kometio-override-radius, var(--radius));
+    @kometio-bridge border-radius;
   }
 
   .kometio-product-gallery--ratio-square :global(.kometio-product-gallery__image) {

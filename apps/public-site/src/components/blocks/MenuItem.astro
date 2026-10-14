@@ -48,11 +48,7 @@ const allergenList = allergens
     display: grid;
     gap: 0.25rem;
     min-width: 0;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, 0);
-    padding: var(--kometio-override-padding-y, 0)
-      var(--kometio-override-padding-x, 0);
+    @kometio-bridge background color border-radius padding;
   }
 
   .kometio-menu-item__head {

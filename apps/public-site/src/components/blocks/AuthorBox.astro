@@ -138,14 +138,7 @@ const Root = isProfilePage ? 'header' : 'section';
     align-items: flex-start;
     gap: 1rem 1.25rem;
     margin: 0;
-    background: var(--kometio-override-bg, transparent);
-    color: var(--kometio-override-text, inherit);
-    border-radius: var(--kometio-override-radius, var(--radius));
-    border-width: var(--kometio-override-border-width, 1px);
-    border-style: var(--kometio-override-border-style, solid);
-    border-color: var(--kometio-override-border-color, var(--border));
-    padding: var(--kometio-override-padding-y, 1.25rem)
-      var(--kometio-override-padding-x, 1.25rem);
+    @kometio-bridge background color border-radius border-width border-style border-color padding;
   }
 
   /* The top of its own page: nothing above it but the site's header, and
