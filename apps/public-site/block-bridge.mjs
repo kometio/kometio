@@ -89,7 +89,6 @@ export function bridgedValue(type, property, style) {
 /**
  * @param {{ styleOf?: (type: string) => Record<string, string> | undefined }} [options]
  *   Where a type's contract style comes from; the contracts', unless a test says.
- * @returns {import('postcss').Plugin}
  */
 export function blockBridge({
   styleOf = (type) => BLOCK_STYLE_DEFAULTS[type],
