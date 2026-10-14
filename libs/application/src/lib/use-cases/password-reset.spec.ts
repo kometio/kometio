@@ -148,11 +148,14 @@ describe('resetPassword', () => {
       1000 * 60,
     );
 
-    await resetPassword(deps, {
+    const result = await resetPassword(deps, {
       token: token.token,
       newPassword: 'new-password',
     });
 
+    // The link is followed with no session: whose password it was is the
+    // answer's to say, for the activity log (docs/adr/0130).
+    expect(result).toEqual({ tenantId, userId: 'user-1' });
     const user = await deps.userRepository.findById(tenantId, 'user-1');
     expect(
       await deps.authPort.verifyPassword(

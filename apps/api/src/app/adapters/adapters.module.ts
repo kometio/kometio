@@ -12,6 +12,7 @@ import {
   DrizzleFormRepository,
   DrizzleFormSubmissionRepository,
 } from '@kometio/postgres-form-repository';
+import { DrizzleAuditLogRepository } from '@kometio/postgres-audit-log-repository';
 import {
   DrizzleMissingPathRepository,
   DrizzleRedirectRepository,
@@ -154,6 +155,7 @@ const PROVIDERS = [
     port.FORM_SUBMISSION_REPOSITORY,
     (db) => new DrizzleFormSubmissionRepository(db),
   ),
+  stored(port.AUDIT_LOG, (db) => new DrizzleAuditLogRepository(db)),
   stored(port.REDIRECT_REPOSITORY, (db) => new DrizzleRedirectRepository(db)),
   stored(
     port.MISSING_PATH_REPOSITORY,

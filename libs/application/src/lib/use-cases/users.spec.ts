@@ -344,8 +344,10 @@ describe('cancelInvite', () => {
     const deps = setup();
     await deps.userRepository.add(invitee());
 
-    await cancelInvite(deps, { tenantId, userId: 'invitee' });
+    const removed = await cancelInvite(deps, { tenantId, userId: 'invitee' });
 
+    // Gone from the list, so what the person was called is said here once.
+    expect(removed.email).toBe('nuovo@example.com');
     expect(await deps.userRepository.findById(tenantId, 'invitee')).toBeNull();
     const { user: again } = await inviteUser(deps, {
       tenantId,

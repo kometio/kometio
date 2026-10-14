@@ -16,10 +16,12 @@ import type {
   VerificationToken,
   VerificationTokenPort,
 } from '@kometio/ports';
+import { InMemoryAuditLog } from '@kometio/testing';
 import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
 import { AuthController } from './auth.controller';
 import { testApiEnv } from '../../test/api-env.test-fixture';
 import { SESSION_COOKIE_NAME, SessionCookies } from './session-cookies';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 
 const tenantId = 'tenant-1';
@@ -50,9 +52,11 @@ describe('AuthController', () => {
   let verificationTokenPort: jest.Mocked<VerificationTokenPort>;
   let emailPort: jest.Mocked<EmailPort>;
   let captchaPort: jest.Mocked<CaptchaPort>;
+  let auditLog: InMemoryAuditLog;
   let controller: AuthController;
 
   beforeEach(() => {
+    auditLog = new InMemoryAuditLog();
     userRepository = {
       add: jest.fn(),
       findById: jest.fn(),
@@ -105,6 +109,7 @@ describe('AuthController', () => {
       env,
       new SessionCookies(env),
       new UndeliveredEmailLog(),
+      new AuditRecorder(auditLog),
     );
   });
 
@@ -464,6 +469,133 @@ describe('AuthController', () => {
     });
   });
 
+  describe('the activity log', () => {
+    const body = {
+      email: 'lele@example.com',
+      password: 'correct',
+      captchaToken: 'valid-token',
+    };
+
+    function accountThatExists(isActive = true) {
+      userRepository.findByEmail.mockResolvedValue(
+        User.create({
+          id: 'user-1',
+          tenantId,
+          email: 'lele@example.com',
+          displayName: 'Lele',
+          passwordHash: 'hashed',
+          role: 'admin',
+          isActive,
+        }),
+      );
+    }
+
+    it('says who signed in', async () => {
+      accountThatExists();
+      authPort.verifyPassword.mockResolvedValue(true);
+      authPort.createSession.mockResolvedValue({
+        token: 'a-token',
+        userId: 'user-1',
+        tenantId,
+        expiresAt: new Date(),
+      });
+
+      await controller.login(body, loginRequest(), buildResponse());
+
+      expect(auditLog.events).toEqual([
+        { tenantId, actorUserId: 'user-1', action: 'login.succeeded' },
+      ]);
+    });
+
+    it('says a wrong password was tried on an account', async () => {
+      accountThatExists();
+      authPort.verifyPassword.mockResolvedValue(false);
+
+      await expect(
+        controller.login(body, loginRequest(), buildResponse()),
+      ).rejects.toBeInstanceOf(InvalidCredentialsError);
+
+      expect(auditLog.events).toEqual([
+        {
+          tenantId,
+          actorUserId: 'user-1',
+          action: 'login.failed',
+          detail: { reason: 'wrong-password' },
+        },
+      ]);
+    });
+
+    it('does not write down an address nobody has', async () => {
+      userRepository.findByEmail.mockResolvedValue(null);
+
+      await expect(
+        controller.login(body, loginRequest(), buildResponse()),
+      ).rejects.toBeInstanceOf(InvalidCredentialsError);
+
+      expect(auditLog.events).toEqual([]);
+    });
+
+    it('says an account that is switched off was tried with its right password', async () => {
+      accountThatExists(false);
+      authPort.verifyPassword.mockResolvedValue(true);
+
+      await expect(
+        controller.login(body, loginRequest(), buildResponse()),
+      ).rejects.toBeInstanceOf(UserNotActiveError);
+
+      expect(auditLog.events).toMatchObject([
+        { action: 'login.failed', detail: { reason: 'deactivated' } },
+      ]);
+    });
+
+    it('does not turn a failed sign-in into another answer when the log cannot be written', async () => {
+      accountThatExists();
+      authPort.verifyPassword.mockResolvedValue(false);
+      auditLog.failEveryWriteWith(new Error('connection lost'));
+      jest.spyOn(Logger.prototype, 'error').mockImplementation();
+
+      await expect(
+        controller.login(body, loginRequest(), buildResponse()),
+      ).rejects.toBeInstanceOf(InvalidCredentialsError);
+    });
+
+    it('says whose password a reset link changed', async () => {
+      verificationTokenPort.consumeToken.mockResolvedValue({
+        token: 'a-token',
+        userId: 'user-1',
+        tenantId,
+        purpose: 'password-reset',
+        payload: null,
+        expiresAt: new Date(),
+      });
+      userRepository.findById.mockResolvedValue(
+        User.create({
+          id: 'user-1',
+          tenantId,
+          email: 'lele@example.com',
+          displayName: 'Lele',
+          passwordHash: 'old-hash',
+          role: 'admin',
+        }),
+      );
+      authPort.hashPassword.mockResolvedValue('new-hash');
+
+      await controller.confirmPasswordReset({
+        token: 'a-token',
+        newPassword: 'new-password',
+      });
+
+      expect(auditLog.events).toEqual([
+        {
+          tenantId,
+          actorUserId: 'user-1',
+          action: 'account.password_reset',
+          targetId: 'user-1',
+        },
+      ]);
+    });
+  });
+
   describe('confirmPasswordReset', () => {
     it('returns success when the token is valid', async () => {
       const user = User.create({
@@ -541,6 +673,7 @@ describe('AuthController', () => {
         env,
         new SessionCookies(env),
         new UndeliveredEmailLog(),
+        new AuditRecorder(auditLog),
       );
     }
 

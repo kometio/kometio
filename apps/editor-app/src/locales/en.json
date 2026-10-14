@@ -896,7 +896,8 @@
       "action": "Delete the older answers",
       "descriptionCount_one": "{{count}} answer older than {{days}} days will be deleted for good at the next nightly clean-up (at 4 am). It cannot be recovered.",
       "descriptionCount_other": "{{count}} answers older than {{days}} days will be deleted for good at the next nightly clean-up (at 4 am). They cannot be recovered."
-    }
+    },
+    "activityNote": "The activity log (Settings → Activity) is kept for {{days}} days and then removed. That period is fixed: it is not a setting."
   },
   "cookieConsent": {
     "category": {
@@ -3888,6 +3889,7 @@
         "cookies": "Cookies & privacy",
         "retention": "Data retention",
         "users": "Users",
+        "activity": "Activity",
         "export": "Export"
       }
     },
@@ -3925,5 +3927,45 @@
     "empty": "No results for “{{query}}”.",
     "hint": "↑↓ to choose · Enter to run · Esc to close",
     "searching": "Searching…"
+  },
+  "activity": {
+    "description": "Who did what to the site — sign-ins, people and roles, settings, the theme and the AI key, and the archive. Kept for {{days}} days, with no address and nothing that was typed.",
+    "empty": "Nothing has happened yet that is kept here.",
+    "by": "by {{who}}",
+    "byNobody": "by nobody who is signed in",
+    "actions": {
+      "login.succeeded": "Signed in",
+      "login.failed": "A sign-in was refused ({{reason}})",
+      "user.invited": "Invited {{target}} as {{role}}",
+      "user.invite_resent": "Sent the invitation to {{target}} again",
+      "user.invite_cancelled": "Withdrew the invitation to {{target}}",
+      "user.role_changed": "Made {{target}} {{role}}",
+      "user.activated": "Switched {{target}} on",
+      "user.deactivated": "Switched {{target}} off",
+      "account.password_changed": "Changed their password",
+      "account.password_reset": "Their password was reset from a link",
+      "account.email_change_requested": "Asked to sign in with {{target}}",
+      "account.email_changed": "Changed the address they sign in with",
+      "site.settings_changed": "Changed the site's settings: {{section}}",
+      "site.theme_changed": "Changed the theme: {{section}}",
+      "site.ai_changed": "Changed the AI settings",
+      "theme.uploaded": "Uploaded the theme {{target}}",
+      "archive.exported": "Downloaded the site's archive"
+    },
+    "sections": {
+      "business": "business info",
+      "general": "general",
+      "seo": "SEO",
+      "retention": "data retention",
+      "languages": "languages",
+      "cookie-banner": "cookie banner",
+      "theme-code": "style and scripts",
+      "theme-package": "the theme itself",
+      "theme-tokens": "block styles"
+    },
+    "reasons": {
+      "wrong-password": "wrong password",
+      "deactivated": "account switched off"
+    }
   }
 }

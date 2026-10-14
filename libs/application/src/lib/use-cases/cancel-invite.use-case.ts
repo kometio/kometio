@@ -24,7 +24,7 @@ export interface CancelInviteInput {
 export async function cancelInvite(
   deps: CancelInviteDeps,
   input: CancelInviteInput,
-): Promise<void> {
+): Promise<{ email: string }> {
   const user = await deps.userRepository.findById(input.tenantId, input.userId);
   if (!user) {
     throw new UserNotFoundError(input.userId);
@@ -41,4 +41,7 @@ export async function cancelInvite(
   if (!removed) {
     throw new InviteNotPendingError(input.userId);
   }
+  // The row is gone: what the person was called is told once, to whoever
+  // records that it happened.
+  return { email: user.email };
 }

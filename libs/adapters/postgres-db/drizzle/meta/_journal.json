@@ -92,6 +92,13 @@
       "when": 1791969492332,
       "tag": "0012_session_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791970150461,
+      "tag": "0013_audit_events",
+      "breakpoints": true
     }
   ]
 }

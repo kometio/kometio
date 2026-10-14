@@ -6,12 +6,17 @@ import { NotFoundException } from '@nestjs/common';
 import { ThemeUploadRejectedError } from '@kometio/domain-core';
 import type { ThemeCatalogPort, ThemeUploadPort } from '@kometio/ports';
 import type { ThemeUploadStatus } from '@kometio/shared-types';
+import { InMemoryAuditLog } from '@kometio/testing';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { ThemeUploadsController } from './theme-uploads.controller';
 
 /** What multer hands the controller, taken from its own signature. */
 type UploadedFile = NonNullable<
-  Parameters<ThemeUploadsController['upload']>[0]
+  Parameters<ThemeUploadsController['upload']>[2]
 >;
+
+const auditLog = new InMemoryAuditLog();
+const recorder = () => new AuditRecorder(auditLog);
 
 const queued: ThemeUploadStatus = {
   id: '0b1c2d3e-4f50-4617-8899-aabbccddeeff',
@@ -67,13 +72,19 @@ describe('ThemeUploadsController (unit)', () => {
 
   it('says whether uploads are on', () => {
     expect(
-      new ThemeUploadsController({ themeUploads, themeCatalog }).settings(),
+      new ThemeUploadsController(
+        { themeUploads, themeCatalog },
+        recorder(),
+      ).settings(),
     ).toEqual({ enabled: true });
     expect(
-      new ThemeUploadsController({
-        themeUploads: null,
-        themeCatalog,
-      }).settings(),
+      new ThemeUploadsController(
+        {
+          themeUploads: null,
+          themeCatalog,
+        },
+        recorder(),
+      ).settings(),
     ).toEqual({
       enabled: false,
     });
@@ -81,12 +92,15 @@ describe('ThemeUploadsController (unit)', () => {
 
   it('queues an upload the site can take', async () => {
     const file = await uploaded();
-    const controller = new ThemeUploadsController({
-      themeUploads,
-      themeCatalog,
-    });
+    const controller = new ThemeUploadsController(
+      {
+        themeUploads,
+        themeCatalog,
+      },
+      recorder(),
+    );
 
-    expect(await controller.upload(file)).toBe(queued);
+    expect(await controller.upload('tenant-1', 'admin-1', file)).toBe(queued);
     expect(themeUploads.enqueue).toHaveBeenCalledWith(
       join(tmpdir(), file.filename),
       'portfolio',
@@ -98,7 +112,10 @@ describe('ThemeUploadsController (unit)', () => {
     const file = await uploaded();
 
     await expect(
-      new ThemeUploadsController({ themeUploads, themeCatalog }).upload(file),
+      new ThemeUploadsController(
+        { themeUploads, themeCatalog },
+        recorder(),
+      ).upload('tenant-1', 'admin-1', file),
     ).rejects.toBeInstanceOf(ThemeUploadRejectedError);
     expect(await exists(file)).toBe(false);
   });
@@ -107,18 +124,40 @@ describe('ThemeUploadsController (unit)', () => {
     const file = await uploaded();
 
     await expect(
-      new ThemeUploadsController({ themeUploads: null, themeCatalog }).upload(
-        file,
-      ),
+      new ThemeUploadsController(
+        { themeUploads: null, themeCatalog },
+        recorder(),
+      ).upload('tenant-1', 'admin-1', file),
     ).rejects.toBeInstanceOf(NotFoundException);
     expect(await exists(file)).toBe(false);
   });
 
   it("answers an upload's status", async () => {
     expect(
-      await new ThemeUploadsController({ themeUploads, themeCatalog }).status(
-        queued.id,
-      ),
+      await new ThemeUploadsController(
+        { themeUploads, themeCatalog },
+        recorder(),
+      ).status(queued.id),
     ).toBe(queued);
+  });
+
+  it('says that code was uploaded and by whom, once it is queued', async () => {
+    auditLog.events.length = 0;
+    const file = await uploaded();
+
+    await new ThemeUploadsController(
+      { themeUploads, themeCatalog },
+      recorder(),
+    ).upload('tenant-1', 'admin-1', file);
+
+    expect(auditLog.events).toEqual([
+      {
+        tenantId: 'tenant-1',
+        actorUserId: 'admin-1',
+        action: 'theme.uploaded',
+        targetId: queued.id,
+        targetLabel: 'portfolio',
+      },
+    ]);
   });
 });

@@ -51,6 +51,7 @@ import { USERS_DEPS } from './users.tokens';
 import { TenantId, UserId } from '../auth/session-identity.decorator';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 
 // Every endpoint here is admin-only (Fase 5c: "Admin: tutto, incluse
@@ -65,6 +66,7 @@ export class UsersController {
     @Inject(USERS_DEPS) private readonly deps: UsersDeps,
     @Inject(API_ENV) private readonly env: ApiEnv,
     private readonly undeliveredEmails: UndeliveredEmailLog,
+    private readonly audit: AuditRecorder,
   ) {}
 
   @Get()
@@ -89,6 +91,7 @@ export class UsersController {
   @Header('Cache-Control', 'no-store')
   async invite(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @Body(new ZodValidationPipe(inviteUserBodySchema)) body: InviteUserBody,
   ): Promise<InvitationRecord> {
     const { user, undelivered, inviteLink } = await inviteUser(this.deps, {
@@ -106,6 +109,14 @@ export class UsersController {
     if (inviteLink !== null) {
       this.undeliveredEmails.withheld('Invitation', user.email);
     }
+    await this.audit.record({
+      tenantId,
+      actorUserId,
+      action: 'user.invited',
+      targetId: user.id,
+      targetLabel: user.email,
+      detail: { role: user.role },
+    });
     return invitationRecordSchema.parse({
       user: this.toDto(user),
       emailSent: undelivered.length === 0,
@@ -127,6 +138,7 @@ export class UsersController {
   @Header('Cache-Control', 'no-store')
   async resend(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
   ): Promise<InvitationResendRecord> {
     const { user, undelivered, inviteLink } = await resendInvite(this.deps, {
@@ -138,6 +150,13 @@ export class UsersController {
     if (inviteLink !== null) {
       this.undeliveredEmails.withheld('Invitation (sent again)', user.email);
     }
+    await this.audit.record({
+      tenantId,
+      actorUserId,
+      action: 'user.invite_resent',
+      targetId: user.id,
+      targetLabel: user.email,
+    });
     return invitationResendRecordSchema.parse({
       emailSent: undelivered.length === 0,
       inviteLink,
@@ -153,9 +172,17 @@ export class UsersController {
   @HttpCode(204)
   async cancelInvitation(
     @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UuidParam('id') id: string,
   ): Promise<void> {
-    await cancelInvite(this.deps, { tenantId, userId: id });
+    const { email } = await cancelInvite(this.deps, { tenantId, userId: id });
+    await this.audit.record({
+      tenantId,
+      actorUserId,
+      action: 'user.invite_cancelled',
+      targetId: id,
+      targetLabel: email,
+    });
   }
 
   @Patch(':id/role')
@@ -171,6 +198,14 @@ export class UsersController {
       userId: id,
       role: body.role,
       actorUserId: userId,
+    });
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'user.role_changed',
+      targetId: user.id,
+      targetLabel: user.email,
+      detail: { role: user.role },
     });
     return this.toDto(user);
   }
@@ -188,6 +223,13 @@ export class UsersController {
       userId: id,
       isActive: body.isActive,
       actorUserId: userId,
+    });
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: user.isActive ? 'user.activated' : 'user.deactivated',
+      targetId: user.id,
+      targetLabel: user.email,
     });
     return this.toDto(user);
   }

@@ -11,6 +11,7 @@ import {
   VERIFICATION_TOKEN_PORT,
 } from '../adapters/port.tokens';
 import { ApiEnvModule } from '../api-env.module';
+import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { EmailsModule } from '../emails/emails.module';
 import { DeploymentSiteModule } from '../sites/deployment-site.module';
@@ -23,6 +24,7 @@ import { ACCOUNT_DEPS } from './account.tokens';
   imports: [
     AdaptersModule,
     ApiEnvModule,
+    AuditModule,
     AuthModule,
     DeploymentSiteModule,
     EmailsModule,

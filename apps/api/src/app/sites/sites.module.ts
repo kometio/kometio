@@ -6,6 +6,7 @@ import {
   SITE_THEME_BLOCK_STYLES_REPOSITORY,
   THEME_CATALOG,
 } from '../adapters/port.tokens';
+import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { moduleDeps } from '../module-deps';
 import { DEPLOYMENT_SITE_RESOLVER } from './deployment-site.resolver';
@@ -15,7 +16,7 @@ import type { SitesDeps } from './sites.deps';
 import { SITES_DEPS } from './sites.tokens';
 
 @Module({
-  imports: [AdaptersModule, AuthModule, DeploymentSiteModule],
+  imports: [AdaptersModule, AuditModule, AuthModule, DeploymentSiteModule],
   controllers: [SitesController],
   providers: [
     moduleDeps<SitesDeps>(SITES_DEPS, {

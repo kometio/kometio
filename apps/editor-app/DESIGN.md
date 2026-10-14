@@ -462,6 +462,13 @@ text-destructive`, announced with `role="alert"`, nothing drawn when
   says what it did in a toast; this device has none, since signing out of it is
   the account menu's. "Sign out of all other devices" is only offered from two
   others up, and asks first. Not drawn in a demo, whose account is everybody's.
+- **Activity** (`app/activity`, Settings → Activity, an administrator's): a
+  bordered `divide-y` list of one sentence for each entry (`text-sm`, the
+  actor under it in `text-xs text-muted-foreground`, the time at the end in
+  `tabular-nums`), newest first, 25 to a page with `Pagination`. The sentence
+  says what was done to what; the facts that are words of their own (a role, a
+  part of the settings, why a sign-in was refused) are said in the person's
+  language. Read-only: there is nothing to press but the page.
 - **Preview drawn by the editor** (`CookieBannerPreview`): where a setting
   is about how something looks, the form shows the thing beside its
   controls, from the values in the form, saved or not. It is `role="img"`

@@ -5,6 +5,7 @@ import type {
   TenantDirectoryPort,
 } from '@kometio/ports';
 import { type KometioDb, pingDatabase } from './client';
+import { deleteAuditEventsBefore } from './audit-events-retention-cleanup';
 import { deleteExpiredTokens } from './expired-tokens-cleanup';
 import { deleteExpiredFormSubmissions } from './form-submissions-retention-cleanup';
 import { tenants } from './schema';
@@ -28,6 +29,13 @@ export class PostgresExpiredRecords implements ExpiredRecordsPort {
     tenantId: string,
   ): Promise<{ deletedSubmissions: number }> {
     return deleteExpiredFormSubmissions(this.db, tenantId);
+  }
+
+  deleteAuditEventsBefore(
+    tenantId: string,
+    before: Date,
+  ): Promise<{ deletedEvents: number }> {
+    return deleteAuditEventsBefore(this.db, tenantId, before);
   }
 }
 

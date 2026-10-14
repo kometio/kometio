@@ -54,7 +54,9 @@ export async function loginUser(
     user.passwordHash,
   );
   if (!passwordMatches) {
-    throw new InvalidCredentialsError();
+    // Which account it was a try at, for the activity log: the answer is the
+    // same one an unknown address gets.
+    throw new InvalidCredentialsError(user.id);
   }
 
   // Checked after the password, not before: a deactivated account should

@@ -16,4 +16,9 @@ export interface ExpiredRecordsPort {
   deleteExpiredFormSubmissions(
     tenantId: string,
   ): Promise<{ deletedSubmissions: number }>;
+  /** Activity-log entries made before `before`: the retention is the caller's to state (docs/adr/0130). */
+  deleteAuditEventsBefore(
+    tenantId: string,
+    before: Date,
+  ): Promise<{ deletedEvents: number }>;
 }

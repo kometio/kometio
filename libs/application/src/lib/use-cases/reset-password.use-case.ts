@@ -16,10 +16,16 @@ export interface ResetPasswordInput {
   newPassword: string;
 }
 
+/** Whose password it was: the link is followed with no session, so this is the only way to say who. */
+export interface ResetPasswordResult {
+  tenantId: string;
+  userId: string;
+}
+
 export async function resetPassword(
   deps: ResetPasswordDeps,
   input: ResetPasswordInput,
-): Promise<void> {
+): Promise<ResetPasswordResult> {
   const consumed = await deps.verificationTokenPort.consumeToken(
     input.token,
     'password-reset',
@@ -45,4 +51,5 @@ export async function resetPassword(
   // A reset must end any already-open sessions — e.g. the account may have
   // been compromised, which is often why a reset was triggered.
   await deps.authPort.invalidateAllSessionsForUser(user.id, user.tenantId);
+  return { tenantId: user.tenantId, userId: user.id };
 }

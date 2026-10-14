@@ -165,6 +165,7 @@ describe('confirmEmailChange', () => {
     });
 
     expect(result.undeliveredNotices).toEqual([]);
+    expect(result).toMatchObject({ tenantId, userId: 'user-1' });
     expect(deps.emailPort.sentEmails).toHaveLength(2);
     const notice = deps.emailPort.sentEmails[1];
     expect(notice.to).toBe('lele@example.com');

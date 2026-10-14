@@ -13,6 +13,7 @@ import {
   SITE_AI_SETTINGS_REPOSITORY,
   SITE_REPOSITORY,
 } from '../adapters/port.tokens';
+import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { AiSettingsController } from './ai-settings.controller';
 import { GeneratePageController } from './generate-page.controller';
@@ -27,7 +28,7 @@ const MAX_GENERATIONS_PER_SITE = 2;
 const GENERATION_DEADLINE = 4 * 60_000;
 
 @Module({
-  imports: [AdaptersModule, AuthModule],
+  imports: [AdaptersModule, AuditModule, AuthModule],
   controllers: [AiSettingsController, GeneratePageController],
   providers: [
     {

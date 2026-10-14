@@ -1,4 +1,5 @@
 export * from './lib/account-profile';
+export * from './lib/activity-record';
 export * from './lib/account-requests';
 export * from './lib/account-sessions';
 export * from './lib/auth-requests';

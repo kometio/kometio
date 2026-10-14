@@ -1,3 +1,4 @@
+import { AUDIT_RETENTION_DAYS } from '@kometio/shared-types';
 import { Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { SiteRecord } from '@kometio/api-contracts';
@@ -179,6 +180,13 @@ export function FormSubmissionRetentionSection({
           {t('formSubmissionRetention.hint')}
         </p>
       </fieldset>
+      {/* Not a choice: said so, where a person looking for what is kept and for
+          how long will look (docs/adr/0130). */}
+      <p className="text-xs text-muted-foreground">
+        {t('formSubmissionRetention.activityNote', {
+          days: AUDIT_RETENTION_DAYS,
+        })}
+      </p>
     </SettingsSection>
   );
 }

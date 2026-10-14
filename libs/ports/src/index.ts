@@ -1,4 +1,5 @@
 export * from './lib/attachment-storage.port';
+export * from './lib/audit-log.port';
 export * from './lib/auth.port';
 export * from './lib/captcha.port';
 export * from './lib/dashboard-stats.port';

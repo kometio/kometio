@@ -25,6 +25,8 @@ import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { UuidParam } from '../uuid-param.decorator';
 import { RequiresPermission } from '../auth/allowed.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { TenantId, UserId } from '../auth/session-identity.decorator';
+import { AuditRecorder } from '../audit/audit-recorder';
 import type { ThemesDeps } from './themes.deps';
 import { THEMES_DEPS } from './themes.tokens';
 
@@ -41,7 +43,10 @@ const UPLOAD_DIRECTORY = tmpdir();
 @UseGuards(SessionAuthGuard, RolesGuard)
 @RequiresPermission('configureSite')
 export class ThemeUploadsController {
-  constructor(@Inject(THEMES_DEPS) private readonly deps: ThemesDeps) {}
+  constructor(
+    @Inject(THEMES_DEPS) private readonly deps: ThemesDeps,
+    private readonly audit: AuditRecorder,
+  ) {}
 
   /** Whether the editor should offer an upload at all. */
   @Get('settings')
@@ -70,6 +75,8 @@ export class ThemeUploadsController {
     }),
   )
   async upload(
+    @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
     @UploadedFile() file: Express.Multer.File | undefined,
   ): Promise<ThemeUploadStatus> {
     if (!file) {
@@ -77,10 +84,20 @@ export class ThemeUploadsController {
     }
     const archivePath = join(UPLOAD_DIRECTORY, basename(file.filename));
     try {
-      return await uploadTheme(
+      const queued = await uploadTheme(
         { themeUploads: this.enabled(), themeCatalog: this.deps.themeCatalog },
         { archivePath },
       );
+      // Code that will run on the server that renders the site: said once it
+      // is queued, whatever the build then makes of it.
+      await this.audit.record({
+        tenantId,
+        actorUserId,
+        action: 'theme.uploaded',
+        targetId: queued.id,
+        targetLabel: queued.name,
+      });
+      return queued;
     } catch (error) {
       // Nothing has taken the file over (a queued one has been moved), so
       // it goes now, or every refused upload stays in the temp directory.

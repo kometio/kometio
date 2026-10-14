@@ -57,6 +57,8 @@ export * from './lib/use-cases/request-password-reset.use-case';
 export * from './lib/use-cases/reset-password.use-case';
 export * from './lib/use-cases/change-password.use-case';
 export * from './lib/use-cases/list-sessions.use-case';
+export * from './lib/use-cases/list-audit-events.use-case';
+export * from './lib/use-cases/purge-audit-events.use-case';
 export * from './lib/use-cases/end-session.use-case';
 export * from './lib/use-cases/end-other-sessions.use-case';
 export * from './lib/sessions/describe-device';

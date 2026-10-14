@@ -6,6 +6,7 @@ export * from './lib/answered-row';
 export * from './lib/drizzle-paginated-repository';
 export * from './lib/save-version-tx';
 export * from './lib/drizzle-version-repository';
+export * from './lib/audit-events-retention-cleanup';
 export * from './lib/expired-tokens-cleanup';
 export * from './lib/form-submissions-retention-cleanup';
 export * from './lib/deployment-bootstrap.adapter';

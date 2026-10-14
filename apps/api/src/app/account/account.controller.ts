@@ -46,6 +46,7 @@ import type { AccountDeps } from './account.deps';
 import { ACCOUNT_DEPS } from './account.tokens';
 import type { ApiEnv } from '../../env-schema';
 import { API_ENV } from '../api-env.module';
+import { AuditRecorder } from '../audit/audit-recorder';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
 import { PerUserThrottlerGuard } from '../auth/per-user-throttler.guard';
 import {
@@ -70,6 +71,7 @@ export class AccountController {
     @Inject(ACCOUNT_DEPS) private readonly deps: AccountDeps,
     @Inject(API_ENV) private readonly env: ApiEnv,
     private readonly undeliveredEmails: UndeliveredEmailLog,
+    private readonly audit: AuditRecorder,
   ) {}
 
   @Get('profile')
@@ -136,6 +138,12 @@ export class AccountController {
       `Password change (user ${userId})`,
       undeliveredNotices,
     );
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'account.password_changed',
+      targetId: userId,
+    });
   }
 
   /**
@@ -218,6 +226,13 @@ export class AccountController {
       newEmail: body.newEmail,
       currentPassword: body.currentPassword,
       confirmUrlBase: this.env.EDITOR_APP_URL,
+    });
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'account.email_change_requested',
+      targetId: userId,
+      targetLabel: body.newEmail,
     });
   }
 

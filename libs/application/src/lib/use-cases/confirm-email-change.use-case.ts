@@ -29,6 +29,9 @@ export interface ConfirmEmailChangeInput {
 export interface ConfirmEmailChangeResult {
   /** The notice to the address left behind, if it did not go out: the change is made all the same. */
   undeliveredNotices: UndeliveredEmail[];
+  /** Whose address it is: the link is followed with no session, so this is the only way to say who. */
+  tenantId: string;
+  userId: string;
 }
 
 /**
@@ -76,9 +79,11 @@ export async function confirmEmailChange(
 
   // Nobody to tell when the address did not move (a link followed twice over
   // another route, or to the address already held).
-  if (previousEmail === user.email) return { undeliveredNotices: [] };
+  const who = { tenantId: user.tenantId, userId: user.id };
+  if (previousEmail === user.email) return { undeliveredNotices: [], ...who };
   const loginUrl = `${input.editorUrlBase.replace(/\/$/, '')}/login`;
   return {
+    ...who,
     undeliveredNotices: await trySendEmail(deps.emailPort, {
       to: previousEmail,
       ...buildEmailChangedEmail(

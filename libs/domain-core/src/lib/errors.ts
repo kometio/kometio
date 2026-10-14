@@ -137,7 +137,12 @@ export class PageSlugAlreadyExistsError extends Error {
  * password was wrong (prevents user enumeration via the login endpoint).
  */
 export class InvalidCredentialsError extends Error {
-  constructor() {
+  /**
+   * The account a wrong password was given for, when there is one. For the
+   * activity log (docs/adr/0130) and nothing else: the answer to the person is
+   * the same sentence whether or not it is set.
+   */
+  constructor(readonly userId?: string) {
     super('Invalid email or password');
     this.name = 'InvalidCredentialsError';
   }
@@ -524,7 +529,7 @@ export class UnsupportedAttachmentTypeError extends Error {
  * anything that legitimately needs to tell them apart (e.g. logging) do
  * so. */
 export class UserNotActiveError extends Error {
-  constructor(userId: string) {
+  constructor(readonly userId: string) {
     super(`User is not active: ${userId}`);
     this.name = 'UserNotActiveError';
   }

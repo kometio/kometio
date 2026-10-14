@@ -10,6 +10,7 @@ import {
   VERIFICATION_TOKEN_PORT,
 } from '../adapters/port.tokens';
 import { ApiEnvModule } from '../api-env.module';
+import { AuditModule } from '../audit/audit.module';
 import { DeploymentTenantModule } from '../deployment-tenant.module';
 import { EmailsModule } from '../emails/emails.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
@@ -35,6 +36,7 @@ import { SessionCookies } from './session-cookies';
   imports: [
     AdaptersModule,
     ApiEnvModule,
+    AuditModule,
     DeploymentTenantModule,
     DeploymentSiteModule,
     EmailsModule,

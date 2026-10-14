@@ -74,6 +74,7 @@ describe('SettingsNav', () => {
       ['Cookie e privacy', '/settings/cookies'],
       ['Conservazione dati', '/settings/retention'],
       ['Utenti', '/settings/users'],
+      ['Attività', '/settings/activity'],
     ]);
   });
 
