@@ -40,8 +40,13 @@ ContentShell.astro`, which wraps a page's blocks in a box that is not there
   (`start`, `center`, `end`), and with nothing set it is the centre it was.
 - **The starters say where they sit.** The blog and the portfolio set their
   heroes `start`; the studio is a centred site and says nothing. The blog starts
-  on `paper`. A theme the deployment does not carry (`KOMETIO_THEME` narrows
-  them) is not a failure: the site keeps the one it has.
+  on `paper`.
+- **A starter whose theme the deployment does not have is not made.** It is
+  listed as unavailable, with the theme's name, and refused (`400`, nothing
+  written). `KOMETIO_THEME` can leave a theme out and a build can too; a site
+  handed another look than the one its pages were written for, without being
+  told, would be worse than a starter that says what is missing. The question is
+  one function, asked by the offer and by the application.
 - **The scale is the design's.** A phone's 56px headline and a window's 112px
   are the ends of one line (`--kometio-h1-size`), and the page grows with a
   large window as every theme's does (ADR-0143). A page that opens with its
@@ -52,23 +57,24 @@ ContentShell.astro`, which wraps a page's blocks in a box that is not there
 
 ## What this does not do
 
-- **No wordmark in the footer.** The design closes with the site's name set
-  large; a region is not given the site's name, only the blocks, and the footer is
-  what the site put there.
-- **No underline on the current page's link in the header.** The Nav's links do
-  not say which one is the current page (`aria-current`), for a theme or for a
-  screen reader; that is core's to add and is its own change.
 - **No italic accent in the title.** The design sets one phrase of the headline
   in an italic accent; a title is plain text, and a phrase in it would be a field
-  the Hero does not have.
-- **The numbers of a list start again on each page of an archive**, since the
-  list is not told which page it is.
+  the Hero does not have. Left out on purpose, not forgotten.
+- **The title of a page without buttons is 84px, not 112.** The design does the
+  same on its project page, and a long project name needs the difference.
 
 ## Consequences
 
 - `themes/paper/` is a package (`theme.css`, `fonts.css` and the font files,
   `regions/Header|Footer|ContentShell.astro`, a `blocks.spec.ts`), registered in
   the workspace like `classic`.
+- Three things the design needed from core, each small and useful to every
+  theme: a region is given `siteName` (the footer ends on it, set large); a Nav
+  link says `aria-current="page"` for its own page and `"location"` for the
+  section a page is in, which a screen reader reads and a theme may mark (core
+  draws nothing for it); a list of pages says how many entries come before its
+  page (`--kometio-page-grid-offset`), so a numbered archive goes on at 11 and
+  does not start again at 01.
 - The theme's contrast is measured and written down in `theme.css` (ink 14.9:1
   on the paper, the muted ink 5.9:1, the accent 5.2:1).
 - axe reports nothing and the page does not scroll sideways on the eight pages of

@@ -79,8 +79,11 @@ the schema or the code knows which one it was.
   starters are text and the theme's own shapes and colours; each says, in a
   callout, which of its content is an example to replace.
 - **Its theme is part of it** (`themeName`), applied when the site is on
-  another. All three are on `classic` today; the portfolio is meant to move to a
-  theme of its own, and then it is this field that changes.
+  another. The studio and the portfolio are on `classic` for now (the portfolio
+  moves to `colour`), the blog on `paper` (ADR-0139). A deployment that does not
+  have a starter's theme (`KOMETIO_THEME` leaves it out, or the build does) does
+  not make it: the offer lists it as unavailable with the theme's name, and the
+  request is refused with a 400 and nothing written.
 
 ## Alternatives that were not taken
 

@@ -59,6 +59,12 @@ const {
   totalPages,
 } = paginateGridItems(capped, perPage, Astro.url.searchParams.get('page'));
 
+// How many entries come before this page's first one, for a theme that
+// numbers its list: page 2 of an archive of ten per page starts at eleven,
+// not at one. A custom property, so that nothing in the markup is a number
+// only one theme wants.
+const entriesBefore = perPage > 0 ? (page - 1) * perPage : 0;
+
 // Cards are the only layout with room for a date, a summary and a
 // picture; a list of links has nowhere to put them, so it does not
 // pretend to.
@@ -93,6 +99,11 @@ function readableDate(value: string | null): string | null {
         `kometio-page-grid--${layout}`,
         instanceClass,
       ]}
+      style={
+        entriesBefore > 0
+          ? `--kometio-page-grid-offset: ${entriesBefore}`
+          : undefined
+      }
       data-kometio-reveal-group
     >
       {shown.map((item) => (

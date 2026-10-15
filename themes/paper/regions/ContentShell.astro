@@ -171,7 +171,9 @@ export type Props = ThemeContentShellProps;
 	.paper-content :global(.kometio-page-grid--cards),
 	.paper-content :global(.kometio-page-grid--grid) {
 		grid-template-columns: minmax(0, 1fr);
-		counter-reset: paper-row;
+		/* Where this page of the list begins: an archive's second page does not
+		   start again at 01. */
+		counter-reset: paper-row var(--kometio-page-grid-offset, 0);
 		gap: 0;
 		border-bottom: 1px solid var(--paper-rule);
 	}

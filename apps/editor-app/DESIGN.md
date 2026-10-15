@@ -432,7 +432,10 @@ text-destructive`, announced with `role="alert"`, nothing drawn when
   `RadioGroup` with its own sentence — a label, what it does, and a frame
   around the chosen one — for a choice between things that each need
   explaining ("send to another language" or "show not available"). A
-  switch holds one of the two and leaves the other in a paragraph.
+  switch holds one of the two and leaves the other in a paragraph. One that
+  cannot be chosen here is `disabled` and stays in the list with the reason in
+  its description, in the `warning` colour: a thing that is missing is more
+  useful named than absent.
 - **Links inside text** (an address to open, the author page) are
   underlined at rest — a link in the foreground colour with an underline
   only on hover reads as plain text — and one that opens another tab says
@@ -472,7 +475,9 @@ text-destructive`, announced with `role="alert"`, nothing drawn when
   of the four would be a decision made for the person; Continue with none says
   so under the options, in words, rather than being dead. The line about the
   examples' language is drawn only when the site's language has none of its own,
-  and before anything is made. A refusal is said in place with the choice kept.
+  and before anything is made. An example whose theme this installation does not
+  have is listed, off, with the theme's name; a refusal is said in place with
+  the choice kept.
   The same choice is reached from `StarterNotice`, one line under the pages
   list's header while the site is still the one the wizard made: a neutral
   bordered card with a decorative icon, drawn only for whoever configures the

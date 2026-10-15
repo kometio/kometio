@@ -505,6 +505,10 @@ Every region receives `ThemeRegionProps` (see
   override is handed the same one). Your own `locales.json` goes through
   `i18n.withDictionaries(strings)`, so that your words and core's come out in
   the same language.
+- **`siteName`** — the site's name, as its owner wrote it. A header or a
+  footer that sets it as a mark of its own has it here; the blocks a region
+  receives are what the site put there, and the name is not necessarily
+  among them.
 - **`route`** — `'page' | 'search' | 'error'`. Regions are never rendered
   on the 500 page at all: that page is the last error handler, and a throw
   there has nowhere left to propagate.

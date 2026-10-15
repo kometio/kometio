@@ -15,7 +15,18 @@ export const starterOfferSchema = z.object({
   language: starterLanguageSchema,
   /** True when the site's language is not one they are written in, so the screen can say so first. */
   fallback: z.boolean(),
-  starters: z.array(starterIdSchema),
+  /**
+   * Each starting point, the theme it is drawn for, and whether this
+   * deployment has that theme. One that does not is shown as unavailable and
+   * refused (docs/adr/0136).
+   */
+  starters: z.array(
+    z.object({
+      id: starterIdSchema,
+      themeName: z.string().min(1),
+      themeAvailable: z.boolean(),
+    }),
+  ),
 });
 export type StarterOffer = z.infer<typeof starterOfferSchema>;
 

@@ -59,8 +59,18 @@ const { sticky, class: className } = Astro.props;
 		gap: var(--kometio-override-gap, clamp(1.25rem, 0.5rem + 2vw, 2.25rem));
 	}
 
+	/* The room for the underline is there on every entry, so the one that
+	   has it does not stand a little higher than the rest. */
 	.paper-header :global(.kometio-nav-link:not(:first-child)) {
 		color: var(--foreground);
 		font-weight: 500;
+		border-bottom: 2px solid transparent;
+		padding-bottom: 0.125rem;
+	}
+
+	/* Where the reader is, underlined in the accent as the design does it: the
+	   entry that is this page, and the one whose section it is in. */
+	.paper-header :global(.kometio-nav-link:not(:first-child)[aria-current]) {
+		border-bottom-color: var(--paper-accent);
 	}
 </style>

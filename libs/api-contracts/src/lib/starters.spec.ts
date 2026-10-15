@@ -33,10 +33,15 @@ describe('starterOfferSchema', () => {
       available: true,
       language: 'it',
       fallback: false,
-      starters: ['studio', 'portfolio', 'blog'],
+      starters: [
+        { id: 'studio', themeName: 'classic', themeAvailable: true },
+        { id: 'portfolio', themeName: 'classic', themeAvailable: true },
+        { id: 'blog', themeName: 'paper', themeAvailable: false },
+      ],
     });
 
     expect(offer.starters).toHaveLength(3);
+    expect(offer.starters[2]?.themeAvailable).toBe(false);
   });
 
   it('refuses a language there is no text in', () => {

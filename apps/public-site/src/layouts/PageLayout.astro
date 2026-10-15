@@ -146,6 +146,7 @@ const themeRegionProps = {
 	locale,
 	currentPath: Astro.url.pathname.replace(/\/+$/, '') || '/',
 	i18n,
+	siteName: site.name,
 	pageTree,
 	route,
 	editable: editable === true,

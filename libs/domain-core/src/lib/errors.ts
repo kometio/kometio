@@ -573,6 +573,26 @@ export class InvalidThemeNameError extends Error {
 }
 
 /**
+ * A starting point is drawn for one theme (docs/adr/0136, 0139), and the
+ * deployment does not have it: it was built with a narrower list of themes
+ * (`KOMETIO_THEME`), or without that theme. The starter is not made — a site
+ * handed another look than the one the example was written for would be the
+ * example's pages in a design that was not drawn for them — and the person is
+ * told which theme is missing.
+ */
+export class StarterThemeUnavailableError extends Error {
+  constructor(
+    readonly starterId: string,
+    readonly themeName: string,
+  ) {
+    super(
+      `The starting point "${starterId}" is drawn for the theme "${themeName}", which this deployment does not have`,
+    );
+    this.name = 'StarterThemeUnavailableError';
+  }
+}
+
+/**
  * Raised by bootstrapDeployment when this deployment already has a tenant.
  * The first-run wizard is unauthenticated by necessity — there is nobody to
  * authenticate as before it runs — so emptiness is the only thing gating

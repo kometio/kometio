@@ -57,10 +57,21 @@ function StarterRoute() {
     }
   }
 
+  // The examples whose theme this installation does not have: named in the
+  // list and not chosen, so a request for one would have to come from a
+  // page that was open before the theme went.
+  const unavailable = Object.fromEntries(
+    (offer?.starters ?? [])
+      .filter((starter) => !starter.themeAvailable)
+      .map((starter) => [starter.id, starter.themeName]),
+  );
+
   const error = apply.error
     ? apply.error instanceof ApiError && apply.error.status === 409
       ? t('starters.notBlank')
-      : actionErrorMessage(apply.error, t('starters.error'))
+      : apply.error instanceof ApiError && apply.error.status === 400
+        ? t('starters.themeMissingError')
+        : actionErrorMessage(apply.error, t('starters.error'))
     : null;
 
   return (
@@ -73,6 +84,7 @@ function StarterRoute() {
         fallbackLanguageName={
           offer?.fallback ? getLocaleDisplayName(site.defaultLocale) : undefined
         }
+        unavailable={unavailable}
         onApply={handleApply}
         onBlank={toPages}
         error={error}

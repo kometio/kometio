@@ -4,6 +4,7 @@ import { STARTER_IDS, type StarterId } from '@kometio/shared-types';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
 import { CollectionsModule } from '../collections/collections.module';
 import { FormsModule } from '../forms/forms.module';
+import { THEME_CATALOG } from '../adapters/port.tokens';
 import { PagesModule } from '../pages/pages.module';
 import { SitesModule } from '../sites/sites.module';
 import { SiteLayoutSectionsModule } from '../site-layout-sections/site-layout-sections.module';
@@ -129,7 +130,11 @@ describe('starting points (integration)', () => {
         available: true,
         language: 'it',
         fallback: false,
-        starters: [...STARTER_IDS],
+        starters: [
+          { id: 'studio', themeName: 'classic', themeAvailable: true },
+          { id: 'portfolio', themeName: 'classic', themeAvailable: true },
+          { id: 'blog', themeName: 'paper', themeAvailable: true },
+        ],
       });
     });
 
@@ -308,5 +313,111 @@ describe('starting points (integration)', () => {
       expect(made.body).toMatchObject({ language: 'en', fallback: false });
       expect(slugs).toContain('services');
     });
+  });
+});
+
+/**
+ * A deployment built with a narrower list of themes (`KOMETIO_THEME`): the
+ * starting points drawn for a theme it does not have are shown as such and
+ * refused, with the theme's name, and nothing is made.
+ */
+describe('starting points in a deployment without the blog’s theme (integration)', () => {
+  let integration: IntegrationApp;
+  let admin: Agent;
+
+  beforeAll(async () => {
+    integration = await IntegrationApp.start({
+      imports: [
+        StartersModule,
+        SitesModule,
+        PagesModule,
+        FormsModule,
+        CollectionsModule,
+        TaxonomiesModule,
+        SiteLayoutSectionsModule,
+      ],
+      overrideProviders: (builder) =>
+        builder.overrideProvider(THEME_CATALOG).useValue({
+          listAvailableThemes: async () => [
+            { name: 'classic', uploaded: false },
+          ],
+        }),
+    });
+    admin = await integration.login(await integration.createUser());
+  });
+
+  afterAll(async () => {
+    await integration.close();
+  });
+
+  async function aNewSite(): Promise<{ siteId: string }> {
+    const name = `Casa Azzurra ${randomUUID().slice(0, 8)}`;
+    const siteId = await integration.createSite({
+      name,
+      defaultLocale: 'it',
+      enabledLocales: ['it'],
+    });
+    const group = await admin
+      .post('/page-groups')
+      .send({
+        siteId,
+        content: [
+          {
+            id: randomUUID(),
+            type: 'Hero',
+            props: { title: name, subtitle: '' },
+          },
+        ],
+      })
+      .expect(201);
+    const translation = await admin
+      .post(`/page-groups/${group.body.id}/translations`)
+      .send({
+        locale: 'it',
+        slug: 'home',
+        seoMeta: { title: name, description: '' },
+      })
+      .expect(201);
+    await admin
+      .post(`/page-groups/translations/${translation.body.id}/publish`)
+      .expect(201);
+    return { siteId };
+  }
+
+  it('says which starting point cannot be made here, and why', async () => {
+    const { siteId } = await aNewSite();
+
+    const offer = await admin.get(`/sites/${siteId}/starters`).expect(200);
+
+    expect(offer.body.starters).toEqual([
+      { id: 'studio', themeName: 'classic', themeAvailable: true },
+      { id: 'portfolio', themeName: 'classic', themeAvailable: true },
+      { id: 'blog', themeName: 'paper', themeAvailable: false },
+    ]);
+  });
+
+  it('refuses it with the theme’s name, and makes no page', async () => {
+    const { siteId } = await aNewSite();
+
+    const refused = await admin
+      .post(`/sites/${siteId}/starters`)
+      .send({ starterId: 'blog' })
+      .expect(400);
+
+    expect(refused.body.message).toContain('paper');
+    const pages = await admin
+      .get('/page-groups')
+      .query({ siteId, page: 1, pageSize: 100 })
+      .expect(200);
+    expect(pages.body.items).toHaveLength(1);
+  });
+
+  it('still makes the ones whose theme it has', async () => {
+    const { siteId } = await aNewSite();
+
+    await admin
+      .post(`/sites/${siteId}/starters`)
+      .send({ starterId: 'studio' })
+      .expect(201);
   });
 });
