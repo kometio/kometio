@@ -1,0 +1,66 @@
+---
+import type { ThemeHeaderProps } from '@kometio/theme-runtime';
+
+/**
+ * The paper's header: no box, no colour, a hairline under the line the name
+ * and the menu are on, and the name set in the heading face. Sticky (the
+ * header editor's switch), the paper behind it goes translucent so the page
+ * shows through as it scrolls.
+ *
+ * The name is the first link of the first `Nav` of the header, which is what
+ * a header is (a block, not a prop of this region), so it is reached the way
+ * a region reaches anything core renders: `:global(...)` on that part only,
+ * the left-hand side kept scoped so the rule cannot leave this theme.
+ */
+type Props = ThemeHeaderProps;
+
+const { sticky, class: className } = Astro.props;
+---
+
+<header
+	class:list={[
+		'paper-header',
+		'kometio-shell-inset',
+		className,
+		{ 'paper-header--sticky': sticky },
+	]}
+>
+	<slot />
+</header>
+
+<style>
+	.paper-header {
+		border-bottom: 1px solid var(--border);
+		background: var(--background);
+		/* 12px on a phone, 28px from a 1000px window: the design's. */
+		padding-block: clamp(0.75rem, 0.1rem + 2.2vw, 1.75rem);
+	}
+
+	.paper-header--sticky {
+		position: sticky;
+		top: 0;
+		z-index: 40;
+		background: color-mix(in srgb, var(--background) 88%, transparent);
+		backdrop-filter: blur(12px);
+	}
+
+	.paper-header :global(.kometio-nav > .kometio-nav-link:first-child) {
+		font-family: var(--kometio-heading-font);
+		font-size: clamp(1.3125rem, 1.05rem + 0.7vw, 1.5rem);
+		font-weight: 600;
+		line-height: 1.2;
+		letter-spacing: -0.01em;
+		color: var(--foreground);
+		text-decoration: none;
+	}
+
+	/* The design's menu: 36px between the entries, the name on its own. */
+	.paper-header :global(.kometio-nav) {
+		gap: var(--kometio-override-gap, clamp(1.25rem, 0.5rem + 2vw, 2.25rem));
+	}
+
+	.paper-header :global(.kometio-nav-link:not(:first-child)) {
+		color: var(--foreground);
+		font-weight: 500;
+	}
+</style>

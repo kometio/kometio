@@ -72,11 +72,15 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
     collection: 'articoli',
     terms: [article.category],
     content: [
-      hero({
-        eyebrow: words.categories[article.category],
-        title: article.title,
-        subtitle: article.summary,
-      }),
+      hero(
+        {
+          eyebrow: words.categories[article.category],
+          title: article.title,
+          subtitle: article.summary,
+        },
+        [],
+        'start',
+      ),
       articleMeta(),
       callout(words.exampleNote),
       ...article.paragraphs.map((paragraph) => text(paragraph)),
@@ -109,7 +113,7 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
         title: siteName,
         description: words.home.description,
         content: [
-          hero(words.hero),
+          hero(words.hero, [], 'start'),
           heading(words.listsHeading.appunti),
           pageGrid('appunti', { layout: 'cards', limit: 6 }),
           heading(words.listsHeading.guide),
@@ -124,7 +128,7 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
         title: words.about.title,
         description: words.about.description,
         content: [
-          hero(words.about.hero),
+          hero(words.about.hero, [], 'start'),
           text(words.about.text),
           callout(words.about.note),
         ],
@@ -317,7 +321,7 @@ const englishWords: Words = {
 
 export const blogStarter: Starter = {
   id: 'blog',
-  themeName: 'classic',
+  themeName: 'paper',
   content: {
     it: (context) => build(context, italianWords),
     en: (context) => build(context, englishWords),

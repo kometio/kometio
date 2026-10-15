@@ -18,7 +18,7 @@ import {
 
 describe('BUNDLED_THEME_NAMES', () => {
   it('lists every theme actually on disk, sorted', () => {
-    expect(BUNDLED_THEME_NAMES).toEqual(['classic', 'docs-showcase']);
+    expect(BUNDLED_THEME_NAMES).toEqual(['classic', 'docs-showcase', 'paper']);
   });
 });
 

@@ -1,0 +1,104 @@
+/**
+ * "paper" — an editorial theme for studios, designers, writers and
+ * photographers: warm paper, near-black ink, one terracotta accent, display
+ * serif headings and plain type for everything else, hairline rules instead
+ * of boxes, and room around the words.
+ *
+ * It began as the `portfolio` theme (a repository of its own) and was
+ * redrawn against the "Carta" design (docs/adr/0139). The values below are
+ * that design's, as measured on it: the paper `#F3EEE4`, the ink `#1C1B18`,
+ * the muted ink `#5E5A50`, the terracotta `#B8321A`.
+ *
+ * Tokens here, and the few things a token cannot say in `regions/` and
+ * `blocks/` — the escalation ladder of docs/creating-a-theme.md, from the
+ * bottom. Only this file's `:root` custom properties reach the page.
+ */
+
+:root {
+  /* Type. Instrument Sans for text, Fraunces for headings: both are files
+     of this theme (fonts.css). A display serif wants to be set light and
+     close, which is what the weight and the tracking below say. */
+  --font-sans-value:
+    'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --kometio-heading-font: 'Fraunces Variable', ui-serif, Georgia, serif;
+  --kometio-heading-weight: 400;
+  --kometio-h1-weight: 400;
+  --kometio-heading-tracking: -0.02em;
+  --kometio-heading-leading: 1.08;
+
+  /* The scale is the design's: 56px on a phone, 112px from a 1280px window,
+     and the same line between them (6.3vw is the slope of 56 → 112 over
+     390 → 1280). The h1 is the one place this theme is loud. */
+  --kometio-h1-size: clamp(3.5rem, 2rem + 6.3vw, 7rem);
+  --kometio-h2-size: clamp(2.25rem, 1.75rem + 1.6vw, 2.75rem);
+  --kometio-h3-size: clamp(1.8rem, 1.62rem + 0.79vw, 2.25rem);
+  --kometio-h4-size: 1.25rem;
+  --kometio-h5-size: 1.0625rem;
+  --kometio-h6-size: 0.9375rem;
+
+  /* Colour. Paper and ink, never white and black. Contrast, measured on
+     these values: ink 14.9:1 on the paper; the muted ink 5.9:1; the accent
+     5.2:1, as a link and as the small capitals above a title. The ink is
+     the primary colour — the filled button is ink with paper letters, as
+     in the design — and the accent is for links and for what is marked. */
+  --background: #f3eee4;
+  --foreground: #1c1b18;
+  --primary: #1c1b18;
+  --primary-foreground: #f3eee4;
+  --secondary: #ebe5d8;
+  --secondary-foreground: #1c1b18;
+  --muted: #ebe5d8;
+  --muted-foreground: #5e5a50;
+  --border: rgb(28 27 24 / 0.18);
+  --link: #b8321a;
+  --link-hover: #1c1b18;
+  /* The accent, by name, for this theme's own regions and blocks: a theme
+     may declare a property of its own, and `--primary` is the ink. */
+  --paper-accent: #b8321a;
+  --paper-rule: #1c1b18;
+
+  /* Shape and space. Almost square corners (the design's are 2px), a column
+     wide enough for a list and a gutter that grows with the window. */
+  --radius: 0.125rem;
+  --kometio-content-width: 80rem;
+  --kometio-content-width-wide: 90rem;
+  --kometio-content-gutter: clamp(1.5rem, 0.4rem + 4.5vw, 4rem);
+  --kometio-shell-width: var(--kometio-content-width);
+  --kometio-page-start-gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  /* The design's rhythm between two sections: 64px on a phone, 104px from
+     a 1280px window. */
+  --kometio-block-gap: clamp(4rem, 2.9rem + 4.5vw, 6.5rem);
+
+  /* A note on the page (the Callout's "info"): the design draws it as a
+     box with a rule in ink and a wash of the accent behind it, and does not
+     tell it from an error by being blue. Text on the wash, measured: 11:1.
+     Success, warning and error stay as core has them, which is what lets a
+     reader tell a note from a failure. */
+  --kometio-info: #1c1b18;
+  --kometio-info-text: #1c1b18;
+  --kometio-info-surface: rgb(184 50 26 / 0.07);
+
+  /* Shadows, paper-on-paper: ink at low alpha, and not much of it. This
+     design has hairlines where others have shadows. */
+  --shadow-xs: 0 1px 2px 0 rgb(28 27 24 / 0.04);
+  --shadow-sm:
+    0 1px 3px 0 rgb(28 27 24 / 0.07), 0 1px 2px -1px rgb(28 27 24 / 0.05);
+  --shadow-md:
+    0 6px 12px -4px rgb(28 27 24 / 0.09), 0 2px 4px -2px rgb(28 27 24 / 0.05);
+  --shadow-lg:
+    0 16px 32px -12px rgb(28 27 24 / 0.14), 0 4px 8px -4px rgb(28 27 24 / 0.05);
+  --shadow-xl:
+    0 28px 48px -16px rgb(28 27 24 / 0.18), 0 8px 16px -8px rgb(28 27 24 / 0.07);
+  --shadow-2xl: 0 40px 80px -24px rgb(28 27 24 / 0.26);
+  --shadow-inner: inset 0 2px 4px 0 rgb(28 27 24 / 0.05);
+
+  /* Motion (docs/adr/0141): a page turning, not a page springing. Things
+     arrive by fading in a few pixels from below, slowly and one after the
+     other, and nothing lifts or presses: paper does not bounce. */
+  --kometio-motion-duration-fast: 200ms;
+  --kometio-motion-duration-slow: 900ms;
+  --kometio-motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --kometio-motion-reveal: kometio-slide-up;
+  --kometio-motion-distance: 8px;
+  --kometio-motion-stagger: 120ms;
+}

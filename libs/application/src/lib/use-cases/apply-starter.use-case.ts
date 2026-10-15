@@ -320,6 +320,11 @@ async function applyTheme(
   undo: (() => Promise<void>)[],
 ): Promise<void> {
   if (site.themeName === themeName) return;
+  // A deployment that narrowed its themes (KOMETIO_THEME) may not carry the
+  // one the starter was drawn for. The site keeps the one it has: a starter
+  // that fails there would not be a starter that is a little less pretty.
+  const offered = await deps.themeCatalog.listAvailableThemes();
+  if (!offered.some((theme) => theme.name === themeName)) return;
   const previous = site.themeName;
   await updateSiteThemePackage(deps, {
     tenantId: site.tenantId,

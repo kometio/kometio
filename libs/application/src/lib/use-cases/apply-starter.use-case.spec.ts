@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  InvalidThemeNameError,
   SiteIsNotBlankError,
   SiteNotFoundError,
   type Site,
@@ -348,6 +347,27 @@ describe('applyStarter', () => {
     expect(site?.themeName).toBe('classic');
   });
 
+  it('puts the blog on paper, where it was drawn, when the deployment carries it', async () => {
+    const world = await arrange({ themes: ['classic', 'paper'] });
+
+    await apply(world.deps, 'blog');
+
+    const site = await world.deps.siteRepository.findById(TENANT, SITE);
+    expect(site?.themeName).toBe('paper');
+  });
+
+  it('leaves the site on its own theme when the deployment does not carry the starter’s', async () => {
+    const narrowed = await arrange({
+      themeName: 'docs-showcase',
+      themes: ['docs-showcase'],
+    });
+
+    await apply(narrowed.deps, 'studio');
+
+    const site = await narrowed.deps.siteRepository.findById(TENANT, SITE);
+    expect(site?.themeName).toBe('docs-showcase');
+  });
+
   describe('refuses a site that is not new', () => {
     it('whose home page has been written', async () => {
       world.group.saveContent(
@@ -578,18 +598,5 @@ describe('getStarterOffer', () => {
     });
 
     expect(offer.available).toBe(false);
-  });
-});
-
-describe('an error of the theme catalog', () => {
-  it('is the error of the starter when its theme is not installed', async () => {
-    const world = await arrange({
-      themeName: 'docs-showcase',
-      themes: ['docs-showcase'],
-    });
-
-    await expect(apply(world.deps, 'studio')).rejects.toBeInstanceOf(
-      InvalidThemeNameError,
-    );
   });
 });

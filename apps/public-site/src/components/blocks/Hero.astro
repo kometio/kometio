@@ -15,7 +15,7 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
     there creates a second, ambiguous role="banner" landmark alongside the
     real one from PageLayout.astro. Security review 2026-08-24, accessibility. */}
 <section
-	class:list={['kometio-hero mx-auto text-center', instanceClass]}
+	class:list={['kometio-hero mx-auto', instanceClass]}
 >
 	{/* Not rendered at all when empty, so a hero that never set one is
 	    byte-identical to before. */}
@@ -60,6 +60,12 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
 		display: flex;
 		flex-direction: column;
 		align-items: var(--kometio-override-align, stretch);
+		/* The text goes where its blocks go. It was `text-center` on the
+		   element, whatever `contentAlign` said, so a hero set on the left
+		   had its words in the middle of a box that sat on the left. The
+		   keywords are the same ones (`start`, `center`, `end`), and with
+		   nothing set it is the centre it always was. */
+		text-align: var(--kometio-override-align, center);
 		@kometio-bridge gap max-width;
 		/* `max-w-3xl py-20 sm:py-28` moved off the class list and into
 		   here, because a scoped rule outranks a Tailwind utility: left

@@ -1,0 +1,30 @@
+---
+import type { ThemeFooterProps } from '@kometio/theme-runtime';
+
+/**
+ * The paper's footer: the same paper as the page, under a hairline. It is
+ * not turned over, and not tinted; a design made of ruled lines closes with
+ * one.
+ */
+export type Props = ThemeFooterProps;
+
+const { class: className } = Astro.props;
+---
+
+<footer class:list={['paper-footer', 'kometio-shell-inset', className]}>
+	<slot />
+</footer>
+
+<style>
+	.paper-footer {
+		border-top: 1px solid var(--border);
+		background: var(--background);
+		padding-block: clamp(2rem, 1.2rem + 2.2vw, 3rem);
+		color: var(--muted-foreground);
+	}
+
+	.paper-footer :global(.kometio-nav-link) {
+		color: var(--foreground);
+		font-weight: 500;
+	}
+</style>

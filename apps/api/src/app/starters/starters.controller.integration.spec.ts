@@ -5,6 +5,7 @@ import { IntegrationApp } from '../../test/integration-app.test-fixture';
 import { CollectionsModule } from '../collections/collections.module';
 import { FormsModule } from '../forms/forms.module';
 import { PagesModule } from '../pages/pages.module';
+import { SitesModule } from '../sites/sites.module';
 import { SiteLayoutSectionsModule } from '../site-layout-sections/site-layout-sections.module';
 import { TaxonomiesModule } from '../taxonomies/taxonomies.module';
 import { StartersModule } from './starters.module';
@@ -27,6 +28,7 @@ describe('starting points (integration)', () => {
     integration = await IntegrationApp.start({
       imports: [
         StartersModule,
+        SitesModule,
         PagesModule,
         FormsModule,
         CollectionsModule,
@@ -191,6 +193,18 @@ describe('starting points (integration)', () => {
         expect(offer.body.available).toBe(false);
       },
     );
+
+    it('puts the site on the theme the starter was drawn for', async () => {
+      const { siteId } = await aNewSite();
+      await admin
+        .post(`/sites/${siteId}/starters`)
+        .send({ starterId: 'blog' })
+        .expect(201);
+
+      const site = await admin.get(`/sites/${siteId}`).expect(200);
+
+      expect(site.body.themeName).toBe('paper');
+    });
 
     it('refuses a second one, and leaves what the first made as it was', async () => {
       const { siteId } = await aNewSite();

@@ -1,0 +1,17 @@
+{
+  // Kept separate from the `nx sync`-managed tsconfig.json (a "solution"
+  // style one, with project references): `astro check --tsconfig` lets the
+  // two coexist without fighting. It exists because without Astro's own
+  // types a theme's .astro file has no JSX namespace at all, and if the
+  // file imports anything from apps/public-site it inherits React's — which
+  // is how a real arity bug stayed invisible until 2026-09-04.
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["**/*.astro", "env.d.ts"],
+  "exclude": ["dist", "out-tsc", "coverage", "node_modules"]
+}
