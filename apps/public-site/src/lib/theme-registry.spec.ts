@@ -1,3 +1,5 @@
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   applyThemeAllowList,
@@ -10,6 +12,8 @@ import {
   themeNameFromGlobPath,
 } from './theme-registry';
 
+const THEMES_DIRECTORY = join(import.meta.dirname, '../../../../themes');
+
 // Real fixtures on disk (themes/classic, themes/docs-showcase), not
 // synthetic temp directories — import.meta.glob resolves at build time
 // against the actual repo tree, so faking a theme directory for this file
@@ -18,7 +22,19 @@ import {
 
 describe('BUNDLED_THEME_NAMES', () => {
   it('lists every theme actually on disk, sorted', () => {
-    expect(BUNDLED_THEME_NAMES).toEqual(['classic', 'docs-showcase', 'paper']);
+    // Read from the directory itself, so that a theme added tomorrow is
+    // checked and not merely listed here by hand.
+    const onDisk = readdirSync(THEMES_DIRECTORY, { withFileTypes: true })
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          existsSync(join(THEMES_DIRECTORY, entry.name, 'theme.css')),
+      )
+      .map((entry) => entry.name)
+      .sort();
+
+    expect(onDisk.length).toBeGreaterThanOrEqual(3);
+    expect(BUNDLED_THEME_NAMES).toEqual(onDisk);
   });
 });
 
