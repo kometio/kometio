@@ -135,6 +135,31 @@ const closeLabel = i18n.t('hamburgerMenu.close');
     display: block;
   }
 
+  /* Inside a Nav's row — which the block supports (`position`), and which a
+     header made of a name and its links on a phone is — the wrapper is a flex
+     item, and the size containment `container-type: inline-size` puts on it
+     (global.css) leaves it no width of its own: zero. The toggle then stood
+     outside the header's right edge and the page scrolled sideways, and the
+     panel, which takes the width of the wrapper, was a strip nobody could
+     read. So the wrapper is as wide as its toggle there, and the panel is as
+     wide as its links, hung from the toggle on the side the toggle is on.
+     Outside a row it is the full-width block it always was. */
+  :global(.kometio-nav) > .kometio-hamburger-menu {
+    width: 2.25rem;
+  }
+  :global(.kometio-nav) > .kometio-hamburger-menu .kometio-hamburger-menu__panel {
+    right: auto;
+    width: max-content;
+    min-width: 12rem;
+    max-width: calc(100vw - 3rem);
+  }
+  :global(.kometio-nav)
+    > .kometio-hamburger-menu--right
+    .kometio-hamburger-menu__panel {
+    left: auto;
+    right: 0;
+  }
+
   .kometio-hamburger-menu__links {
     display: flex;
     flex-direction: column;
