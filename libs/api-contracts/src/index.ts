@@ -17,6 +17,7 @@ export * from './lib/form-requests';
 export * from './lib/import-job-record';
 export * from './lib/import-requests';
 export * from './lib/legal-documents';
+export * from './lib/starters';
 export * from './lib/media-record';
 export * from './lib/media-requests';
 export * from './lib/newsletter-requests';

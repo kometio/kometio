@@ -18,6 +18,7 @@ import {
   SecondFactorCodeMismatchError,
   SecondFactorNotAvailableError,
   SecondFactorNotEnabledError,
+  SiteIsNotBlankError,
   PageGroupNotFoundError,
   PageGroupReorderMismatchError,
   PageGroupVersionNotFoundError,
@@ -460,4 +461,14 @@ describe('the errors of the second step of sign-in', () => {
       expect(error.message).toBe(message);
     },
   );
+});
+
+describe('the error of the starting points', () => {
+  it('says which site is not new', () => {
+    const error = new SiteIsNotBlankError('site-1');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe('SiteIsNotBlankError');
+    expect(error.message).toContain('site-1');
+  });
 });

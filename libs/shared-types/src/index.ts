@@ -8,6 +8,7 @@ export * from './lib/country-codes';
 export * from './lib/wordpress-import';
 export * from './lib/media-kind';
 export * from './lib/is-record';
+export * from './lib/starters';
 export * from './lib/shown-translation';
 export * from './lib/content-model';
 export * from './lib/block-contract';

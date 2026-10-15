@@ -7,6 +7,13 @@ import { placePageGroup, type PagePlacementDeps } from './page-placement';
 export type CreatePageGroupDeps = PagePlacementDeps;
 
 export interface CreatePageGroupInput {
+  /**
+   * The id the group is to have, for a caller that has to know it before the
+   * page exists: a starting point's pages point at one another (docs/adr/0136).
+   * A request never carries one — its body schema has no such field — so the
+   * database still chooses for every page somebody makes by hand.
+   */
+  id?: string;
   tenantId: string;
   siteId: string;
   parentId?: string | null;
@@ -42,7 +49,7 @@ export async function buildPageGroup(
   const order = Math.max(-1, ...siblings.map((sibling) => sibling.order)) + 1;
 
   const group = PageGroup.create({
-    id: randomUUID(),
+    id: input.id ?? randomUUID(),
     tenantId: input.tenantId,
     siteId: input.siteId,
     parentId: input.parentId,

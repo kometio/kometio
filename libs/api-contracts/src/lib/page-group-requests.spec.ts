@@ -69,6 +69,18 @@ describe('createPageGroupBodyShape', () => {
     ).toBe(true);
   });
 
+  it('does not let a request choose the id of the page it makes', () => {
+    // The use case takes one, for a starting point whose pages point at one
+    // another (docs/adr/0136); a request must never be able to give it.
+    const parsed = createPageGroupBodyShape.parse({
+      siteId: id,
+      id: other,
+      translation,
+    });
+
+    expect(parsed).not.toHaveProperty('id');
+  });
+
   it('refuses content and a template together: the server would pick one silently', () => {
     expect(
       createPageGroupBodyShape.safeParse({
