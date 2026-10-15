@@ -9,6 +9,7 @@ import { ReusableSectionsModule } from './reusable-sections/reusable-sections.mo
 import { SiteLayoutSectionsModule } from './site-layout-sections/site-layout-sections.module';
 import { SiteArchiveModule } from './site-archive/site-archive.module';
 import { SitesModule } from './sites/sites.module';
+import { StartersModule } from './starters/starters.module';
 import { TaxonomiesModule } from './taxonomies/taxonomies.module';
 import { UsersModule } from './users/users.module';
 import { IntegrationApp } from '../test/integration-app.test-fixture';
@@ -37,6 +38,7 @@ describe('Who may do what (integration)', () => {
         SiteLayoutSectionsModule,
         SiteArchiveModule,
         SitesModule,
+        StartersModule,
         TaxonomiesModule,
         UsersModule,
       ],
@@ -91,6 +93,8 @@ describe('Who may do what (integration)', () => {
     ['patch', `/sites/${id}/locale-settings`],
     ['get', '/users'],
     ['get', '/site-archive'],
+    ['get', `/sites/${id}/starters`],
+    ['post', `/sites/${id}/starters`],
     ['get', `/sites/${id}/form-submissions/count?olderThanDays=30`],
     ['delete', `/users/${id}/invite`],
   ];
