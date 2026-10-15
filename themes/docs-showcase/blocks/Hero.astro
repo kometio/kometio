@@ -27,15 +27,15 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
 <header class:list={['kometio-docs-hero', instanceClass]}>
 	{/* Only what the editor wrote: a badge saying "Built with Kometio itself"
 	    appeared on every site using this theme, whatever the site was. */}
-	{eyebrow && <div class="kometio-docs-hero__badge">{eyebrow}</div>}
-	<h1 class="kometio-docs-hero__title">{title}</h1>
+	{eyebrow && <div class="kometio-docs-hero__badge" data-kometio-reveal="0">{eyebrow}</div>}
+	<h1 class="kometio-docs-hero__title" data-kometio-reveal="1">{title}</h1>
 	{/* `set:html`, and a container that may hold paragraphs: `subtitle` is
 	a rich text field (ADR-0046), so its value is HTML the API has already
 	sanitised. Interpolating it would show the reader `<p>` as text. Any
 	theme overriding a block with a rich text field has to do the same. */}
-	<div class="kometio-docs-hero__subtitle kometio-rich-text" set:html={subtitle} />
+	<div class="kometio-docs-hero__subtitle kometio-rich-text" data-kometio-reveal="2" set:html={subtitle} />
 	{hasChildren && (
-		<div class="kometio-docs-hero__content">
+		<div class="kometio-docs-hero__content" data-kometio-reveal="3">
 			<slot />
 		</div>
 	)}

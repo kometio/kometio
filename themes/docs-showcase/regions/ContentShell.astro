@@ -195,13 +195,20 @@ const nextDoc =
 		color: var(--muted-foreground);
 		text-decoration: none;
 	}
+	/* Under the pointer the entry takes a tint and moves a pixel or two
+	   towards the page; the colours and the border change by core's
+	   transition on every link (docs/adr/0141), so there is nothing to
+	   declare here but the end states. */
 	.kometio-docs-sidebar__list a:hover {
 		color: var(--foreground);
+		background: var(--muted);
+		transform: translateX(2px);
 	}
 	.kometio-docs-sidebar__list a[aria-current='page'] {
 		border-left-color: var(--primary);
 		color: var(--primary);
 		font-weight: 600;
+		background: color-mix(in oklab, var(--primary) 7%, transparent);
 	}
 	.kometio-docs-pagination {
 		display: flex;
@@ -223,6 +230,8 @@ const nextDoc =
 	}
 	.kometio-docs-pagination__link:hover {
 		border-color: var(--primary);
+		transform: translateY(var(--kometio-motion-lift, 0px));
+		box-shadow: var(--shadow-sm);
 	}
 	.kometio-docs-pagination__link--next {
 		margin-left: auto;

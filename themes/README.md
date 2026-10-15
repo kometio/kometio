@@ -124,6 +124,31 @@ is a copy that stops following core the day core moves it.
   block is full-width). A region that wraps the page content should not add
   its own space above it: the first block already has it.
 
+- **Motion** (docs/adr/0141) — how the site moves, all of it off or "as
+  it was" until a theme says otherwise, and all of it dropped for a reader
+  who asked their system for less motion:
+  - `--kometio-motion-duration-fast` (150ms: a colour, a border, a shadow),
+    `--kometio-motion-duration` (250ms) and `--kometio-motion-duration-slow`
+    (600ms: a part arriving), and `--kometio-motion-ease`. A duration of `0s`
+    is how a theme turns a family off.
+  - `--kometio-motion-reveal`: the keyframes the parts of a block arrive with
+    (`kometio-fade`, `kometio-slide-up`, `kometio-slide-down`,
+    `kometio-slide-left`, `kometio-slide-right`, `kometio-zoom`), or `none`.
+    `--kometio-motion-stagger` is the wait between one part and the next
+    (`80ms`), and `--kometio-motion-distance` how far they travel (`24px`;
+    it is the distance of every entrance, so a quieter theme is quieter
+    everywhere).
+  - `--kometio-motion-lift`: how far a card that is a link rises under the
+    pointer (`-3px`), and `--kometio-motion-press`: the scale of a button
+    while it is pressed (`0.97`).
+  - What is revealed is what a block marks: core's Hero parts, the items of a
+    grid collection and of a list of pages. A block override marks its own
+    parts with `data-kometio-reveal="0"` … `"5"` (the place in the sequence)
+    or a container with `data-kometio-reveal-group`; nothing else in a theme
+    is needed, and nothing is hidden unless a root block is what holds it.
+  - Opacity and transform only: a theme cannot make anything move what is
+    below it.
+
 ## `theme.json` — the manifest
 
 ```json
@@ -172,6 +197,13 @@ theme can only reach `<body>` through `<style is:global>`, and a global
 rule from one theme lands on **every other theme's** pages too (that is a
 real bug this directory shipped, not a hypothetical). Declared here, core
 applies it with its own scoped style and nothing leaks.
+
+**`pageTransitions`** — `true` makes going from one page to the next a
+cross-fade with a few pixels of rise, the header and the footer holding still
+(a cross-document view transition: no script, and a browser that has none cuts
+as it always did). A flag for the same reason as `stickyFooter`: it is a rule
+about the document, which is core's. The durations are the motion tokens
+above, and a reader who asked for less motion is not given it.
 
 ## Going past tokens: block overrides
 
