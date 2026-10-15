@@ -145,7 +145,7 @@ describe('the Code block, core and the docs theme', () => {
     it(`${name}: carries no script of its own — the page wires the button`, () => {
       const source = readFileSync(join(REPO, path), 'utf8');
 
-      expect(source).not.toMatch(/<script[\s>]/);
+      expect(source.toLowerCase()).not.toContain('<script');
     });
   }
 });
