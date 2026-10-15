@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   login as apiLogin,
+  loginSecondFactor as apiLoginSecondFactor,
   logout as apiLogout,
 } from '../../lib/auth-api-client';
 
@@ -25,6 +26,19 @@ export function useSession() {
     // expired sends its tab to /login without logging out, and whoever
     // signs in there next would inherit the last person's role — and with
     // it their buttons — for as long as the cached session lived.
+    //
+    // Only when a session was made: a right password that leads to a code
+    // has signed nobody in yet.
+    onSuccess: (answer) => {
+      if ('userId' in answer) queryClient.clear();
+    },
+  });
+
+  // The second step: the code, against the challenge the password led to.
+  // An error propagates, with its body: a wrong code carries a new challenge.
+  const secondFactorMutation = useMutation({
+    mutationFn: ({ challenge, code }: { challenge: string; code: string }) =>
+      apiLoginSecondFactor(challenge, code),
     onSuccess: () => queryClient.clear(),
   });
 
@@ -50,6 +64,12 @@ export function useSession() {
     [loginMutation],
   );
 
+  const handleSecondFactor = useCallback(
+    (challenge: string, code: string) =>
+      secondFactorMutation.mutateAsync({ challenge, code }),
+    [secondFactorMutation],
+  );
+
   // Best-effort: even if the server call fails, the caller still gets a
   // resolved promise — the redirect in onSettled above already happened
   // either way, so there is nothing left for the caller to react to.
@@ -61,5 +81,5 @@ export function useSession() {
     }
   }, [logoutMutation]);
 
-  return { handleLogin, handleLogout };
+  return { handleLogin, handleSecondFactor, handleLogout };
 }

@@ -34,8 +34,19 @@ export const userRecordSchema = z.object({
 
 export type UserRecord = z.infer<typeof userRecordSchema>;
 
+/**
+ * A row of the users' list: the person, and whether they have the second step
+ * of sign-in on (docs/adr/0137), which is what an administrator needs to see
+ * to offer them a reset. Only the list says it: the other answers that hold a
+ * person (an invitation, a role change) are about something else.
+ */
+export const userListItemSchema = userRecordSchema.extend({
+  twoFactorEnabled: z.boolean(),
+});
+export type UserListItem = z.infer<typeof userListItemSchema>;
+
 export const paginatedUsersSchema = z.object({
-  items: z.array(userRecordSchema),
+  items: z.array(userListItemSchema),
   total: z.number(),
 });
 

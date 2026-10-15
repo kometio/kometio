@@ -3,18 +3,20 @@ import { USER_ROLES } from '@kometio/shared-types';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { OptionsSelect } from '../../components/ui/select';
-import type { UserRecord, UserRole } from '../../lib/users-api-client';
+import type { UserListItem, UserRole } from '../../lib/users-api-client';
 import { UI_LANGUAGES } from '../account/interface-languages';
 import { UserAvatar } from '../account/user-avatar';
 
 export interface UserRowProps {
-  user: UserRecord;
+  user: UserListItem;
   /** This row is the person looking at the screen. */
   isYou: boolean;
   onRoleChange: (role: UserRole) => void;
   onToggleActive: () => void;
   onResendInvite: () => void;
   onCancelInvite: () => void;
+  /** Takes the second step of sign-in off this person: for who has lost the app and the codes. */
+  onResetSecondFactor: () => void;
 }
 
 /**
@@ -32,6 +34,7 @@ export function UserRow({
   onToggleActive,
   onResendInvite,
   onCancelInvite,
+  onResetSecondFactor,
 }: UserRowProps) {
   const { t } = useTranslation();
   const name = user.displayName || user.email;
@@ -103,6 +106,21 @@ export function UserRow({
               ? t('users.list.statusActive')
               : t('users.list.statusInactive')}
         </Badge>
+        {user.twoFactorEnabled && (
+          <Badge variant="secondary">{t('users.list.secondFactorOn')}</Badge>
+        )}
+        {/* Another person's: your own is turned off from your account, with
+            your password. */}
+        {user.twoFactorEnabled && !isYou && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onResetSecondFactor}
+          >
+            {t('users.list.resetSecondFactor')}
+          </Button>
+        )}
         {isPending ? (
           // An invitation is not a deactivation: there is nobody to
           // "reactivate" yet, only a link to send again or to withdraw.

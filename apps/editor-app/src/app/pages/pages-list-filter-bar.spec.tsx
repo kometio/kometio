@@ -11,7 +11,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import * as usersApi from '../../lib/users-api-client';
 import { chooseOption } from '../../test/select.test-fixture';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
-import { buildUserRecord } from '@kometio/testing/records';
+import { buildUserListItem } from '@kometio/testing/records';
 import {
   EMPTY_PAGES_LIST_FILTERS,
   PagesListFilterBar,
@@ -30,7 +30,7 @@ function renderBar(
 ) {
   vi.mocked(usersApi.listUsers).mockResolvedValue({
     items: [
-      buildUserRecord({
+      buildUserListItem({
         email: 'ada@example.test',
         displayName: 'Ada Lovelace',
       }),

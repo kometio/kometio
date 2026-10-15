@@ -6,6 +6,7 @@ import {
   FakeEmailPort,
   FakeVerificationTokenPort,
   InMemoryAuditLog,
+  InMemorySecondFactorRepository,
   InMemoryUserRepository,
 } from '@kometio/testing';
 import { testApiEnv } from '../../test/api-env.test-fixture';
@@ -26,6 +27,7 @@ function setup() {
     verificationTokenPort: new FakeVerificationTokenPort(),
     emailPort,
     deploymentLocale: new FakeDeploymentLocale(),
+    secondFactorRepository: new InMemorySecondFactorRepository(),
     mediaStorage: {
       provider: 'local',
       put: jest.fn(),

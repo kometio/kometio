@@ -266,6 +266,22 @@ accessibility.spec.tsx` checks it for every block type.
   agree (this page's and the server's) and says where Kometio printed the right one;
   a retry is a button. The query retries it once, not three times (`lib/should-retry.ts`):
   the person is told after about a second instead of after seven.
+- **Two-step verification** (`app/account/second-factor-section.tsx`, `app/auth/second-factor-form.tsx`;
+  docs/adr/0137): a section of the account, beside "How you sign in" and "Where you are
+  signed in", that draws nothing where the server cannot seal a secret (`available` from
+  `GET /api/account/second-factor`) and says in words whether it is on and how many
+  recovery codes are left. Turning it on is one dialog in three steps (password; the
+  secret and the first code; the recovery codes), because nothing is on until a code
+  fits — closing it anywhere before that leaves the account as it was — and the last
+  step cannot be finished until a box says the codes were kept. What begins, replaces or
+  removes a way in asks for the password again, in `PasswordConfirmDialog`. The QR code
+  (`qr-code.tsx`) is the one place a component draws in colours of its own, black on white
+  with the four-module margin the specification asks for, and not the theme's: a scanner
+  needs the contrast, and an inverted code is read by some apps and not by others. At
+  sign-in the second step is its own screen: one field that takes the six digits or a
+  recovery code, told apart by their look, `autocomplete="one-time-code"`, and a wrong
+  code keeps the screen and says so (a new challenge comes with the refusal); only when
+  the server has none to give does it hand back to the password.
 - **Something the server may not be able to do** (`useServerFeatures`,
   `app/common/deployment-queries.ts`): the editor offers it only where `GET
 /api/deployment` says the server can — Settings → Export, today (`siteArchive`).

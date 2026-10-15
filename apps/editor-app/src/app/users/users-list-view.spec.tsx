@@ -13,9 +13,9 @@ import { WithToasts } from '../../test/toasts.test-fixture';
 import * as auth from '../../lib/auth-api-client';
 import * as deployment from '../../lib/deployment-api-client';
 import * as api from '../../lib/users-api-client';
-import type { UserRecord } from '../../lib/users-api-client';
+import type { UserListItem } from '../../lib/users-api-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
-import { buildUserRecord } from '@kometio/testing/records';
+import { buildUserListItem } from '@kometio/testing/records';
 import { UsersListView } from './users-list-view';
 import { deploymentRecord } from '../../test/deployment.test-fixture';
 
@@ -50,7 +50,7 @@ vi.mock('../../lib/users-api-client', async (importOriginal) => {
   };
 });
 
-const userOne = buildUserRecord({
+const userOne = buildUserListItem({
   email: 'editor@example.com',
   displayName: 'Editor One',
   role: 'editor',
@@ -58,7 +58,7 @@ const userOne = buildUserRecord({
 });
 
 function renderView(
-  items: UserRecord[],
+  items: UserListItem[],
   options: { page?: number; total?: number } = {},
 ) {
   return render(
@@ -217,6 +217,78 @@ describe('UsersListView', () => {
     expect(
       await screen.findByText('Editor One è stato riattivato'),
     ).toBeTruthy();
+  });
+
+  describe('two-step verification', () => {
+    vi.mock('../../lib/second-factor-api-client', async () => ({
+      resetUserSecondFactor: vi.fn().mockResolvedValue(undefined),
+    }));
+
+    it('says who has it on, and offers the reset only for somebody else', async () => {
+      vi.mocked(auth.currentSession).mockResolvedValue({
+        userId: 'someone-else',
+        email: 'admin@example.com',
+        role: 'admin',
+      });
+      renderView([
+        { ...userOne, twoFactorEnabled: true },
+        buildUserListItem({
+          id: 'user-2',
+          email: 'second@example.com',
+          displayName: 'Second',
+          twoFactorEnabled: false,
+        }),
+      ]);
+
+      expect(await screen.findByText('2 passaggi attivi')).toBeTruthy();
+      expect(
+        screen.getAllByRole('button', { name: /azzera i 2 passaggi/i }),
+      ).toHaveLength(1);
+    });
+
+    it('asks first, naming who, and then resets', async () => {
+      const second = await import('../../lib/second-factor-api-client');
+      vi.mocked(auth.currentSession).mockResolvedValue({
+        userId: 'someone-else',
+        email: 'admin@example.com',
+        role: 'admin',
+      });
+      renderView([{ ...userOne, twoFactorEnabled: true }]);
+
+      fireEvent.click(
+        await screen.findByRole('button', { name: /azzera i 2 passaggi/i }),
+      );
+      const dialog = await screen.findByRole('alertdialog');
+      expect(
+        within(dialog).getByText(/Editor One accederà con la sola password/i),
+      ).toBeTruthy();
+      expect(second.resetUserSecondFactor).not.toHaveBeenCalled();
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: /azzera i 2 passaggi/i }),
+      );
+
+      await waitFor(() =>
+        expect(second.resetUserSecondFactor).toHaveBeenCalledWith('user-1'),
+      );
+    });
+
+    it('does not offer it on your own row: yours is turned off from your account', async () => {
+      vi.mocked(auth.currentSession).mockResolvedValue({
+        userId: 'user-1',
+        email: 'editor@example.com',
+        role: 'admin',
+      });
+      renderView([{ ...userOne, twoFactorEnabled: true }]);
+
+      expect(await screen.findByText('2 passaggi attivi')).toBeTruthy();
+      // Who is looking is read from the session, which arrives a moment after
+      // the list: the button is there until it does.
+      await waitFor(() =>
+        expect(
+          screen.queryByRole('button', { name: /azzera i 2 passaggi/i }),
+        ).toBeNull(),
+      );
+    });
   });
 
   /*

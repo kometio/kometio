@@ -50,7 +50,7 @@ import {
   buildPageTranslationRecord,
   buildSiteLayoutSectionRecord,
   buildSiteRecord,
-  buildUserRecord,
+  buildUserListItem,
 } from '@kometio/testing/records';
 import { routeTree } from '../routeTree.gen';
 import { deploymentRecord } from '../test/deployment.test-fixture';
@@ -81,6 +81,7 @@ vi.mock('../lib/auth-api-client', async (importOriginal) => {
   return {
     ...actual,
     login: vi.fn(),
+    loginSecondFactor: vi.fn(),
     logout: vi.fn(),
     verifyEmail: vi.fn(),
     confirmEmailChange: vi.fn(),
@@ -213,7 +214,7 @@ const sampleFooterSection: SiteLayoutSectionRecord = {
 
 const sampleForm = buildFormRecord({ name: 'Contact form' });
 
-const sampleUser = buildUserRecord({
+const sampleUser = buildUserListItem({
   email: 'editor@example.com',
   displayName: 'Editor',
   role: 'editor',
@@ -638,7 +639,7 @@ describe('router', () => {
   });
 
   it('logs in and lands on the pages list', async () => {
-    vi.mocked(authApi.login).mockResolvedValue(undefined);
+    vi.mocked(authApi.login).mockResolvedValue({ userId: 'user-1' });
     vi.mocked(pageGroupsApi.listPageGroups).mockResolvedValue({
       items: [],
       total: 0,
@@ -659,6 +660,43 @@ describe('router', () => {
       'lele@example.com',
       'correct-horse',
       'fake-turnstile-token-for-tests',
+    );
+  });
+
+  it('asks for the code of a person who has the second step on, and only then lands on the pages', async () => {
+    vi.mocked(authApi.login).mockResolvedValue({
+      secondFactorRequired: true,
+      challenge: 'challenge-1',
+    });
+    vi.mocked(authApi.loginSecondFactor).mockResolvedValue({
+      userId: 'user-1',
+      recoveryCodesLeft: null,
+    });
+    vi.mocked(pageGroupsApi.listPageGroups).mockResolvedValue({
+      items: [],
+      total: 0,
+    });
+
+    renderApp('/login');
+    fireEvent.change(await screen.findByLabelText('Email'), {
+      target: { value: 'lele@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'correct-horse' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /^accedi$/i }));
+
+    // The password was right and nobody is signed in: the code is next.
+    fireEvent.change(await screen.findByLabelText('Codice'), {
+      target: { value: '123456' },
+    });
+    expect(screen.queryByRole('link', { name: 'Pagine' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /^accedi$/i }));
+
+    expect(await screen.findByRole('link', { name: 'Pagine' })).toBeTruthy();
+    expect(authApi.loginSecondFactor).toHaveBeenCalledWith(
+      'challenge-1',
+      '123456',
     );
   });
 

@@ -15,6 +15,7 @@ import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { Request } from 'express';
 import {
   InvalidCredentialsError,
+  InvalidSecondFactorError,
   UserNotActiveError,
 } from '@kometio/domain-core';
 import {
@@ -23,6 +24,7 @@ import {
 } from './per-account-throttler.guard';
 import {
   acceptInvite,
+  completeSecondFactorLogin,
   confirmEmailChange,
   getSignedInUser,
   loginUser,
@@ -40,6 +42,8 @@ import {
   type ConfirmEmailChangeBody,
   loginBodySchema,
   type LoginBody,
+  secondFactorLoginBodySchema,
+  type SecondFactorLoginBody,
   requestPasswordResetBodySchema,
   type RequestPasswordResetBody,
   resetPasswordBodySchema,
@@ -83,7 +87,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: CookieWriter,
   ) {
     const tenantId = await this.deps.tenant.require();
-    const session = await loginUser(this.deps, {
+    const outcome = await loginUser(this.deps, {
       tenantId,
       email: body.email,
       password: body.password,
@@ -93,14 +97,71 @@ export class AuthController {
       await this.recordFailedLogin(tenantId, error);
       throw error;
     });
+    if (outcome.status === 'second-factor-required') {
+      // The password was right, and nobody is signed in yet: no cookie and no
+      // entry of the log, which says a sign-in happened when one has.
+      return { secondFactorRequired: true, challenge: outcome.challenge };
+    }
+
     await this.audit.record({
       tenantId,
-      actorUserId: session.userId,
+      actorUserId: outcome.session.userId,
       action: 'login.succeeded',
     });
 
-    this.cookies.set(response, session);
-    return { userId: session.userId };
+    this.cookies.set(response, outcome.session);
+    return { userId: outcome.session.userId };
+  }
+
+  /**
+   * The second step of a sign-in: the code, against the challenge the right
+   * password led to (docs/adr/0137). A wrong code answers 401 with a fresh
+   * challenge to try again with, while the tries last.
+   */
+  @UseGuards(ThrottlerGuard)
+  @Post('login/second-factor')
+  @HttpCode(200)
+  async loginSecondFactor(
+    @Body(new ZodValidationPipe(secondFactorLoginBodySchema))
+    body: SecondFactorLoginBody,
+    @Req() request: Pick<Request, 'headers'>,
+    @Res({ passthrough: true }) response: CookieWriter,
+  ) {
+    const tenantId = await this.deps.tenant.require();
+    const result = await completeSecondFactorLogin(this.deps, {
+      challenge: body.challenge,
+      code: body.code,
+      userAgent: request.headers['user-agent'],
+    }).catch(async (error: unknown) => {
+      if (error instanceof InvalidSecondFactorError && error.userId) {
+        await this.audit.record({
+          tenantId,
+          actorUserId: error.userId,
+          action: 'login.failed',
+          detail: { reason: 'second-factor' },
+        });
+      }
+      throw error;
+    });
+
+    const { userId } = result.session;
+    await this.audit.record({
+      tenantId,
+      actorUserId: userId,
+      action: 'login.succeeded',
+    });
+    if (result.usedRecoveryCode) {
+      await this.audit.record({
+        tenantId,
+        actorUserId: userId,
+        action: 'account.recovery_code_used',
+        targetId: userId,
+        detail: { left: result.recoveryCodesLeft },
+      });
+    }
+
+    this.cookies.set(response, result.session);
+    return { userId, recoveryCodesLeft: result.recoveryCodesLeft };
   }
 
   @Post('logout')

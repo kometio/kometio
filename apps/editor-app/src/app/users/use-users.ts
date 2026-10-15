@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { resetUserSecondFactor as apiResetSecondFactor } from '../../lib/second-factor-api-client';
 import {
   cancelInvite as apiCancelInvite,
   inviteUser as apiInviteUser,
@@ -49,8 +50,14 @@ export function useUsers() {
     onSuccess: invalidateList,
   });
 
+  const resetSecondFactorMutation = useMutation({
+    mutationFn: (id: string) => apiResetSecondFactor(id),
+    onSuccess: invalidateList,
+  });
+
   return {
     resendInvite: resendInviteMutation.mutateAsync,
+    resetSecondFactor: resetSecondFactorMutation.mutateAsync,
     cancelInvite: cancelInviteMutation.mutateAsync,
     inviteUser: inviteMutation.mutateAsync,
     isInviting: inviteMutation.isPending,

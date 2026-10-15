@@ -11,6 +11,7 @@ import {
   siteLayoutSectionVersionRecordSchema,
   taxonomyRecordSchema,
   termRecordSchema,
+  userListItemSchema,
   userRecordSchema,
   pageGroupListItemSchema,
   pageGroupRecordSchema,
@@ -30,6 +31,7 @@ import {
   buildSiteLayoutSectionVersionRecord,
   buildTaxonomyRecord,
   buildTermRecord,
+  buildUserListItem,
   buildUserRecord,
   buildPageGroupListItemRecord,
   buildPageGroupRecord,
@@ -81,6 +83,9 @@ describe('record builders', () => {
     );
     expect(userRecordSchema.parse(buildUserRecord())).toEqual(
       buildUserRecord(),
+    );
+    expect(userListItemSchema.parse(buildUserListItem())).toEqual(
+      buildUserListItem(),
     );
     expect(
       siteLayoutSectionRecordSchema.parse(buildSiteLayoutSectionRecord()),

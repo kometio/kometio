@@ -16,6 +16,7 @@ import {
   inviteUser,
   listUsers,
   resendInvite,
+  resetSecondFactor,
   setUserActive,
   updateUserRole,
 } from '@kometio/application';
@@ -24,10 +25,12 @@ import {
   type InvitationRecord,
   type InvitationResendRecord,
   type PaginatedUsers,
+  type UserListItem,
   type UserRecord,
   invitationRecordSchema,
   invitationResendRecordSchema,
   paginatedUsersSchema,
+  userListItemSchema,
   userRecordSchema,
 } from '@kometio/api-contracts';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
@@ -80,7 +83,12 @@ export class UsersController {
       pageSize: query.pageSize,
     });
     return paginatedUsersSchema.parse({
-      items: result.items.map((user) => this.toDto(user)),
+      items: result.items.map((user): UserListItem =>
+        userListItemSchema.parse({
+          ...this.toDto(user),
+          twoFactorEnabled: result.withSecondFactor.has(user.id),
+        }),
+      ),
       total: result.total,
     });
   }
@@ -208,6 +216,32 @@ export class UsersController {
       detail: { role: user.role },
     });
     return this.toDto(user);
+  }
+
+  /**
+   * Takes the second step of sign-in off another person, for whoever has lost
+   * the app and the recovery codes (docs/adr/0137). Every session of theirs
+   * ends. It is an administrator's to do and it is in the activity log; the
+   * person signs in with their password alone and turns it on again.
+   */
+  @Post(':id/second-factor/reset')
+  @HttpCode(204)
+  async resetSecondFactor(
+    @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
+    @UuidParam('id') id: string,
+  ): Promise<void> {
+    const { email } = await resetSecondFactor(this.deps, {
+      tenantId,
+      targetUserId: id,
+    });
+    await this.audit.record({
+      tenantId,
+      actorUserId,
+      action: 'account.two_factor_reset',
+      targetId: id,
+      targetLabel: email,
+    });
   }
 
   @Patch(':id/active')

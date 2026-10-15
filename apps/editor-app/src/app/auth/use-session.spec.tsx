@@ -38,7 +38,7 @@ describe('useSession', () => {
 
   it('handleLogin calls the login API with the given credentials', async () => {
     vi.mocked(router.useNavigate).mockReturnValue(vi.fn());
-    vi.mocked(authApi.login).mockResolvedValue(undefined);
+    vi.mocked(authApi.login).mockResolvedValue({ userId: 'user-1' });
     const { result } = renderHook(() => useSession(), { wrapper });
 
     await act(async () => {

@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { ForgotPasswordForm } from '../app/auth/forgot-password-form';
 import { LoginForm } from '../app/auth/login-form';
+import { SecondFactorForm } from '../app/auth/second-factor-form';
 import { useSession } from '../app/auth/use-session';
+import { useToast } from '../app/shell/toast-provider';
 import { fetchSetupStatus } from '../lib/setup-api-client';
 
 export const Route = createFileRoute('/login')({
@@ -25,19 +28,57 @@ export const Route = createFileRoute('/login')({
   component: LoginRoute,
 });
 
+/** A person who is down to this many recovery codes is told so at the door, when one was just used. */
+const FEW_RECOVERY_CODES = 3;
+
 function LoginRoute() {
-  const { handleLogin } = useSession();
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const { handleLogin, handleSecondFactor } = useSession();
   const navigate = useNavigate();
   const { imported } = Route.useSearch();
-  const [view, setView] = useState<'login' | 'forgot-password'>('login');
+  const [view, setView] = useState<
+    'login' | 'forgot-password' | 'second-factor'
+  >('login');
+  const [challenge, setChallenge] = useState('');
 
   async function onLogin(
     email: string,
     password: string,
     captchaToken: string,
   ) {
-    await handleLogin(email, password, captchaToken);
+    const answer = await handleLogin(email, password, captchaToken);
+    if ('secondFactorRequired' in answer) {
+      // The password was right and nobody is signed in yet: the code is next.
+      setChallenge(answer.challenge);
+      setView('second-factor');
+      return;
+    }
     await navigate({ to: '/pages' });
+  }
+
+  async function onSecondFactor(challengeToAnswer: string, code: string) {
+    const { recoveryCodesLeft } = await handleSecondFactor(
+      challengeToAnswer,
+      code,
+    );
+    if (recoveryCodesLeft !== null) {
+      toast(
+        t('auth.secondFactor.recoveryCodeUsed', { count: recoveryCodesLeft }),
+        recoveryCodesLeft <= FEW_RECOVERY_CODES ? 'destructive' : 'default',
+      );
+    }
+    await navigate({ to: '/pages' });
+  }
+
+  if (view === 'second-factor') {
+    return (
+      <SecondFactorForm
+        challenge={challenge}
+        onSubmit={onSecondFactor}
+        onStartAgain={() => setView('login')}
+      />
+    );
   }
 
   if (view === 'forgot-password') {

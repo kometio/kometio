@@ -80,6 +80,20 @@
       "success": "Your email was changed. Use it the next time you sign in.",
       "error": "This link is invalid or has expired, or somebody has taken the address since. Ask for the change again from your profile.",
       "toEditor": "Go to your profile"
+    },
+    "secondFactor": {
+      "title": "Enter your code",
+      "description": "Your account has two-step verification on. Open your authenticator app and type the six digits it shows.",
+      "codeLabel": "Code",
+      "hint": "If you have lost the app, type one of your recovery codes instead.",
+      "wrongCode": "That code is not right. Try the next one the app shows.",
+      "submitIdle": "Sign in",
+      "submitPending": "Checking…",
+      "startAgain": "Start again with the password",
+      "recoveryCodeUsed_one": "You signed in with a recovery code. You have {{count}} left: make new ones from your account.",
+      "recoveryCodeUsed_other": "You signed in with a recovery code. You have {{count}} left: make new ones from your account.",
+      "locked": "Too many wrong codes. Wait a few minutes, or use one of your recovery codes.",
+      "tooManyTries": "Too many attempts in a short time. Wait a minute and try again."
     }
   },
   "emailNotice": {
@@ -284,7 +298,47 @@
       "failed": "The request to change the email was not sent. Try again."
     },
     "pictureSaved": "Picture updated",
-    "pictureRemoved": "Picture removed"
+    "pictureRemoved": "Picture removed",
+    "secondFactor": {
+      "title": "Two-step verification",
+      "statusLabel": "Status",
+      "on": "On",
+      "off": "Off",
+      "offHint": "At sign-in, a code from an authenticator app is asked for after the password.",
+      "onHint_one": "A code from your authenticator app is asked for after the password. {{count}} recovery code left.",
+      "onHint_other": "A code from your authenticator app is asked for after the password. {{count}} recovery codes left.",
+      "turnOnAction": "Turn on…",
+      "newCodes": "New recovery codes…",
+      "turnOff": "Turn off…",
+      "enableTitle": "Turn on two-step verification",
+      "passwordStep": "Confirm it is you with your password.",
+      "scanStep": "Scan the code with an authenticator app, or type the key into it, then give the six digits it shows.",
+      "codesStep": "It is on. Keep these recovery codes somewhere safe: each works once, if you lose the app.",
+      "continue": "Continue",
+      "turnOn": "Turn on",
+      "done": "Done",
+      "qrLabel": "QR code for your authenticator app",
+      "keyLabel": "Or type this key into the app",
+      "codeLabel": "Code from the app",
+      "codeRequired": "Type the six digits the app shows.",
+      "codeMismatch": "That code does not match. Check the app and try again.",
+      "alreadyOn": "Two-step verification is already on.",
+      "startAgain": "This setup was replaced or has ended. Close this window and start again.",
+      "failed": "This did not work. Try again.",
+      "codesIntro_one": "{{count}} recovery code. It is shown only now.",
+      "codesIntro_other": "{{count}} recovery codes. They are shown only now.",
+      "codesLabel": "Recovery codes",
+      "codesDownload": "Download as a file",
+      "codesSaved": "I have kept them somewhere safe",
+      "codesFileTitle": "Kometio recovery codes. Each code works once.",
+      "newCodesTitle": "New recovery codes",
+      "newCodesDescription": "The ones you have now stop working. Confirm it is you with your password.",
+      "newCodesSubmit": "Make new codes",
+      "disableTitle": "Turn off two-step verification",
+      "disableDescription": "Sign-in will ask for the password alone again, and your other devices will be signed out.",
+      "disableSubmit": "Turn off",
+      "disabled": "Two-step verification is off."
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1443,7 +1497,14 @@
         "description": "The link {{email}} received will stop working and they will leave the list. You can invite them again any time."
       },
       "language": "Language: {{name}}",
-      "languageOfTheSite": "Language: the site's"
+      "languageOfTheSite": "Language: the site's",
+      "secondFactorOn": "2-step on",
+      "resetSecondFactor": "Reset 2-step",
+      "resetSecondFactorConfirm": {
+        "title": "Reset two-step verification?",
+        "description": "{{name}} will sign in with the password alone, and every device they are signed in on will be signed out. Do this when they have lost their authenticator and their recovery codes."
+      },
+      "secondFactorReset": "{{name}}: two-step verification reset."
     },
     "inviteDialog": {
       "title": "Invite user",
@@ -3997,7 +4058,11 @@
       "site.theme_changed": "Changed the theme: {{section}}",
       "site.ai_changed": "Changed the AI settings",
       "theme.uploaded": "Uploaded the theme {{target}}",
-      "archive.exported": "Downloaded the site's archive"
+      "archive.exported": "Downloaded the site's archive",
+      "account.two_factor_enabled": "Turned on two-step verification",
+      "account.two_factor_disabled": "Turned off two-step verification",
+      "account.recovery_code_used": "Signed in with a recovery code",
+      "account.two_factor_reset": "Reset the two-step verification of {{target}}"
     },
     "sections": {
       "business": "business info",
@@ -4012,7 +4077,8 @@
     },
     "reasons": {
       "wrong-password": "wrong password",
-      "deactivated": "account switched off"
+      "deactivated": "account switched off",
+      "second-factor": "wrong code"
     },
     "byRemoved": "by an account that has been removed"
   }

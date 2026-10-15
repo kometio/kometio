@@ -1,22 +1,56 @@
 import { z } from 'zod';
-import type {
-  AcceptInviteBody,
-  ConfirmEmailChangeBody,
-  LoginRequest,
-  RequestPasswordResetRequest,
-  ResetPasswordBody,
-  VerifyEmailBody,
+import {
+  loginAnswerSchema,
+  type AcceptInviteBody,
+  type ConfirmEmailChangeBody,
+  type LoginAnswer,
+  type LoginRequest,
+  type RequestPasswordResetRequest,
+  type ResetPasswordBody,
+  type SecondFactorLoginBody,
+  type VerifyEmailBody,
 } from '@kometio/api-contracts';
 import { userRoleSchema } from '@kometio/shared-types';
 import { request, send } from './http-client';
 
-export function login(
+/**
+ * Signs in with the password. A person who has the second step on is not
+ * signed in by it: the answer is a challenge, which `loginSecondFactor` sends
+ * back with a code (docs/adr/0137).
+ */
+export async function login(
   email: string,
   password: string,
   captchaToken: string,
-): Promise<void> {
+): Promise<LoginAnswer> {
   const body: LoginRequest = { email, password, captchaToken };
-  return send('/auth/login', { method: 'POST', body: JSON.stringify(body) });
+  return loginAnswerSchema.parse(
+    await request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  );
+}
+
+/** What the second step answers with when it signs the person in. */
+const secondFactorSignedInSchema = z.object({
+  userId: z.string(),
+  /** How many recovery codes are left, when one was just used; `null` otherwise. */
+  recoveryCodesLeft: z.number().int().min(0).nullable(),
+});
+export type SecondFactorSignedIn = z.infer<typeof secondFactorSignedInSchema>;
+
+export async function loginSecondFactor(
+  challenge: string,
+  code: string,
+): Promise<SecondFactorSignedIn> {
+  const body: SecondFactorLoginBody = { challenge, code };
+  return secondFactorSignedInSchema.parse(
+    await request('/auth/login/second-factor', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  );
 }
 
 /** Who is logged in, and what they are allowed to be shown. */

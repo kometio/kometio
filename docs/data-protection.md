@@ -33,6 +33,16 @@ token, a label of the device (a browser and a system, no address, and not the
 `User-Agent` string) and the time it was last used, to the nearest five minutes.
 Who did what in the settings is in the activity log (below).
 
+**Two-step verification, for those who turn it on** (docs/adr/0137). The secret
+their authenticator app makes its codes from, **sealed** with the server's own key
+(`KOMETIO_SECRETS_DIR` or `KOMETIO_SECRETS_KEY`, the one that seals the AI
+provider's API key), so a dump of the database opens nothing; the last time step a
+code was accepted for, and a count of wrong codes with the moment a lock ends; and
+ten recovery codes as SHA-256 hashes, each marked spent or not. Nothing else about
+the second step is kept, and a refused code is in the activity log like any refused
+sign-in. Turning it off, or an administrator's reset, removes all of it. It is not
+in a site archive: the secrets are sealed with a key of the server that made them.
+
 **The people who visit.** A visitor has no account and the site keeps nothing
 about a page view. What is stored is what they send: the answers to a form
 (`form_submissions`: whatever fields the form has, so whatever the person

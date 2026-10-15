@@ -91,6 +91,8 @@ describe('what an archive says about itself', () => {
       'import_jobs',
       'missing_paths',
       'sessions',
+      'user_recovery_codes',
+      'user_second_factors',
       'verification_tokens',
     ]);
   });

@@ -6,6 +6,7 @@ import {
   type PaginatedUsers,
   type SetUserActiveBody,
   type UpdateUserRoleBody,
+  type UserListItem,
   type UserRecord,
   invitationRecordSchema,
   invitationResendRecordSchema,
@@ -18,6 +19,7 @@ export type {
   InvitationRecord,
   InvitationResendRecord,
   PaginatedUsers,
+  UserListItem,
   UserRecord,
   UserRole,
 };

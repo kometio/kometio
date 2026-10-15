@@ -11,3 +11,4 @@ export * from './lib/in-memory-import-jobs.test-fixture';
 export * from './lib/in-memory-redirects.test-fixture';
 export * from './lib/in-memory-repositories.test-fixture';
 export * from './lib/page-list-state-cases.test-fixture';
+export * from './lib/second-factor.test-fixture';

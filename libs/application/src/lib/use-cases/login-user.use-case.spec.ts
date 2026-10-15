@@ -9,11 +9,28 @@ import {
   buildUser,
   FakeAuthPort,
   FakeCaptchaPort,
+  FakeVerificationTokenPort,
+  InMemorySecondFactorRepository,
   InMemoryUserRepository,
 } from '@kometio/testing';
-import { loginUser } from './login-user.use-case';
+import { loginUser, type LoginOutcome } from './login-user.use-case';
 
 const tenantId = 'tenant-1';
+
+/** Nobody in these has the second step on: the sign-in is the password. */
+function noSecondStep() {
+  return {
+    secondFactorRepository: new InMemorySecondFactorRepository(),
+    verificationTokenPort: new FakeVerificationTokenPort(),
+  };
+}
+
+function signedIn(outcome: LoginOutcome): Session {
+  if (outcome.status !== 'signed-in') {
+    throw new Error('The sign-in asked for a second step');
+  }
+  return outcome.session;
+}
 
 describe('loginUser', () => {
   it('creates a session when the account is active and the password matches', async () => {
@@ -39,7 +56,7 @@ describe('loginUser', () => {
     const captchaPort = new FakeCaptchaPort();
 
     const result = await loginUser(
-      { userRepository, authPort, captchaPort },
+      { userRepository, authPort, captchaPort, ...noSecondStep() },
       {
         tenantId,
         email: 'lele@example.com',
@@ -48,7 +65,7 @@ describe('loginUser', () => {
       },
     );
 
-    expect(result).toBe(session);
+    expect(result).toEqual({ status: 'signed-in', session });
   });
 
   it('rejects a deactivated account even with the correct password', async () => {
@@ -67,7 +84,7 @@ describe('loginUser', () => {
 
     await expect(
       loginUser(
-        { userRepository, authPort, captchaPort },
+        { userRepository, authPort, captchaPort, ...noSecondStep() },
         {
           tenantId,
           email: 'lele@example.com',
@@ -95,7 +112,7 @@ describe('loginUser', () => {
 
     await expect(
       loginUser(
-        { userRepository, authPort, captchaPort },
+        { userRepository, authPort, captchaPort, ...noSecondStep() },
         {
           tenantId,
           email: 'lele@example.com',
@@ -120,7 +137,7 @@ describe('loginUser', () => {
 
     await expect(
       loginUser(
-        { userRepository, authPort, captchaPort },
+        { userRepository, authPort, captchaPort, ...noSecondStep() },
         {
           tenantId,
           email: 'nobody@example.com',
@@ -147,7 +164,7 @@ describe('loginUser', () => {
 
     await expect(
       loginUser(
-        { userRepository, authPort, captchaPort },
+        { userRepository, authPort, captchaPort, ...noSecondStep() },
         {
           tenantId,
           email: 'lele@example.com',
@@ -171,8 +188,13 @@ describe('loginUser: the device', () => {
       }),
     );
 
-    const session = await loginUser(
-      { userRepository, authPort, captchaPort: new FakeCaptchaPort() },
+    const outcome = await loginUser(
+      {
+        userRepository,
+        authPort,
+        captchaPort: new FakeCaptchaPort(),
+        ...noSecondStep(),
+      },
       {
         tenantId,
         email: 'lele@example.com',
@@ -183,6 +205,7 @@ describe('loginUser: the device', () => {
       },
     );
 
+    const session = signedIn(outcome);
     const [listed] = await authPort.listSessionsForUser(
       session.userId,
       tenantId,
@@ -203,7 +226,12 @@ describe('loginUser: the address is the same whatever case it is typed in', () =
         isActive: true,
       }),
     );
-    return { userRepository, authPort, captchaPort: new FakeCaptchaPort() };
+    return {
+      userRepository,
+      authPort,
+      captchaPort: new FakeCaptchaPort(),
+      ...noSecondStep(),
+    };
   }
 
   it.each(['mario.rossi@example.com', 'MARIO.ROSSI@EXAMPLE.COM'])(
@@ -211,14 +239,14 @@ describe('loginUser: the address is the same whatever case it is typed in', () =
     async (typed) => {
       const deps = await setup();
 
-      const session = await loginUser(deps, {
+      const outcome = await loginUser(deps, {
         tenantId: 'tenant-1',
         email: typed,
         password: 'correct',
         captchaToken: 'valid-token',
       });
 
-      expect(session.userId).toBe('user-1');
+      expect(signedIn(outcome).userId).toBe('user-1');
     },
   );
 
@@ -232,6 +260,89 @@ describe('loginUser: the address is the same whatever case it is typed in', () =
         password: 'wrong',
         captchaToken: 'valid-token',
       }),
+    ).rejects.toBeInstanceOf(InvalidCredentialsError);
+  });
+});
+
+describe('loginUser: the second step', () => {
+  async function setup(options: { secondStep: boolean }) {
+    const authPort = new FakeAuthPort();
+    const userRepository = new InMemoryUserRepository();
+    const secondFactorRepository = new InMemorySecondFactorRepository();
+    const verificationTokenPort = new FakeVerificationTokenPort();
+    await userRepository.add(
+      buildUser({
+        passwordHash: await authPort.hashPassword('correct'),
+        isActive: true,
+      }),
+    );
+    if (options.secondStep) {
+      await secondFactorRepository.savePendingTotp(
+        tenantId,
+        'user-1',
+        'sealed',
+      );
+      await secondFactorRepository.confirmTotp(tenantId, 'user-1', 1, []);
+    }
+    return {
+      authPort,
+      userRepository,
+      secondFactorRepository,
+      verificationTokenPort,
+      captchaPort: new FakeCaptchaPort(),
+    };
+  }
+
+  const credentials = {
+    tenantId,
+    email: 'lele@example.com',
+    password: 'correct',
+    captchaToken: 'valid-token',
+  };
+
+  it('asks for a code instead of giving a session, for a person who turned it on', async () => {
+    const deps = await setup({ secondStep: true });
+    const createSession = vi.spyOn(deps.authPort, 'createSession');
+
+    const outcome = await loginUser(deps, credentials);
+
+    expect(outcome.status).toBe('second-factor-required');
+    expect(createSession).not.toHaveBeenCalled();
+    if (outcome.status !== 'second-factor-required') return;
+    // The challenge is the token that says who is being asked, and for what.
+    const token = await deps.verificationTokenPort.consumeToken(
+      outcome.challenge,
+      'second-factor',
+    );
+    expect(token).toMatchObject({ userId: 'user-1', tenantId, payload: '0' });
+  });
+
+  it('signs in at once a person who did not', async () => {
+    const deps = await setup({ secondStep: false });
+
+    const outcome = await loginUser(deps, credentials);
+
+    expect(outcome.status).toBe('signed-in');
+  });
+
+  it('does not ask a person whose enrolment was begun and not finished', async () => {
+    const deps = await setup({ secondStep: false });
+    await deps.secondFactorRepository.savePendingTotp(
+      tenantId,
+      'user-1',
+      'sealed',
+    );
+
+    const outcome = await loginUser(deps, credentials);
+
+    expect(outcome.status).toBe('signed-in');
+  });
+
+  it('says nothing about the second step to somebody with the wrong password', async () => {
+    const deps = await setup({ secondStep: true });
+
+    await expect(
+      loginUser(deps, { ...credentials, password: 'wrong' }),
     ).rejects.toBeInstanceOf(InvalidCredentialsError);
   });
 });
