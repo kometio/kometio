@@ -200,7 +200,10 @@ allow-list (`KOMETIO_THEME=classic`) restricting which of the bundled
 themes this deployment will serve at all — what an agency sets so its
 client can only ever pick the agency's own theme. Both sides apply it
 (ADR-0069): the public site refuses to render anything outside the list,
-and the editor's theme picker does not offer it. Leave it unset to keep
+and the editor's theme picker does not offer it. The first-run starting
+points are drawn for a theme each (the blog's is `paper`): one whose theme
+is left out of the list is shown as unavailable, with the theme's name, and
+cannot be made. Leave it unset to keep
 every bundled theme selectable. It's read at runtime, so changing it
 needs a restart, not a rebuild:
 

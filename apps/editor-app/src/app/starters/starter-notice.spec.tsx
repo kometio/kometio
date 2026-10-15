@@ -27,7 +27,11 @@ const offer = (available: boolean) => ({
   available,
   language: 'it' as const,
   fallback: false,
-  starters: ['studio' as const, 'portfolio' as const, 'blog' as const],
+  starters: [
+    { id: 'studio' as const, themeName: 'classic', themeAvailable: true },
+    { id: 'portfolio' as const, themeName: 'classic', themeAvailable: true },
+    { id: 'blog' as const, themeName: 'paper', themeAvailable: true },
+  ],
 });
 
 function renderNotice() {

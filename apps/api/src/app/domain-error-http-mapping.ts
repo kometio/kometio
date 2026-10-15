@@ -15,6 +15,7 @@ import {
   InvalidFormSubmissionError,
   InvalidThemeNameError,
   SiteIsNotBlankError,
+  StarterThemeUnavailableError,
   ThemeUploadNotFoundError,
   SiteAiSettingsRejectedError,
   PageGenerationDisabledError,
@@ -210,6 +211,10 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   // The site is not the new one a starting point is for (docs/adr/0136): the
   // request is well formed, the state of the site is what refuses it.
   [SiteIsNotBlankError, (m) => new ConflictException(m)],
+  // The request names a starting point this installation cannot make (its
+  // theme is not here): refused, with the theme's name in the message. Not a
+  // 409, which the editor reads as "the site is not new".
+  [StarterThemeUnavailableError, (m) => new BadRequestException(m)],
   // The message is the reason's code (ThemeUploadRejectedError), which the
   // editor turns into a sentence in its own language.
   [ThemeUploadRejectedError, (m) => new BadRequestException(m)],

@@ -170,6 +170,9 @@
     },
     {
       "path": "./libs/adapters/totp-authenticator"
+    },
+    {
+      "path": "./themes/paper"
     }
   ],
   "compilerOptions": {}

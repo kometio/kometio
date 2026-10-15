@@ -119,4 +119,32 @@ describe('StarterPicker', () => {
 
     expect(button.hasAttribute('disabled')).toBe(true);
   });
+
+  describe('an example whose theme this installation does not have', () => {
+    it('is listed, says which theme is missing, and cannot be chosen', () => {
+      renderPicker({ unavailable: { blog: 'paper' } });
+
+      const blog = screen.getByRole('radio', { name: /blog/i });
+
+      expect(blog.hasAttribute('disabled')).toBe(true);
+      expect(screen.getByText(/tema «paper»/i)).toBeTruthy();
+      expect(
+        screen
+          .getByRole('radio', { name: /portfolio/i })
+          .hasAttribute('disabled'),
+      ).toBe(false);
+    });
+
+    it('does not make one when continuing with it', async () => {
+      const { onApply } = renderPicker({ unavailable: { blog: 'paper' } });
+
+      choose(/blog/i);
+      submit();
+
+      await waitFor(() =>
+        expect(screen.getByText(/scegli un esempio/i)).toBeTruthy(),
+      );
+      expect(onApply).not.toHaveBeenCalled();
+    });
+  });
 });

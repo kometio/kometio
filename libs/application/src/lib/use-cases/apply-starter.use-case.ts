@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import {
   SiteIsNotBlankError,
+  StarterThemeUnavailableError,
   type PageGroup,
   type PageTranslation,
   type Site,
@@ -53,6 +54,7 @@ import { deleteForm } from './delete-form.use-case';
 
 export interface StarterOfferDeps {
   siteRepository: SiteRepositoryPort;
+  themeCatalog: ThemeCatalogPort;
   pageGroupRepository: PageGroupRepositoryPort;
   pageTranslationRepository: PageTranslationRepositoryPort;
   collectionRepository: CollectionRepositoryPort;
@@ -65,7 +67,6 @@ export interface ApplyStarterDeps extends StarterOfferDeps {
   siteLayoutSectionVersionRepository: SiteLayoutSectionVersionRepositoryPort;
   reusableSectionRepository: ReusableSectionRepositoryPort;
   searchPort: SearchPort;
-  themeCatalog: ThemeCatalogPort;
 }
 
 /** The home page a new site has, as the wizard made it. */
@@ -148,6 +149,19 @@ function isWizardHome(content: PageContent, siteName: string): boolean {
   );
 }
 
+/** One starting point, and whether this deployment can make it. */
+export interface StarterOfferEntry {
+  id: StarterId;
+  /** The theme it is drawn for. */
+  themeName: string;
+  /**
+   * False when the deployment does not have that theme (`KOMETIO_THEME` names
+   * others, or the build left it out): the starter is shown as unavailable and
+   * refused, with the theme's name.
+   */
+  themeAvailable: boolean;
+}
+
 export interface StarterOffer {
   /** Whether the site is still new enough to be given one. */
   available: boolean;
@@ -155,7 +169,22 @@ export interface StarterOffer {
   language: StarterLanguage;
   /** True where the site's language is not one a starter is written in: the English text is offered. */
   fallback: boolean;
-  starters: StarterId[];
+  starters: StarterOfferEntry[];
+}
+
+/**
+ * Whether a starter's theme can be put on this site: the site is on it
+ * already, or the deployment carries it. One question, asked by the offer to
+ * draw the choice and by the application to refuse it.
+ */
+async function starterThemeAvailable(
+  deps: StarterOfferDeps,
+  site: Site,
+  themeName: string,
+): Promise<boolean> {
+  if (site.themeName === themeName) return true;
+  const offered = await deps.themeCatalog.listAvailableThemes();
+  return offered.some((theme) => theme.name === themeName);
 }
 
 export async function getStarterOffer(
@@ -169,11 +198,23 @@ export async function getStarterOffer(
   );
   const home = await findWizardHome(deps, site);
   const { language, fallback } = starterLanguageFor(site.defaultLocale);
+  const starters: StarterOfferEntry[] = [];
+  for (const starter of STARTERS) {
+    starters.push({
+      id: starter.id,
+      themeName: starter.themeName,
+      themeAvailable: await starterThemeAvailable(
+        deps,
+        site,
+        starter.themeName,
+      ),
+    });
+  }
   return {
     available: home !== null,
     language,
     fallback,
-    starters: STARTERS.map((starter) => starter.id),
+    starters,
   };
 }
 
@@ -216,6 +257,9 @@ export async function applyStarter(
     throw new SiteIsNotBlankError(siteId);
   }
   const starter = findStarter(input.starterId);
+  if (!(await starterThemeAvailable(deps, site, starter.themeName))) {
+    throw new StarterThemeUnavailableError(starter.id, starter.themeName);
+  }
   const { language, fallback } = starterLanguageFor(site.defaultLocale);
   const content = starter.content[language]({ siteName: site.name });
   const locale = site.defaultLocale;

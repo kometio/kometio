@@ -1,0 +1,73 @@
+---
+import type { ThemeFooterProps } from '@kometio/theme-runtime';
+
+/**
+ * The paper's footer: the same paper as the page, under a hairline. It is
+ * not turned over, and not tinted; a design made of ruled lines closes with
+ * one — and with the name of the site set large, which the design ends on.
+ * What the site put in its footer (its links, its line of rights) sits at the
+ * other end.
+ */
+export type Props = ThemeFooterProps;
+
+const { class: className, siteName } = Astro.props;
+---
+
+<footer class:list={['paper-footer', 'kometio-shell-inset', className]}>
+	<div class="paper-footer__inner">
+		<p class="paper-footer__name">{siteName}</p>
+		<div class="paper-footer__blocks">
+			<slot />
+		</div>
+	</div>
+</footer>
+
+<style>
+	.paper-footer {
+		border-top: 1px solid var(--border);
+		background: var(--background);
+		padding-block: clamp(2rem, 1.2rem + 2.2vw, 3rem);
+		color: var(--muted-foreground);
+	}
+
+	.paper-footer__inner {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+		align-items: end;
+	}
+
+	.paper-footer__name {
+		margin: 0;
+		font-family: var(--kometio-heading-font);
+		font-size: clamp(2rem, 1.5rem + 1.6vw, 2.5rem);
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+		color: var(--foreground);
+		overflow-wrap: anywhere;
+	}
+
+	@media (min-width: 48rem) {
+		.paper-footer__inner {
+			/* Two equal columns and not `auto`: a Nav measures itself (it is a
+			   container), so it has no width of its own to size a column by,
+			   and its links would stand one under the other. */
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			gap: 2rem;
+		}
+
+		/* The site's own blocks, at the right edge: its links above its line. */
+		.paper-footer__blocks > :global(div) {
+			text-align: end;
+		}
+
+		.paper-footer__blocks :global(.kometio-nav) {
+			justify-content: flex-end;
+		}
+	}
+
+	.paper-footer :global(.kometio-nav-link) {
+		color: var(--foreground);
+		font-weight: 500;
+	}
+</style>

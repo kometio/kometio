@@ -1,0 +1,320 @@
+---
+import type { ThemeContentShellProps } from '@kometio/theme-runtime';
+
+/**
+ * Where the paper theme says what a page's own blocks look like, beyond
+ * what a token can say: a hero set on the left like a title page, an index
+ * of pages as ruled rows with their numbers, and a line of text that does
+ * not run the width of the window.
+ *
+ * It is the one place a theme may reach into the blocks core renders
+ * without carrying a copy of each of them (docs/adr/0043): the wrapper adds
+ * no box (`display: contents`), every selector begins at its own class so
+ * nothing leaves this theme, and each one names a class core keeps stable
+ * for exactly this (`.kometio-hero`, `.kometio-page-grid__card`…).
+ *
+ * Why not an override of the block: a block override is a copy, and the
+ * list of pages cannot be copied by a theme at all (its pagination and its
+ * filter are the public site's own modules). A copy of the Hero would be
+ * possible and would cost a fingerprint to review every time core touches it.
+ */
+export type Props = ThemeContentShellProps;
+---
+
+<div class="paper-content">
+	<slot />
+</div>
+
+<style>
+	.paper-content {
+		display: contents;
+	}
+
+	/* ---- The hero: a title page, set on the left ----------------------- */
+
+	.paper-content :global(.kometio-hero) {
+		margin-inline: 0;
+		max-width: var(--kometio-override-max-width, none);
+		gap: var(--kometio-override-gap, 0);
+		/* From the header to the small capitals is the design's 56px on a
+		   phone and 112px from a 1280px window: what core already puts above
+		   the first block (--kometio-page-start-gap) is part of that, and what
+		   is below the hero is the gap between sections, so it has no bottom
+		   padding of its own. A site that styles one says its own. */
+		padding-top: var(
+			--kometio-override-padding-y,
+			calc(
+				clamp(3.5rem, 1rem + 8vw, 7rem) - var(--kometio-page-start-gap)
+			)
+		);
+		padding-bottom: var(--kometio-override-padding-y, 0);
+	}
+
+	/* Small capitals in the accent, a long line of tracking: the design's
+	   "Portfolio" above the title. */
+	.paper-content :global(.kometio-hero__eyebrow) {
+		margin: 0 0 clamp(1.5rem, 1.28rem + 0.9vw, 2rem);
+		font-size: clamp(0.8125rem, 0.7rem + 0.4vw, 0.875rem);
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--paper-accent);
+	}
+
+	/* The title is the loud thing here, and the utility classes the core
+	   Hero puts on its <h1> (text-4xl sm:text-5xl) are sizes of a smaller
+	   page: the theme's own scale takes over. */
+	.paper-content :global(.kometio-hero h1) {
+		font-size: var(--kometio-h1-size);
+		font-weight: var(--kometio-h1-weight);
+		line-height: 0.97;
+		letter-spacing: -0.035em;
+		max-width: 62.5rem;
+		text-wrap: balance;
+	}
+
+	.paper-content :global(.kometio-hero .kometio-rich-text) {
+		max-width: 34rem;
+		margin-top: clamp(1.5rem, 1.28rem + 0.9vw, 2rem);
+		font-size: clamp(1.1875rem, 1.1rem + 0.35vw, 1.375rem);
+		line-height: 1.5;
+		color: var(--muted-foreground);
+	}
+
+	/* The buttons: side by side where there is room, one under the other and
+	   as wide as the screen on a phone. */
+	.paper-content :global(.kometio-hero__content) {
+		flex-direction: column;
+		align-items: stretch;
+		align-self: stretch;
+		gap: 0.75rem;
+		margin-top: clamp(2rem, 1.78rem + 0.9vw, 2.5rem);
+	}
+
+	.paper-content :global(.kometio-hero__content .kometio-button) {
+		justify-content: center;
+	}
+
+	@container (min-width: 32rem) {
+		.paper-content :global(.kometio-hero__content) {
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			align-self: flex-start;
+			gap: 1rem;
+		}
+
+		.paper-content :global(.kometio-hero__content .kometio-button--md) {
+			padding: 1rem 1.75rem;
+		}
+	}
+
+	/* A page that opens with its title and nothing else (no buttons) is a
+	   page's title, not the landing hero: the design draws one at 84px where
+	   the landing is 112, and a long project name needs the difference. */
+	.paper-content :global(.kometio-hero:not(:has(.kometio-hero__content)) h1) {
+		font-size: clamp(2.5rem, 1.3rem + 4.94vw, 5.25rem);
+		line-height: 1;
+		letter-spacing: -0.03em;
+	}
+
+	/* ---- Buttons: the design's, in the one size most are -------------- */
+
+	.paper-content :global(.kometio-button--md) {
+		padding: 0.9375rem 1.75rem;
+		font-size: 1.0625rem;
+		font-weight: 500;
+	}
+
+	/* ---- Headings: set left, and not wider than a line wants ------------ */
+
+	.paper-content :global(.kometio-heading) {
+		max-width: 46rem;
+	}
+
+	/* ---- Text: a measure -------------------------------------------------
+	   A paragraph is not read across a 1150px column. The design holds its
+	   long text to 720px; so does this, from the root block's own wrapper. */
+
+	.paper-content :global(.kometio-root-block > .kometio-text),
+	.paper-content :global(.kometio-root-block > .kometio-list) {
+		max-width: 46rem;
+		font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+		line-height: 1.65;
+	}
+
+	/* A list is set with the accent's dash where a bullet would be, the way
+	   the design's lists are. The check and icon lists keep their own. */
+	.paper-content :global(.kometio-list--bullet) {
+		list-style: none;
+		padding-inline-start: 0;
+		gap: 0.875rem;
+	}
+
+	.paper-content :global(.kometio-list--bullet .kometio-list-item) {
+		display: grid;
+		grid-template-columns: 1.75rem minmax(0, 1fr);
+		column-gap: 0.5rem;
+		align-items: baseline;
+	}
+
+	.paper-content :global(.kometio-list--bullet .kometio-list-item)::before {
+		content: '—';
+		color: var(--paper-accent);
+	}
+
+	/* ---- A list of pages: ruled rows with their numbers ------------------
+	   `cards` is what a starter makes; this theme draws it as an index, the
+	   way a printed table of contents is: a number, the title, a line about
+	   it, and the date at the right edge, between two rules. */
+
+	.paper-content :global(.kometio-page-grid--cards),
+	.paper-content :global(.kometio-page-grid--grid) {
+		grid-template-columns: minmax(0, 1fr);
+		/* Where this page of the list begins: an archive's second page does not
+		   start again at 01. */
+		counter-reset: paper-row var(--kometio-page-grid-offset, 0);
+		gap: 0;
+		border-bottom: 1px solid var(--paper-rule);
+	}
+
+	.paper-content :global(.kometio-page-grid--cards .kometio-page-grid__item),
+	.paper-content :global(.kometio-page-grid--grid .kometio-page-grid__item) {
+		counter-increment: paper-row;
+		border-top: 1px solid var(--border);
+	}
+
+	.paper-content
+		:global(.kometio-page-grid--cards .kometio-page-grid__item:first-child),
+	.paper-content
+		:global(.kometio-page-grid--grid .kometio-page-grid__item:first-child) {
+		border-top-color: var(--paper-rule);
+	}
+
+	.paper-content :global(.kometio-page-grid--cards .kometio-page-grid__card),
+	.paper-content :global(.kometio-page-grid--grid .kometio-page-grid__card) {
+		display: grid;
+		grid-template-columns: 4.5rem minmax(0, 1.2fr) minmax(0, 1fr) 10rem;
+		grid-template-areas: 'number title excerpt date';
+		column-gap: 2rem;
+		align-items: baseline;
+		padding-block: clamp(1.5rem, 1rem + 1.2vw, 2rem);
+		color: var(--foreground);
+	}
+
+	.paper-content
+		:global(.kometio-page-grid--cards .kometio-page-grid__card)::before,
+	.paper-content
+		:global(.kometio-page-grid--grid .kometio-page-grid__card)::before {
+		grid-area: number;
+		content: counter(paper-row, decimal-leading-zero);
+		font-size: clamp(0.875rem, 0.82rem + 0.12vw, 0.9375rem);
+		font-weight: 600;
+		color: var(--muted-foreground);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.paper-content :global(.kometio-page-grid__title) {
+		grid-area: title;
+		font-family: var(--kometio-heading-font);
+		font-size: var(--kometio-h3-size);
+		font-weight: 400;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+	}
+
+	.paper-content :global(.kometio-page-grid__excerpt) {
+		grid-area: excerpt;
+		font-size: clamp(1rem, 0.9rem + 0.2vw, 1.0625rem);
+		line-height: 1.5;
+		color: var(--muted-foreground);
+	}
+
+	.paper-content :global(.kometio-page-grid__date) {
+		grid-area: date;
+		justify-self: end;
+		font-size: clamp(0.875rem, 0.82rem + 0.12vw, 0.9375rem);
+		color: var(--muted-foreground);
+		white-space: nowrap;
+	}
+
+	/* A picture, when somebody gave one: a small plate before the title. */
+	.paper-content :global(.kometio-page-grid__card:has(.kometio-page-grid__image)) {
+		grid-template-columns: 4.5rem 9rem minmax(0, 1.2fr) minmax(0, 1fr) 10rem;
+		grid-template-areas: 'number image title excerpt date';
+	}
+
+	.paper-content :global(.kometio-page-grid__image) {
+		grid-area: image;
+		aspect-ratio: 4 / 3;
+		border-radius: var(--radius);
+	}
+
+	/* The title is underlined under the pointer by core; the row answers by
+	   the title taking the accent instead, which is what a ruled list does. */
+	.paper-content
+		:global(.kometio-page-grid__card:hover .kometio-page-grid__title),
+	.paper-content
+		:global(.kometio-page-grid__card:focus-visible .kometio-page-grid__title) {
+		text-decoration: none;
+		color: var(--paper-accent);
+	}
+
+	/* On a narrow list the row is a stack: the number and the date on one
+	   line, then the title, then the line about it. The list measures
+	   itself (it is a container), so this holds in a column too. */
+	@container (max-width: 44rem) {
+		.paper-content :global(.kometio-page-grid--cards .kometio-page-grid__card),
+		.paper-content :global(.kometio-page-grid--grid .kometio-page-grid__card) {
+			grid-template-columns: auto minmax(0, 1fr);
+			grid-template-areas:
+				'number date'
+				'title title'
+				'excerpt excerpt';
+			row-gap: 0.625rem;
+			column-gap: 0.75rem;
+		}
+
+		.paper-content :global(.kometio-page-grid__card:has(.kometio-page-grid__image)) {
+			grid-template-columns: auto minmax(0, 1fr);
+			grid-template-areas:
+				'image image'
+				'number date'
+				'title title'
+				'excerpt excerpt';
+		}
+
+		.paper-content :global(.kometio-page-grid__date) {
+			justify-self: start;
+		}
+	}
+
+	/* The plain list of links (`list`): the same rules, the title alone. */
+	.paper-content :global(.kometio-page-grid--list) {
+		display: block;
+		border-bottom: 1px solid var(--paper-rule);
+	}
+
+	.paper-content :global(.kometio-page-grid--list .kometio-page-grid__item) {
+		border-top: 1px solid var(--border);
+	}
+
+	.paper-content
+		:global(.kometio-page-grid--list .kometio-page-grid__item:first-child) {
+		border-top-color: var(--paper-rule);
+	}
+
+	.paper-content :global(.kometio-page-grid__link) {
+		display: block;
+		padding-block: 1rem;
+		font-family: var(--kometio-heading-font);
+		font-size: var(--kometio-h4-size);
+		color: var(--foreground);
+	}
+
+	.paper-content :global(.kometio-page-grid__link:hover),
+	.paper-content :global(.kometio-page-grid__link:focus-visible) {
+		color: var(--paper-accent);
+		text-decoration: none;
+	}
+</style>

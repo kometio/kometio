@@ -14,6 +14,12 @@ const CHOICES: readonly Choice[] = [...STARTER_IDS, 'blank'];
 export interface StarterPickerProps {
   /** The language the examples would be written in is not the site's: say so before anything is made. */
   fallbackLanguageName?: string;
+  /**
+   * The examples this installation cannot make, with the theme each is drawn
+   * for and the installation does not have. They are listed and cannot be
+   * chosen: say which theme is missing instead of leaving it out.
+   */
+  unavailable?: Partial<Record<StarterId, string>>;
   /** Resolves when the example is made; rejects with what to say. */
   onApply: (starterId: StarterId) => Promise<void>;
   /** Parts from a blank page: nothing is made. */
@@ -31,6 +37,7 @@ export interface StarterPickerProps {
  */
 export function StarterPicker({
   fallbackLanguageName,
+  unavailable = {},
   onApply,
   onBlank,
   error = null,
@@ -68,15 +75,31 @@ export function StarterPicker({
         aria-describedby={missing ? 'starters-missing' : undefined}
         className="flex flex-col gap-2"
       >
-        {CHOICES.map((candidate) => (
-          <RadioOption
-            key={candidate}
-            id={`starter-${candidate}`}
-            value={candidate}
-            label={t(`starters.options.${candidate}.name`)}
-            description={t(`starters.options.${candidate}.description`)}
-          />
-        ))}
+        {CHOICES.map((candidate) => {
+          const missingTheme =
+            candidate === 'blank' ? undefined : unavailable[candidate];
+          return (
+            <RadioOption
+              key={candidate}
+              id={`starter-${candidate}`}
+              value={candidate}
+              label={t(`starters.options.${candidate}.name`)}
+              disabled={missingTheme !== undefined}
+              description={
+                missingTheme === undefined ? (
+                  t(`starters.options.${candidate}.description`)
+                ) : (
+                  <>
+                    {t(`starters.options.${candidate}.description`)}{' '}
+                    <span className="text-warning">
+                      {t('starters.themeMissing', { theme: missingTheme })}
+                    </span>
+                  </>
+                )
+              }
+            />
+          );
+        })}
       </RadioGroup>
 
       {fallbackLanguageName && (

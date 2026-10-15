@@ -85,11 +85,15 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
     title: project.title,
     description: project.summary,
     content: [
-      hero({
-        eyebrow: words.projectEyebrow,
-        title: project.title,
-        subtitle: project.summary,
-      }),
+      hero(
+        {
+          eyebrow: words.projectEyebrow,
+          title: project.title,
+          subtitle: project.summary,
+        },
+        [],
+        'start',
+      ),
       callout(words.exampleNote),
       heading(words.startHeading),
       text(project.start),
@@ -120,10 +124,14 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
         title: siteName,
         description: words.home.description,
         content: [
-          hero(words.hero, [
-            button(words.seeProjects, projects),
-            button(words.writeToMe, contact, 'outline'),
-          ]),
+          hero(
+            words.hero,
+            [
+              button(words.seeProjects, projects),
+              button(words.writeToMe, contact, 'outline'),
+            ],
+            'start',
+          ),
           heading(words.latest),
           subPages(
             { key: 'progetti', title: words.projects.title },
@@ -138,7 +146,7 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
         title: words.projects.title,
         description: words.projects.description,
         content: [
-          hero(words.projectsIntro),
+          hero(words.projectsIntro, [], 'start'),
           subPages({ key: 'progetti', title: words.projects.title }, 'cards'),
         ],
       },
@@ -149,7 +157,7 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
         title: words.about.title,
         description: words.about.description,
         content: [
-          hero(words.aboutHero),
+          hero(words.aboutHero, [], 'start'),
           text(words.aboutText),
           callout(words.aboutNote),
           heading(words.howIWork),
@@ -162,7 +170,7 @@ function build({ siteName }: StarterContext, words: Words): StarterContent {
         title: words.contact.title,
         description: words.contact.description,
         content: [
-          hero(words.contactHero),
+          hero(words.contactHero, [], 'start'),
           form('contatti', words.contactFormName),
         ],
       },

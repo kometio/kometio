@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  InvalidThemeNameError,
   SiteIsNotBlankError,
   SiteNotFoundError,
+  StarterThemeUnavailableError,
   type Site,
 } from '@kometio/domain-core';
 import {
@@ -109,10 +109,12 @@ async function arrange(
     reusableSectionRepository: new InMemoryReusableSectionRepository(),
     searchPort: new InMemorySearchPort(),
     themeCatalog: new InMemoryThemeCatalog(
-      (overrides.themes ?? ['classic', 'docs-showcase']).map((name) => ({
-        name,
-        uploaded: false,
-      })),
+      (overrides.themes ?? ['classic', 'docs-showcase', 'paper']).map(
+        (name) => ({
+          name,
+          uploaded: false,
+        }),
+      ),
     ),
   };
   return { deps, site, group, translation };
@@ -348,6 +350,53 @@ describe('applyStarter', () => {
     expect(site?.themeName).toBe('classic');
   });
 
+  it('puts the blog on paper, where it was drawn, when the deployment carries it', async () => {
+    const world = await arrange({ themes: ['classic', 'paper'] });
+
+    await apply(world.deps, 'blog');
+
+    const site = await world.deps.siteRepository.findById(TENANT, SITE);
+    expect(site?.themeName).toBe('paper');
+  });
+
+  describe('when the deployment does not have the starter’s theme', () => {
+    async function narrowed() {
+      return arrange({ themeName: 'docs-showcase', themes: ['docs-showcase'] });
+    }
+
+    it('refuses it, and says which theme is missing', async () => {
+      const world = await narrowed();
+
+      const refused = apply(world.deps, 'studio');
+
+      await expect(refused).rejects.toBeInstanceOf(
+        StarterThemeUnavailableError,
+      );
+      await expect(refused).rejects.toMatchObject({
+        starterId: 'studio',
+        themeName: 'classic',
+      });
+    });
+
+    it('makes nothing and leaves the site on the theme it has', async () => {
+      const world = await narrowed();
+
+      await apply(world.deps, 'blog').catch(() => undefined);
+
+      const site = await world.deps.siteRepository.findById(TENANT, SITE);
+      expect(site?.themeName).toBe('docs-showcase');
+      expect((await everyPage(world.deps)).length).toBe(1);
+    });
+
+    it('does not refuse a starter whose theme the site is already on', async () => {
+      const world = await arrange({ themeName: 'paper', themes: ['paper'] });
+
+      await expect(apply(world.deps, 'blog')).resolves.toMatchObject({
+        starterId: 'blog',
+      });
+    });
+  });
+
   describe('refuses a site that is not new', () => {
     it('whose home page has been written', async () => {
       world.group.saveContent(
@@ -526,8 +575,29 @@ describe('getStarterOffer', () => {
       available: true,
       language: 'it',
       fallback: false,
-      starters: ['studio', 'portfolio', 'blog'],
+      starters: [
+        { id: 'studio', themeName: 'classic', themeAvailable: true },
+        { id: 'portfolio', themeName: 'classic', themeAvailable: true },
+        { id: 'blog', themeName: 'paper', themeAvailable: true },
+      ],
     });
+  });
+
+  it('shows a starter as unavailable when its theme is not in the deployment', async () => {
+    const { deps } = await arrange({ themes: ['classic'] });
+
+    const offer = await getStarterOffer(deps, {
+      tenantId: TENANT,
+      siteId: SITE,
+    });
+
+    expect(
+      offer.starters.map(({ id, themeAvailable }) => [id, themeAvailable]),
+    ).toEqual([
+      ['studio', true],
+      ['portfolio', true],
+      ['blog', false],
+    ]);
   });
 
   it('says so, and not that anything is wrong, for a language it has no text in', async () => {
@@ -578,18 +648,5 @@ describe('getStarterOffer', () => {
     });
 
     expect(offer.available).toBe(false);
-  });
-});
-
-describe('an error of the theme catalog', () => {
-  it('is the error of the starter when its theme is not installed', async () => {
-    const world = await arrange({
-      themeName: 'docs-showcase',
-      themes: ['docs-showcase'],
-    });
-
-    await expect(apply(world.deps, 'studio')).rejects.toBeInstanceOf(
-      InvalidThemeNameError,
-    );
   });
 });

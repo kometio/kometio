@@ -168,6 +168,8 @@
     "creating": "Sto creando il sito…",
     "error": "L’esempio non è stato creato. Riprova.",
     "notBlank": "Questo sito ha già dei contenuti suoi, quindi non si può aggiungere un esempio.",
+    "themeMissing": "Usa il tema «{{theme}}», che questa installazione non ha, quindi qui non si può creare. Scegli un altro esempio, oppure una pagina vuota: userà il tema che hai.",
+    "themeMissingError": "Questo esempio usa un tema che questa installazione non ha, quindi non è stato creato. Scegli un altro esempio, oppure una pagina vuota.",
     "created_one": "Il sito è pronto: {{count}} pagina creata",
     "created_other": "Il sito è pronto: {{count}} pagine create",
     "notice": {

@@ -46,6 +46,13 @@ export interface ThemeRegionProps {
   /** Core's own UI dictionary, already bound to `locale`. */
   i18n: Translator;
   /**
+   * The site's name, as its owner wrote it in the settings. For a header
+   * or a footer that sets it as a mark of its own: the blocks a region
+   * receives are what the site put there, and the name is not necessarily
+   * among them.
+   */
+  siteName: string;
+  /**
    * The site's published page tree. Fetched at most once per request, and
    * only if the region actually calls it: the fetch, the memoization, the
    * domain guard and the error policy (resolves to `[]`, never throws) are

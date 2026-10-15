@@ -1,6 +1,7 @@
 ---
 import type { NavLinkProps } from '@kometio/shared-types';
 import { resolveLinkHref } from '@kometio/theme-runtime';
+import { navCurrent } from '../../lib/nav-current';
 
 type Props = NavLinkProps & {
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
@@ -26,10 +27,16 @@ const {
 // this locale stays visible and stops being a link, rather than linking
 // to whatever is in the url field.
 const href = resolveLinkHref({ linkType, page, url });
+// Where the reader is: `page` for this entry's own page, `location` for the
+// section it is in. Nothing is drawn for it by core — a menu that changed
+// its look under the reader would be a change to every site — but it is
+// there for a screen reader, and for a theme to mark.
+const current = navCurrent(href, Astro.url);
 ---
 
 <a
   href={href ?? undefined}
+  aria-current={current ?? undefined}
   class:list={[
     'kometio-nav-link',
     { 'kometio-nav-link--right': position === 'right' },

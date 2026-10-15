@@ -56,6 +56,18 @@ themes/<name>/
     *.locales.json    # required alongside a .block.ts — that block's own i18n
 ```
 
+## The themes that ship
+
+| Theme           | What it is                                                                                                 | Made with                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `classic`       | A small business's site: readable and trustworthy, a deep green, Manrope                                   | Tokens                                         |
+| `docs-showcase` | A documentation site: a sidebar, a pager, a window round the code, and motion                              | Tokens, four block overrides, a content shell  |
+| `paper`         | Editorial (docs/adr/0139): warm paper, ink, a terracotta accent, Fraunces and Instrument Sans, ruled lists | Tokens, a header, a footer and a content shell |
+
+`paper` is the worked example of the bottom two rungs of the ladder: it carries
+no copy of any core block, and says what a token cannot in `regions/ContentShell.astro`
+(see "Styling a region").
+
 ## `theme.css` — the common case
 
 Design tokens only, no markup. `apps/public-site/src/layouts/PageLayout.astro`
@@ -493,6 +505,10 @@ Every region receives `ThemeRegionProps` (see
   override is handed the same one). Your own `locales.json` goes through
   `i18n.withDictionaries(strings)`, so that your words and core's come out in
   the same language.
+- **`siteName`** — the site's name, as its owner wrote it. A header or a
+  footer that sets it as a mark of its own has it here; the blocks a region
+  receives are what the site put there, and the name is not necessarily
+  among them.
 - **`route`** — `'page' | 'search' | 'error'`. Regions are never rendered
   on the 500 page at all: that page is the last error handler, and a throw
   there has nowhere left to propagate.

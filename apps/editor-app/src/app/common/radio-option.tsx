@@ -11,6 +11,12 @@ export interface RadioOptionProps {
   description?: ReactNode;
   /** More that belongs to this option — a number of days, say — under its description. */
   children?: ReactNode;
+  /**
+   * An option that cannot be chosen here, and the reason says why: it stays
+   * in the list (a thing that is missing is more useful named than absent),
+   * its radio is off, and nothing can select it by label or by keyboard.
+   */
+  disabled?: boolean;
 }
 
 /**
@@ -26,6 +32,7 @@ export function RadioOption({
   label,
   description,
   children,
+  disabled = false,
 }: RadioOptionProps) {
   const descriptionId = `${id}-description`;
   return (
@@ -34,10 +41,16 @@ export function RadioOption({
         value={value}
         id={id}
         className="mt-0.5"
+        disabled={disabled}
         aria-describedby={description ? descriptionId : undefined}
       />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <Label htmlFor={id} className="font-medium">
+        <Label
+          htmlFor={id}
+          className={
+            disabled ? 'font-medium text-muted-foreground' : 'font-medium'
+          }
+        >
           {label}
         </Label>
         {description && (

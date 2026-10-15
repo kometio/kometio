@@ -74,12 +74,18 @@ function make(
 
 /**
  * A Hero is a centred block, and a Button inside it takes the width of the
- * hero unless it is told to sit in the middle: so a hero with buttons says
- * so, and the buttons are the size of their words.
+ * hero unless it is told where to sit: so a hero with buttons says so, and
+ * the buttons are the size of their words.
+ *
+ * `align` is where its words and its blocks sit. A starter whose theme is
+ * set on the left (the blog, the portfolio: `paper` and `colour` are) says
+ * `start`; without it a hero is the centred one it has always been, and
+ * only a hero with buttons spells that out.
  */
 export function hero(
   props: { eyebrow?: string; title: string; subtitle?: string },
   children: Block[] = [],
+  align?: 'start' | 'center' | 'end',
 ): Block {
   return make(
     'Hero',
@@ -89,9 +95,11 @@ export function hero(
       subtitle: normalizeRichText(props.subtitle ?? ''),
     },
     children,
-    children.length > 0
-      ? { styleOverride: { base: { contentAlign: 'center' } } }
-      : {},
+    align
+      ? { styleOverride: { base: { contentAlign: align } } }
+      : children.length > 0
+        ? { styleOverride: { base: { contentAlign: 'center' } } }
+        : {},
   );
 }
 
