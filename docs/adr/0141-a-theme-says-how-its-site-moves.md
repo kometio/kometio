@@ -71,6 +71,8 @@ pages. Those are a look, and a theme is what decides a look.
   ask the person editing to set it, as before.
 - **No JavaScript router.** A site that wants an app-like navigation is a
   different product.
+- **No switch for the person who owns the site** — at first. It came in
+  ADR-0142: motion off for one site, whatever the theme says.
 - **No scroll-linked effects** (parallax, progress): they are the kind of
   motion most often unwelcome and hardest to make accessible.
 

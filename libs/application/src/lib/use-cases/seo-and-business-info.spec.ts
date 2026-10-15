@@ -333,6 +333,7 @@ describe('updateSiteThemeSettings', () => {
       bodyScript: null,
       faviconUrl: null,
       overridesEnabled: true,
+      motionEnabled: true,
       allowedTrackerDomains: [],
       trackerScripts: [],
     });
@@ -357,6 +358,7 @@ describe('updateSiteThemeSettings', () => {
         bodyScript: null,
         faviconUrl: null,
         overridesEnabled: true,
+        motionEnabled: true,
         allowedTrackerDomains: [],
         trackerScripts: [],
       }),
@@ -380,6 +382,7 @@ describe('updateSiteThemeSettings', () => {
         bodyScript: null,
         faviconUrl: null,
         overridesEnabled: true,
+        motionEnabled: true,
         allowedTrackerDomains: [],
         trackerScripts: [],
       }),
@@ -403,6 +406,7 @@ describe('updateSiteThemeSettings', () => {
       bodyScript: null,
       faviconUrl: null,
       overridesEnabled: true,
+      motionEnabled: true,
       allowedTrackerDomains: [],
       trackerScripts: [],
     });
@@ -449,6 +453,7 @@ describe('updateSiteThemeSettings', () => {
       bodyScript: null,
       faviconUrl: null,
       overridesEnabled: true,
+      motionEnabled: true,
       allowedTrackerDomains: [],
       trackerScripts: site.themeSettings.trackerScripts,
     });

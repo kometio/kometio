@@ -27,6 +27,7 @@ describe('Site entity', () => {
     themeBodyScript: null,
     themeFaviconUrl: null,
     themeOverridesEnabled: true,
+    themeMotionEnabled: true,
     themeAllowedTrackerDomains: [],
     formSubmissionRetentionDays: null,
     themeTrackerScripts: [],
@@ -174,7 +175,7 @@ describe('Site entity', () => {
     expect(site.untranslatedPageFallback).toBe('not-available');
   });
 
-  it('themeSettings defaults to every override field null, overridesEnabled true', () => {
+  it('themeSettings defaults to every override field null, overridesEnabled and motionEnabled true', () => {
     const site = Site.fromProps(props);
 
     expect(site.themeSettings).toEqual({
@@ -187,6 +188,7 @@ describe('Site entity', () => {
       bodyScript: null,
       faviconUrl: null,
       overridesEnabled: true,
+      motionEnabled: true,
       allowedTrackerDomains: [],
       trackerScripts: [],
     });
@@ -205,6 +207,7 @@ describe('Site entity', () => {
       bodyScript: '<script>console.log("body")</script>',
       faviconUrl: 'https://example.com/favicon.png',
       overridesEnabled: false,
+      motionEnabled: false,
       allowedTrackerDomains: [{ label: 'Hotjar', domain: 'static.hotjar.com' }],
       trackerScripts: [
         {
@@ -227,6 +230,7 @@ describe('Site entity', () => {
       bodyScript: '<script>console.log("body")</script>',
       faviconUrl: 'https://example.com/favicon.png',
       overridesEnabled: false,
+      motionEnabled: false,
       allowedTrackerDomains: [{ label: 'Hotjar', domain: 'static.hotjar.com' }],
       trackerScripts: [
         {

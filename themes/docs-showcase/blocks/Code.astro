@@ -9,14 +9,15 @@
 import { Code as ShikiCode } from 'astro:components';
 import type { CodeLanguage } from 'astro';
 import type { CodeProps } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
 
 // `instanceClass` and not `styleOverride` since ADR-0047: the per-instance
 // override is a generated CSS rule now, not an inline attribute, because
 // an inline `style` cannot hold the container query a per-breakpoint value
 // needs. The block receives the class that rule targets.
-type Props = CodeProps & { instanceClass?: string | null };
+type Props = CodeProps & { instanceClass?: string | null; i18n: Translator };
 
-const { code, language, instanceClass } = Astro.props;
+const { code, language, instanceClass, i18n } = Astro.props;
 
 // Same reasoning as core Code.astro's own cast: `language` is a plain
 // `string` in the domain schema, the curated options in code.block.ts are
@@ -25,11 +26,30 @@ const shikiLang = language as CodeLanguage;
 ---
 
 <div class:list={['kometio-code', instanceClass]}>
-  <div class="kometio-code__titlebar" aria-hidden="true">
-    <span class="kometio-code__dot kometio-code__dot--red"></span>
-    <span class="kometio-code__dot kometio-code__dot--yellow"></span>
-    <span class="kometio-code__dot kometio-code__dot--green"></span>
-    {language && <span class="kometio-code__lang">{language}</span>}
+  <div class="kometio-code__titlebar">
+    {/* The dots and the language are decoration; the button is not, so the
+        bar itself is not hidden from a screen reader, only what is
+        drawn for the eye. */}
+    <span class="kometio-code__chrome" aria-hidden="true">
+      <span class="kometio-code__dot kometio-code__dot--red"></span>
+      <span class="kometio-code__dot kometio-code__dot--yellow"></span>
+      <span class="kometio-code__dot kometio-code__dot--green"></span>
+      {language && <span class="kometio-code__lang">{language}</span>}
+    </span>
+    {/* The same markup as core's Code block, which is the whole contract:
+        the page wires every button that carries it (docs/adr/0144), so
+        this file has no script. */}
+    {code.trim() && (
+      <button
+        type="button"
+        class="kometio-code__copy"
+        data-kometio-copy-from="pre"
+        data-kometio-copied-label={i18n.t('copyButton.copied')}
+        data-kometio-copy-failed-label={i18n.t('copyButton.failed')}
+      >
+        <span data-kometio-copy-label>{i18n.t('code.copy')}</span>
+      </button>
+    )}
   </div>
   <div class="kometio-code__body">
     {/* The same colour theme as core's Code block, for the same reason:
@@ -57,7 +77,7 @@ const shikiLang = language as CodeLanguage;
   .kometio-code__titlebar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     padding: 0.75rem 1rem;
     background: color-mix(in oklab, #0d1117 85%, white 6%);
     border-bottom: 1px solid rgb(255 255 255 / 8%);
@@ -79,6 +99,38 @@ const shikiLang = language as CodeLanguage;
   }
   .kometio-code__dot--green {
     background: #27c93f;
+  }
+  /* The dots and the language, in the row they were in before the button:
+     the language still sits at the end of what is drawn, and the button
+     after it. */
+  .kometio-code__chrome {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .kometio-code__copy {
+    padding: 0.125rem 0.5rem;
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: 0.375rem;
+    background: transparent;
+    /* 6.8:1 on the bar, as the language label beside it. */
+    color: rgb(255 255 255 / 70%);
+    font-family: var(--font-sans-value);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .kometio-code__copy:hover {
+    color: #fff;
+    background: rgb(255 255 255 / 10%);
+  }
+  .kometio-code__copy:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
   }
   .kometio-code__lang {
     margin-left: auto;

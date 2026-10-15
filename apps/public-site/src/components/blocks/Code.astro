@@ -2,10 +2,11 @@
 import { Code as ShikiCode } from 'astro:components';
 import type { CodeLanguage } from 'astro';
 import type { CodeProps } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
 
-type Props = CodeProps & { instanceClass?: string | null };
+type Props = CodeProps & { instanceClass?: string | null; i18n: Translator };
 
-const { code, language, instanceClass } = Astro.props;
+const { code, language, instanceClass, i18n } = Astro.props;
 
 // `language` is a plain `string` in the domain schema (shared-types has no
 // reason to depend on Shiki's bundled-language union) but the curated
@@ -20,6 +21,23 @@ const shikiLang = language as CodeLanguage;
       comment is #6a737d on #24292e, 3.05:1, under WCAG AA on every site
       with a code block. In this one the faintest text colour reads 6.15:1. */}
   <ShikiCode code={code} lang={shikiLang} theme="github-dark-default" />
+  {/* A sample of code is something somebody takes away. Not drawn for an
+      empty one, and never on hover only: a touch screen has none, and the
+      keyboard would have to find it first. The text it copies is the
+      sample's own, read from the page (`data-kometio-copy-from`), so it is
+      not sent twice; the page wires it (PublicPageContent), which is what
+      lets a theme's override carry the same markup and no script. */}
+  {code.trim() && (
+    <button
+      type="button"
+      class="kometio-code__copy"
+      data-kometio-copy-from="pre"
+      data-kometio-copied-label={i18n.t('copyButton.copied')}
+      data-kometio-copy-failed-label={i18n.t('copyButton.failed')}
+    >
+      <span data-kometio-copy-label>{i18n.t('code.copy')}</span>
+    </button>
+  )}
 </div>
 
 <style>
@@ -30,6 +48,32 @@ const shikiLang = language as CodeLanguage;
   .kometio-code {
     @kometio-bridge background border-radius;
     overflow: hidden;
+    position: relative;
+  }
+  /* In the corner of the dark box, drawn for it: the sample is
+     github-dark-default whatever the theme, so the button's own colours are
+     not the theme's. Light on #0d1117 reads 14:1 at rest. */
+  .kometio-code__copy {
+    position: absolute;
+    inset-block-start: 0.5rem;
+    inset-inline-end: 0.5rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: calc(var(--radius) * 0.75);
+    background: rgb(255 255 255 / 8%);
+    color: #e6edf3;
+    font-family: var(--font-sans-value);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .kometio-code__copy:hover {
+    background: rgb(255 255 255 / 16%);
+  }
+  .kometio-code__copy:focus-visible {
+    outline: 2px solid #e6edf3;
+    outline-offset: 2px;
   }
   .kometio-code :global(pre) {
     margin: 0;

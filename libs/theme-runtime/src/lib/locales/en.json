@@ -139,6 +139,7 @@
   "promoCode.empty": "Add the code.",
   "copyButton.copied": "Copied",
   "copyButton.failed": "Could not copy",
+  "code.copy": "Copy",
   "shippingReturns.empty": "Write about shipping, returns or help.",
   "trustBadges.label": "Accepted payment methods",
   "trustBadges.empty": "Choose the payment methods you accept.",

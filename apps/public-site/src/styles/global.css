@@ -96,6 +96,20 @@
   --kometio-content-width: 64rem;
   --kometio-content-width-wide: 80rem;
   --kometio-content-gutter: 1.5rem;
+  /* How far the header and the footer let their own content spread
+     (docs/adr/0143): they still paint edge to edge, but what is in them
+     stops here, so on a large window the logo and the menu are not two
+     thousand pixels apart. Above the wide tier and equal to the
+     window at 1440px, where nothing changes. */
+  --kometio-shell-width: 90rem;
+  /* The page grows with a large window (docs/adr/0143): from this width the
+     root font size rises by `rate` pixels for every pixel of window, up to
+     `max` of what the reader chose — and every length written in rem, the
+     column, the gutters, the type, grows with it. At or below `from`
+     nothing moves. `max: 100%` is a theme saying its design does not scale. */
+  --kometio-scale-from: 1440px;
+  --kometio-scale-rate: 0.0036;
+  --kometio-scale-max: 125%;
   /* Links: every block that renders one reads these, so a theme changes
      them all in one place. */
   --link: var(--primary);
@@ -174,6 +188,16 @@
   }
   html {
     @apply font-sans;
+    /* Never below 100%: a reader's own default size is the floor, and a
+       percentage (not pixels) so it stays theirs. The rate is in pixels
+       of root size per pixel of window, hence `calc(100% + length)`. */
+    font-size: clamp(
+      100%,
+      calc(
+        100% + (100vw - var(--kometio-scale-from)) * var(--kometio-scale-rate)
+      ),
+      var(--kometio-scale-max)
+    );
   }
   /* The one global link rule this site had none of before — every block
      that renders its own <a> (Button, Breadcrumb, PromoBar, ...) still
@@ -593,6 +617,22 @@ body,
 }
 
 /*
+ * The header and the footer: edge to edge as a surface, but their content
+ * stops at `--kometio-shell-width` and sits on the same gutter as the
+ * page's own (docs/adr/0143). `100%` is the width of the body they sit in,
+ * so at or below the shell width this is exactly the gutter and nothing
+ * moves; above it the extra is shared between the two sides.
+ */
+.kometio-shell-inset {
+  padding-inline: max(
+    var(--kometio-content-gutter),
+    calc(
+      (100% - var(--kometio-shell-width)) / 2 + var(--kometio-content-gutter)
+    )
+  );
+}
+
+/*
  * `max()` and not a bare `var()`: the wide tier belongs to the theme, the
  * content width can be raised by the site (Tier 1, Style settings). A site
  * that widens its column past its theme's wide tier would otherwise make
@@ -865,6 +905,50 @@ body,
   ::view-transition-new(*) {
     animation: none !important;
   }
+}
+
+/*
+ * A site whose owner turned motion off (docs/adr/0142): the rules above,
+ * for everyone who opens it, rather than for the readers who asked their
+ * system. `PageLayout.astro` puts `data-kometio-motion="off"` on <html>;
+ * `motion-preference.ts` is the same question for the scripts.
+ *
+ * It is a copy of the block above with its selectors under that
+ * attribute, because a media query and an attribute cannot share one
+ * rule. `motion-css.spec.ts` compares the two, so they cannot drift.
+ */
+html[data-kometio-motion='off'],
+html[data-kometio-motion='off'] *,
+html[data-kometio-motion='off'] *::before,
+html[data-kometio-motion='off'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+html[data-kometio-motion='off'] .kometio-motion-ready .kometio-root-block,
+html[data-kometio-motion='off'].kometio-motion-ready .kometio-root-block {
+  animation: none !important;
+}
+html[data-kometio-motion='off'] .kometio-root-block[data-kometio-hover]:hover {
+  transform: none;
+}
+html[data-kometio-motion='off']
+  .kometio-motion-ready
+  :is([data-kometio-reveal], [data-kometio-reveal-group] > *),
+html[data-kometio-motion='off'].kometio-motion-ready
+  :is([data-kometio-reveal], [data-kometio-reveal-group] > *) {
+  animation: none !important;
+}
+html[data-kometio-motion='off'] .kometio-page-grid__card:hover,
+html[data-kometio-motion='off'] .kometio-product-card:hover,
+html[data-kometio-motion='off'] .kometio-button:active {
+  transform: none;
+}
+html[data-kometio-motion='off']::view-transition-group(*),
+html[data-kometio-motion='off']::view-transition-old(*),
+html[data-kometio-motion='off']::view-transition-new(*) {
+  animation: none !important;
 }
 
 /* Paper and PDF show the whole page: nothing waits to be scrolled to. */

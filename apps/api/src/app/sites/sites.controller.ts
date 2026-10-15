@@ -415,6 +415,7 @@ export class SitesController {
       themeBodyScript: props.themeBodyScript,
       themeFaviconUrl: props.themeFaviconUrl,
       themeOverridesEnabled: props.themeOverridesEnabled,
+      themeMotionEnabled: props.themeMotionEnabled,
       themeAllowedTrackerDomains: props.themeAllowedTrackerDomains,
       themeTrackerScripts: props.themeTrackerScripts,
       cookieBannerSettings: props.cookieBannerSettings,

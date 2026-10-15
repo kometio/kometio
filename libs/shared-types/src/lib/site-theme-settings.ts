@@ -106,6 +106,17 @@ export const themeSettingsSchema = z.object({
   // field above to actually render; either one being false means "ignore
   // everything in this object except this flag itself".
   overridesEnabled: z.boolean(),
+  /**
+   * Whether the site moves at all (docs/adr/0141): the parts of its blocks
+   * arriving in turn, what its controls do under the pointer, the cross-fade
+   * between pages, and the entrances somebody set on a block. `false` is the
+   * owner saying "no motion on this site", whatever the theme and the visitor's
+   * system say — a visitor who asked their system for less is answered
+   * either way. Not part of the Tier 1 gate above: a site that turned motion
+   * off has not asked to see the theme's own look, it has asked for stillness,
+   * and a theme author's ceiling on colours is no reason to ignore that.
+   */
+  motionEnabled: z.boolean(),
   // ADR-0031's tracker whitelist: domains a site owner's own head/body
   // script needs to talk to beyond the hardcoded GTM/GA4/Meta Pixel
   // allowlist (content-security-policy.ts). Capped well above any realistic

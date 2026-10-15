@@ -261,6 +261,7 @@ describe('SitesController (integration)', () => {
         bodyScript: null,
         faviconUrl: 'https://example.com/favicon.png',
         overridesEnabled: true,
+        motionEnabled: true,
         allowedTrackerDomains: [],
         trackerScripts: [],
       })
@@ -293,12 +294,60 @@ describe('SitesController (integration)', () => {
         bodyScript: null,
         faviconUrl: null,
         overridesEnabled: false,
+        motionEnabled: true,
         allowedTrackerDomains: [],
         trackerScripts: [],
       })
       .expect(200);
 
     expect(res.body.themeOverridesEnabled).toBe(false);
+  });
+
+  it('moves by default, and the owner can say it does not, apart from the overrides switch (docs/adr/0142)', async () => {
+    const getRes = await agent.get(`/sites/${siteId}`).expect(200);
+    expect(getRes.body.themeMotionEnabled).toBe(true);
+
+    const res = await agent
+      .patch(`/sites/${siteId}/theme-settings`)
+      .send({
+        primaryColor: null,
+        secondaryColor: null,
+        fontFamily: null,
+        customCss: null,
+        contentWidth: null,
+        headScript: null,
+        bodyScript: null,
+        faviconUrl: null,
+        overridesEnabled: true,
+        motionEnabled: false,
+        allowedTrackerDomains: [],
+        trackerScripts: [],
+      })
+      .expect(200);
+
+    expect(res.body.themeMotionEnabled).toBe(false);
+    expect(res.body.themeOverridesEnabled).toBe(true);
+    const reread = await agent.get(`/sites/${siteId}`).expect(200);
+    expect(reread.body.themeMotionEnabled).toBe(false);
+  });
+
+  it('400s a save that does not say whether the site moves', async () => {
+    await agent
+      .patch(`/sites/${siteId}/theme-settings`)
+      .send({
+        primaryColor: null,
+        secondaryColor: null,
+        fontFamily: null,
+        customCss: null,
+        contentWidth: null,
+        headScript: null,
+        bodyScript: null,
+        faviconUrl: null,
+        overridesEnabled: true,
+        allowedTrackerDomains: [],
+        trackerScripts: [],
+      })
+      .expect(400);
   });
 
   it('400s an invalid hex color for theme settings', async () => {
@@ -314,6 +363,7 @@ describe('SitesController (integration)', () => {
         bodyScript: null,
         faviconUrl: null,
         overridesEnabled: true,
+        motionEnabled: true,
         allowedTrackerDomains: [],
         trackerScripts: [],
       })
@@ -330,6 +380,7 @@ describe('SitesController (integration)', () => {
       bodyScript: null,
       faviconUrl: null,
       overridesEnabled: true,
+      motionEnabled: true,
       allowedTrackerDomains: [],
       trackerScripts: [],
     };
@@ -366,6 +417,7 @@ describe('SitesController (integration)', () => {
         bodyScript: null,
         faviconUrl: null,
         overridesEnabled: true,
+        motionEnabled: true,
         allowedTrackerDomains: [],
         trackerScripts: [],
       })
@@ -385,6 +437,7 @@ describe('SitesController (integration)', () => {
         bodyScript: null,
         faviconUrl: null,
         overridesEnabled: true,
+        motionEnabled: true,
         allowedTrackerDomains: [],
         trackerScripts: [],
       })

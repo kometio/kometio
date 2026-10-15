@@ -59,6 +59,7 @@ export function buildSite(overrides: Partial<SiteProps> = {}): Site {
     themeBodyScript: null,
     themeFaviconUrl: null,
     themeOverridesEnabled: true,
+    themeMotionEnabled: true,
     themeAllowedTrackerDomains: [],
     formSubmissionRetentionDays: null,
     themeTrackerScripts: [],

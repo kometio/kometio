@@ -18,6 +18,7 @@ const SETTINGS: ThemeSettings = {
   bodyScript: null,
   faviconUrl: 'https://cdn.example.test/fav.png',
   overridesEnabled: true,
+  motionEnabled: true,
   allowedTrackerDomains: [],
   trackerScripts: [],
 };
@@ -102,6 +103,42 @@ describe('resolvePageThemeStyles', () => {
 
     it('still writes the theme own tokens', () => {
       expect(styles.themeBaseTokenDeclarations).not.toBe('');
+    });
+  });
+
+  describe('motion (docs/adr/0142)', () => {
+    it('moves unless the site said it does not', () => {
+      expect(resolve().motionEnabled).toBe(true);
+      expect(
+        resolve({ themeSettings: { ...SETTINGS, motionEnabled: false } })
+          .motionEnabled,
+      ).toBe(false);
+    });
+
+    it('is not answered by the Tier 1 switch: stillness is not part of a theme look', () => {
+      const styles = resolve({
+        themeSettings: {
+          ...SETTINGS,
+          overridesEnabled: false,
+          motionEnabled: false,
+        },
+      });
+
+      expect(styles.motionEnabled).toBe(false);
+      expect(
+        resolve({
+          themeSettings: { ...SETTINGS, overridesEnabled: false },
+        }).motionEnabled,
+      ).toBe(true);
+    });
+
+    it("is not answered by the theme's ceiling either", () => {
+      const styles = resolve({
+        allowStyleOverrides: false,
+        themeSettings: { ...SETTINGS, motionEnabled: false },
+      });
+
+      expect(styles.motionEnabled).toBe(false);
     });
   });
 

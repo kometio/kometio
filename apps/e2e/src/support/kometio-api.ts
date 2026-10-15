@@ -10,6 +10,7 @@ import {
   pageTranslationSchema,
   redirectSchema,
   siteSchema,
+  siteThemeSettingsSchema,
   taxonomySchema,
   termSchema,
   submissionSchema,
@@ -35,6 +36,31 @@ export class KometioApi {
     await this.ok(
       this.request.patch(`sites/${siteId}/theme-package`, {
         data: { themeName },
+      }),
+    );
+  }
+
+  /** Whether the site moves (Style → Animations and transitions), everything else in its settings as it was. */
+  async setMotion(siteId: string, enabled: boolean): Promise<void> {
+    const current = siteThemeSettingsSchema.parse(
+      await this.json(this.request.get('sites/current')),
+    );
+    await this.ok(
+      this.request.patch(`sites/${siteId}/theme-settings`, {
+        data: {
+          primaryColor: current.themePrimaryColor,
+          secondaryColor: current.themeSecondaryColor,
+          fontFamily: current.themeFontFamily,
+          customCss: current.themeCustomCss,
+          contentWidth: current.themeContentWidth,
+          headScript: current.themeHeadScript,
+          bodyScript: current.themeBodyScript,
+          faviconUrl: current.themeFaviconUrl,
+          overridesEnabled: current.themeOverridesEnabled,
+          motionEnabled: enabled,
+          allowedTrackerDomains: current.themeAllowedTrackerDomains,
+          trackerScripts: current.themeTrackerScripts,
+        },
       }),
     );
   }

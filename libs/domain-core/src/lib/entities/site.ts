@@ -34,6 +34,8 @@ export interface SiteProps {
   themeBodyScript: string | null;
   themeFaviconUrl: string | null;
   themeOverridesEnabled: boolean;
+  /** Whether the site moves (docs/adr/0141): the owner's switch, `true` for every site that existed before it. */
+  themeMotionEnabled: boolean;
   themeAllowedTrackerDomains: TrackerDomainEntry[];
   /** GDPR/privacy: `null` keeps every form_submissions row forever (default, unchanged from before this field existed). A positive integer is how many days a submission survives past its createdAt before the scheduled cleanup deletes it. */
   formSubmissionRetentionDays: number | null;
@@ -189,6 +191,7 @@ export class Site {
       bodyScript: this.props.themeBodyScript,
       faviconUrl: this.props.themeFaviconUrl,
       overridesEnabled: this.props.themeOverridesEnabled,
+      motionEnabled: this.props.themeMotionEnabled,
       allowedTrackerDomains: this.props.themeAllowedTrackerDomains,
       trackerScripts: this.props.themeTrackerScripts,
     };
@@ -257,6 +260,7 @@ export class Site {
     this.props.themeBodyScript = input.bodyScript;
     this.props.themeFaviconUrl = input.faviconUrl;
     this.props.themeOverridesEnabled = input.overridesEnabled;
+    this.props.themeMotionEnabled = input.motionEnabled;
     this.props.themeAllowedTrackerDomains = input.allowedTrackerDomains;
     this.props.themeTrackerScripts = input.trackerScripts;
   }

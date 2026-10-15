@@ -68,6 +68,7 @@ export function buildSiteRecord(
     themeBodyScript: null,
     themeFaviconUrl: null,
     themeOverridesEnabled: true,
+    themeMotionEnabled: true,
     themeAllowedTrackerDomains: [],
     themeTrackerScripts: [],
     cookieBannerSettings: DEFAULT_COOKIE_BANNER_SETTINGS,

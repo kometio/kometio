@@ -1,3 +1,4 @@
+import { motionIsOff } from '../motion-preference';
 import type { BlockBehavior } from './types';
 
 // No framework here on purpose (docs/adr/0007) — an IntersectionObserver
@@ -17,10 +18,7 @@ function animateCount(el: HTMLElement, target: number) {
   const numberEl = el.querySelector<HTMLElement>('.kometio-stat__number');
   if (!numberEl) return;
 
-  const prefersReducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)',
-  ).matches;
-  if (prefersReducedMotion) {
+  if (motionIsOff()) {
     numberEl.textContent = String(target);
     return;
   }

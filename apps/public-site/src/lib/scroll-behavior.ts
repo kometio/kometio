@@ -1,3 +1,5 @@
+import { motionIsOff } from './motion-preference';
+
 /**
  * The scroll behaviour to ask for, given what the reader asked for
  * (docs/adr/0060).
@@ -11,11 +13,9 @@
  *
  * Read on every call and never cached: the setting can change while the
  * page is open, and a value captured at load would keep animating for a
- * reader who just turned it off.
+ * reader who just turned it off. A site whose owner turned motion off
+ * (docs/adr/0142) is answered the same way as a reader who asked.
  */
 export function preferredScrollBehavior(): ScrollBehavior {
-  return typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ? 'auto'
-    : 'smooth';
+  return motionIsOff() ? 'auto' : 'smooth';
 }

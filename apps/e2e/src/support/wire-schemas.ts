@@ -29,6 +29,28 @@ export const blockSchema: z.ZodType<Block> = z.lazy(() =>
 export const siteSchema = z.object({
   id: z.string(),
   defaultLocale: z.string(),
+  themeName: z.string(),
+});
+
+/**
+ * The part of a site that Style, and Settings → Integrations, save together:
+ * the record names them `theme…`, the save names them without the prefix, and
+ * a save replaces the whole object, so changing one means sending back the
+ * rest as they were.
+ */
+export const siteThemeSettingsSchema = z.object({
+  themePrimaryColor: z.string().nullable(),
+  themeSecondaryColor: z.string().nullable(),
+  themeFontFamily: z.string().nullable(),
+  themeCustomCss: z.string().nullable(),
+  themeContentWidth: z.string().nullable(),
+  themeHeadScript: z.string().nullable(),
+  themeBodyScript: z.string().nullable(),
+  themeFaviconUrl: z.string().nullable(),
+  themeOverridesEnabled: z.boolean(),
+  themeMotionEnabled: z.boolean(),
+  themeAllowedTrackerDomains: z.array(z.unknown()),
+  themeTrackerScripts: z.array(z.unknown()),
 });
 
 export const pageGroupSchema = z.object({

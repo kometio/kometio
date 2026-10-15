@@ -136,4 +136,21 @@ const content = animated ? await Astro.slots.render('default') : '';
       flex-wrap: wrap;
     }
   }
+
+  /* The same for a site whose owner turned motion off (docs/adr/0142): a
+     marquee is the one block whose whole job is to move. */
+  :global(html[data-kometio-motion='off']) .kometio-marquee__track {
+    animation: none;
+    width: auto;
+    flex-wrap: wrap;
+  }
+  :global(html[data-kometio-motion='off'])
+    .kometio-marquee__group[aria-hidden='true'] {
+    display: none;
+  }
+  :global(html[data-kometio-motion='off'])
+    .kometio-marquee--animated
+    .kometio-marquee__group {
+    flex-wrap: wrap;
+  }
 </style>

@@ -65,6 +65,7 @@ export async function updateSiteThemeSettings(
     bodyScript: body.remainingScript,
     faviconUrl: input.faviconUrl,
     overridesEnabled: input.overridesEnabled,
+    motionEnabled: input.motionEnabled,
     allowedTrackerDomains: input.allowedTrackerDomains,
     trackerScripts: [
       ...input.trackerScripts,

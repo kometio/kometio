@@ -148,6 +148,23 @@ is a copy that stops following core the day core moves it.
     is needed, and nothing is hidden unless a root block is what holds it.
   - Opacity and transform only: a theme cannot make anything move what is
     below it.
+  - The site's owner has the last word (docs/adr/0142): a site with
+    "Animations and transitions" off in its Style settings gets none of
+    this, whatever the theme says — `data-kometio-motion="off"` is on
+    `<html>`, so a theme's own CSS that moves something can ask for it
+    (`html[data-kometio-motion='off'] …`), and `pageTransitions` is not
+    emitted.
+- **How the page grows with the window** (docs/adr/0143) — from
+  `--kometio-scale-from` (`1440px`) the root font size rises by
+  `--kometio-scale-rate` (`0.0036`: pixels per pixel of window) up to
+  `--kometio-scale-max` (`125%`, reached at 2560px), and everything written
+  in rem — the column, the gutters, the type — grows with it. At or below
+  `from` nothing changes, and the floor is the reader's own size. A theme
+  whose design does not scale says `--kometio-scale-max: 100%`.
+  `--kometio-shell-width` (`90rem`) is how far the header's and the
+  footer's content spreads: a region of your own gets the same behaviour
+  with `class="kometio-shell-inset"` on the element that paints the edge to
+  edge surface, in place of horizontal padding.
 
 ## `theme.json` — the manifest
 
@@ -226,6 +243,17 @@ unknown theme name falls back to a bundled one rather than rendering
 blank). The next level up — the furniture _around_ the blocks — is not
 another override but the narrower `regions/` contract described in the
 following section. `classic` ships neither, needing only tokens.
+
+### A button that copies needs no script (ADR-0144)
+
+An override has no way to import core's behaviours, so it carries none. For
+the one that is useful in a copy of a core block — a button that copies — the
+page does the wiring: an element with `data-kometio-copy-text="…"` (the text),
+or `data-kometio-copy-from="pre"` (a selector for what to copy, searched from
+the button outwards), and its words in `data-kometio-copied-label`,
+`data-kometio-copy-failed-label` and a `<span data-kometio-copy-label>`, is a
+copy button. The words `code.copy`, `copyButton.copied` and `copyButton.failed`
+come from `i18n.t(…)`, which is in the site's language.
 
 ### An override has to forward `instanceClass`
 

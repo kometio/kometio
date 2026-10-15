@@ -47,8 +47,48 @@ describe('turnstileBehaviors', () => {
 
     expect(render).toHaveBeenCalledWith(
       document.querySelector('.cf-turnstile'),
-      { sitekey: 'site-key-abc' },
+      { sitekey: 'site-key-abc', size: 'normal' },
     );
+  });
+
+  /*
+   * Cloudflare's normal widget is 300px and does not shrink; a form on a
+   * 320px phone has 272, and the widget pushed the whole page sideways.
+   */
+  it('asks for the compact widget where the normal one does not fit', async () => {
+    const render = vi.fn().mockReturnValue('widget-1');
+    window.turnstile = { render };
+    document.body.innerHTML =
+      '<div class="cf-turnstile" data-sitekey="site-key-abc"></div>';
+    const container = document.querySelector<HTMLElement>('.cf-turnstile');
+    Object.defineProperty(container, 'clientWidth', { value: 272 });
+    const turnstileBehaviors = await importFreshTurnstileBehaviors();
+
+    runBlockBehaviors(document, turnstileBehaviors);
+    await Promise.resolve();
+
+    expect(render).toHaveBeenCalledWith(container, {
+      sitekey: 'site-key-abc',
+      size: 'compact',
+    });
+  });
+
+  it('keeps the normal widget when there is room for it', async () => {
+    const render = vi.fn().mockReturnValue('widget-1');
+    window.turnstile = { render };
+    document.body.innerHTML =
+      '<div class="cf-turnstile" data-sitekey="site-key-abc"></div>';
+    const container = document.querySelector<HTMLElement>('.cf-turnstile');
+    Object.defineProperty(container, 'clientWidth', { value: 640 });
+    const turnstileBehaviors = await importFreshTurnstileBehaviors();
+
+    runBlockBehaviors(document, turnstileBehaviors);
+    await Promise.resolve();
+
+    expect(render).toHaveBeenCalledWith(container, {
+      sitekey: 'site-key-abc',
+      size: 'normal',
+    });
   });
 
   it('renders immediately, without loading a script, when turnstile is already loaded', async () => {
