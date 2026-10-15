@@ -1,7 +1,10 @@
 import type { BlockBehavior } from './types';
 
 interface TurnstileGlobal {
-  render: (container: HTMLElement, options: { sitekey: string }) => string;
+  render: (
+    container: HTMLElement,
+    options: { sitekey: string; size?: 'normal' | 'compact' },
+  ) => string;
 }
 
 declare global {
@@ -51,6 +54,13 @@ function loadTurnstileScript(): Promise<void> {
 // Form.astro and NewsletterSignup.astro both register it independently.
 const RENDERED_ATTR = 'data-kometio-turnstile-rendered';
 
+/**
+ * The width of Cloudflare's normal widget, which it does not shrink below.
+ * In a container narrower than that — a form on a 320px phone has 272 —
+ * it pushed the whole page sideways by 4px; its compact size fits.
+ */
+const NORMAL_WIDGET_WIDTH = 300;
+
 function wireTurnstileWidget(container: HTMLElement): void {
   if (container.hasAttribute(RENDERED_ATTR)) return;
   const sitekey = container.dataset.sitekey;
@@ -58,7 +68,11 @@ function wireTurnstileWidget(container: HTMLElement): void {
   container.setAttribute(RENDERED_ATTR, '');
 
   void loadTurnstileScript().then(() => {
-    window.turnstile?.render(container, { sitekey });
+    const room = container.clientWidth;
+    window.turnstile?.render(container, {
+      sitekey,
+      size: room > 0 && room < NORMAL_WIDGET_WIDTH ? 'compact' : 'normal',
+    });
   });
 }
 

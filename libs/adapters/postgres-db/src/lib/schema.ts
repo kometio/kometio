@@ -250,6 +250,10 @@ export const sites = pgTable(
     themeOverridesEnabled: boolean('theme_overrides_enabled')
       .notNull()
       .default(true),
+    // docs/adr/0141 — the owner's "this site does not move" switch. Not under
+    // the overrides gate above, and true by default: every site that existed
+    // before this column moved exactly as its theme said.
+    themeMotionEnabled: boolean('theme_motion_enabled').notNull().default(true),
     // ADR-0031 — admin-managed CSP domain whitelist for trackers beyond the
     // hardcoded GTM/GA4/Meta Pixel allowlist. Independent of
     // themeOverridesEnabled above: a tracker script shouldn't stop running

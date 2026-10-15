@@ -212,6 +212,11 @@ const staysOutOfSearchEngines = page
   than inline text.
 */}
 <script>
+  import { initCopyButtons } from '../lib/block-behaviors/copy-button';
   import { initEntranceAnimations } from '../lib/block-behaviors/entrance-animation';
   initEntranceAnimations();
+  // Every button that copies something, whichever block (core's, or a
+  // theme's override of it) wrote it: the markup is the contract, so an
+  // override has no script to carry.
+  initCopyButtons();
 </script>

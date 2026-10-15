@@ -41,6 +41,11 @@ export interface PageThemeStyles {
   themeOverrideDeclarations: string;
   /** The per-type and per-instance block styles, layer order first; empty when there are none. */
   blockStyleCss: string;
+  /**
+   * Whether the page moves at all (docs/adr/0142): the owner's own switch,
+   * and neither of the two gates above answers for it.
+   */
+  motionEnabled: boolean;
 }
 
 /**
@@ -211,5 +216,10 @@ export function resolvePageThemeStyles({
     themeBaseTokenDeclarations,
     themeOverrideDeclarations,
     blockStyleCss,
+    // Read from the site's settings as they are, not from `theme` above: that
+    // is "what of the site's look reaches the page", and a site that turned
+    // motion off has not asked to see the theme's own look, it has asked for
+    // stillness. A theme's ceiling on colours is no reason to keep moving.
+    motionEnabled: themeSettings.motionEnabled,
   };
 }

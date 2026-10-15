@@ -431,6 +431,7 @@ describe('getPublishedPageBySlug', () => {
           bodyScript: null,
           faviconUrl: null,
           overridesEnabled: true,
+          motionEnabled: true,
           allowedTrackerDomains: [],
           trackerScripts: [],
         },

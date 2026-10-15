@@ -116,6 +116,23 @@ describe('entrance animations', () => {
    * needs, and above all never adds the ready class — so nothing can
    * leave a block on its invisible first frame.
    */
+  it('does nothing at all for a site whose owner turned motion off', () => {
+    const wrapper = offScreenWrapper();
+    document.documentElement.setAttribute('data-kometio-motion', 'off');
+
+    try {
+      initEntranceAnimations();
+
+      expect(document.documentElement.classList).not.toContain(
+        'kometio-motion-ready',
+      );
+      expect(observed).toEqual([]);
+      expect(wrapper.hasAttribute('data-kometio-in-view')).toBe(false);
+    } finally {
+      document.documentElement.removeAttribute('data-kometio-motion');
+    }
+  });
+
   it('does nothing at all for a reader who asked for less motion', () => {
     const wrapper = offScreenWrapper();
     setReducedMotion(true);

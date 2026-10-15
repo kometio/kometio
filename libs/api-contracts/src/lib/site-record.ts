@@ -45,6 +45,7 @@ export const siteRecordSchema = businessInfoSchema.extend({
   themeBodyScript: z.string().nullable(),
   themeFaviconUrl: z.string().nullable(),
   themeOverridesEnabled: z.boolean(),
+  themeMotionEnabled: z.boolean(),
   themeAllowedTrackerDomains: z.array(trackerDomainEntrySchema),
   themeTrackerScripts: z.array(trackerScriptEntrySchema),
   cookieBannerSettings: cookieBannerSettingsSchema,

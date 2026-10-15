@@ -12,6 +12,8 @@
  * whether at all.
  */
 
+import { motionIsOff } from '../motion-preference';
+
 /**
  * Put on `<html>` before anything is observed. Every animation rule in
  * global.css hangs off it, which is what makes the whole feature
@@ -43,24 +45,17 @@ const OBSERVER_OPTIONS: IntersectionObserverInit = {
   rootMargin: '0px 0px -80px 0px',
 };
 
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-}
-
 /**
  * Starts every root block's entrance animation as it arrives.
  *
- * Returns without marking anything when the reader asked for less motion:
- * the CSS drops the animation under `prefers-reduced-motion` anyway, and
- * this saves an observer nobody needs. Both halves are deliberate — CSS
- * alone would leave the observer running, JS alone would miss a reader who
- * changes the setting after load.
+ * Returns without marking anything when the reader asked for less motion,
+ * or the site's owner said it does not move (docs/adr/0142): the CSS drops
+ * the animation in both cases anyway, and this saves an observer nobody
+ * needs. Both halves are deliberate — CSS alone would leave the observer
+ * running, JS alone would miss a reader who changes the setting after load.
  */
 export function initEntranceAnimations(root: ParentNode = document): void {
-  if (prefersReducedMotion()) {
+  if (motionIsOff()) {
     return;
   }
   // `IntersectionObserver` is everywhere this product supports, but the

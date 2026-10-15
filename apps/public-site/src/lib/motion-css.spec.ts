@@ -93,6 +93,114 @@ describe('the motion a theme asks for', () => {
   });
 });
 
+/** The text inside the braces that `opening` opens, nested braces honoured. */
+function bracedBlock(css: string, opening: string): string {
+  const start = css.indexOf('{', css.indexOf(opening));
+  let depth = 0;
+  for (let i = start; i < css.length; i += 1) {
+    if (css[i] === '{') depth += 1;
+    if (css[i] === '}') depth -= 1;
+    if (depth === 0) return css.slice(start + 1, i);
+  }
+  throw new Error(`no closing brace after ${opening}`);
+}
+
+interface FlatRule {
+  selectors: string[];
+  declarations: string;
+}
+
+/** A selector list split at its commas, but not at the ones inside `:is( … )`. */
+function splitTopLevel(list: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (const character of list) {
+    if (character === '(') depth += 1;
+    if (character === ')') depth -= 1;
+    if (character === ',' && depth === 0) {
+      parts.push(current);
+      current = '';
+    } else {
+      current += character;
+    }
+  }
+  parts.push(current);
+  return parts;
+}
+
+/** The rules of a flat (no nested at-rule) run of CSS, whitespace and comments gone. */
+function flatRules(css: string): FlatRule[] {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('}')
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .map((chunk) => {
+      const [selectorText = '', declarations = ''] = chunk.split('{');
+      return {
+        selectors: splitTopLevel(selectorText).map((s) =>
+          s.replace(/\s+/g, ' ').trim(),
+        ),
+        declarations: declarations.replace(/\s+/g, ' ').trim(),
+      };
+    });
+}
+
+const SITE_OFF = "html[data-kometio-motion='off']";
+
+/**
+ * A site whose owner turned motion off is held to what a reader who asked
+ * their system for less is (docs/adr/0142). Two rules cannot share a media
+ * query and an attribute, so the second is a copy of the first under the
+ * attribute — and this is what keeps the copy from being the one somebody
+ * forgot to update.
+ */
+describe('a site whose owner turned motion off', () => {
+  const reducedRules = flatRules(
+    bracedBlock(GLOBAL_CSS, '@media (prefers-reduced-motion: reduce)'),
+  );
+  const offRules = flatRules(
+    GLOBAL_CSS.split('}')
+      .filter((chunk) => chunk.includes(SITE_OFF))
+      .map((chunk) => `${chunk}}`)
+      .join(''),
+  );
+
+  /** Where a selector of the reduced-motion block goes under the attribute. */
+  function counterpart(selector: string): string {
+    if (selector === '*') return `${SITE_OFF} *`;
+    if (selector.startsWith('*::')) return `${SITE_OFF} ${selector}`;
+    if (selector.startsWith('::view-transition'))
+      return `${SITE_OFF}${selector}`;
+    return `${SITE_OFF} ${selector}`;
+  }
+
+  it('is given every rule a reader who asked for less is given', () => {
+    expect(reducedRules.length).toBeGreaterThan(0);
+    for (const rule of reducedRules) {
+      const expected = rule.selectors.map(counterpart);
+      const given = offRules.some(
+        (candidate) =>
+          candidate.declarations === rule.declarations &&
+          expected.every((selector) => candidate.selectors.includes(selector)),
+      );
+
+      expect(
+        given,
+        `nothing under the attribute for ${rule.selectors.join(', ')}`,
+      ).toBe(true);
+    }
+  });
+
+  it('is not given a rule the media query does not have', () => {
+    const known = new Set(reducedRules.map((rule) => rule.declarations));
+    for (const rule of offRules) {
+      expect(known.has(rule.declarations), rule.declarations).toBe(true);
+    }
+  });
+});
+
 describe('moving from one page to the next', () => {
   it('only asks the browser for a transition from a reader who did not ask for less', () => {
     const wrapped = PAGE_TRANSITION_CSS.indexOf('@view-transition');

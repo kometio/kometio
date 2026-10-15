@@ -12,6 +12,7 @@ import { injectScriptNonce } from '../lib/content-security-policy';
 import { isDemoDeployment } from '../lib/demo-mode';
 import { editorAppUrl } from '../lib/editor-app-url';
 import { localeDirection } from '@kometio/theme-runtime';
+import { MOTION_ATTRIBUTE, MOTION_OFF } from '../lib/motion-preference';
 import { PAGE_TRANSITION_CSS } from '../lib/page-transition-css';
 import { resolvePageSeo } from '../lib/page-seo';
 import { resolvePageThemeStyles } from '../lib/page-theme-styles';
@@ -172,6 +173,12 @@ const styles = resolvePageThemeStyles({
 	instanceStyleCss,
 });
 
+// A site whose owner turned motion off (docs/adr/0142) says so on <html>:
+// the CSS and the scripts that would move something both read it there.
+const motionAttribute = styles.motionEnabled
+	? {}
+	: { [MOTION_ATTRIBUTE]: MOTION_OFF };
+
 // headScript/bodyScript (ADR-0031) are deliberately NOT part of the Tier 1
 // gates in resolvePageThemeStyles — a tracker (GTM/GA4/Meta Pixel, ...)
 // shouldn't stop running just because someone toggled off color/font
@@ -196,6 +203,7 @@ const bodyTrackerScripts = partitionTrackerScripts(
 	dir={localeDirection(locale)}
 	data-kometio-theme={resolvedThemeName}
 	data-kometio-canvas={isEditorCanvas ? '' : undefined}
+	{...motionAttribute}
 >
 	<head>
 		<PageHead
@@ -210,9 +218,13 @@ const bodyTrackerScripts = partitionTrackerScripts(
 			isEditorCanvas={isEditorCanvas}
 		/>
 		{
-			/* Never in the editor's canvas (nothing there navigates) and never
-			   on the 500 page, which is drawn when something is already wrong. */
-			themeManifest.pageTransitions && !isEditorCanvas && route !== 'error' && (
+			/* Never in the editor's canvas (nothing there navigates), never on
+			   the 500 page, which is drawn when something is already wrong,
+			   and never on a site whose owner turned motion off. */
+			themeManifest.pageTransitions &&
+				styles.motionEnabled &&
+				!isEditorCanvas &&
+				route !== 'error' && (
 				<style set:html={PAGE_TRANSITION_CSS} />
 			)
 		}

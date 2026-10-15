@@ -64,6 +64,7 @@ function initialFontState(themeFontFamily: string | null) {
 
 interface StyleFormValues {
   overridesEnabled: boolean;
+  motionEnabled: boolean;
   primaryColorEnabled: boolean;
   primaryColor: string | null;
   secondaryColorEnabled: boolean;
@@ -80,6 +81,7 @@ interface StyleFormValues {
 function toFormValues(site: SiteRecord): StyleFormValues {
   return {
     overridesEnabled: site.themeOverridesEnabled,
+    motionEnabled: site.themeMotionEnabled,
     primaryColorEnabled: site.themePrimaryColor !== null,
     primaryColor: site.themePrimaryColor,
     secondaryColorEnabled: site.themeSecondaryColor !== null,
@@ -184,6 +186,7 @@ export function StyleView({ site }: StyleViewProps) {
       trackerScripts: site.themeTrackerScripts,
       faviconUrl: values.faviconUrl.trim() || null,
       overridesEnabled: values.overridesEnabled,
+      motionEnabled: values.motionEnabled,
     }),
     send: sendThemeSettings,
   });
@@ -194,6 +197,7 @@ export function StyleView({ site }: StyleViewProps) {
     formState: { errors },
   } = form;
   const overridesEnabled = useWatch({ control, name: 'overridesEnabled' });
+  const motionEnabled = useWatch({ control, name: 'motionEnabled' });
   const primaryColorEnabled = useWatch({
     control,
     name: 'primaryColorEnabled',
@@ -379,6 +383,28 @@ export function StyleView({ site }: StyleViewProps) {
               </div>
             </StyleSection>
           </Gated>
+
+          {/* Not gated either: it is not a look the theme can be asked to
+              give up, it is the site saying it does not move (docs/adr/0142),
+              and a theme that refuses styling is no reason to keep moving. */}
+          <StyleSection
+            id="style-motion-title"
+            title={t('themeSettings.motionTitle')}
+            description={t('themeSettings.motionHelp')}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="theme-settings-motion" className="text-sm">
+                {t('themeSettings.motionLabel')}
+              </Label>
+              <Switch
+                id="theme-settings-motion"
+                checked={motionEnabled}
+                onCheckedChange={(checked) =>
+                  setValue('motionEnabled', checked, changed)
+                }
+              />
+            </div>
+          </StyleSection>
 
           {/* Not gated by the site's switch: what a block's own style says
               lives on the blocks, and the switch does not touch it. Only a

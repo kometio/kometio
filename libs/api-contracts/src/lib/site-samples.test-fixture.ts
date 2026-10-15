@@ -38,6 +38,7 @@ export const themeSettingsSample: ThemeSettings = {
   bodyScript: null,
   faviconUrl: null,
   overridesEnabled: true,
+  motionEnabled: true,
   allowedTrackerDomains: [{ label: 'Esempio', domain: 'static.esempio.test' }],
   trackerScripts: [
     {
@@ -87,6 +88,7 @@ export const siteRecordSample = {
   themeBodyScript: null,
   themeFaviconUrl: null,
   themeOverridesEnabled: true,
+  themeMotionEnabled: true,
   themeAllowedTrackerDomains: themeSettingsSample.allowedTrackerDomains,
   themeTrackerScripts: themeSettingsSample.trackerScripts,
   cookieBannerSettings: DEFAULT_COOKIE_BANNER_SETTINGS,

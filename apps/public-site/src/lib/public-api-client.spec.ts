@@ -46,6 +46,7 @@ const samplePage: PublishedPage = {
       bodyScript: null,
       faviconUrl: null,
       overridesEnabled: true,
+      motionEnabled: true,
       allowedTrackerDomains: [],
       trackerScripts: [],
     },

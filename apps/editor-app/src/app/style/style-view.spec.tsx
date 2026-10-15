@@ -116,6 +116,7 @@ describe('StyleView', () => {
     vi.mocked(api.updateThemeSettings).mockResolvedValue({
       ...site,
       themeOverridesEnabled: true,
+      themeMotionEnabled: true,
       themeAllowedTrackerDomains: [],
       formSubmissionRetentionDays: null,
     });
@@ -191,7 +192,7 @@ describe('StyleView — the page, section by section', () => {
    * panel, and the two had started to disagree. This page is the one home,
    * and its parts come in an order somebody can follow.
    */
-  it('has its sections in order: theme, colours, typography, width, block styles, icon, advanced', () => {
+  it('has its sections in order: theme, colours, typography, width, motion, block styles, icon, advanced', () => {
     renderView();
 
     const headings = screen
@@ -202,10 +203,61 @@ describe('StyleView — the page, section by section', () => {
       'Colori',
       'Tipografia',
       'Larghezza del contenuto',
+      'Movimento',
       'Stile per blocco',
       'Icona del sito (favicon)',
       'Avanzate',
     ]);
+  });
+
+  describe('motion (docs/adr/0142)', () => {
+    it('shows the switch on for a site that has never been asked', () => {
+      renderView();
+
+      const motion = screen.getByRole('switch', {
+        name: /animazioni e transizioni/i,
+      });
+      expect(motion.getAttribute('aria-checked')).toBe('true');
+    });
+
+    it('saves it off without touching the overrides switch', async () => {
+      vi.mocked(api.updateThemeSettings).mockResolvedValue({
+        ...site,
+        themeMotionEnabled: false,
+      });
+
+      renderView();
+      fireEvent.click(
+        screen.getByRole('switch', { name: /animazioni e transizioni/i }),
+      );
+      fireEvent.click(await screen.findByRole('button', { name: /^salva$/i }));
+
+      await waitFor(() =>
+        expect(api.updateThemeSettings).toHaveBeenCalledWith(
+          'site-1',
+          expect.objectContaining({
+            motionEnabled: false,
+            overridesEnabled: true,
+          }),
+        ),
+      );
+    });
+
+    it('stays usable when the overrides switch is off and when the theme refuses styling', async () => {
+      vi.mocked(themeApi.fetchThemeCapabilities).mockResolvedValue({
+        allowStyleOverrides: false,
+      });
+
+      const { container } = renderView({ themeOverridesEnabled: false });
+      await waitFor(() => {
+        expect(container.querySelector('[inert]')).not.toBeNull();
+      });
+
+      const motion = screen.getByRole('switch', {
+        name: /animazioni e transizioni/i,
+      });
+      expect(motion.closest('[inert]')).toBeNull();
+    });
   });
 
   it('says the switch is off in one sentence, and keeps the long account behind a visible "How it works"', () => {

@@ -68,9 +68,12 @@ export const BLOCK_BEHAVIOR_REGISTRY: Record<string, BlockBehavior[]> = {
   ProductReviews: collectionBehaviors,
   EventList: collectionBehaviors,
   ProductGallery: productGalleryBehaviors,
-  // Both copy something — a code, the page's address — with one button.
+  // Each copies something — a code, the page's address, a sample of code —
+  // with one button. The page wires them at load (PublicPageContent); this is
+  // for the one a live insert brings.
   PromoCode: copyButtonBehaviors,
   ShareButtons: copyButtonBehaviors,
+  Code: copyButtonBehaviors,
   CookiePreferences: cookiePreferencesBehaviors,
   BookingEmbed: consentGatedEmbedBehaviors,
   // Listened for on the picture, not on each point: a point added in the

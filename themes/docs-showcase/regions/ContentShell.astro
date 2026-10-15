@@ -166,6 +166,13 @@ const nextDoc =
 		   block, and the sidebar lines up with it. */
 		padding: 0 1.5rem 2.5rem;
 	}
+	/* The shell already has the gutter, and the column inside it has the
+	   gap: each root block adding its own on top put the text 24px in from
+	   the pager and the sidebar's rule on a wide screen, and 48px in from
+	   the sidebar above it on a phone. */
+	.kometio-docs-shell__content {
+		--kometio-content-gutter: 0px;
+	}
 	.kometio-docs-sidebar {
 		padding-top: var(--kometio-page-start-gap);
 	}
