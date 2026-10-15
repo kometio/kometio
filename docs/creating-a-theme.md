@@ -16,12 +16,13 @@ Reach for the lowest rung that gets you there. Each step up costs
 something — more surface to keep working when Kometio changes — so most
 themes should stop at the first one.
 
-|     | You want to change                     | You write                                             |
-| --- | -------------------------------------- | ----------------------------------------------------- |
-| 1   | Colours, fonts, spacing, corners       | `theme.css` — design tokens                           |
-| 2   | One block's markup                     | `blocks/<Name>.astro`                                 |
-| 3   | The header, footer, or content wrapper | `regions/<Name>.astro`                                |
-| 4   | Add a block type Kometio doesn't have  | `blocks/<Type>.block.ts` + `.astro` + `.locales.json` |
+|     | You want to change                     | You write                                                                            |
+| --- | -------------------------------------- | ------------------------------------------------------------------------------------ |
+| 1   | Colours, fonts, spacing, corners       | `theme.css` — design tokens                                                          |
+| 1   | How the site moves                     | `theme.css` — the `--kometio-motion-*` tokens, and `pageTransitions` in `theme.json` |
+| 2   | One block's markup                     | `blocks/<Name>.astro`                                                                |
+| 3   | The header, footer, or content wrapper | `regions/<Name>.astro`                                                               |
+| 4   | Add a block type Kometio doesn't have  | `blocks/<Type>.block.ts` + `.astro` + `.locales.json`                                |
 
 There is deliberately **no rung for "replace the whole page"**. There used
 to be, and it was removed in ADR-0043 — the one theme that used it had to

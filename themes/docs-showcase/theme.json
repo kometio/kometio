@@ -1,4 +1,5 @@
 {
   "allowStyleOverrides": true,
-  "stickyFooter": true
+  "stickyFooter": true,
+  "pageTransitions": true
 }

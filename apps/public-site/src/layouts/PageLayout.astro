@@ -12,6 +12,7 @@ import { injectScriptNonce } from '../lib/content-security-policy';
 import { isDemoDeployment } from '../lib/demo-mode';
 import { editorAppUrl } from '../lib/editor-app-url';
 import { localeDirection } from '@kometio/theme-runtime';
+import { PAGE_TRANSITION_CSS } from '../lib/page-transition-css';
 import { resolvePageSeo } from '../lib/page-seo';
 import { resolvePageThemeStyles } from '../lib/page-theme-styles';
 import { Translator } from '@kometio/theme-runtime';
@@ -190,7 +191,12 @@ const bodyTrackerScripts = partitionTrackerScripts(
 );
 ---
 
-<html lang={locale} dir={localeDirection(locale)} data-kometio-theme={resolvedThemeName}>
+<html
+	lang={locale}
+	dir={localeDirection(locale)}
+	data-kometio-theme={resolvedThemeName}
+	data-kometio-canvas={isEditorCanvas ? '' : undefined}
+>
 	<head>
 		<PageHead
 			seoMeta={seoMeta}
@@ -203,6 +209,13 @@ const bodyTrackerScripts = partitionTrackerScripts(
 			headTrackerScripts={headTrackerScripts}
 			isEditorCanvas={isEditorCanvas}
 		/>
+		{
+			/* Never in the editor's canvas (nothing there navigates) and never
+			   on the 500 page, which is drawn when something is already wrong. */
+			themeManifest.pageTransitions && !isEditorCanvas && route !== 'error' && (
+				<style set:html={PAGE_TRANSITION_CSS} />
+			)
+		}
 	</head>
 	<body
 		class:list={[{ 'kometio-body--sticky-footer': themeManifest.stickyFooter }]}

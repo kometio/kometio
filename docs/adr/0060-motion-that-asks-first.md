@@ -149,3 +149,14 @@ observing, and re-running the initialiser is what it needed anyway.
 - Still open: **hover states on the blocks themselves** (a Button's own
   hover, a Card's) remain each block's business. What this adds is the
   wrapper's, which is what a page can ask for without a theme's help.
+
+## Amendment — 2026-10-15 ([ADR-0141](0141-a-theme-says-how-its-site-moves.md))
+
+The entrance of a whole block stays what this ADR made it: a property of one
+instance, off unless the person editing turns it on. What changes is the
+sentence "a theme decides how a site looks at rest, not what moves": a theme
+now also decides how the parts of a block arrive, what a control and a card
+do under the pointer, and whether one page cross-fades into the next. The
+reasons for per-instance entrances were about whole blocks and still hold; the
+hover states this ADR left "each block's business" are now a vocabulary a
+theme can tune.

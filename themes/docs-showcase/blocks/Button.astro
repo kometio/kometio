@@ -90,6 +90,18 @@ const href = resolveLinkHref({ linkType, page, url });
     --kometio-button-py: 0.5rem;
     --kometio-button-px: 1.25rem;
   }
+  /* What it does under the pointer (docs/adr/0141): the fill deepens a
+     little and the button rises by the theme's `--kometio-motion-lift`.
+     The transition itself is core's, on every `a`; `:active` is core's too. */
+  .kometio-button:hover {
+    background: color-mix(
+      in oklab,
+      var(--kometio-override-bg, var(--primary)) 88%,
+      var(--foreground)
+    );
+    transform: translateY(var(--kometio-motion-lift, 0px));
+    box-shadow: var(--shadow-sm);
+  }
   /* The same three sizes as core, so a size chosen in the editor means the
      same thing on this theme. */
   .kometio-button--sm {
@@ -138,6 +150,17 @@ const href = resolveLinkHref({ linkType, page, url });
   }
   .kometio-button--link:hover {
     color: var(--link-hover);
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+  }
+  .kometio-button--secondary:hover,
+  .kometio-button--outline:hover {
+    background: color-mix(
+      in oklab,
+      var(--kometio-override-bg, var(--primary)) 8%,
+      transparent
+    );
   }
 
   /* `ghost` is core's own look since ADR-0056; this is the theme

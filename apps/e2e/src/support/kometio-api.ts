@@ -30,6 +30,15 @@ export class KometioApi {
     return siteSchema.parse(await this.json(this.request.get('sites/current')));
   }
 
+  /** The theme the site renders with: one of the bundled ones, as Style → Theme offers them. */
+  async setThemePackage(siteId: string, themeName: string): Promise<void> {
+    await this.ok(
+      this.request.patch(`sites/${siteId}/theme-package`, {
+        data: { themeName },
+      }),
+    );
+  }
+
   /** The language the signed-in person chose for the editor, or `null` while they have not: it then speaks English. */
   async accountLanguage() {
     return accountProfileSchema.parse(

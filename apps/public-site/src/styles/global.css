@@ -134,6 +134,24 @@
     0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  /* How the site moves (ADR-0141). Every default is "as before": a theme
+     that says nothing about motion has the transitions below and nothing
+     that travels, and one that wants more states it here. A duration of 0
+     is how a theme turns a family off. */
+  --kometio-motion-duration-fast: 150ms;
+  --kometio-motion-duration: 250ms;
+  --kometio-motion-duration-slow: 600ms;
+  --kometio-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* How far an entrance travels. Opacity and transform only, whatever it is. */
+  --kometio-motion-distance: 24px;
+  /* What the parts of a block do as it arrives: the name of one of the
+     entrance keyframes (`kometio-fade`, `kometio-slide-up`, …), or `none`. */
+  --kometio-motion-reveal: none;
+  /* The wait between one part and the next. */
+  --kometio-motion-stagger: 0ms;
+  /* How far a card that is a link rises under the pointer (a negative length), and how far a button sinks. */
+  --kometio-motion-lift: 0px;
+  --kometio-motion-press: 1;
 }
 
 /* A form's trap for bots (Form, NewsletterSignup): out of sight and out
@@ -623,25 +641,25 @@ body,
 @keyframes kometio-slide-up {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(calc(1 * var(--kometio-motion-distance, 24px)));
   }
 }
 @keyframes kometio-slide-down {
   from {
     opacity: 0;
-    transform: translateY(-24px);
+    transform: translateY(calc(-1 * var(--kometio-motion-distance, 24px)));
   }
 }
 @keyframes kometio-slide-left {
   from {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(calc(1 * var(--kometio-motion-distance, 24px)));
   }
 }
 @keyframes kometio-slide-right {
   from {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(calc(-1 * var(--kometio-motion-distance, 24px)));
   }
 }
 @keyframes kometio-zoom {
@@ -703,6 +721,99 @@ body,
 }
 
 /*
+ * What moves INSIDE a block and BETWEEN two pages, as a theme asks for it
+ * (ADR-0141). The entrance of a whole block stays per instance (ADR-0060);
+ * this is the rest, and it is all opt-in markup and tokens:
+ *
+ *  - a block marks the parts that arrive one after another
+ *    (`data-kometio-reveal="<place>"`), or the container whose children
+ *    do (`data-kometio-reveal-group`);
+ *  - the theme says how (`--kometio-motion-reveal`, `-stagger`, `-ease`).
+ *
+ * The same fail-safe as the entrance, for the same reason: every rule that
+ * can leave something on a first frame of `opacity: 0` hangs off
+ * `.kometio-motion-ready` (which JavaScript adds) AND off a root block (the
+ * one thing that is ever told it has arrived). A part marked inside a
+ * region, a term's page or the search results is simply visible. The
+ * editor's canvas is left alone: a block being edited does not make an
+ * entrance.
+ */
+.kometio-motion-ready:not([data-kometio-canvas])
+  .kometio-root-block
+  :is([data-kometio-reveal], [data-kometio-reveal-group] > *) {
+  animation: var(--kometio-motion-reveal, none)
+    var(--kometio-motion-duration-slow, 600ms)
+    var(--kometio-motion-ease, ease-out)
+    calc(var(--kometio-motion-stagger, 0ms) * var(--kometio-reveal-index, 0))
+    both paused;
+}
+.kometio-motion-ready:not([data-kometio-canvas])
+  .kometio-root-block[data-kometio-in-view]
+  :is([data-kometio-reveal], [data-kometio-reveal-group] > *) {
+  animation-play-state: running;
+}
+/* The place of a part in the sequence: written as an attribute value, since a custom property cannot be read out of one. */
+[data-kometio-reveal='1'],
+[data-kometio-reveal-group] > :nth-child(2) {
+  --kometio-reveal-index: 1;
+}
+[data-kometio-reveal='2'],
+[data-kometio-reveal-group] > :nth-child(3) {
+  --kometio-reveal-index: 2;
+}
+[data-kometio-reveal='3'],
+[data-kometio-reveal-group] > :nth-child(4) {
+  --kometio-reveal-index: 3;
+}
+[data-kometio-reveal='4'],
+[data-kometio-reveal-group] > :nth-child(5) {
+  --kometio-reveal-index: 4;
+}
+[data-kometio-reveal='5'],
+[data-kometio-reveal-group] > :nth-child(6) {
+  --kometio-reveal-index: 5;
+}
+/* A long list does not make the last one wait for the rest: the sixth place is as late as it gets. */
+[data-kometio-reveal-group] > :nth-child(n + 7) {
+  --kometio-reveal-index: 6;
+}
+
+/*
+ * What every control does under the pointer and the keyboard. A colour or a
+ * border that changed instantly now changes in `--kometio-motion-duration-fast`;
+ * the properties are listed, never `all`, so nothing that lays out is ever
+ * animated by accident. Outlines are not in the list on purpose: a focus ring
+ * that fades in is a focus that is not there for a moment.
+ *
+ * In the layer a block's own scoped `transition` outranks, so a block that
+ * has its own keeps it.
+ */
+@layer kometio.base {
+  a,
+  button,
+  summary,
+  input,
+  select,
+  textarea,
+  [role='button'] {
+    transition-property:
+      color, background-color, border-color, box-shadow, opacity, transform,
+      text-decoration-color;
+    transition-duration: var(--kometio-motion-duration-fast, 150ms);
+    transition-timing-function: var(--kometio-motion-ease, ease-out);
+  }
+  /* A card that is a link rises, and a button sinks under the finger. Both
+     are zero by default: it is the theme that decides there is a lift. */
+  .kometio-page-grid__card:hover,
+  .kometio-product-card:hover {
+    transform: translateY(var(--kometio-motion-lift, 0px));
+  }
+  .kometio-button:active {
+    transform: scale(var(--kometio-motion-press, 1));
+  }
+}
+
+/*
  * Accessibility, not polish (docs/adr/0060).
  *
  * Before this rule the product had not one `prefers-reduced-motion` block
@@ -736,6 +847,32 @@ body,
   }
   .kometio-root-block[data-kometio-hover]:hover {
     transform: none;
+  }
+  /* The same, for the parts of a block (ADR-0141): dropped, not shortened,
+     since `both` would leave a part on its first frame. And nothing is
+     lifted or pressed, and no page slides into the next. */
+  .kometio-motion-ready
+    :is([data-kometio-reveal], [data-kometio-reveal-group] > *) {
+    animation: none !important;
+  }
+  .kometio-page-grid__card:hover,
+  .kometio-product-card:hover,
+  .kometio-button:active {
+    transform: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Paper and PDF show the whole page: nothing waits to be scrolled to. */
+@media print {
+  .kometio-motion-ready .kometio-root-block,
+  .kometio-motion-ready
+    :is([data-kometio-reveal], [data-kometio-reveal-group] > *) {
+    animation: none !important;
   }
 }
 

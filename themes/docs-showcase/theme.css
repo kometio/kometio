@@ -55,4 +55,17 @@
      — an inline instance override (higher specificity) still wins over
      this exactly like it always did. */
   --kometio-override-radius: var(--radius);
+
+  /* How this site moves (docs/adr/0141). A documentation site is read, so
+     nothing travels far or lingers: the parts of a block arrive one after
+     another a few pixels below where they rest, a card or a button answers
+     the pointer, and the page changes with a cross-fade (theme.json).
+     Whole blocks do not enter by themselves — that stays per instance, and
+     a page of prose should not rise paragraph by paragraph. */
+  --kometio-motion-reveal: kometio-slide-up;
+  --kometio-motion-distance: 14px;
+  --kometio-motion-duration-slow: 520ms;
+  --kometio-motion-stagger: 80ms;
+  --kometio-motion-lift: -2px;
+  --kometio-motion-press: 0.98;
 }

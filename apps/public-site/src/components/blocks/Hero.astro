@@ -19,15 +19,17 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
 >
 	{/* Not rendered at all when empty, so a hero that never set one is
 	    byte-identical to before. */}
-	{eyebrow && <p class="kometio-hero__eyebrow" data-kometio-field="eyebrow">{eyebrow}</p>}
+	{eyebrow && <p class="kometio-hero__eyebrow" data-kometio-field="eyebrow" data-kometio-reveal="0">{eyebrow}</p>}
 	<h1
 		data-kometio-field="title"
+		data-kometio-reveal="1"
 		class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl"
 	>
 		{title}
 	</h1>
 	<div
 		data-kometio-field="subtitle"
+		data-kometio-reveal="2"
 		class="kometio-rich-text mt-4 text-lg text-pretty text-muted-foreground sm:text-xl"
 		set:html={subtitle}
 	/>
@@ -37,7 +39,7 @@ const { title, eyebrow, subtitle, instanceClass, hasChildren } = Astro.props;
 	    background and its padding. Rendered only when there are children,
 	    so an empty hero gains no stray box. */}
 	{hasChildren && (
-		<div class="kometio-hero__content">
+		<div class="kometio-hero__content" data-kometio-reveal="3">
 			<slot />
 		</div>
 	)}
