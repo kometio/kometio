@@ -157,7 +157,11 @@ to run again afterwards, so there is nothing to clean up either.
 
 Your new site comes with one published home page carrying the name you
 typed, so it renders as soon as it is reachable rather than answering 404
-on itself. Edit it, or replace it, from **Pages**.
+on itself. Right after the wizard you are asked whether to start from an
+example — a studio or services business, a portfolio, a blog — or from that
+page alone; the example is written in the language you chose, and in English
+for a language it has no text in. Either way, edit it, or replace it, from
+**Pages**.
 
 ### If you would rather not use the wizard
 

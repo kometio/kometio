@@ -108,15 +108,20 @@ Open <http://localhost:4200>. The first time, it asks for:
 - your **email** and a **password** (at least 12 characters: this account
   cannot be unlocked by anyone else).
 
-Press **Create my account**. You land on the list of pages, with a home page
-already published.
+Press **Create my account**. The next screen asks where to start from: a
+studio or services business, a portfolio, a blog, or **a blank page**. An
+example is a handful of published pages, a header and a footer, written in the
+language you chose (in English for a language it has no text in) with
+sample text for you to replace; a blank page is the home page and nothing
+else. Nothing is chosen for you, and the pages list offers the choice again
+for as long as the site has only its first page.
 
 ## What you should see
 
 - Open <http://localhost:4322>. It goes to your site's home page in the
   language you chose, titled with your site's name.
-- In the editor, **Pages** lists that home page as _Published_. Open it, edit
-  it on the canvas, publish, and reload the site.
+- In the editor, **Pages** lists the pages as _Published_. Open one, edit it on
+  the canvas, publish, and reload the site.
 
 ## Everyday commands
 

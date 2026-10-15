@@ -88,13 +88,26 @@ test('a person who starts the image reaches a working site, and can sign in agai
     .getByLabel('Password', { exact: true })
     .fill(environment.adminPassword);
   await page.getByRole('button', { name: 'Create my account' }).click();
+
+  // What the site starts from is asked once, right after the account (docs/adr/0136).
+  // The blog: its home lists the articles by category, which is the starter that
+  // needs the most of the site to be working (a section, a category, terms, and
+  // the listing blocks that read them). It makes no page called "contact", which
+  // the form below does.
+  await expect(page).toHaveURL(/\/starter$/);
+  await page.getByRole('radio', { name: 'Blog' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page).toHaveURL(/\/pages/);
 
   // The site answers at its address at once, with the home page the wizard
-  // made, and nothing was set by hand.
+  // made and the starter's words on it, and nothing was set by hand.
   const site = await first.request.get(environment.publicSiteUrl);
   expect(site.status()).toBe(200);
-  expect(await site.text()).toContain(`<title>${siteName}`);
+  const home = await site.text();
+  expect(home).toContain(`<title>${siteName}`);
+  expect(home).toContain('Notes, ideas and things learned along the way');
+  // The articles are on it: found through their category, not typed in.
+  expect(home).toContain('Where a good article starts');
 
   // Sign in again, in a clean browser, through the form: the captcha has to
   // give the button its token when nobody gave the image a key. With an empty
