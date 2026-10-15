@@ -12,6 +12,12 @@ import {
   InvalidFormSubmissionError,
   InvalidOrExpiredTokenError,
   InvalidRedirectError,
+  InvalidSecondFactorError,
+  NoSecondFactorEnrolmentError,
+  SecondFactorAlreadyEnabledError,
+  SecondFactorCodeMismatchError,
+  SecondFactorNotAvailableError,
+  SecondFactorNotEnabledError,
   PageGroupNotFoundError,
   PageGroupReorderMismatchError,
   PageGroupVersionNotFoundError,
@@ -398,4 +404,60 @@ describe('the refusals of a redirect', () => {
       'redirect:target:loop',
     );
   });
+});
+
+describe('the errors of the second step of sign-in', () => {
+  it('say a wrong code with the account it was tried on and what to try again with', () => {
+    const error = new InvalidSecondFactorError('user-1', 'next-challenge');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe('InvalidSecondFactorError');
+    expect(error.userId).toBe('user-1');
+    expect(error.nextChallenge).toBe('next-challenge');
+    // Not held back unless it is said: the default is a plain refusal.
+    expect(error.locked).toBe(false);
+  });
+
+  it('say that the codes are held back, and name no account when the challenge was no good', () => {
+    const error = new InvalidSecondFactorError(null, null, true);
+
+    expect(error.userId).toBeNull();
+    expect(error.nextChallenge).toBeNull();
+    expect(error.locked).toBe(true);
+  });
+
+  it.each([
+    [
+      new SecondFactorCodeMismatchError(),
+      'SecondFactorCodeMismatchError',
+      'The code does not match: check the app and try again',
+    ],
+    [
+      new SecondFactorNotAvailableError(),
+      'SecondFactorNotAvailableError',
+      'Two-step verification is not available on this server',
+    ],
+    [
+      new SecondFactorAlreadyEnabledError(),
+      'SecondFactorAlreadyEnabledError',
+      'Two-step verification is already on',
+    ],
+    [
+      new SecondFactorNotEnabledError(),
+      'SecondFactorNotEnabledError',
+      'Two-step verification is not on',
+    ],
+    [
+      new NoSecondFactorEnrolmentError(),
+      'NoSecondFactorEnrolmentError',
+      'No two-step verification is being set up: start again',
+    ],
+  ])(
+    '%s is a real Error with its own name and sentence',
+    (error, name, message) => {
+      expect(error).toBeInstanceOf(Error);
+      expect(error.name).toBe(name);
+      expect(error.message).toBe(message);
+    },
+  );
 });
