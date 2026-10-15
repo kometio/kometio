@@ -168,8 +168,8 @@
     "creating": "Creating your site…",
     "error": "The example was not created. Try again.",
     "notBlank": "This site already has content of its own, so an example cannot be added to it.",
-    "themeMissing": "It uses the “{{theme}}” theme, which this installation does not have, so it cannot be made here.",
-    "themeMissingError": "This example uses a theme this installation does not have, so it was not created.",
+    "themeMissing": "It uses the “{{theme}}” theme, which this installation does not have, so it cannot be made here. Pick another example, or a blank page: it uses the theme you have.",
+    "themeMissingError": "This example uses a theme this installation does not have, so it was not created. Pick another example, or a blank page.",
     "created_one": "Your site is ready: {{count}} page created",
     "created_other": "Your site is ready: {{count}} pages created",
     "notice": {

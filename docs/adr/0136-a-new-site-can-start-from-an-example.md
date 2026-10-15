@@ -83,7 +83,9 @@ the schema or the code knows which one it was.
   moves to `colour`), the blog on `paper` (ADR-0139). A deployment that does not
   have a starter's theme (`KOMETIO_THEME` leaves it out, or the build does) does
   not make it: the offer lists it as unavailable with the theme's name, and the
-  request is refused with a 400 and nothing written.
+  request is refused with a 400 and nothing written. The person falls back on
+  what the installation has: another example, or a blank page, which keeps the
+  theme the site is on.
 
 ## Alternatives that were not taken
 
