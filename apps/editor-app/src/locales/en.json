@@ -140,6 +140,42 @@
       "newToken": "The server starts again after an attempt that failed, and prints a new setup token: read the most recent one from its log (“docker logs kometio”) before you try again."
     }
   },
+  "starters": {
+    "title": "Where do you want to start?",
+    "description": "Pick an example to begin with, or start from a blank page. You can change everything afterwards.",
+    "groupLabel": "Starting point",
+    "options": {
+      "blank": {
+        "name": "A blank page",
+        "description": "Just the home page. You build the rest yourself."
+      },
+      "studio": {
+        "name": "Studio or services",
+        "description": "A home page, services, about and a contact form."
+      },
+      "portfolio": {
+        "name": "Portfolio",
+        "description": "A home page, three sample projects, about and a contact form."
+      },
+      "blog": {
+        "name": "Blog",
+        "description": "A home page with the latest articles by category, an about page and three sample articles."
+      }
+    },
+    "fallbackLanguage": "The examples are written in Italian and English. Your site is in {{language}}, so they come in English: you will rewrite the text anyway.",
+    "choose": "Pick an example, or a blank page.",
+    "continue": "Continue",
+    "creating": "Creating your site…",
+    "error": "The example was not created. Try again.",
+    "notBlank": "This site already has content of its own, so an example cannot be added to it.",
+    "created_one": "Your site is ready: {{count}} page created",
+    "created_other": "Your site is ready: {{count}} pages created",
+    "notice": {
+      "title": "Your site has only its first page",
+      "body": "Start from an example — a studio, a portfolio or a blog — and edit it, or keep building from scratch.",
+      "action": "Choose an example"
+    }
+  },
   "shell": {
     "nav": {
       "dashboard": "Dashboard",

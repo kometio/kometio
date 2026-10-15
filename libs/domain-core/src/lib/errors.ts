@@ -869,3 +869,18 @@ export class NoSecondFactorEnrolmentError extends Error {
     this.name = 'NoSecondFactorEnrolmentError';
   }
 }
+
+/**
+ * A starting point is made for a new site (docs/adr/0136). One that already
+ * has content of its own — a page written, a form, a section — is not new, and
+ * a starter laid over it would be pages the owner did not ask for among the
+ * ones they did.
+ */
+export class SiteIsNotBlankError extends Error {
+  constructor(siteId: string) {
+    super(
+      `Site ${siteId} already has content of its own: a starting point is only for a new site`,
+    );
+    this.name = 'SiteIsNotBlankError';
+  }
+}

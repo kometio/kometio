@@ -14,6 +14,7 @@ import { ImportsModule } from './imports/imports.module';
 import { HealthModule } from './health/health.module';
 import { SetupModule } from './setup/setup.module';
 import { LegalDocumentsModule } from './legal-documents/legal-documents.module';
+import { StartersModule } from './starters/starters.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { MediaModule } from './media/media.module';
 import { PagesModule } from './pages/pages.module';
@@ -48,6 +49,7 @@ import { UsersModule } from './users/users.module';
     MaintenanceModule,
     PagesModule,
     LegalDocumentsModule,
+    StartersModule,
     PublicPagesModule,
     ActivityModule,
     RedirectsModule,

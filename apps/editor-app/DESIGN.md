@@ -465,6 +465,19 @@ text-destructive`, announced with `role="alert"`, nothing drawn when
   (`CardTitle as="h1"`). Built from it, never from a `div` and a `Card` by
   hand: seven copies of that had no main landmark and no level-one heading.
   `width="md"` only for the setup's long form.
+- **Where a new site starts from** (`app/starters`, `routes/starter.tsx`;
+  docs/adr/0136): the screen right after the first-run wizard, an `AuthPage`
+  (`width="md"`) holding one `RadioGroup` of `RadioOption`s — three examples and
+  "A blank page" — and one filled button. Nothing is chosen at first, since any
+  of the four would be a decision made for the person; Continue with none says
+  so under the options, in words, rather than being dead. The line about the
+  examples' language is drawn only when the site's language has none of its own,
+  and before anything is made. A refusal is said in place with the choice kept.
+  The same choice is reached from `StarterNotice`, one line under the pages
+  list's header while the site is still the one the wizard made: a neutral
+  bordered card with a decorative icon, drawn only for whoever configures the
+  site and only once the server has said the site is new — silent while that is
+  unknown, as the mail notice is.
 - **Changing how you sign in** (`app/account`, the Accesso section of the
   profile): the email and the password each have a button that opens a
   dialog of its own and acts at once, without waiting for the profile's

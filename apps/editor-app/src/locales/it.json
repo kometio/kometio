@@ -140,6 +140,42 @@
       "newToken": "Dopo un tentativo non riuscito il server riparte e stampa un nuovo token di installazione: leggi il più recente dal suo log («docker logs kometio») prima di riprovare."
     }
   },
+  "starters": {
+    "title": "Da dove vuoi partire?",
+    "description": "Scegli un esempio da cui cominciare, oppure parti da una pagina vuota. Potrai cambiare tutto dopo.",
+    "groupLabel": "Punto di partenza",
+    "options": {
+      "blank": {
+        "name": "Una pagina vuota",
+        "description": "Solo la home. Il resto lo costruisci tu."
+      },
+      "studio": {
+        "name": "Studio o servizi",
+        "description": "Home, servizi, chi siamo e un modulo per scriverti."
+      },
+      "portfolio": {
+        "name": "Portfolio",
+        "description": "Home, tre progetti di esempio, chi sono e un modulo per scriverti."
+      },
+      "blog": {
+        "name": "Blog",
+        "description": "Home con gli ultimi articoli per categoria, una pagina su di te e tre articoli di esempio."
+      }
+    },
+    "fallbackLanguage": "Gli esempi esistono in italiano e in inglese. Il tuo sito è in {{language}}, quindi arrivano in inglese: i testi li riscriverai comunque.",
+    "choose": "Scegli un esempio, oppure una pagina vuota.",
+    "continue": "Continua",
+    "creating": "Sto creando il sito…",
+    "error": "L’esempio non è stato creato. Riprova.",
+    "notBlank": "Questo sito ha già dei contenuti suoi, quindi non si può aggiungere un esempio.",
+    "created_one": "Il sito è pronto: {{count}} pagina creata",
+    "created_other": "Il sito è pronto: {{count}} pagine create",
+    "notice": {
+      "title": "Il tuo sito ha solo la prima pagina",
+      "body": "Puoi partire da un esempio — uno studio, un portfolio, un blog — e modificarlo, oppure andare avanti da zero.",
+      "action": "Scegli un esempio"
+    }
+  },
   "shell": {
     "nav": {
       "dashboard": "Dashboard",

@@ -14,6 +14,7 @@ import {
   InvalidCaptchaError,
   InvalidFormSubmissionError,
   InvalidThemeNameError,
+  SiteIsNotBlankError,
   ThemeUploadNotFoundError,
   SiteAiSettingsRejectedError,
   PageGenerationDisabledError,
@@ -206,6 +207,9 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
   [MediaTooLargeError, (m) => new PayloadTooLargeException(m)],
   [InvalidMediaFilenameError, (m) => new BadRequestException(m)],
   [InvalidThemeNameError, (m) => new BadRequestException(m)],
+  // The site is not the new one a starting point is for (docs/adr/0136): the
+  // request is well formed, the state of the site is what refuses it.
+  [SiteIsNotBlankError, (m) => new ConflictException(m)],
   // The message is the reason's code (ThemeUploadRejectedError), which the
   // editor turns into a sentence in its own language.
   [ThemeUploadRejectedError, (m) => new BadRequestException(m)],
