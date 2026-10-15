@@ -262,6 +262,78 @@ test('a person who starts the image reaches a working site, and can sign in agai
     .poll(async () => (await api.formSubmissions(form.id)).length)
     .toBe(1);
 
+  // A site that moves (docs/adr/0141). On the docs theme, whose manifest
+  // asks for page transitions and whose tokens ask for a reveal: this is the
+  // one place it runs against the built public site behind its strict CSP,
+  // which is where an inlined script or a rejected style would show — as it
+  // did once for the entrance (docs/adr/0060), when every unit test passed.
+  await api.setThemePackage(formSite.id, 'docs-showcase');
+  const homeUrl = `${environment.publicSiteUrl}${formSite.defaultLocale}/`;
+  const sampleTitle = async (reducedMotion: 'reduce' | 'no-preference') => {
+    const context = await browser.newContext({ ...trust, reducedMotion });
+    const page = await context.newPage();
+    await page.addInitScript(() => {
+      const seen: number[] = [];
+      Object.assign(window, { seenOpacity: seen });
+      const tick = () => {
+        const title = document.querySelector('.kometio-docs-hero__title');
+        if (title) seen.push(Number(getComputedStyle(title).opacity));
+        if (seen.length < 120) requestAnimationFrame(tick);
+      };
+      document.addEventListener('DOMContentLoaded', () =>
+        requestAnimationFrame(tick),
+      );
+    });
+    await page.goto(homeUrl);
+    await page.waitForTimeout(1500);
+    const result = await page.evaluate(() => {
+      const title = document.querySelector('.kometio-docs-hero__title');
+      const seenOpacity: unknown = Reflect.get(window, 'seenOpacity');
+      return {
+        animation: title ? getComputedStyle(title).animationName : null,
+        opacity: title ? Number(getComputedStyle(title).opacity) : null,
+        seen: Array.isArray(seenOpacity) ? seenOpacity : [],
+        ready: document.documentElement.classList.contains(
+          'kometio-motion-ready',
+        ),
+      };
+    });
+    await context.close();
+    return result;
+  };
+
+  const moving = await sampleTitle('no-preference');
+  expect(moving.ready).toBe(true);
+  expect(moving.animation).toBe('kometio-slide-up');
+  // It was caught on its way in, and it arrived.
+  expect(Math.min(...moving.seen)).toBeLessThan(1);
+  expect(moving.opacity).toBe(1);
+
+  const still = await sampleTitle('reduce');
+  expect(still.ready).toBe(false);
+  expect(still.animation).toBe('none');
+  expect(still.opacity).toBe(1);
+  expect(Math.min(...still.seen)).toBe(1);
+
+  // Going to another page is a view transition, not a cut.
+  const walker = await browser.newContext(trust);
+  const walking = await walker.newPage();
+  await walking.goto(homeUrl);
+  await walking.evaluate(() => {
+    window.addEventListener('pageswap', (event) => {
+      sessionStorage.setItem(
+        'kometio-swap',
+        Reflect.get(event, 'viewTransition') ? 'view-transition' : 'cut',
+      );
+    });
+  });
+  await walking.locator('main a[href]').first().click();
+  await walking.waitForLoadState('load');
+  expect(
+    await walking.evaluate(() => sessionStorage.getItem('kometio-swap')),
+  ).toBe('view-transition');
+  await walker.close();
+
   await first.close();
   await second.close();
   await third.close();
