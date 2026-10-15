@@ -34,6 +34,13 @@ export interface ThemeManifest {
    * leaks.
    */
   stickyFooter?: boolean;
+  /**
+   * Moving from one page to the next cross-fades instead of cutting, with
+   * the header and the footer held still (ADR-0141). A flag for the same
+   * reason as `stickyFooter`: it is a rule about the document, which is
+   * core's, and a theme that wrote it itself would have to make it global.
+   */
+  pageTransitions?: boolean;
 }
 
 const themeManifestModules = import.meta.glob<{ default: ThemeManifest }>(
