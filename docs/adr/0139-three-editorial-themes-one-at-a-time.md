@@ -80,8 +80,8 @@ ContentShell.astro`, which wraps a page's blocks in a box that is not there
 - axe reports nothing and the page does not scroll sideways on the eight pages of
   block samples, the starter's pages and the code sample, at 1280 and 390.
 
-| Theme    | Character | Starter   | State                         |
-| -------- | --------- | --------- | ----------------------------- |
-| `paper`  | Carta     | Blog      | Merged with this pull request |
-| `night`  | Notte     | —         | Next                          |
-| `colour` | Colore    | Portfolio | After                         |
+| Theme    | Character | Starter   | State                                  |
+| -------- | --------- | --------- | -------------------------------------- |
+| `paper`  | Carta     | Blog      | Approved, in review (PR #120)          |
+| `night`  | Notte     | —         | In this pull request (from Style only) |
+| `colour` | Colore    | Portfolio | After                                  |

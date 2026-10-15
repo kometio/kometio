@@ -1,0 +1,58 @@
+---
+import type { ThemeFooterProps } from '@kometio/theme-runtime';
+
+/**
+ * The night's footer: the ground again under one rule, the line of rights at
+ * one end and the links at the other. What the site put there is two blocks
+ * (its links, its line); the region turns the pair end to end.
+ */
+export type Props = ThemeFooterProps;
+
+const { class: className } = Astro.props;
+---
+
+<footer class:list={['night-footer', 'kometio-shell-inset', className]}>
+	<slot />
+</footer>
+
+<style>
+	.night-footer {
+		border-top: 1px solid var(--border);
+		background: var(--background);
+		padding-block: clamp(1.75rem, 1.2rem + 1.8vw, 3rem);
+		color: var(--muted-foreground);
+	}
+
+	/* The line of rights, then the links, as drawn: the two blocks side by
+	   side where there is room, with the line first, and stacked on a phone.
+	   Both take half the width because a Nav measures itself (it is a
+	   container) and has none of its own to size by. */
+	@media (min-width: 48rem) {
+		.night-footer > :global(div) {
+			flex-direction: row-reverse;
+			align-items: center;
+			justify-content: space-between;
+			gap: 2rem;
+		}
+
+		.night-footer > :global(div > *) {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+
+		.night-footer :global(.kometio-nav) {
+			justify-content: flex-end;
+			gap: 1.75rem;
+		}
+	}
+
+	.night-footer :global(.kometio-nav-link) {
+		color: var(--foreground);
+		font-size: 0.9375rem;
+		font-weight: 500;
+	}
+
+	.night-footer :global(.kometio-text) {
+		font-size: 0.9375rem;
+	}
+</style>

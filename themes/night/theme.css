@@ -1,0 +1,117 @@
+/**
+ * "night" — a dark theme for studios, makers and anyone whose work is the
+ * picture: near-black, one luminous colour, Bricolage Grotesque headlines,
+ * Geist text and Geist Mono labels, pills for everything you can press, and
+ * cards that sit on the dark like panels (docs/adr/0139).
+ *
+ * Drawn from the design called **Notte**; the values are that design's, as
+ * measured on it: the ground `#0C0D10`, the panel `#15171C`, the raised
+ * `#1D2027`, the rule `#262A33`, the ink `#EDEEF1`, the muted ink `#A0A6B3`
+ * and the one colour, a lime `#C8F03C`.
+ *
+ * Tokens here, and the few things a token cannot say in `regions/`. A theme
+ * cannot follow the visitor's light/dark preference (a media query in this
+ * file never reaches the page): this one is dark, and says so in every token,
+ * including the four states core draws on white.
+ */
+
+:root {
+  /* Type. Bricolage Grotesque for headlines, set heavy and close; Geist for
+     the text; Geist Mono for the small labels (a date, a number, a tag). All
+     three are files of this theme (fonts.css). */
+  --font-sans-value: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --kometio-heading-font:
+    'Bricolage Grotesque Variable', 'Geist Variable', ui-sans-serif, system-ui,
+    sans-serif;
+  --kometio-code-font:
+    'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+  --kometio-heading-weight: 700;
+  --kometio-h1-weight: 700;
+  --kometio-heading-tracking: -0.03em;
+  --kometio-heading-leading: 1.05;
+
+  /* The scale is the design's: 52px on a phone, 108px from a 1280px window,
+     one line between them (6.3vw is the slope of 52 → 108 over 390 → 1280). */
+  --kometio-h1-size: clamp(3.25rem, 1.72rem + 6.3vw, 6.75rem);
+  --kometio-h2-size: clamp(2rem, 1.78rem + 0.9vw, 2.5rem);
+  --kometio-h3-size: clamp(1.4375rem, 1.38rem + 0.225vw, 1.5625rem);
+  --kometio-h4-size: 1.25rem;
+  --kometio-h5-size: 1.0625rem;
+  --kometio-h6-size: 0.9375rem;
+
+  /* Colour. Contrast, measured: ink 16.8:1 on the ground, the soft ink of
+     long text 13.6:1, the muted ink 8.0:1 (7.3:1 on a panel), the lime 14.8:1
+     as a link and as a button with the ground's own near-black on it. The
+     filled button is the lime, as drawn; it is `--primary`. */
+  --background: #0c0d10;
+  --foreground: #edeef1;
+  --primary: #c8f03c;
+  --primary-foreground: #0c0d10;
+  --secondary: #15171c;
+  --secondary-foreground: #edeef1;
+  --muted: #1d2027;
+  --muted-foreground: #a0a6b3;
+  --border: #262a33;
+  --link: #c8f03c;
+  --link-hover: #edeef1;
+  /* This theme's own names, for its regions: the stronger rule (a button's
+     outline, a note's frame) and the soft ink the design sets long text in. */
+  --night-rule-strong: #3a3f4b;
+  --night-ink-soft: #d5d8df;
+  --night-panel: #15171c;
+  --night-raised: #1d2027;
+
+  /* Shape and space. Pills for what is pressed (set in the content shell),
+     round-cornered panels for what is read; a column and a gutter that grow
+     with the window, the design's 64px at 1280. */
+  --radius: 0.875rem;
+  --kometio-content-width: 80rem;
+  --kometio-content-width-wide: 90rem;
+  --kometio-content-gutter: clamp(1.25rem, 0.04rem + 4.94vw, 4rem);
+  --kometio-shell-width: var(--kometio-content-width);
+  --kometio-page-start-gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  --kometio-block-gap: clamp(3.5rem, 2.3rem + 4.5vw, 7rem);
+
+  /* The four states, drawn for a dark ground: the tone, its text and a wash
+     of it. Core's are for white, and a pale wash on this ground would be a
+     light panel. A note is the neutral one: ruled in the stronger rule, on a
+     panel. */
+  --kometio-info: #3a3f4b;
+  --kometio-info-text: #edeef1;
+  --kometio-info-surface: #15171c;
+  --kometio-success: #34d399;
+  --kometio-success-text: #a7f3d0;
+  --kometio-success-surface: rgb(52 211 153 / 0.12);
+  --kometio-warning: #fbbf24;
+  --kometio-warning-text: #fde68a;
+  --kometio-warning-surface: rgb(251 191 36 / 0.12);
+  --kometio-error: #f87171;
+  --kometio-error-text: #fecaca;
+  --kometio-error-surface: rgb(248 113 113 / 0.12);
+
+  /* Shadows: on this ground a shadow is a darker patch, and not much of one.
+     Depth is mostly the rule and the panel. */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md:
+    0 6px 12px -4px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg:
+    0 16px 32px -12px rgb(0 0 0 / 0.6), 0 4px 8px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:
+    0 28px 48px -16px rgb(0 0 0 / 0.65), 0 8px 16px -8px rgb(0 0 0 / 0.45);
+  --shadow-2xl: 0 40px 80px -24px rgb(0 0 0 / 0.7);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.4);
+
+  /* Motion (docs/adr/0141): quick and a little overshooting. Things rise
+     into place one after the other, a card lifts under the pointer, a button
+     gives under the finger. */
+  --kometio-motion-duration-fast: 180ms;
+  --kometio-motion-duration-slow: 700ms;
+  --kometio-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --kometio-motion-reveal: kometio-slide-up;
+  --kometio-motion-distance: 16px;
+  --kometio-motion-stagger: 90ms;
+  --kometio-motion-lift: -4px;
+  --kometio-motion-press: 0.97;
+}

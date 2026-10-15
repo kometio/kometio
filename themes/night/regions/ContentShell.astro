@@ -1,0 +1,343 @@
+---
+import type { ThemeContentShellProps } from '@kometio/theme-runtime';
+
+/**
+ * Where the night theme says what a page's own blocks look like beyond what a
+ * token can say: a hero set on the left under a line of mono capitals with the
+ * accent's dot, pills for what is pressed, a list of pages as panels with a
+ * number and a date in mono, a measure for long text, square accent bullets.
+ *
+ * The same way `paper` does it (docs/adr/0139): the wrapper adds no box
+ * (`display: contents`), every selector begins at its own class so nothing
+ * leaves this theme, and each one names a class core keeps stable for this
+ * (`.kometio-hero`, `.kometio-page-grid__card`…). No block is copied; a copy of
+ * the list of pages is not possible at all for a theme (its pagination and its
+ * filter are the public site's own modules).
+ */
+export type Props = ThemeContentShellProps;
+---
+
+<div class="night-content">
+	<slot />
+</div>
+
+<style>
+	.night-content {
+		display: contents;
+	}
+
+	/* ---- Pills: what is pressed ----------------------------------------- */
+
+	.night-content :global(.kometio-button) {
+		border-radius: 999px;
+	}
+
+	.night-content :global(.kometio-button--md) {
+		padding: 0.9375rem 1.75rem;
+		font-size: 1.0625rem;
+		font-weight: 600;
+	}
+
+	/* The filled one is the accent with the ground's near-black on it; the
+	   others are a stronger rule round the same pill. */
+	.night-content :global(.kometio-button--outline),
+	.night-content :global(.kometio-button--secondary) {
+		border-color: var(--night-rule-strong);
+		color: var(--foreground);
+		font-weight: 500;
+	}
+
+	/* ---- A form: panels for the fields, a pill to send it ----------------- */
+
+	.night-content :global(.kometio-form input:not([type='checkbox'])),
+	.night-content :global(.kometio-form textarea),
+	.night-content :global(.kometio-form select) {
+		background: var(--night-panel);
+		border-color: var(--night-rule-strong);
+		border-radius: 0.75rem;
+		color: var(--foreground);
+	}
+
+	.night-content :global(.kometio-form button) {
+		padding: 0.9375rem 1.75rem;
+		border-radius: 999px;
+		font-size: 1.0625rem;
+		font-weight: 600;
+	}
+
+	.night-content :global(.kometio-form__prev) {
+		border-color: var(--night-rule-strong);
+		color: var(--foreground);
+	}
+
+	/* ---- The hero: set on the left ---------------------------------------- */
+
+	.night-content :global(.kometio-hero) {
+		margin-inline: 0;
+		max-width: var(--kometio-override-max-width, none);
+		gap: var(--kometio-override-gap, 0);
+		/* From the header to the line of capitals: the design's 56px on a phone
+		   and, on a wide window, the 120px of its padding plus the menu
+		   capsule's own room, which this header does not draw. What is above
+		   the first block (--kometio-page-start-gap) is part of it; what is
+		   below is the gap between sections, so no bottom padding. */
+		padding-top: var(
+			--kometio-override-padding-y,
+			calc(
+				clamp(3.5rem, 1.39rem + 8.65vw, 8.3rem) - var(--kometio-page-start-gap)
+			)
+		);
+		padding-bottom: var(--kometio-override-padding-y, 0);
+	}
+
+	/* The line of mono capitals, with the accent's dot in front. */
+	.night-content :global(.kometio-hero__eyebrow) {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0 0 clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
+		font-family: var(--kometio-code-font);
+		font-size: clamp(0.75rem, 0.7rem + 0.15vw, 0.8125rem);
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+
+	.night-content :global(.kometio-hero__eyebrow)::before {
+		content: '';
+		flex: none;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 999px;
+		background: var(--primary);
+	}
+
+	.night-content :global(.kometio-hero h1) {
+		font-size: var(--kometio-h1-size);
+		font-weight: 700;
+		line-height: 0.98;
+		letter-spacing: -0.045em;
+		max-width: 66rem;
+		text-wrap: balance;
+	}
+
+	.night-content :global(.kometio-hero .kometio-rich-text) {
+		max-width: 34rem;
+		margin-top: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
+		font-size: clamp(1.125rem, 1.02rem + 0.4vw, 1.3125rem);
+		line-height: 1.55;
+		color: var(--muted-foreground);
+	}
+
+	/* A page that opens with its title and nothing else is a page's title, not
+	   the landing hero: the design draws one at 80px where the landing is 108. */
+	.night-content :global(.kometio-hero:not(:has(.kometio-hero__content)) h1) {
+		font-size: clamp(2.5rem, 1.15rem + 5.4vw, 5rem);
+		line-height: 1;
+		letter-spacing: -0.04em;
+	}
+
+	.night-content :global(.kometio-hero__content) {
+		flex-direction: column;
+		align-items: stretch;
+		align-self: stretch;
+		gap: 0.75rem;
+		margin-top: clamp(2rem, 1.78rem + 0.9vw, 2.5rem);
+	}
+
+	.night-content :global(.kometio-hero__content .kometio-button) {
+		justify-content: center;
+	}
+
+	@container (min-width: 32rem) {
+		.night-content :global(.kometio-hero__content) {
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			align-self: flex-start;
+			gap: 0.75rem;
+		}
+	}
+
+	/* ---- Headings and text ---------------------------------------------- */
+
+	.night-content :global(.kometio-heading) {
+		max-width: 46rem;
+	}
+
+	.night-content :global(.kometio-root-block > .kometio-text),
+	.night-content :global(.kometio-root-block > .kometio-list) {
+		max-width: 46rem;
+		font-size: clamp(1.0625rem, 1rem + 0.2vw, 1.1875rem);
+		line-height: 1.7;
+		color: var(--night-ink-soft);
+	}
+
+	/* A bullet is a small square of the accent, as drawn. */
+	.night-content :global(.kometio-list--bullet) {
+		list-style: none;
+		padding-inline-start: 0;
+		gap: 0.75rem;
+	}
+
+	.night-content :global(.kometio-list--bullet .kometio-list-item) {
+		display: grid;
+		grid-template-columns: 0.5rem minmax(0, 1fr);
+		column-gap: 1rem;
+		align-items: baseline;
+	}
+
+	.night-content :global(.kometio-list--bullet .kometio-list-item)::before {
+		content: '';
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 2px;
+		background: var(--primary);
+		/* Centred on the first line of the item's text. */
+		transform: translateY(-0.15em);
+	}
+
+	/* A note: a panel with a strong rule and the accent's dot, not a coloured
+	   bar. */
+	.night-content :global(.kometio-callout--info) {
+		border: 1px solid var(--night-rule-strong);
+		border-left-width: 1px;
+		border-radius: 0.875rem;
+		padding: 1.125rem 1.375rem;
+		color: var(--foreground);
+		position: relative;
+		padding-inline-start: 2.75rem;
+	}
+
+	.night-content :global(.kometio-callout--info)::before {
+		content: '';
+		position: absolute;
+		inset-inline-start: 1.375rem;
+		inset-block-start: 1.5rem;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 999px;
+		background: var(--primary);
+	}
+
+	/* ---- Code: a panel ------------------------------------------------------ */
+
+	.night-content :global(.kometio-code) {
+		border: 1px solid var(--border);
+		border-radius: 0.875rem;
+	}
+
+	/* ---- A list of pages: panels with a number and a date in mono ---------- */
+
+	.night-content :global(.kometio-page-grid--cards),
+	.night-content :global(.kometio-page-grid--grid) {
+		/* Three across a 1280px window, as drawn, one on a phone. */
+		grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr));
+		gap: clamp(1rem, 0.6rem + 1.2vw, 1.5rem);
+		counter-reset: night-row var(--kometio-page-grid-offset, 0);
+	}
+
+	.night-content :global(.kometio-page-grid--cards .kometio-page-grid__item),
+	.night-content :global(.kometio-page-grid--grid .kometio-page-grid__item) {
+		counter-increment: night-row;
+		display: flex;
+	}
+
+	.night-content :global(.kometio-page-grid--cards .kometio-page-grid__card),
+	.night-content :global(.kometio-page-grid--grid .kometio-page-grid__card) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		gap: 0.625rem;
+		overflow: hidden;
+		padding: 1.5rem 1.5rem 1.75rem;
+		border: 1px solid var(--border);
+		border-radius: 1.25rem;
+		background: var(--night-panel);
+		color: var(--foreground);
+		transition-property: border-color, box-shadow, transform;
+	}
+
+	/* A picture, when somebody gave one, runs to the panel's edges. */
+	.night-content :global(.kometio-page-grid__card:has(.kometio-page-grid__image)) {
+		padding: 0 0 1.75rem;
+	}
+
+	.night-content :global(.kometio-page-grid__card:has(.kometio-page-grid__image) > :not(.kometio-page-grid__image)) {
+		margin-inline: 1.5rem;
+	}
+
+	.night-content :global(.kometio-page-grid__image) {
+		width: 100%;
+		height: 13.75rem;
+		aspect-ratio: auto;
+		border-radius: 0;
+		background: var(--night-raised);
+		margin-bottom: 0.875rem;
+	}
+
+	.night-content :global(.kometio-page-grid__date) {
+		order: -1;
+		font-family: var(--kometio-code-font);
+		font-size: clamp(0.75rem, 0.7rem + 0.15vw, 0.8125rem);
+		color: var(--muted-foreground);
+	}
+
+	/* "01 · " in front of the date, as drawn. */
+	.night-content :global(.kometio-page-grid__date)::before {
+		content: counter(night-row, decimal-leading-zero) ' · ';
+	}
+
+	.night-content :global(.kometio-page-grid__title) {
+		font-family: var(--kometio-heading-font);
+		font-size: var(--kometio-h3-size);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+	}
+
+	.night-content :global(.kometio-page-grid__excerpt) {
+		font-size: clamp(0.9375rem, 0.84rem + 0.25vw, 1rem);
+		line-height: 1.55;
+		color: var(--muted-foreground);
+	}
+
+	/* Under the pointer the panel takes a stronger rule and a glow of the
+	   accent, and the title does not underline. */
+	.night-content :global(.kometio-page-grid__card:hover),
+	.night-content :global(.kometio-page-grid__card:focus-visible) {
+		border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+		box-shadow: 0 12px 40px -16px color-mix(in srgb, var(--primary) 35%, transparent);
+	}
+
+	.night-content
+		:global(.kometio-page-grid__card:hover .kometio-page-grid__title),
+	.night-content
+		:global(.kometio-page-grid__card:focus-visible .kometio-page-grid__title) {
+		text-decoration: none;
+	}
+
+	/* The plain list of links: a rule between them. */
+	.night-content :global(.kometio-page-grid--list) {
+		display: block;
+	}
+
+	.night-content :global(.kometio-page-grid--list .kometio-page-grid__item) {
+		border-top: 1px solid var(--border);
+	}
+
+	.night-content :global(.kometio-page-grid__link) {
+		display: block;
+		padding-block: 0.875rem;
+		font-family: var(--kometio-heading-font);
+		font-size: var(--kometio-h4-size);
+		color: var(--foreground);
+	}
+
+	.night-content :global(.kometio-page-grid__link:hover),
+	.night-content :global(.kometio-page-grid__link:focus-visible) {
+		color: var(--primary);
+		text-decoration: none;
+	}
+</style>

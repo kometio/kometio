@@ -63,6 +63,7 @@ themes/<name>/
 | `classic`       | A small business's site: readable and trustworthy, a deep green, Manrope                                   | Tokens                                         |
 | `docs-showcase` | A documentation site: a sidebar, a pager, a window round the code, and motion                              | Tokens, four block overrides, a content shell  |
 | `paper`         | Editorial (docs/adr/0139): warm paper, ink, a terracotta accent, Fraunces and Instrument Sans, ruled lists | Tokens, a header, a footer and a content shell |
+| `night`         | Dark (docs/adr/0139): near-black, one lime, Bricolage Grotesque, Geist and Geist Mono, pills and panels    | Tokens, a header, a footer and a content shell |
 
 `paper` is the worked example of the bottom two rungs of the ladder: it carries
 no copy of any core block, and says what a token cannot in `regions/ContentShell.astro`
