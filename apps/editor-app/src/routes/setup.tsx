@@ -57,7 +57,9 @@ function SetupRoute() {
         // own comment for why signing in here rather than through /login
         // is a correctness matter and not a convenience.
         await bootstrapDeployment(input);
-        await navigate({ to: '/pages' });
+        // The site exists and is the one the wizard made: what it starts from
+        // is the next, and only other, thing it asks (docs/adr/0136).
+        await navigate({ to: '/starter' });
       }}
     />
   );

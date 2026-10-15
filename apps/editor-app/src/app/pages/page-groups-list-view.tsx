@@ -34,6 +34,7 @@ import {
 import { PAGE_GROUPS_PAGE_SIZE } from './page-groups-queries';
 import { usePageGroupsList } from './use-page-groups-list';
 import { PageHeader } from '../shell/page-header';
+import { StarterNotice } from '../starters/starter-notice';
 import { useToast } from '../shell/toast-provider';
 import { useCurrentSession } from '../auth/use-current-session';
 import { groupDisplayTitle } from './page-group-display';
@@ -330,6 +331,7 @@ export function PageGroupsListView({
             </Button>
           }
         />
+        {layout === 'tree' && collectionId === null && <StarterNotice />}
         <PagesListFilterBar
           value={filters}
           onChange={onFiltersChange}

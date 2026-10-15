@@ -34,6 +34,7 @@ import * as sectionsListApi from '../lib/reusable-sections-api-client';
 import * as dashboardApi from '../lib/dashboard-api-client';
 import * as deploymentApi from '../lib/deployment-api-client';
 import * as setupApi from '../lib/setup-api-client';
+import * as startersApi from '../lib/starters-api-client';
 import * as formsApi from '../lib/forms-api-client';
 import * as mediaApi from '../lib/media-api-client';
 import * as pageGroupsApi from '../lib/page-groups-api-client';
@@ -71,6 +72,12 @@ vi.mock('../lib/setup-api-client', async (importOriginal) => {
     bootstrapDeployment: vi.fn(),
   };
 });
+
+// The pages list asks whether the site can still be given a starting point.
+vi.mock('../lib/starters-api-client', () => ({
+  getStarterOffer: vi.fn(),
+  applyStarter: vi.fn(),
+}));
 
 // What the server can do: the wizard offers to open an archive only where it can.
 vi.mock('../lib/deployment-api-client', () => ({ getDeployment: vi.fn() }));
@@ -306,6 +313,14 @@ describe('router', () => {
     vi.mocked(deploymentApi.getDeployment).mockResolvedValue(
       deploymentRecord(),
     );
+    // A site with something of its own: no starting point is offered, and the
+    // pages list has no notice about one.
+    vi.mocked(startersApi.getStarterOffer).mockResolvedValue({
+      available: false,
+      language: 'it',
+      fallback: false,
+      starters: ['studio', 'portfolio', 'blog'],
+    });
   });
 
   afterEach(() => {
@@ -398,6 +413,165 @@ describe('router', () => {
 
       expect(
         await screen.findByRole('heading', { name: 'Benvenuto in Kometio' }),
+      ).toBeTruthy();
+    });
+  });
+
+  describe('the starting point of a new site (docs/adr/0136)', () => {
+    const newSite = {
+      available: true,
+      language: 'it' as const,
+      fallback: false,
+      starters: ['studio' as const, 'portfolio' as const, 'blog' as const],
+    };
+
+    beforeEach(() => {
+      vi.mocked(startersApi.getStarterOffer).mockResolvedValue(newSite);
+      vi.mocked(pageGroupsApi.listPageGroups).mockResolvedValue({
+        items: [samplePageGroupListItem],
+        total: 1,
+      });
+    });
+
+    it('is where the wizard leads, once the account is made', async () => {
+      vi.mocked(setupApi.fetchSetupStatus).mockResolvedValue({
+        hasBeenSetUp: false,
+        importFailure: null,
+      });
+      vi.mocked(setupApi.bootstrapDeployment).mockResolvedValue(undefined);
+      const { router } = renderApp('/setup');
+
+      fireEvent.change(
+        await screen.findByLabelText(/token di installazione/i),
+        {
+          target: { value: 'the-real-token' },
+        },
+      );
+      fireEvent.change(screen.getByLabelText(/nome del sito/i), {
+        target: { value: 'Casa Azzurra' },
+      });
+      fireEvent.change(screen.getByLabelText(/la tua email/i), {
+        target: { value: 'anna@example.test' },
+      });
+      fireEvent.change(screen.getByLabelText(/^password/i), {
+        target: { value: 'a-long-enough-pass' },
+      });
+      fireEvent.click(
+        screen.getByRole('button', { name: /crea il mio account/i }),
+      );
+
+      expect(
+        await screen.findByRole('heading', { name: 'Da dove vuoi partire?' }),
+      ).toBeTruthy();
+      expect(router.state.location.pathname).toBe('/starter');
+    });
+
+    it('offers the three examples and a blank page to an administrator', async () => {
+      renderApp('/starter');
+
+      expect(
+        await screen.findByRole('heading', { name: 'Da dove vuoi partire?' }),
+      ).toBeTruthy();
+      expect(screen.getAllByRole('radio')).toHaveLength(4);
+    });
+
+    it('makes the example that was chosen, says so, and opens the pages', async () => {
+      vi.mocked(startersApi.applyStarter).mockResolvedValue({
+        starterId: 'studio',
+        language: 'it',
+        fallback: false,
+        pages: 4,
+      });
+      const { router } = renderApp('/starter');
+
+      fireEvent.click(
+        await screen.findByRole('radio', { name: /studio o servizi/i }),
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
+
+      expect(await screen.findByText(/4 pagine create/i)).toBeTruthy();
+      expect(startersApi.applyStarter).toHaveBeenCalledWith(
+        sampleSite.id,
+        'studio',
+      );
+      await waitFor(() =>
+        expect(router.state.location.pathname).toBe('/pages'),
+      );
+    });
+
+    it('goes to the pages with a blank page, and makes nothing', async () => {
+      const { router } = renderApp('/starter');
+
+      fireEvent.click(
+        await screen.findByRole('radio', { name: /pagina vuota/i }),
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
+
+      await waitFor(() =>
+        expect(router.state.location.pathname).toBe('/pages'),
+      );
+      expect(startersApi.applyStarter).not.toHaveBeenCalled();
+    });
+
+    it('says when the site has meanwhile got something of its own, and keeps the choice', async () => {
+      vi.mocked(startersApi.applyStarter).mockRejectedValue(
+        new ApiError(409, { message: 'Conflict' }),
+      );
+      renderApp('/starter');
+
+      fireEvent.click(await screen.findByRole('radio', { name: /blog/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'Continua' }));
+
+      expect((await screen.findByRole('alert')).textContent).toMatch(
+        /ha già dei contenuti suoi/i,
+      );
+      expect(
+        screen
+          .getByRole('radio', { name: /blog/i })
+          .getAttribute('aria-checked'),
+      ).toBe('true');
+    });
+
+    it('sends a site that is not new to its pages instead of offering it', async () => {
+      vi.mocked(startersApi.getStarterOffer).mockResolvedValue({
+        ...newSite,
+        available: false,
+      });
+      const { router } = renderApp('/starter');
+
+      await screen.findByRole('link', { name: 'Pagine' });
+
+      expect(router.state.location.pathname).toBe('/pages');
+    });
+
+    it('is not for a publisher, who cannot configure the site', async () => {
+      vi.mocked(authApi.currentSession).mockResolvedValue({
+        userId: 'user-2',
+        email: 'publisher@example.test',
+        role: 'publisher',
+      });
+      vi.mocked(dashboardApi.getDashboardStats).mockResolvedValue({
+        pages: { publishedCount: 0, draftCount: 0 },
+        media: { count: 0, totalSizeBytes: 0 },
+        forms: { totalCount: 0, recentCount: 0, recent: [] },
+        recentActivity: [],
+      });
+      renderApp('/starter');
+
+      expect(
+        await screen.findByRole('heading', { name: 'Dashboard' }),
+      ).toBeTruthy();
+      expect(startersApi.getStarterOffer).not.toHaveBeenCalled();
+    });
+
+    it('is a notice on the pages while the site is still the one the wizard made', async () => {
+      renderApp('/pages');
+
+      const notice = await screen.findByText(/solo la prima pagina/i);
+
+      expect(notice).toBeTruthy();
+      expect(
+        screen.getByRole('link', { name: 'Scegli un esempio' }),
       ).toBeTruthy();
     });
   });
