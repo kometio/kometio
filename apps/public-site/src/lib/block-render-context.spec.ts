@@ -38,6 +38,13 @@ describe('commonBlockProps', () => {
     });
   });
 
+  it('hands a block the region of the page it is in, when it is in one', () => {
+    expect(commonBlockProps(context({ region: 'footer' })).region).toBe(
+      'footer',
+    );
+    expect(commonBlockProps(context()).region).toBeUndefined();
+  });
+
   it('leaves editable undefined on a published page', () => {
     expect(commonBlockProps(context({ editable: undefined })).editable).toBe(
       undefined,

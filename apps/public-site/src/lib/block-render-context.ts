@@ -39,6 +39,14 @@ export interface BlockRenderContext {
   ancestors: PublishedPageAncestor[];
   currentPageTitle: string;
   editable?: boolean;
+  /**
+   * Which of the page's own regions the block is drawn in, when it is in one
+   * of them: the header or the footer. Absent for a block in the page's
+   * content. A navigation needs it: a header and a footer that each have one
+   * are two landmarks of the same kind, and a reader who jumps from landmark
+   * to landmark is told only that, unless each has a name.
+   */
+  region?: 'header' | 'footer';
 }
 
 /**
@@ -59,6 +67,7 @@ export function commonBlockProps(context: BlockRenderContext) {
     translations: context.translations,
     ancestors: context.ancestors,
     currentPageTitle: context.currentPageTitle,
+    region: context.region,
   };
 }
 

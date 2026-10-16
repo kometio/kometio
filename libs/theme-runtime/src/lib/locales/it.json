@@ -182,5 +182,7 @@
   "blocks.videoEmbed.label": "Video",
   "embedHtml.demo": "I contenuti incorporati sono disattivati nella demo.",
   "embedHtml.consent.message": "Questo contenuto viene caricato quando accetti i cookie corrispondenti.",
-  "embedHtml.consent.button": "Preferenze sui cookie"
+  "embedHtml.consent.button": "Preferenze sui cookie",
+  "nav.header": "Navigazione principale",
+  "nav.footer": "Navigazione del footer"
 }
