@@ -148,12 +148,16 @@ const i18n = new Translator(locale ?? 'it', chrome?.site.defaultLocale);
   .kometio-search-results__list a {
     font-weight: 600;
   }
+  /* The theme's own colours, not a grey and a yellow of this file's: they were
+     a light site's, and on a dark one the excerpt was 2.5:1 and the match was
+     pale text on pale yellow. The match is the warning tone laid over the
+     page's own ground, with the page's own ink on it. */
   .kometio-search-results__list p {
     margin: 0.25rem 0 0;
-    color: #52525b;
+    color: var(--muted-foreground);
   }
   .kometio-search-results__list mark {
-    background: #fde68a;
-    color: inherit;
+    background: color-mix(in srgb, var(--kometio-warning) 30%, var(--background));
+    color: var(--foreground);
   }
 </style>
