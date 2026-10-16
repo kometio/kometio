@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { themeFieldDescriptorSchema } from './theme-blocks';
+import {
+  themeBlockDescriptorSchema,
+  themeFieldDescriptorSchema,
+} from './theme-blocks';
 import { CUSTOM_FIELD_CONTROLS } from './custom-field-control';
 
 /**
@@ -56,5 +59,29 @@ describe('themeFieldDescriptorSchema', () => {
         translatable: true,
       }).success,
     ).toBe(true);
+  });
+});
+
+describe('themeBlockDescriptorSchema', () => {
+  const descriptor = {
+    type: 'DailySpecial',
+    label: 'blocks.dailySpecial.label',
+    category: 'content',
+    defaultProps: {},
+    fields: [],
+  };
+
+  it('keeps the icon a theme block declares', () => {
+    // Parsed on its way to the editor: a key the schema does not name is
+    // dropped, and the block came out with the plain square of one that
+    // has no icon.
+    expect(
+      themeBlockDescriptorSchema.parse({ ...descriptor, icon: 'chef-hat' })
+        .icon,
+    ).toBe('chef-hat');
+  });
+
+  it('takes a block with no icon', () => {
+    expect(themeBlockDescriptorSchema.parse(descriptor).icon).toBeUndefined();
   });
 });

@@ -238,6 +238,11 @@ jobs:
       # is outside every project, so no Nx target runs it.
       - run: node --test tools/solve-captcha.test.mjs
 
+      # What a theme that is built outside this repository is checked with
+      # before it is built (tools/validate-theme-blocks.mts): outside every
+      # project too.
+      - run: pnpm exec tsx --test tools/validate-theme-blocks.test.mts
+
       # Sequential, not --parallel: see
       # docs/adr/0009-enforced-coverage-thresholds.md.
       - run: pnpm exec nx run-many -t test --coverage --parallel=1
