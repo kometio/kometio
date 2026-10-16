@@ -25,7 +25,7 @@
     "@kometio/shared-types": "workspace:*",
     "@kometio/api-contracts": "workspace:*",
     "@kometio/theme-runtime": "workspace:*",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@kometio/testing": "workspace:*"
