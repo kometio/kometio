@@ -1,4 +1,8 @@
 import request from 'supertest';
+import {
+  PUBLIC_API_SERVICE_TOKEN_HEADER,
+  PUBLIC_API_VISITOR_IP_HEADER,
+} from '@kometio/api-contracts';
 import type { NewsletterPort } from '@kometio/ports';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
 import { ServedSite } from '../../test/served-site.test-fixture';
@@ -18,13 +22,18 @@ class RecordingNewsletterPort implements NewsletterPort {
   }
 }
 
+const SERVICE_TOKEN = 'a-real-deployment-secret-of-some-length';
+
 /** Runs against a real Postgres — see docs/development.md. */
 describe('PublicNewsletterController (integration)', () => {
   let integration: IntegrationApp;
   let newsletterPort: RecordingNewsletterPort;
   const served = new ServedSite();
+  const originalServiceToken = process.env['PUBLIC_API_SERVICE_TOKEN'];
 
   beforeAll(async () => {
+    // The public site vouches for the visitor with it (the throttle test below).
+    process.env['PUBLIC_API_SERVICE_TOKEN'] = SERVICE_TOKEN;
     newsletterPort = new RecordingNewsletterPort();
     integration = await IntegrationApp.start({
       imports: [PublicNewsletterModule, AuthModule, SitesModule],
@@ -38,6 +47,11 @@ describe('PublicNewsletterController (integration)', () => {
 
   afterAll(async () => {
     await integration.close();
+    if (originalServiceToken === undefined) {
+      delete process.env['PUBLIC_API_SERVICE_TOKEN'];
+    } else {
+      process.env['PUBLIC_API_SERVICE_TOKEN'] = originalServiceToken;
+    }
   });
 
   const subscribe = (body: object) =>
@@ -106,5 +120,18 @@ describe('PublicNewsletterController (integration)', () => {
         'bot-no-captcha@example.com',
       );
     });
+  });
+
+  it('counts the visitor the public site vouches for, not the address it calls from: ten each a minute', async () => {
+    const asVisitor = (visitorIp: string, email: string) =>
+      subscribe({ email, captchaToken: 'test-token' })
+        .set(PUBLIC_API_SERVICE_TOKEN_HEADER, SERVICE_TOKEN)
+        .set(PUBLIC_API_VISITOR_IP_HEADER, visitorIp);
+
+    for (let sent = 0; sent < 10; sent++) {
+      await asVisitor('198.51.100.4', `first-${sent}@example.com`).expect(204);
+    }
+    await asVisitor('198.51.100.4', 'first-more@example.com').expect(429);
+    await asVisitor('198.51.100.5', 'second@example.com').expect(204);
   });
 });

@@ -6,9 +6,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import { subscribeNewsletter } from '@kometio/application';
 import { ZodValidationPipe } from '../zod-validation.pipe';
+import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttler.guard';
 import {
   type SubscribeNewsletterBody,
   subscribeNewsletterBodySchema,
@@ -18,10 +18,11 @@ import { PUBLIC_NEWSLETTER_DEPS } from './public-newsletter.tokens';
 
 // Same reasoning as PublicFormsController: no SessionAuthGuard (the public,
 // unauthenticated path apps/public-site's NewsletterSignup block posts
-// through via its own same-origin proxy), ThrottlerGuard tuned for a write
-// endpoint a spam bot actually wants to hit repeatedly.
+// through via its own same-origin proxy), and a throttle tuned for a write
+// endpoint a spam bot actually wants to hit repeatedly, counted per visitor
+// rather than per address, as PublicFormsController's is.
 @Controller('public/newsletter')
-@UseGuards(ThrottlerGuard)
+@UseGuards(PublicPagesThrottlerGuard)
 export class PublicNewsletterController {
   constructor(
     @Inject(PUBLIC_NEWSLETTER_DEPS) private readonly deps: PublicNewsletterDeps,

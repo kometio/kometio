@@ -9,6 +9,8 @@ import {
 import { DeploymentTenantModule } from '../deployment-tenant.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
 import { DeploymentSiteModule } from '../sites/deployment-site.module';
+import { ApiEnvModule } from '../api-env.module';
+import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttler.guard';
 import { DEPLOYMENT_SITE_RESOLVER } from '../sites/deployment-site.resolver';
 import { moduleDeps } from '../module-deps';
 import { PublicNewsletterController } from './public-newsletter.controller';
@@ -20,6 +22,7 @@ import { PUBLIC_NEWSLETTER_DEPS } from './public-newsletter.tokens';
     AdaptersModule,
     DeploymentTenantModule,
     DeploymentSiteModule,
+    ApiEnvModule,
     // Same throttle as PublicFormsModule — a write endpoint is exactly
     // what a spam bot wants to hit repeatedly.
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 10 }] }),
@@ -33,6 +36,7 @@ import { PUBLIC_NEWSLETTER_DEPS } from './public-newsletter.tokens';
       tenant: DEPLOYMENT_TENANT_RESOLVER,
       deploymentSiteResolver: DEPLOYMENT_SITE_RESOLVER,
     }),
+    PublicPagesThrottlerGuard,
   ],
 })
 export class PublicNewsletterModule {}

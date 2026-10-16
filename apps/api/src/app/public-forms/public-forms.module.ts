@@ -16,6 +16,8 @@ import { EmailsModule } from '../emails/emails.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
 import { moduleDeps } from '../module-deps';
 import { DeploymentSiteModule } from '../sites/deployment-site.module';
+import { ApiEnvModule } from '../api-env.module';
+import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttler.guard';
 import { AttachmentQuotaGuard } from './attachment-quota.guard';
 import { PublicFormsController } from './public-forms.controller';
 import type { PublicFormsDeps } from './public-forms.deps';
@@ -26,6 +28,7 @@ import { PUBLIC_FORMS_DEPS } from './public-forms.tokens';
     AdaptersModule,
     DeploymentTenantModule,
     DeploymentSiteModule,
+    ApiEnvModule,
     EmailsModule,
     // A write endpoint (unlike PublicPagesController's reads) is exactly
     // what a spam bot wants to hit repeatedly — stricter than page-view
@@ -47,6 +50,7 @@ import { PUBLIC_FORMS_DEPS } from './public-forms.tokens';
       tenant: DEPLOYMENT_TENANT_RESOLVER,
     }),
     AttachmentQuotaGuard,
+    PublicPagesThrottlerGuard,
   ],
 })
 export class PublicFormsModule {}
