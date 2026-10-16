@@ -78,7 +78,8 @@ export interface CheckContext {
 const LONG_PARAGRAPH = 4;
 const MANY_PARAGRAPHS_WITHOUT_A_SECTION = 4;
 const THIN_PAGE_WORDS = 60;
-const VAGUE_ENGLISH = /\b(simply|just|easily|and so on)\b|\betc\b\.?/i;
+// “as easily as a person can” compares; a bare “easily” reassures.
+const VAGUE_ENGLISH = /\b(simply|just|(?<!as )easily|and so on)\b|\betc\b\.?/i;
 
 /** The text of some HTML, as a reader meets it. */
 export function textOf(html: string): string {
@@ -296,7 +297,12 @@ function bodyFindings(
   ) => void,
   context: CheckContext,
 ) {
-  const paragraphs = html.split(/<\/p>/i).map(textOf).filter(Boolean);
+  // A paragraph is a <p> or one item of a list: the sentences of five items
+  // are not one paragraph of five sentences.
+  const paragraphs = html
+    .split(/<\/(?:p|li)>/i)
+    .map(textOf)
+    .filter(Boolean);
   for (const paragraph of paragraphs) {
     const sentences = sentencesIn(paragraph);
     if (sentences > LONG_PARAGRAPH) {
@@ -373,8 +379,13 @@ function isEmphasis(label: string): boolean {
 }
 
 function flattenStrings(node: Json, into: Set<string>) {
-  if (typeof node === 'string') into.add(plainLabel(node));
-  else if (isRecord(node))
+  if (typeof node === 'string') {
+    into.add(plainLabel(node));
+    // A text with a value in it (“Only when “{{field}}””): what comes before the value is the label.
+    const before = node.split('{{')[0];
+    if (before !== undefined && before !== node)
+      into.add(plainLabel(before).replace(/["\s]+$/, ''));
+  } else if (isRecord(node))
     for (const child of Object.values(node)) flattenStrings(child, into);
 }
 

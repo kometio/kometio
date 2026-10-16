@@ -216,6 +216,41 @@ describe('findingsFor', () => {
     );
   });
 
+  it('does not count the sentences of a list as one paragraph, nor “as easily as a person” as a reassurance', () => {
+    const items = Array.from(
+      { length: 5 },
+      () => '<li>One thing. Two things.</li>',
+    ).join('');
+    const body = `<p>It can send the form as easily as a person can.</p><ul>${items}</ul><p>${filler(70)}</p>`;
+    const blocks = [title('T'), section('S'), text(body)];
+
+    const found = rules(findingsFor(page(blocks), context));
+
+    assert.ok(!found.includes('long-paragraph'));
+    assert.ok(!found.includes('vague-english'));
+  });
+
+  it('knows a label that has a value in it, like “Only when “…””', () => {
+    const withValue: CheckContext = {
+      ...context,
+      labels: {
+        ...context.labels,
+        en: new Set([...(context.labels['en'] ?? []), 'Only when']),
+      },
+    };
+    const blocks = [
+      title('T'),
+      section('S'),
+      text(`<p>Choose <strong>Only when</strong>. ${filler(70)}</p>`),
+    ];
+
+    const found = findingsFor(page(blocks), withValue).filter(
+      (f) => f.rule === 'ui-label' && f.where.includes('[en]'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('says a bold name that the editor does not use, and lets the ones it uses and the emphasis be', () => {
     const body = `<p>Open <strong>Forms</strong>, press <strong>Cmd/Ctrl + S</strong>, then <strong>Create form</strong>. <strong>Nothing is lost.</strong> ${filler(70)}</p>`;
     const blocks = [title('T'), section('S'), text(body)];
