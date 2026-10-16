@@ -26,9 +26,12 @@ import { partitionByTheme, resolveBundledThemeName } from './theme-registry';
  *
  * Validation failures **throw**, deliberately, unlike the client-side
  * merge in apps/editor-app (which degrades a single bad entry instead) —
- * this runs at `astro build`/`astro dev` startup, with a developer right
- * there to see the message, the same posture every core block's
- * `defineBlock()` already has via its own `schema.parse()`.
+ * the same posture every core block's `defineBlock()` already has via its
+ * own `schema.parse()`. Here that is when the first page is drawn, which is
+ * early for a developer at a terminal and invisible for a theme built in an
+ * image or uploaded: there the site starts and every page answers "Internal
+ * server error". So the same rules are checked when such a theme is built,
+ * by `tools/validate-theme-blocks.mts`, and the build stops.
  */
 interface BlockModule {
   default: BlockDescriptor;
