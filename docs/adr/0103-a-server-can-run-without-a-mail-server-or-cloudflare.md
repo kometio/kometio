@@ -1,6 +1,6 @@
 # 0103 — A server can run without a mail server and without Cloudflare
 
-**Status**: Accepted — 2026-10-05. Amended by [0128](0128-an-invitation-hands-its-link-to-its-administrator.md): an invitation's link goes to the administrator who made it, not to the log.
+**Status**: Accepted — 2026-10-05. Amended by [0128](0128-an-invitation-hands-its-link-to-its-administrator.md): an invitation's link goes to the administrator who made it, not to the log. Amended by [0145](0145-one-captcha-built-in-and-a-form-says-whether-it-asks.md): the captcha is always the one built into Kometio — Turnstile, its keys and the 404 of the challenge route are gone, and a form can say it asks for none.
 
 ## Context
 

@@ -36,15 +36,6 @@ env:
   SMTP_HOST: localhost
   SMTP_PORT: 1025
   SMTP_FROM_ADDRESS: noreply@kometio.local
-  # Needed for PublicFormsModule to compile in apps/api's unit tests (see
-  # app.module.spec.ts) — Cloudflare's own documented "always passes, no
-  # real challenge" test secret (see .env.example), not a real one. No live
-  # siteverify call happens in CI's non-integration unit tests. Its pair, the
-  # site key, is here too: the API refuses to start with one of the two alone
-  # (docs/adr/0103), and the public site's forms (the `e2e` job) need it to
-  # render a widget at all.
-  TURNSTILE_SITE_KEY: 1x00000000000000000000AA
-  TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
   # Needed for PagesModule/SiteLayoutSectionsModule/PublicPagesModule/
   # PublicSiteLayoutSectionsModule to compile (requireEnv) — it signs the
   # stateless preview tokens (@kometio/preview-token-adapter), not a credential
@@ -59,11 +50,6 @@ env:
   # runtime-config.ts requires it, and its spec reads it back. The `e2e`
   # job, the one place a browser follows it, sets its own.
   VITE_PUBLIC_SITE_URL: http://localhost:4321
-  # Needed for login-form.spec.tsx/forgot-password-form.spec.tsx to render
-  # the Turnstile widget (security review 2026-08-24, point 13) —
-  # Cloudflare's own "always passes" test site key (see .env.example), not a
-  # real one. No live Turnstile script actually loads in CI.
-  VITE_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
   # Needed for MediaModule to compile in apps/api's unit tests (see
   # app.module.spec.ts) — see ADR-0013. The suites that do upload write into a
   # folder of their own per test file (apps/api/jest.uploads.setup.ts), not
@@ -246,6 +232,11 @@ jobs:
 
           docker exec -e PGPASSWORD -u postgres postgres \
             dropdb -U "$POSTGRES_USER" "$restore_db"
+
+      # What answers the captcha for a script and for the browser suite
+      # (docs/adr/0145), checked with the library the API checks it with. It
+      # is outside every project, so no Nx target runs it.
+      - run: node --test tools/solve-captcha.test.mjs
 
       # Sequential, not --parallel: see
       # docs/adr/0009-enforced-coverage-thresholds.md.

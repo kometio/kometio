@@ -1,10 +1,9 @@
 import type { BlockBehavior } from './types';
 import type {} from 'altcha/types/generic';
 
-// The widget of the captcha built into Kometio (docs/adr/0103): a proof of work
-// the visitor's browser solves in the background, which is what a site gets when
-// it has no Cloudflare keys. It is the counterpart of turnstile.ts, for the same
-// two blocks, and a page has one or the other, never both.
+// The widget of the captcha built into Kometio (docs/adr/0103, 0145): a proof of
+// work the visitor's browser solves in the background. It is the only captcha a
+// form has, for Form and NewsletterSignup.
 //
 // The widget is the library's "external" build, which is what this site's
 // `script-src 'self'` asks for, and it is a download of its own: it is imported
@@ -42,7 +41,7 @@ function widgetLanguage(locale: string | undefined): string {
   return language in TRANSLATIONS ? language : 'en';
 }
 
-// Idempotency guard, as turnstile.ts's: a page can run these behaviors more
+// Idempotency guard: a page can run these behaviors more
 // than once (see run-block-behaviors.ts) and a second widget in the same slot
 // would ask for a second challenge and write a second hidden field.
 const RENDERED_ATTR = 'data-kometio-altcha-rendered';

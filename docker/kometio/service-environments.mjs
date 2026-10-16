@@ -29,7 +29,7 @@ export function resolveSecrets({ env, stored, generate }) {
 
 /**
  * The API. The user's own variables win over the defaults, so a deployment
- * can set SMTP, S3, its own Turnstile keys, NODE_ENV=production, and so on.
+ * can set SMTP, S3, NODE_ENV=production, and so on.
  * The database administrator's credentials stay out of its reach, and the
  * values that are the launcher's to decide are, whatever the environment says.
  */
@@ -66,9 +66,6 @@ export function apiEnvironment({
     MEDIA_UPLOAD_DIR: `${dataDir}/uploads`,
     THEMES_DIR: '/opt/api/themes',
     KOMETIO_SECRETS_DIR: `${dataDir}/secrets`,
-    // No TURNSTILE_* either: with neither key the captcha is the one built into
-    // Kometio, which needs no account and no network. Both of a site's own keys
-    // switch to Cloudflare's (docs/adr/0103), through `userEnv` below.
     ...userEnv,
     HOME: '/tmp',
     // These are this launcher's to decide, whatever the environment says.
@@ -99,7 +96,6 @@ export function siteEnvironment({
     EDITOR_APP_URL: editorUrl,
     API_PUBLIC_URL: apiPublicUrl,
     PUBLIC_API_SERVICE_TOKEN: secrets.publicApiServiceToken,
-    TURNSTILE_SITE_KEY: env.TURNSTILE_SITE_KEY ?? '',
     // A public demo (docs/adr/0118): the site keeps search engines out of it
     // and does not run what is pasted into an embed.
     KOMETIO_DEMO: env.KOMETIO_DEMO ?? '',

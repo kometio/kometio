@@ -498,20 +498,20 @@ describe('applyBlockInsert', () => {
     expect(script.textContent).toBe('window.__kometioTestFlag = 1;');
   });
 
-  it('copies every attribute onto the recreated <script>, including src/async/defer (Turnstile shape)', () => {
+  it('copies every attribute onto the recreated <script>, including src/async/defer (the shape of an outside widget)', () => {
     document.body.innerHTML = '<div data-kometio-root-blocks="page"></div>';
 
     applyBlockInsert(
       document,
       '<div data-kometio-block-id="form-1">form</div>' +
-        '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>',
+        '<script src="https://widgets.example.test/embed.js" async defer></script>',
       null,
       null,
       null,
     );
 
     const script = requireQuery(
-      'script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]',
+      'script[src="https://widgets.example.test/embed.js"]',
     );
     expect(script.hasAttribute('async')).toBe(true);
     expect(script.hasAttribute('defer')).toBe(true);

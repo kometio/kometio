@@ -66,8 +66,8 @@ It is **source-available, not open source**: see [License](#license).
 - **A real form builder**, not a single hardcoded contact block: forms are
   created and edited as their own entity with arbitrary field definitions, a
   form-picker block embeds any form on any page, and submissions land in
-  their own table. Anti-spam (honeypot + a captcha: Cloudflare Turnstile with
-  your keys, or one built into Kometio that needs no account), optional
+  their own table. Anti-spam (a honeypot, and a captcha built into Kometio
+  that needs no account and calls no one — which each form can turn off), optional
   newsletter opt-in (Mailchimp/Brevo), file-upload fields, and multi-step
   forms are built on top of the same base — see
   [ADR-0015](docs/adr/0015-form-builder-architecture.md) and
@@ -84,8 +84,8 @@ Three apps and a build service, one shared backend:
   Ports & Adapters (hexagonal): `libs/domain-core` (pure entities) ←
   `libs/ports` (interfaces) ← `libs/application` (use cases) ←
   `libs/adapters/*` (concrete implementations — Postgres repositories,
-  local-disk/S3 media storage, session auth, SMTP email, Turnstile,
-  newsletter providers, ...), wired together in `apps/api`.
+  local-disk/S3 media storage, session auth, SMTP email, the built-in
+  captcha, newsletter providers, ...), wired together in `apps/api`.
 - **`apps/editor-app`** — the authenticated admin/editor SPA (React,
   TanStack Router). Where content is created and managed.
 - **`apps/public-site`** — the actual public website, Astro (`output:

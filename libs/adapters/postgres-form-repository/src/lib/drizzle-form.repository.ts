@@ -20,6 +20,7 @@ function toRow(props: FormProps) {
     fields: props.fields,
     steps: props.steps,
     notificationEmails: props.notificationEmails,
+    captchaEnabled: props.captchaEnabled,
     createdAt: props.createdAt,
     updatedAt: props.updatedAt,
   };

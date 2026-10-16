@@ -31,7 +31,7 @@ export function LoginForm({
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   // Incremented after a rejected attempt to force a fresh challenge — the
   // widget still shows "verified" for the OLD token even though the server
-  // has already refused it (single-use), see TurnstileWidget's own doc
+  // has already refused it (single-use), see AltchaWidget's own doc
   // comment.
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
 

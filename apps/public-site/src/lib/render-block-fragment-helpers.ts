@@ -92,7 +92,7 @@ export function isValidRenderBlockFragmentBody(
  * thing that ever made its behaviour work. So `resolve` hands Astro a
  * placeholder that names nothing, and `strip` removes the tags written
  * with it — by the exact string Astro emits, not by pattern, so nothing
- * else in the fragment (an author's embed, Turnstile's own `<script src>`)
+ * else in the fragment (an author's embed, a tracker's own `<script src>`)
  * can be touched. Were Astro ever to write the tag differently, what is
  * left is a placeholder, still not a path.
  */

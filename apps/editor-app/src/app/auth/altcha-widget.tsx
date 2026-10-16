@@ -34,9 +34,8 @@ function solutionOf(event: Event): string | null {
 
 /**
  * The widget of the captcha built into Kometio (docs/adr/0103): a checkbox
- * that solves a proof of work in the background and ticks itself, which
- * TurnstileWidget's counterpart for a deployment with no Cloudflare keys. It
- * takes the same props, so the forms that draw one draw the other.
+ * that solves a proof of work in the background and ticks itself. It is the
+ * only captcha the editor has (docs/adr/0145).
  *
  * It is a custom element, made here and not written in JSX so that its events
  * are attached before it starts: `auto="onload"` makes it ask for its
@@ -52,7 +51,7 @@ export function AltchaWidget({
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<AltchaWidgetElement | null>(null);
   // The latest callback without remounting the widget (and asking for a new
-  // challenge) every time the form re-renders, as TurnstileWidget does.
+  // challenge) every time the form re-renders.
   const onTokenRef = useRef(onToken);
   useEffect(() => {
     onTokenRef.current = onToken;

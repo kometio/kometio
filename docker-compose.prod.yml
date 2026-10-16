@@ -180,7 +180,6 @@ services:
       # Same value as api's: this is the origin allowed to embed the canvas
       # iframe (frame-ancestors), so it must match the editor's real origin.
       EDITOR_APP_URL: ${EDITOR_APP_URL:-https://admin.${DOMAIN:?Set DOMAIN in .env}}
-      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       PUBLIC_API_SERVICE_TOKEN: ${PUBLIC_API_SERVICE_TOKEN:-}
       SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-}
@@ -279,19 +278,12 @@ services:
     build:
       context: .
       dockerfile: apps/editor-app/Dockerfile
-      args:
-        # The captcha key is also a build input, as a fallback for the runtime
-        # one below. Empty is fine: with no Turnstile keys the captcha is the
-        # one built into Kometio (docs/adr/0103). The two addresses below are
-        # read when the container starts (docs/adr/0076), so changing DOMAIN is
-        # a restart, not a rebuild — and the published image works unchanged.
-        VITE_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+    # The two addresses are read when the container starts (docs/adr/0076), so
+    # changing DOMAIN is a restart, not a rebuild — and the published image
+    # works unchanged.
     environment:
       KOMETIO_API_URL: ${API_PUBLIC_URL:-https://api.${DOMAIN:?Set DOMAIN in .env}/api}
       KOMETIO_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://${DOMAIN:?Set DOMAIN in .env}}
-      # The captcha's public key, read at start like the two addresses above:
-      # an image pulled from the registry (built without one) works with it.
-      KOMETIO_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
     restart: unless-stopped
 
   caddy:

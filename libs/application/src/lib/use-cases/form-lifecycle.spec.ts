@@ -53,6 +53,7 @@ describe('form lifecycle: create -> update -> list -> delete', () => {
       fields: [{ id: 'email', label: 'Email', type: 'email', required: true }],
       steps: [],
       notificationEmails: ['owner@example.com'],
+      captchaEnabled: true,
     });
 
     expect(updated.name).toBe('Richiedi preventivo');
@@ -93,6 +94,7 @@ describe('form lifecycle: create -> update -> list -> delete', () => {
         { id: 'dettagli', title: 'Dettagli' },
       ],
       notificationEmails: [],
+      captchaEnabled: true,
     });
 
     expect(updated.steps).toEqual([
@@ -114,6 +116,7 @@ describe('form lifecycle: create -> update -> list -> delete', () => {
         fields: [],
         steps: [],
         notificationEmails: [],
+        captchaEnabled: true,
       }),
     ).rejects.toThrow(FormNotFoundError);
   });
@@ -130,6 +133,7 @@ describe('form lifecycle: create -> update -> list -> delete', () => {
         fields: [],
         steps: [],
         notificationEmails: [],
+        captchaEnabled: true,
       }),
     ).rejects.toThrow(FormNotFoundError);
   });

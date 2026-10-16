@@ -11,6 +11,13 @@ export interface FormProps {
   steps: FormStep[];
   /** Who is emailed each submission — none, one, or a team (at most MAX_NOTIFICATION_EMAILS). */
   notificationEmails: string[];
+  /**
+   * Whether a visitor has to solve the captcha built into Kometio to send
+   * this form (docs/adr/0145). The server enforces it: a form that says it
+   * does not need one accepts a submission without. Honeypot and rate limit
+   * stay either way.
+   */
+  captchaEnabled: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +66,8 @@ export class Form {
       fields: [],
       steps: [],
       notificationEmails: [],
+      // On for every form, as it always was: turning it off is the owner's choice.
+      captchaEnabled: true,
       createdAt: now,
       updatedAt: now,
     });
@@ -100,6 +109,10 @@ export class Form {
     return this.props.notificationEmails;
   }
 
+  get captchaEnabled(): boolean {
+    return this.props.captchaEnabled;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -109,8 +122,8 @@ export class Form {
   }
 
   /**
-   * A new form with this one's fields, steps and notification addresses,
-   * under its own id and name. Nothing that was submitted comes along: a
+   * A new form with this one's fields, steps, notification addresses and
+   * captcha choice, under its own id and name. Nothing that was submitted comes along: a
    * copy starts with no answers, however many the original has.
    *
    * Field ids are the same in both, which is right: they are only ever
@@ -134,6 +147,7 @@ export class Form {
       fields: FormField[];
       steps: FormStep[];
       notificationEmails: string[];
+      captchaEnabled: boolean;
     },
     now: Date = new Date(),
   ): void {
@@ -141,6 +155,7 @@ export class Form {
     this.props.fields = input.fields;
     this.props.steps = input.steps;
     this.props.notificationEmails = uniqueAddresses(input.notificationEmails);
+    this.props.captchaEnabled = input.captchaEnabled;
     this.props.updatedAt = now;
   }
 }

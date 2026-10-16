@@ -71,14 +71,11 @@ export interface BootstrapDeploymentInput {
  *
  * It signs the new admin in as part of the same call, rather than sending
  * them to the login form with the credentials they typed ten seconds ago.
- * That is not a convenience: logging in separately would have to pass
- * Turnstile, whose keys are configured through the very env file this
- * wizard exists so a self-hoster does not have to edit — a fresh
- * deployment would send an empty token to a real secret key and be refused,
- * locking someone out of the installation they just created. A session
- * issued here needs no captcha to mean something: whoever completed setup
- * demonstrably controlled an unclaimed installation, a stronger proof than
- * the one login asks for.
+ * That is not a convenience: the sign-in form would ask for a captcha, and a
+ * person who has just made the installation should not have to prove they
+ * are not a robot to get into it. A session issued here needs no captcha to
+ * mean something: whoever completed setup demonstrably controlled an
+ * unclaimed installation, a stronger proof than the one login asks for.
  *
  * Password rules live at the edge (the request schema), not here, for the
  * same reason they do for invites: this use case's job is that the

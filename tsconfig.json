@@ -73,9 +73,6 @@
       "path": "./libs/adapters/postgres-search-repository"
     },
     {
-      "path": "./libs/adapters/turnstile-captcha"
-    },
-    {
       "path": "./libs/adapters/mailchimp-newsletter"
     },
     {

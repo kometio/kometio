@@ -15,7 +15,7 @@ export const loginBodySchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
   // Default to '', not required: an empty token is a real user input (the
-  // client-side Turnstile widget failing to load/render), not a malformed
+  // client-side captcha widget failing to load/render), not a malformed
   // request — same convention as public-forms, and it lets the use-case's
   // own InvalidCaptchaError produce the right domain-mapped error instead
   // of a raw zod validation 400.

@@ -1,23 +1,18 @@
 /**
- * The name of the field each captcha puts its solution in, inside the form's own
- * POST body (docs/adr/0103). Turnstile's script injects a hidden input with the
- * first; the built-in widget is told to name its own with the second
- * (block-behaviors/altcha.ts), an underscore so that no field of a form is ever
- * called that and the submit proxy, which skips the underscored ones, never reads
- * it as an answer.
+ * The name of the field the captcha widget puts its solution in, inside the
+ * form's own POST body (docs/adr/0103, 0145): an underscore, so that no field
+ * of a form is ever called that and the submit proxy, which skips the
+ * underscored ones, never reads it as an answer. The widget is told to use it
+ * (block-behaviors/altcha.ts).
  */
-export const CAPTCHA_FIELD_TURNSTILE = 'cf-turnstile-response';
-export const CAPTCHA_FIELD_BUILT_IN = '_captcha';
+export const CAPTCHA_FIELD = '_captcha';
 
 /**
- * The solution the visitor's widget sent, whichever captcha the page has: a page
- * has one, so at most one of the two is there. Empty when there is none, which
- * the server refuses like any other missing solution.
+ * The solution the visitor's widget sent. Empty when there is none, which the
+ * server refuses like any other missing solution (or accepts, for a form that
+ * has asked for no captcha).
  */
 export function captchaTokenOf(formData: FormData): string {
-  for (const name of [CAPTCHA_FIELD_TURNSTILE, CAPTCHA_FIELD_BUILT_IN]) {
-    const value = formData.get(name);
-    if (typeof value === 'string' && value !== '') return value;
-  }
-  return '';
+  const value = formData.get(CAPTCHA_FIELD);
+  return typeof value === 'string' ? value : '';
 }

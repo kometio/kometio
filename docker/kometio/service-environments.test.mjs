@@ -151,7 +151,6 @@ describe('what the public site is told', () => {
         POSTGRES_PASSWORD: 'admin-password',
         POSTGRES_APP_PASSWORD: 'app-password',
         PREVIEW_TOKEN_SECRET: 'preview-secret',
-        TURNSTILE_SITE_KEY: 'site-key',
         SENTRY_DSN: 'https://key@o1.ingest.de.sentry.io/1',
         SENTRY_ENVIRONMENT: 'trial',
         SENTRY_RELEASE: 'v0.1.0',
@@ -179,11 +178,9 @@ describe('what the public site is told', () => {
       'SENTRY_DSN',
       'SENTRY_ENVIRONMENT',
       'SENTRY_RELEASE',
-      'TURNSTILE_SITE_KEY',
     ]);
     assert.equal(environment.API_URL, 'http://127.0.0.1:3000/api');
     assert.equal(environment.PUBLIC_API_SERVICE_TOKEN, 'service-token');
-    assert.equal(environment.TURNSTILE_SITE_KEY, 'site-key');
     // Where it reports its errors: the same three the API reads (docs/adr/0114).
     assert.equal(
       environment.SENTRY_DSN,
@@ -203,7 +200,6 @@ describe('what the public site is told', () => {
       apiPublicUrl: 'a',
     });
 
-    assert.equal(environment.TURNSTILE_SITE_KEY, '');
     assert.equal(environment.SENTRY_DSN, '');
     assert.equal(environment.KOMETIO_THEME, '');
     assert.equal(environment.S3_MEDIA_PUBLIC_BASE_URL, '');

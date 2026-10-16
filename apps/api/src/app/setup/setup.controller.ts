@@ -88,14 +88,13 @@ export class SetupController {
    * bouncing them to the login form with the credentials they typed ten
    * seconds ago.
    *
-   * It is not a convenience: logging in separately would have to pass
-   * Turnstile, whose keys are configured through the very env file this
-   * wizard exists so a self-hoster does not have to edit. A fresh
-   * deployment would send an empty token to a real secret key and be
-   * refused, leaving someone locked out of the installation they just
-   * created. Issuing the session here needs no captcha to be meaningful:
-   * whoever completed setup demonstrably controlled an unclaimed
-   * installation, which is a stronger proof than the one login asks for.
+   * It is not a convenience: the sign-in form would ask for a captcha that
+   * has to be solved in a page which was drawn before there was a session,
+   * and a person who has just made the installation should not be asked to
+   * prove they are not a robot to get into it. Issuing the session here
+   * needs no captcha to be meaningful: whoever completed setup demonstrably
+   * controlled an unclaimed installation, which is a stronger proof than the
+   * one login asks for.
    */
   // On the write alone, never on the controller. `GET /setup/status` is
   // polled by the editor on every route load, so a class-level guard puts

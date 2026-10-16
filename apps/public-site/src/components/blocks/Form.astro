@@ -170,7 +170,12 @@ if (form && form.steps.length > 0) {
               <FormFieldComponent formId={form.id} field={field} />
             ))
           )}
-          <CaptchaWidget i18n={i18n} />
+          {
+            // Only when the owner asked for it (docs/adr/0145). A form that does
+            // not carries no widget and no script, and the server asks for no
+            // solution.
+            form.captchaEnabled && <CaptchaWidget i18n={i18n} />
+          }
           <button
             type="submit"
             class="kometio-form__submit"
@@ -186,10 +191,9 @@ if (form && form.steps.length > 0) {
 }
 
 <script>
-  // Multi-step nav (Indietro/Avanti) and the captcha widget (Turnstile
-  // rendered explicitly, not via its own auto-scan — see
-  // block-behaviors/turnstile.ts for why — or the one built into Kometio,
-  // block-behaviors/altcha.ts) both live in plain importable modules, not
+  // Multi-step nav (Indietro/Avanti) and the captcha widget (the one built
+  // into Kometio, block-behaviors/altcha.ts) both live in plain importable
+  // modules, not
   // inline here, so they can also be re-run after a live canvas
   // insert/patch — see block-behaviors/run-block-behaviors-in-subtree.ts. A
   // no-op for a plain single-step form: formBehaviors' own selector finds

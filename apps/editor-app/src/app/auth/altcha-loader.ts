@@ -4,8 +4,8 @@ let loading: Promise<void> | null = null;
 
 /**
  * Loads the captcha built into Kometio (docs/adr/0103), once, and only when a
- * form that needs it is drawn: a deployment that uses Cloudflare Turnstile
- * never downloads the widget, and the editor's own bundle does not carry it.
+ * form that needs it is drawn: the editor's own bundle does not carry it, and
+ * a screen with no captcha on it never downloads the widget.
  *
  * `altcha/external` is the widget without its workers and its style inlined,
  * which is what a policy of `script-src 'self'` asks for. The proof of work

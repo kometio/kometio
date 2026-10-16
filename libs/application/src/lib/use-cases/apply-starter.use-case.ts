@@ -402,6 +402,8 @@ async function makeForms(
       fields: wanted.fields,
       steps: [],
       notificationEmails: [],
+      // A starter's form asks, as every new form does (docs/adr/0145).
+      captchaEnabled: true,
     });
     ids.form.set(wanted.key, form.id);
   }

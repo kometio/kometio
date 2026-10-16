@@ -326,6 +326,75 @@ describe('FormEditorView — multi-step', () => {
   });
 });
 
+describe('FormEditorView — the captcha of the form (docs/adr/0145)', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const captchaSwitch = () =>
+    screen.getByRole('switch', {
+      name: 'Chiedi ai visitatori di superare il captcha',
+    });
+
+  it("shows the form's choice, on for a form that never said otherwise", () => {
+    renderView();
+
+    expect(captchaSwitch().getAttribute('aria-checked')).toBe('true');
+    expect(
+      screen.queryByText(/uno script può inviare questo modulo/),
+    ).toBeNull();
+  });
+
+  it('turns from its label, says what the form is open to once it is off, and marks the form unsaved', () => {
+    renderView();
+
+    fireEvent.click(
+      screen.getByText('Chiedi ai visitatori di superare il captcha'),
+    );
+
+    expect(captchaSwitch().getAttribute('aria-checked')).toBe('false');
+    expect(
+      screen.getByText(/uno script può inviare questo modulo/),
+    ).toBeTruthy();
+    expect(screen.getByText('Modifiche non salvate')).toBeTruthy();
+  });
+
+  it('sends the choice with the rest of the form, and is clean after the save', async () => {
+    vi.mocked(api.updateForm).mockResolvedValue({
+      ...sampleForm,
+      captchaEnabled: false,
+    });
+    renderView();
+
+    fireEvent.click(captchaSwitch());
+    fireEvent.click(screen.getByRole('button', { name: 'Salva' }));
+
+    await screen.findByText('Modulo salvato');
+    expect(api.updateForm).toHaveBeenCalledWith(
+      sampleForm.id,
+      expect.objectContaining({ captchaEnabled: false }),
+    );
+    expect(screen.queryByText('Modifiche non salvate')).toBeNull();
+  });
+
+  it('stops being unsaved when it is put back to what was saved', () => {
+    renderView();
+
+    fireEvent.click(captchaSwitch());
+    fireEvent.click(captchaSwitch());
+
+    expect(screen.queryByText('Modifiche non salvate')).toBeNull();
+  });
+
+  it('is read-only for who may not save the form', () => {
+    vi.mocked(useCurrentSession).mockReturnValue(sessionAs('editor'));
+    renderView({ ...sampleForm, captchaEnabled: false });
+
+    expect(captchaSwitch().getAttribute('aria-checked')).toBe('false');
+    expect(captchaSwitch().closest('fieldset')?.disabled).toBe(true);
+  });
+});
+
 describe('FormEditorView — what each role is offered (docs/roles.md)', () => {
   it('shows an editor the form read-only, and who saves it instead of Save', () => {
     vi.mocked(useCurrentSession).mockReturnValue(sessionAs('editor'));

@@ -14,6 +14,7 @@ const form = {
   fields: [field],
   steps: [],
   notificationEmails: ['info@esempio.test'],
+  captchaEnabled: true,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   submissionCount: 3,
@@ -47,10 +48,26 @@ describe('publicFormSchema', () => {
       name: form.name,
       fields: form.fields,
       steps: form.steps,
+      captchaEnabled: false,
       notificationEmails: form.notificationEmails,
     });
 
     expect('notificationEmails' in parsed).toBe(false);
+  });
+
+  it('says whether the page draws the captcha, and does not guess when it is not said', () => {
+    const shown = {
+      id: form.id,
+      name: form.name,
+      fields: form.fields,
+      steps: form.steps,
+    };
+
+    expect(
+      publicFormSchema.parse({ ...shown, captchaEnabled: false })
+        .captchaEnabled,
+    ).toBe(false);
+    expect(publicFormSchema.safeParse(shown).success).toBe(false);
   });
 });
 

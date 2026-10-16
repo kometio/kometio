@@ -7,8 +7,10 @@ import { CollectionsModule } from '../collections/collections.module';
 import { PagesModule } from '../pages/pages.module';
 import { TaxonomiesModule } from '../taxonomies/taxonomies.module';
 import { SiteLayoutSectionsModule } from '../site-layout-sections/site-layout-sections.module';
+import { SitesModule } from '../sites/sites.module';
 import { PublicPagesModule } from './public-pages.module';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
+import { ServedSite } from '../../test/served-site.test-fixture';
 
 /**
  * Runs against a real Postgres — see docs/development.md. Combines
@@ -30,6 +32,7 @@ describe('PublicPagesController (integration)', () => {
   let siteId: string;
   let domain: string;
   let userId: string;
+  const served = new ServedSite();
 
   beforeAll(async () => {
     integration = await IntegrationApp.start({
@@ -40,7 +43,9 @@ describe('PublicPagesController (integration)', () => {
         TaxonomiesModule,
         CollectionsModule,
         AccountModule,
+        SitesModule,
       ],
+      overrideProviders: (builder) => served.pinIn(builder),
     });
     app = integration.app;
     domain = `public-test-${randomUUID()}.example.test`;
@@ -49,6 +54,7 @@ describe('PublicPagesController (integration)', () => {
       domain,
       enabledLocales: ['it'],
     });
+    served.siteId = siteId;
     const user = await integration.createUser();
     userId = user.id;
     agent = await integration.login(user);
@@ -516,6 +522,19 @@ describe('PublicPagesController (integration)', () => {
         path: 'chi-siamo',
       })
       .expect(404);
+  });
+
+  it("tells the page whether the newsletter signup of this deployment's site draws the captcha, without a session and without naming a domain (docs/adr/0145)", async () => {
+    const read = () =>
+      request(app.getHttpServer()).get('/public/pages/newsletter').expect(200);
+    expect((await read()).body).toEqual({ captchaEnabled: true });
+
+    await agent
+      .patch(`/sites/${siteId}/newsletter-captcha`)
+      .send({ newsletterCaptchaEnabled: false })
+      .expect(200);
+
+    expect((await read()).body).toEqual({ captchaEnabled: false });
   });
 
   it('400s on a malformed domain instead of hitting the database', async () => {

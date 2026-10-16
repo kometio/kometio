@@ -13,6 +13,7 @@ export interface UpdateFormInput {
   fields: FormField[];
   steps: FormStep[];
   notificationEmails: string[];
+  captchaEnabled: boolean;
 }
 
 export async function updateForm(
@@ -29,6 +30,7 @@ export async function updateForm(
     fields: input.fields,
     steps: input.steps,
     notificationEmails: input.notificationEmails,
+    captchaEnabled: input.captchaEnabled,
   });
   await deps.formRepository.save(form);
 

@@ -71,6 +71,7 @@ describe('getPublicForm and submitForm', () => {
       ],
       steps: [],
       notificationEmails: ['owner@example.com'],
+      captchaEnabled: true,
     });
   }
 
@@ -91,6 +92,22 @@ describe('getPublicForm and submitForm', () => {
       ],
       steps: [],
       notificationEmails: [],
+      captchaEnabled: true,
+    });
+  }
+
+  /** The owner's switch on the form (docs/adr/0145): everything else of the form as it was. */
+  async function turnCaptchaOff(deps: FormDeps, formId: string) {
+    const form = await deps.formRepository.findById(tenantId, formId);
+    if (!form) throw new Error('the form was just made');
+    await updateForm(deps, {
+      tenantId,
+      formId,
+      name: form.name,
+      fields: form.fields,
+      steps: form.steps,
+      notificationEmails: form.notificationEmails,
+      captchaEnabled: false,
     });
   }
 
@@ -122,6 +139,20 @@ describe('getPublicForm and submitForm', () => {
     expect(publicForm.name).toBe('Contatti');
     expect(publicForm.fields).toHaveLength(3);
     expect(publicForm).not.toHaveProperty('notificationEmails');
+  });
+
+  it('getPublicForm says whether the form asks for the captcha, so the page draws the widget or not', async () => {
+    const deps = setup();
+    const form = await buildFormWithFields(deps);
+    expect(
+      (await getPublicForm(deps, { tenantId, formId: form.id })).captchaEnabled,
+    ).toBe(true);
+
+    await turnCaptchaOff(deps, form.id);
+
+    expect(
+      (await getPublicForm(deps, { tenantId, formId: form.id })).captchaEnabled,
+    ).toBe(false);
   });
 
   it('getPublicForm throws FormNotFoundError for a nonexistent id', async () => {
@@ -202,6 +233,7 @@ describe('getPublicForm and submitForm', () => {
       ],
       steps: [],
       notificationEmails: ['hr@example.com'],
+      captchaEnabled: true,
     });
 
     const cv = await deps.attachmentStorage.upload({
@@ -242,6 +274,7 @@ describe('getPublicForm and submitForm', () => {
       ],
       steps: [],
       notificationEmails: ['hr@example.com'],
+      captchaEnabled: true,
     });
 
     await submitForm(deps, {
@@ -327,6 +360,63 @@ describe('getPublicForm and submitForm', () => {
     ).rejects.toThrow(InvalidCaptchaError);
     expect(deps.formSubmissionRepository.submissions).toHaveLength(0);
     expect(deps.emailPort.sentEmails).toHaveLength(0);
+  });
+
+  it('submitForm takes a submission with no captcha token from a form that does not ask for one', async () => {
+    const deps = setup();
+    const form = await buildFormWithFields(deps);
+    await turnCaptchaOff(deps, form.id);
+
+    await submitForm(deps, {
+      tenantId,
+      formId: form.id,
+      pageId: null,
+      values: { email: 'visitor@example.com', consent: true },
+      honeypot: '',
+      captchaToken: '',
+    });
+
+    expect(deps.formSubmissionRepository.submissions).toHaveLength(1);
+  });
+
+  it('submitForm does not ask the captcha of a form that does not ask for one, even for a token it was given', async () => {
+    const deps = setup();
+    const form = await buildFormWithFields(deps);
+    await turnCaptchaOff(deps, form.id);
+    const verifications: string[] = [];
+    deps.captchaPort.verify = async ({ token }) => {
+      verifications.push(token);
+      return false;
+    };
+
+    await submitForm(deps, {
+      tenantId,
+      formId: form.id,
+      pageId: null,
+      values: { email: 'visitor@example.com', consent: true },
+      honeypot: '',
+      captchaToken: 'a-token-from-a-page-that-drew-a-widget',
+    });
+
+    expect(verifications).toEqual([]);
+    expect(deps.formSubmissionRepository.submissions).toHaveLength(1);
+  });
+
+  it('submitForm still drops what the honeypot catches when the form asks for no captcha', async () => {
+    const deps = setup();
+    const form = await buildFormWithFields(deps);
+    await turnCaptchaOff(deps, form.id);
+
+    await submitForm(deps, {
+      tenantId,
+      formId: form.id,
+      pageId: null,
+      values: { email: 'bot@example.com', consent: true },
+      honeypot: 'i-am-a-bot',
+      captchaToken: '',
+    });
+
+    expect(deps.formSubmissionRepository.submissions).toHaveLength(0);
   });
 
   it('submitForm throws FormNotFoundError for a nonexistent form', async () => {
@@ -506,6 +596,7 @@ describe('getPublicForm and submitForm', () => {
         ],
         steps: [],
         notificationEmails: ['owner@example.com'],
+        captchaEnabled: true,
       });
     }
 
@@ -578,6 +669,7 @@ describe('getPublicForm and submitForm', () => {
         fields: created.fields,
         steps: [],
         notificationEmails: ['owner@example.com', 'sales@example.com'],
+        captchaEnabled: true,
       });
 
       await submitForm(deps, {
@@ -613,6 +705,7 @@ describe('getPublicForm and submitForm', () => {
         fields: created.fields,
         steps: [],
         notificationEmails: ['broken@example.com', 'sales@example.com'],
+        captchaEnabled: true,
       });
 
       const result = await submitForm(
@@ -660,6 +753,7 @@ describe('getPublicForm and submitForm', () => {
         ],
         steps: [],
         notificationEmails: ['hr@example.com'],
+        captchaEnabled: true,
       });
     }
 
@@ -749,6 +843,7 @@ describe('getPublicForm and submitForm', () => {
         ],
         steps: [],
         notificationEmails: ['owner@example.com'],
+        captchaEnabled: true,
       });
       const emailPort = {
         delivers: true,

@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { LoginForm } from './login-form';
 import { instanceOf } from '../../test/dom.test-fixture';
+import { captchaStaysUnsolved } from '../../test/fake-captcha';
 
 function fillAndSubmit(email: string, password: string) {
   fireEvent.change(screen.getByLabelText('Email'), {
@@ -14,23 +15,13 @@ function fillAndSubmit(email: string, password: string) {
 }
 
 describe('LoginForm', () => {
-  const realTurnstile = window.turnstile;
-
-  afterEach(() => {
-    window.turnstile = realTurnstile;
-  });
-
   // Security review 2026-08-24, point 13: submit must stay disabled until
-  // Turnstile actually hands back a token — this overrides the global
-  // test-setup stub (which auto-fires immediately) to exercise the real
+  // the captcha actually hands back a token — this overrides the global
+  // test-setup stand-in (which solves at once) to exercise the real
   // "widget hasn't responded yet" state every other test in this file
   // never sees.
   it('keeps the submit button disabled until the CAPTCHA widget provides a token', () => {
-    window.turnstile = {
-      render: () => 'widget-1',
-      reset: vi.fn(),
-      remove: vi.fn(),
-    };
+    captchaStaysUnsolved();
     const onLogin = vi.fn();
     render(<LoginForm onLogin={onLogin} onForgotPassword={vi.fn()} />);
 
@@ -55,7 +46,7 @@ describe('LoginForm', () => {
       expect(onLogin).toHaveBeenCalledWith(
         'lele@example.com',
         'correct-horse-battery',
-        'fake-turnstile-token-for-tests',
+        'fake-captcha-token-for-tests',
       ),
     );
   });

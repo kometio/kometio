@@ -248,6 +248,67 @@ describe('SitesController (integration)', () => {
       .expect(404);
   });
 
+  describe("the newsletter signup's captcha (docs/adr/0145)", () => {
+    it('is asked for by default, and the owner can turn it off and on again', async () => {
+      const getRes = await agent.get(`/sites/${siteId}`).expect(200);
+      expect(getRes.body.newsletterCaptchaEnabled).toBe(true);
+
+      const off = await agent
+        .patch(`/sites/${siteId}/newsletter-captcha`)
+        .send({ newsletterCaptchaEnabled: false })
+        .expect(200);
+      expect(off.body.newsletterCaptchaEnabled).toBe(false);
+      expect(
+        (await agent.get(`/sites/${siteId}`).expect(200)).body
+          .newsletterCaptchaEnabled,
+      ).toBe(false);
+
+      const on = await agent
+        .patch(`/sites/${siteId}/newsletter-captcha`)
+        .send({ newsletterCaptchaEnabled: true })
+        .expect(200);
+      expect(on.body.newsletterCaptchaEnabled).toBe(true);
+    });
+
+    it('changes nothing else of the site', async () => {
+      const before = (await agent.get(`/sites/${siteId}`).expect(200)).body;
+
+      const after = (
+        await agent
+          .patch(`/sites/${siteId}/newsletter-captcha`)
+          .send({ newsletterCaptchaEnabled: false })
+          .expect(200)
+      ).body;
+
+      expect({ ...after, newsletterCaptchaEnabled: true }).toEqual(before);
+    });
+
+    it('400s a save that does not say, or says something that is not a boolean', async () => {
+      await agent
+        .patch(`/sites/${siteId}/newsletter-captcha`)
+        .send({})
+        .expect(400);
+      await agent
+        .patch(`/sites/${siteId}/newsletter-captcha`)
+        .send({ newsletterCaptchaEnabled: 'no' })
+        .expect(400);
+    });
+
+    it('404s a site that does not exist', async () => {
+      await agent
+        .patch(`/sites/${randomUUID()}/newsletter-captcha`)
+        .send({ newsletterCaptchaEnabled: false })
+        .expect(404);
+    });
+
+    it('403s an editor: it decides who can add addresses to the list', async () => {
+      await editorAgent
+        .patch(`/sites/${siteId}/newsletter-captcha`)
+        .send({ newsletterCaptchaEnabled: false })
+        .expect(403);
+    });
+  });
+
   it('updates theme settings, persisted across the real HTTP+DB stack', async () => {
     const res = await agent
       .patch(`/sites/${siteId}/theme-settings`)

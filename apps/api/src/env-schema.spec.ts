@@ -10,8 +10,6 @@ const VALID_ENV: NodeJS.ProcessEnv = {
   SMTP_FROM_ADDRESS: 'noreply@kometio.local',
   MEDIA_UPLOAD_DIR: './uploads',
   API_PUBLIC_URL: 'http://localhost:3000/api',
-  TURNSTILE_SITE_KEY: 'turnstile-site-key',
-  TURNSTILE_SECRET_KEY: 'turnstile-secret',
   THEMES_DIR: './themes',
 };
 
@@ -115,8 +113,6 @@ describe('validateApiEnv', () => {
           NODE_ENV: 'production',
           POSTGRES_APP_PASSWORD: 'a-real-database-password',
           PREVIEW_TOKEN_SECRET: 'a'.repeat(64),
-          TURNSTILE_SITE_KEY: '0x4AAAAAAAInventedSiteKey',
-          TURNSTILE_SECRET_KEY: '0x4AAAAAAAInventedRealLookingKey',
         }),
       ).not.toThrow();
     });
@@ -159,47 +155,23 @@ describe('validateApiEnv', () => {
     });
   });
 
-  describe('the captcha (docs/adr/0103)', () => {
-    const WITHOUT_TURNSTILE: NodeJS.ProcessEnv = {
-      ...VALID_ENV,
-      TURNSTILE_SITE_KEY: undefined,
-      TURNSTILE_SECRET_KEY: undefined,
-    };
-
-    it('starts with no Turnstile keys: the captcha built into Kometio is used', () => {
-      expect(() => validateApiEnv(WITHOUT_TURNSTILE)).not.toThrow();
-    });
-
-    it('reads empty keys as not set, as .env.prod.example leaves them', () => {
+  describe('the captcha (docs/adr/0103, 0145)', () => {
+    // A deployment that was set up with Cloudflare Turnstile keys still has
+    // them in its env file. They are no longer read, and are not an error.
+    it('starts with the old Turnstile variables still in the environment: they are ignored', () => {
       expect(() =>
         validateApiEnv({
           ...VALID_ENV,
-          TURNSTILE_SITE_KEY: '',
-          TURNSTILE_SECRET_KEY: '',
+          TURNSTILE_SITE_KEY: '0x4AAAAAAAInventedSiteKey',
+          TURNSTILE_SECRET_KEY: '0x4AAAAAAAInventedRealLookingKey',
         }),
       ).not.toThrow();
     });
 
-    it('refuses one key without the other: the widgets and the verifier would be on different captchas', () => {
+    it('starts in production with nothing about a captcha: no account with anybody is needed', () => {
       expect(() =>
         validateApiEnv({
-          ...WITHOUT_TURNSTILE,
-          TURNSTILE_SECRET_KEY: 'secret',
-        }),
-      ).toThrow(
-        /TURNSTILE_SITE_KEY is required when TURNSTILE_SECRET_KEY is set/,
-      );
-      expect(() =>
-        validateApiEnv({ ...WITHOUT_TURNSTILE, TURNSTILE_SITE_KEY: 'site' }),
-      ).toThrow(
-        /TURNSTILE_SECRET_KEY is required when TURNSTILE_SITE_KEY is set/,
-      );
-    });
-
-    it('starts in production with none: no account with Cloudflare is needed', () => {
-      expect(() =>
-        validateApiEnv({
-          ...WITHOUT_TURNSTILE,
+          ...VALID_ENV,
           NODE_ENV: 'production',
           POSTGRES_APP_PASSWORD: 'a-real-database-password',
           PREVIEW_TOKEN_SECRET: 'a'.repeat(64),
@@ -270,8 +242,6 @@ describe('validateApiEnv', () => {
       POSTGRES_APP_PASSWORD: 'a-real-database-password',
       PREVIEW_TOKEN_SECRET: 'a'.repeat(64),
       PUBLIC_API_SERVICE_TOKEN: 'b'.repeat(64),
-      TURNSTILE_SITE_KEY: '0x4AAAAAAAInventedSiteKey',
-      TURNSTILE_SECRET_KEY: '0x4AAAAAAAInventedRealLookingKey',
     };
 
     it('starts with real values', () => {
@@ -296,16 +266,6 @@ describe('validateApiEnv', () => {
           'app-password',
           /POSTGRES_APP_PASSWORD must be at least 16/,
         ],
-        [
-          'TURNSTILE_SECRET_KEY',
-          '1x0000000000000000000000000000000AA',
-          /TURNSTILE_SECRET_KEY is a Cloudflare test key/,
-        ],
-        [
-          'TURNSTILE_SECRET_KEY',
-          '2x0000000000000000000000000000000AA',
-          /TURNSTILE_SECRET_KEY is a Cloudflare test key/,
-        ],
       ] as const) {
         expect(() => validateApiEnv({ ...PRODUCTION, [key]: value })).toThrow(
           message,
@@ -315,10 +275,7 @@ describe('validateApiEnv', () => {
 
     it('leaves development and CI alone', () => {
       expect(() =>
-        validateApiEnv({
-          ...VALID_ENV,
-          TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
-        }),
+        validateApiEnv({ ...VALID_ENV, PREVIEW_TOKEN_SECRET: 'short' }),
       ).not.toThrow();
     });
   });

@@ -30,6 +30,7 @@ async function setup() {
     fields: [{ id: 'email', label: 'Email', type: 'email', required: true }],
     steps: [],
     notificationEmails: ['owner@example.com'],
+    captchaEnabled: true,
   });
   return { deps, original };
 }

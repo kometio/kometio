@@ -361,9 +361,8 @@ export function applyBlockInsert(
   // started" by the spec and NEVER runs on its own, not even once
   // reconnected to the document — it has to be recreated from scratch (the
   // same reason Countdown/Stat/ImageSlider/Tabs/Testimonials/BeforeAfter/
-  // Form/MapEmbed stayed empty until the page was reloaded; for Form/
-  // NewsletterSignup this also restarts Turnstile's <script src>, which
-  // self-renders on every .cf-turnstile it finds). Replaced in place, before
+  // Form/MapEmbed stayed empty until the page was reloaded). Replaced in
+  // place, before
   // any node is moved: if it is nested inside newNode it reconnects by
   // itself when newNode enters the document (the whole subtree connects in
   // one go, before any script inside it runs); if it is a sibling of

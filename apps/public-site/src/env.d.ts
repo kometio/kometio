@@ -23,7 +23,7 @@ declare global {
        * otherwise have to be threaded through every recursive render and
        * every block's signature for the benefit of one block — and that
        * block already reads request-scoped context directly (Astro.url's
-       * query string, the Turnstile site key). `null` wherever there is
+       * query string). `null` wherever there is
        * no page behind the render: a term with no landing page, a section
        * preview, a single block re-rendered for the canvas.
        */

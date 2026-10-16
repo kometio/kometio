@@ -182,19 +182,19 @@ describe('FragmentComponentScripts', () => {
     const second = await scripts.resolve(
       '/a/Form.astro?astro&type=script&index=0&lang.ts',
     );
-    const turnstile =
-      '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>';
+    const outsideWidget =
+      '<script src="https://widgets.example.test/embed.js" async defer></script>';
     const jsonLd = '<script type="application/ld+json">{"a":1}</script>';
     const html = [
       '<div data-kometio-block-id="b1">Tabs</div>',
       `<script type="module" src="${first}"></script>`,
-      turnstile,
+      outsideWidget,
       jsonLd,
       `<script type="module" src="${second}"></script>`,
     ].join('');
 
     expect(scripts.strip(html)).toBe(
-      `<div data-kometio-block-id="b1">Tabs</div>${turnstile}${jsonLd}`,
+      `<div data-kometio-block-id="b1">Tabs</div>${outsideWidget}${jsonLd}`,
     );
   });
 

@@ -497,7 +497,7 @@ export const timelineBlockContract = defineBlockContract({
  * `formId`/fields of its own and no FormSubmission row saved — the
  * subscribe call to NewsletterPort *is* the entire effect, there's no
  * separate "form data" to keep a historical record of. Same
- * honeypot+Turnstile anti-spam treatment as Form (it's the same kind of
+ * honeypot+captcha anti-spam treatment as Form (it's the same kind of
  * unauthenticated public write endpoint).
  */
 export const newsletterSignupPropsSchema = z.object({

@@ -11,6 +11,7 @@ import {
   updateFormSubmissionRetentionBodySchema,
   updateGeneralSettingsBodySchema,
   updateLocaleSettingsBodySchema,
+  updateNewsletterCaptchaBodySchema,
   updateSeoSettingsBodySchema,
   updateThemePackageBodySchema,
   updateThemeSettingsBodySchema,
@@ -90,6 +91,20 @@ describe('the small settings', () => {
       }).success,
     ).toBe(true);
     expect(updateSeoSettingsBodySchema.safeParse({}).success).toBe(false);
+  });
+
+  it('takes a boolean for whether the newsletter signup asks for a captcha, and never guesses it', () => {
+    expect(
+      updateNewsletterCaptchaBodySchema.safeParse({
+        newsletterCaptchaEnabled: false,
+      }).success,
+    ).toBe(true);
+    expect(updateNewsletterCaptchaBodySchema.safeParse({}).success).toBe(false);
+    expect(
+      updateNewsletterCaptchaBodySchema.safeParse({
+        newsletterCaptchaEnabled: 'no',
+      }).success,
+    ).toBe(false);
   });
 
   it('keeps answers forever (null) or for a whole number of days, at least one', () => {

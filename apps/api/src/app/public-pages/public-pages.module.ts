@@ -18,6 +18,8 @@ import { DeploymentTenantModule } from '../deployment-tenant.module';
 import { ApiEnvModule } from '../api-env.module';
 import { DEPLOYMENT_TENANT_RESOLVER } from '../deployment-tenant.resolver';
 import { moduleDeps } from '../module-deps';
+import { DEPLOYMENT_SITE_RESOLVER } from '../sites/deployment-site.resolver';
+import { DeploymentSiteModule } from '../sites/deployment-site.module';
 import { PublicPagesController } from './public-pages.controller';
 import type { PublicPagesDeps } from './public-pages.deps';
 import { PUBLIC_PAGES_DEPS } from './public-pages.tokens';
@@ -26,6 +28,7 @@ import { PUBLIC_PAGES_DEPS } from './public-pages.tokens';
   imports: [
     AdaptersModule,
     DeploymentTenantModule,
+    DeploymentSiteModule,
     ApiEnvModule,
     // Generous limit tuned for real page-view traffic, not login-attempt
     // strictness (compare AuthModule's throttler) — this endpoint is hit on
@@ -46,6 +49,7 @@ import { PUBLIC_PAGES_DEPS } from './public-pages.tokens';
       reusableSectionRepository: REUSABLE_SECTION_REPOSITORY,
       searchPort: SEARCH_PORT,
       tenant: DEPLOYMENT_TENANT_RESOLVER,
+      deploymentSiteResolver: DEPLOYMENT_SITE_RESOLVER,
       previewTokenPort: PREVIEW_TOKEN_PORT,
       userRepository: USER_REPOSITORY,
       mediaStorage: MEDIA_STORAGE,

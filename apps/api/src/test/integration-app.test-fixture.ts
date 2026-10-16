@@ -4,6 +4,7 @@ import { Test, type TestingModuleBuilder } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import type { AuthPort } from '@kometio/ports';
+import { FakeCaptchaPort } from '@kometio/testing';
 import { type KometioDb } from '@kometio/postgres-db';
 import {
   createIntegrationSite,
@@ -18,11 +19,11 @@ import { requestIdMiddleware } from '../app/request-id.middleware';
 import { trustProxyHops } from '../app/trusted-proxy';
 import { rejectCrossSiteWrites } from '../app/cross-site-writes.middleware';
 import { requireEnv } from '@kometio/env-config';
-import { AUTH_PORT } from '../app/adapters/port.tokens';
+import { AUTH_PORT, CAPTCHA_PORT } from '../app/adapters/port.tokens';
 
 export interface IntegrationAppOptions {
   imports: NonNullable<ModuleMetadata['imports']>;
-  /** Swaps providers before compiling — a fake captcha, a recording port. */
+  /** Swaps providers before compiling — a recording port, or the real captcha back in. */
   overrideProviders?: (builder: TestingModuleBuilder) => TestingModuleBuilder;
   /** Runs after the shared middleware and before `init()`. */
   beforeInit?: (app: INestApplication) => void;
@@ -41,6 +42,12 @@ export interface IntegrationUser {
  * The Nest app a controller integration spec talks to, against the real
  * database. The middleware and error filter are the ones main.ts installs,
  * so a response has the shape a client really gets.
+ *
+ * The captcha is the fake that takes any token that is not empty, which is
+ * what `login()` sends: a spec is about the controller it names, and solving a
+ * real proof of work before each of its tests would be most of its time. A
+ * spec that is about the captcha itself puts the real one back with
+ * `overrideProviders` (captcha.controller.integration.spec.ts).
  *
  * Every row lives under DEFAULT_TENANT_ID, the tenant `/auth/login`
  * resolves, and that tenant cannot be deleted. So the app remembers each
@@ -65,7 +72,11 @@ export class IntegrationApp {
         'DEFAULT_TENANT_ID is not set: integration specs read it from .env (see docs/development.md)',
       );
     }
-    const builder = Test.createTestingModule({ imports: options.imports });
+    const builder = Test.createTestingModule({
+      imports: options.imports,
+    })
+      .overrideProvider(CAPTCHA_PORT)
+      .useClass(FakeCaptchaPort);
     const moduleRef = await (
       options.overrideProviders?.(builder) ?? builder
     ).compile();

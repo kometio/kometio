@@ -3,6 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AltchaWidget } from './altcha-widget';
 import { loadAltcha } from './altcha-loader';
 
+// The real widget: test-setup.ts replaces it with a stand-in for every other spec.
+vi.unmock('./altcha-widget');
+
 // The widget itself is a download of its own and runs a proof of work in a
 // worker: neither belongs in jsdom. A first-run test in a real browser is where
 // the two meet. Here its element is a stand-in with the two methods the

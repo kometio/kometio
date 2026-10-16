@@ -56,7 +56,7 @@ export class PublicFormsController {
     );
   }
 
-  // No CAPTCHA re-check here on purpose: a Turnstile token is single-use
+  // No CAPTCHA re-check here on purpose: a captcha solution is single-use
   // (a second verify() call with the same token fails), and the final
   // /submissions call below already verifies it once for the whole
   // transaction — this endpoint is protected by ThrottlerGuard only, same

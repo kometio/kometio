@@ -284,7 +284,6 @@ libs/            see docs/libs.md for the full index (every lib's README,
     local-disk-media-storage/, s3-media-storage/  MediaStoragePort implementations
     sharp-image-optimizer/                        ImageOptimizerPort, used by the upload policy
     local-disk-attachment-storage/, s3-attachment-storage/  form file-upload storage
-    turnstile-captcha/         CaptchaPort — Cloudflare Turnstile
     altcha-captcha/            CaptchaPort + CaptchaChallengePort — the captcha built into Kometio
     mailchimp-newsletter/, brevo-newsletter/  NewsletterPort implementations
   block-registry/ the block catalog: one descriptor per type in

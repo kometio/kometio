@@ -1,16 +1,25 @@
 import { InvalidCaptchaError } from '@kometio/domain-core';
-import type { CaptchaPort, NewsletterPort } from '@kometio/ports';
+import type {
+  CaptchaPort,
+  NewsletterPort,
+  SiteRepositoryPort,
+} from '@kometio/ports';
+import { requireSite } from './require-site';
 
 export interface SubscribeNewsletterDeps {
   newsletterPort: NewsletterPort;
   captchaPort: CaptchaPort;
+  siteRepository: Pick<SiteRepositoryPort, 'findById'>;
 }
 
 export interface SubscribeNewsletterInput {
+  /** The site this deployment serves: it is the one whose setting says whether a captcha is asked for (docs/adr/0145). */
+  tenantId: string;
+  siteId: string;
   email: string;
   /** CSS-hidden field real visitors never fill (docs/adr/0015). Non-empty means a bot. */
   honeypot: string;
-  /** Cloudflare Turnstile's client-side widget token. */
+  /** The solution of the captcha's challenge, as the widget leaves it in the form. */
   captchaToken: string;
 }
 
@@ -31,11 +40,20 @@ export async function subscribeNewsletter(
     return;
   }
 
-  const captchaValid = await deps.captchaPort.verify({
-    token: input.captchaToken,
-  });
-  if (!captchaValid) {
-    throw new InvalidCaptchaError();
+  // Read here, not sent by the page: the block has no entity of its own, so
+  // the choice is the site's and the server is the one that knows it.
+  const site = await requireSite(
+    deps.siteRepository,
+    input.tenantId,
+    input.siteId,
+  );
+  if (site.newsletterCaptchaEnabled) {
+    const captchaValid = await deps.captchaPort.verify({
+      token: input.captchaToken,
+    });
+    if (!captchaValid) {
+      throw new InvalidCaptchaError();
+    }
   }
 
   await deps.newsletterPort.subscribe(input.email);

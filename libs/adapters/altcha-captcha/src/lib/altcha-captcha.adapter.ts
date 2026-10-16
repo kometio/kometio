@@ -44,8 +44,7 @@ const REMEMBERED_SOLUTIONS = 10_000;
  * A captcha that needs no account and no network: ALTCHA, a proof of work the
  * visitor's browser solves in the background (docs/adr/0103). It makes the
  * challenge (`CaptchaChallengePort`) and checks the solution (`CaptchaPort`),
- * so a deployment with no Cloudflare keys is not left with a captcha that
- * passes everything.
+ * and it is the only captcha Kometio has (docs/adr/0145).
  *
  * What the library does and what this adds. The library signs a challenge,
  * with its expiry, and checks that a solution fits it. It does not stop the
@@ -55,9 +54,8 @@ const REMEMBERED_SOLUTIONS = 10_000;
  * would not share them; both are accepted at the scale of one process, and a
  * forgotten solution is spendable only until its challenge expires.
  *
- * Like the Turnstile adapter, a missing or malformed token is a refusal
- * without a fuss, never an error thrown up the stack: whoever sent it is told
- * to try again.
+ * A missing or malformed token is a refusal without a fuss, never an error
+ * thrown up the stack: whoever sent it is told to try again.
  */
 export class AltchaCaptchaAdapter implements CaptchaPort, CaptchaChallengePort {
   private readonly cost: number;

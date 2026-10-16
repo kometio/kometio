@@ -1,29 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { requireEnv } from '@kometio/env-config';
+import { widgetState } from '../support/captcha';
 import { environment } from '../support/environment';
 import { KometioApi } from '../support/kometio-api';
 
-/** What the built-in captcha widget says it is doing: `unverified` until the visitor starts, then `verifying`, then `verified`. */
-function widgetState(widget: Locator): Promise<unknown> {
-  return widget.evaluate((element) =>
-    'getState' in element && typeof element.getState === 'function'
-      ? element.getState()
-      : null,
-  );
-}
-
 /**
  * What a person meets in the first minutes, in a real browser, on an image
- * started the way the quickstart says: no captcha keys of its own, no mail
- * server, nothing set up yet.
+ * started the way the quickstart says: no mail server, nothing set up yet.
  *
  * It exists because that is the one path the rest of the suite cannot see.
  * Everything else runs on an installation somebody has already set up, with
- * the captcha key and the mail server the suite gives it, and the first run
- * broke three times in three days with all of that green: the login button
- * stayed disabled for everyone who pulled the image (no key), a login cookie
+ * the mail server the suite gives it, and the first run broke three times in
+ * three days with all of that green: the login button stayed disabled for
+ * everyone who pulled the image (it was waiting for a captcha key, which
+ * the image did not have then), a login cookie
  * left on the host by another installation gave a white page (a 503), and a
  * site that was created without a domain answered "not found". Each was found
  * by walking it by hand.
@@ -40,10 +32,10 @@ function widgetState(widget: Locator): Promise<unknown> {
  * browser, over plain ports and over HTTPS with the editor and the API on two
  * names, and be an archive.
  *
- * And it sends a form of the public site with no captcha keys: the visitor's
- * widget is the one built into Kometio (docs/adr/0103), which asks this site for
- * its challenge, solves it once they start on the form, and the server has to
- * accept the solution it signed.
+ * And it sends a form of the public site: the visitor's widget is the one
+ * built into Kometio (docs/adr/0103), which asks this site for its challenge,
+ * solves it once they start on the form, and the server has to accept the
+ * solution it signed.
  *
  * It spends the installation: the setup token is single-use and the account is
  * made here, so it runs once, on its own installation, and never retries.
@@ -110,9 +102,7 @@ test('a person who starts the image reaches a working site, and can sign in agai
   expect(home).toContain('Where a good article starts');
 
   // Sign in again, in a clean browser, through the form: the captcha has to
-  // give the button its token when nobody gave the image a key. With an empty
-  // one the widget refused it and the button stayed disabled for ever, for
-  // everyone who pulled the image. It is now the captcha built into Kometio
+  // give the button its token. It is the captcha built into Kometio
   // (docs/adr/0103): a challenge from the API, solved in the page, with nothing
   // fetched from anywhere else, so the whole thing runs with no network.
   // What it submits is checked by the server, which is the point of the next
@@ -213,7 +203,7 @@ test('a person who starts the image reaches a working site, and can sign in agai
   await sendLink.click();
   await expect(forgot.getByText(/it is in the server's log/)).toBeVisible();
 
-  // A form on the site, sent by a visitor, with no captcha keys anywhere.
+  // A form on the site, sent by a visitor.
   const api = new KometioApi(
     await playwright.request.newContext({
       ...trust,

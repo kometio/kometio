@@ -13,3 +13,15 @@ export type SubscribeNewsletterBody = z.infer<
 export type SubscribeNewsletterRequest = z.input<
   typeof subscribeNewsletterBodySchema
 >;
+
+/**
+ * `GET /public/pages/newsletter` — what the public site needs to draw the
+ * newsletter signup: whether it shows the captcha. The server asks for the
+ * solution on its own account, from the same setting (docs/adr/0145).
+ */
+export const publicNewsletterSettingsSchema = z.object({
+  captchaEnabled: z.boolean(),
+});
+export type PublicNewsletterSettings = z.infer<
+  typeof publicNewsletterSettingsSchema
+>;

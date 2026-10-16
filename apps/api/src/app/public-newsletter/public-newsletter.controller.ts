@@ -33,8 +33,14 @@ export class PublicNewsletterController {
     @Body(new ZodValidationPipe(subscribeNewsletterBodySchema))
     body: SubscribeNewsletterBody,
   ): Promise<void> {
+    // The site is this deployment's own, never one the request names: the
+    // captcha is asked for, or not, by its setting (docs/adr/0145).
+    const tenantId = await this.deps.tenant.require();
+    const site = await this.deps.deploymentSiteResolver.require(tenantId);
     // An invalid captcha is the global table's 400 (domain-error-http-mapping).
     await subscribeNewsletter(this.deps, {
+      tenantId,
+      siteId: site.id,
       email: body.email,
       honeypot: body.honeypot,
       captchaToken: body.captchaToken,

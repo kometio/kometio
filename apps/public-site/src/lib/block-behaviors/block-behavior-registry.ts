@@ -28,7 +28,7 @@ import type { BlockBehavior } from './types';
 // itself, once, from its own <script> at initial page load — this registry
 // exists purely for the live-update case, it isn't the only place these
 // run. Form and NewsletterSignup both register captchaBehaviors: either
-// can render a captcha widget (Cloudflare's or the built-in one), and the guard
+// can render the captcha widget, and the guard
 // of each makes registering it twice on one page harmless.
 export const BLOCK_BEHAVIOR_REGISTRY: Record<string, BlockBehavior[]> = {
   Tabs: tabsBehaviors,

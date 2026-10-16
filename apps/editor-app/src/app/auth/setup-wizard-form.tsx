@@ -66,8 +66,6 @@ export interface SetupWizardFormProps {
  *
  * No captcha, unlike login. A captcha proves "not a robot"; the token
  * proves something far stronger — that you can read this server's logs.
- * Turnstile's keys also live in the same env file the wizard exists to
- * avoid needing.
  */
 export function SetupWizardForm({
   onSubmit,

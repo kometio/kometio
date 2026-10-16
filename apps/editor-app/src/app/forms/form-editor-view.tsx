@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FormSubmissionsList } from './form-submissions-list';
 import { Link } from '@tanstack/react-router';
@@ -12,6 +12,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { Switch } from '../../components/ui/switch';
 import { FormFieldEditorRow } from './form-field-editor-row';
 import { ConfirmActionDialog } from '../common/confirm-action-dialog';
 import { useFormEditor } from './use-form-editor';
@@ -67,6 +68,7 @@ function draftOf(
   fields: FormField[],
   steps: FormStep[],
   notificationEmails: string[],
+  captchaEnabled: boolean,
 ) {
   return {
     name,
@@ -77,6 +79,7 @@ function draftOf(
     notificationEmails: notificationEmails
       .map((address) => address.trim())
       .filter((address) => address !== ''),
+    captchaEnabled,
   };
 }
 
@@ -113,6 +116,8 @@ export function FormEditorView({
   const [notificationEmails, setNotificationEmails] = useState<string[]>(
     form.notificationEmails.length > 0 ? form.notificationEmails : [''],
   );
+  const [captchaEnabled, setCaptchaEnabled] = useState(form.captchaEnabled);
+  const captchaSwitchId = useId();
   const [error, setError] = useState('');
 
   /*
@@ -129,10 +134,22 @@ export function FormEditorView({
    */
   const [baseline, setBaseline] = useState(() =>
     serializeDraft(
-      draftOf(form.name, form.fields, form.steps, form.notificationEmails),
+      draftOf(
+        form.name,
+        form.fields,
+        form.steps,
+        form.notificationEmails,
+        form.captchaEnabled,
+      ),
     ),
   );
-  const draft = draftOf(name, fields, steps, notificationEmails);
+  const draft = draftOf(
+    name,
+    fields,
+    steps,
+    notificationEmails,
+    captchaEnabled,
+  );
   // Refused by the API too; checked here so the problem is named next to
   // the field that has it, and Save says why it will not work.
   const conditionProblems = useMemo(
@@ -242,6 +259,7 @@ export function FormEditorView({
             saved?.fields ?? draft.fields,
             saved?.steps ?? draft.steps,
             saved?.notificationEmails ?? draft.notificationEmails,
+            saved?.captchaEnabled ?? draft.captchaEnabled,
           ),
         ),
       );
@@ -401,6 +419,31 @@ export function FormEditorView({
                 </Button>
               )}
             </fieldset>
+            {/* The form's own choice, kept by the server: a form that does not
+                ask is one a script can fill in as well as a person
+                (docs/adr/0145). */}
+            <div className="flex max-w-md flex-col gap-2">
+              <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor={captchaSwitchId}>
+                    {t('forms.editor.captchaLabel')}
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    {t('forms.editor.captchaDescription')}
+                  </span>
+                </div>
+                <Switch
+                  id={captchaSwitchId}
+                  checked={captchaEnabled}
+                  onCheckedChange={setCaptchaEnabled}
+                />
+              </div>
+              {!captchaEnabled && (
+                <p className="text-xs text-muted-foreground">
+                  {t('forms.editor.captchaOffHint')}
+                </p>
+              )}
+            </div>
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <Label>{t('forms.editor.stepsLabel')}</Label>

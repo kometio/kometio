@@ -66,7 +66,7 @@ endpoint exists, see [ADR-0010](../../docs/adr/0010-session-based-auth-foundatio
 Required env vars are read via `requireEnv()` (`libs/env-config`) and fail
 loudly at startup if missing — see `.env.example` at the repo root for the
 full annotated list (`DEFAULT_TENANT_ID`, `PREVIEW_TOKEN_SECRET`,
-`EDITOR_APP_URL`, `MEDIA_UPLOAD_DIR`, SMTP/Turnstile/newsletter vars, ...).
+`EDITOR_APP_URL`, `MEDIA_UPLOAD_DIR`, SMTP/newsletter vars, ...).
 
 ## Nx targets
 

@@ -1,6 +1,6 @@
 # 0020 — Form builder extensions: anti-spam, newsletter, file attachments, multi-step
 
-**Status**: Accepted — 2026-08-20
+**Status**: Accepted — 2026-08-20. The anti-spam section below is amended by [0103](0103-a-server-can-run-without-a-mail-server-or-cloudflare.md) and [0145](0145-one-captcha-built-in-and-a-form-says-whether-it-asks.md): the captcha is no longer Cloudflare Turnstile, and a form can say it asks for none.
 
 ## Context
 

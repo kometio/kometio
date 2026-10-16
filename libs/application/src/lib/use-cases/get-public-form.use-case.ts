@@ -28,5 +28,8 @@ export async function getPublicForm(
     name: form.name,
     fields: form.fields,
     steps: form.steps,
+    // What the page needs to draw the widget or not; the submission is
+    // checked against the same setting on the server (docs/adr/0145).
+    captchaEnabled: form.captchaEnabled,
   };
 }

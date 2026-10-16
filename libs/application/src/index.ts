@@ -112,6 +112,7 @@ export * from './lib/redirects/redirect-deps';
 export type { RedirectTargetInput } from './lib/redirects/redirect-target-input';
 export type { PageTargetInfo } from './lib/redirects/published-page-path';
 export * from './lib/use-cases/get-public-form.use-case';
+export * from './lib/use-cases/get-public-newsletter-settings.use-case';
 export * from './lib/use-cases/get-form-by-id.use-case';
 export * from './lib/use-cases/submit-form.use-case';
 export * from './lib/use-cases/sweep-form-attachments.use-case';
@@ -136,6 +137,7 @@ export * from './lib/use-cases/rollback-site-layout-section-to-version.use-case'
 export * from './lib/use-cases/update-site-layout-section-sticky.use-case';
 export * from './lib/use-cases/get-dashboard-stats.use-case';
 export * from './lib/use-cases/update-site-form-submission-retention.use-case';
+export * from './lib/use-cases/update-site-newsletter-captcha.use-case';
 export * from './lib/use-cases/update-site-cookie-banner-settings.use-case';
 export * from './lib/use-cases/bootstrap-deployment.use-case';
 export * from './lib/use-cases/open-site-archive.use-case';

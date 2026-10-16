@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Header,
-  Inject,
-  NotFoundException,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Header, Inject, UseGuards } from '@nestjs/common';
 import type { CaptchaChallenge, CaptchaChallengePort } from '@kometio/ports';
 import { CAPTCHA_CHALLENGE_PORT } from '../adapters/port.tokens';
 import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttler.guard';
@@ -21,16 +14,13 @@ import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttle
  * solved, and each takes the visitor's browser a moment to solve, so handing
  * them out is not what a script would gain from; what the limit keeps is the
  * server from signing them for nothing.
- *
- * A deployment with Cloudflare Turnstile has no such challenge to give, and
- * says so with a 404: nothing there is waiting for one.
  */
 @Controller('captcha')
 @UseGuards(PublicPagesThrottlerGuard)
 export class CaptchaController {
   constructor(
     @Inject(CAPTCHA_CHALLENGE_PORT)
-    private readonly challenges: CaptchaChallengePort | null,
+    private readonly challenges: CaptchaChallengePort,
   ) {}
 
   // Never from a cache: a challenge handed to two visitors is a solution that
@@ -38,11 +28,6 @@ export class CaptchaController {
   @Get('challenge')
   @Header('Cache-Control', 'no-store')
   async challenge(): Promise<CaptchaChallenge> {
-    if (this.challenges === null) {
-      throw new NotFoundException(
-        'This deployment uses Cloudflare Turnstile: there is no challenge to give',
-      );
-    }
     return this.challenges.createChallenge();
   }
 }

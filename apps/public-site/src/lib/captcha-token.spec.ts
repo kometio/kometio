@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  CAPTCHA_FIELD_BUILT_IN,
-  CAPTCHA_FIELD_TURNSTILE,
-  captchaTokenOf,
-} from './captcha-token';
+import { CAPTCHA_FIELD, captchaTokenOf } from './captcha-token';
 
 const formWith = (fields: Record<string, string | File>): FormData => {
   const form = new FormData();
@@ -12,40 +8,25 @@ const formWith = (fields: Record<string, string | File>): FormData => {
 };
 
 describe('captchaTokenOf', () => {
-  it("reads Turnstile's solution", () => {
-    expect(
-      captchaTokenOf(
-        formWith({ [CAPTCHA_FIELD_TURNSTILE]: 'from-cloudflare' }),
-      ),
-    ).toBe('from-cloudflare');
+  it("reads the widget's solution", () => {
+    expect(captchaTokenOf(formWith({ [CAPTCHA_FIELD]: 'from-kometio' }))).toBe(
+      'from-kometio',
+    );
   });
 
-  it("reads the built-in widget's solution", () => {
-    expect(
-      captchaTokenOf(formWith({ [CAPTCHA_FIELD_BUILT_IN]: 'from-kometio' })),
-    ).toBe('from-kometio');
-  });
-
-  it('is empty when the form has none: the widget never ran, or the page had none', () => {
+  it('is empty when the form has none: the widget never ran, or the form asks for none', () => {
     expect(captchaTokenOf(formWith({ email: 'a@example.test' }))).toBe('');
   });
 
-  it('takes an empty field for none, and the other one when it is there', () => {
+  it('does not read the field a captcha from an outside company used to fill', () => {
     expect(
-      captchaTokenOf(
-        formWith({
-          [CAPTCHA_FIELD_TURNSTILE]: '',
-          [CAPTCHA_FIELD_BUILT_IN]: 'from-kometio',
-        }),
-      ),
-    ).toBe('from-kometio');
+      captchaTokenOf(formWith({ 'cf-turnstile-response': 'from-cloudflare' })),
+    ).toBe('');
   });
 
   it('does not take a file for a solution', () => {
     expect(
-      captchaTokenOf(
-        formWith({ [CAPTCHA_FIELD_BUILT_IN]: new File(['x'], 'x.txt') }),
-      ),
+      captchaTokenOf(formWith({ [CAPTCHA_FIELD]: new File(['x'], 'x.txt') })),
     ).toBe('');
   });
 });

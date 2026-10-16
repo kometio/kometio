@@ -30,6 +30,9 @@ export const updateFormBodySchema = z.object({
     .array(z.string().trim().email())
     .max(MAX_NOTIFICATION_EMAILS)
     .default([]),
+  // Left out means on: the body replaces the form whole, and the safe
+  // answer to a client that never heard of the setting is to keep asking.
+  captchaEnabled: z.boolean().default(true),
 });
 export type UpdateFormBody = z.infer<typeof updateFormBodySchema>;
 
@@ -43,5 +46,5 @@ export type ListFormSubmissionsQuery = z.infer<
   typeof listFormSubmissionsQuerySchema
 >;
 
-/** What a client sends: steps and notification addresses may be left out. */
+/** What a client sends: steps, notification addresses and the captcha choice may be left out. */
 export type UpdateFormRequest = z.input<typeof updateFormBodySchema>;

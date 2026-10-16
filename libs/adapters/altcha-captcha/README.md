@@ -2,9 +2,9 @@
 
 `CaptchaPort` and `CaptchaChallengePort` for the captcha built into Kometio
 (docs/adr/0103): [ALTCHA](https://altcha.org), a proof of work the visitor's
-browser solves in the background. It needs no account and no network, which is
-why a deployment with no Cloudflare keys is not left with a captcha that passes
-everything.
+browser solves in the background. It needs no account and no network, and it is
+the only captcha Kometio has (docs/adr/0145): there is no second provider to
+configure, and nothing is sent to anyone else.
 
 ## Implements
 
@@ -42,9 +42,15 @@ keys, is made from it by the library.
 
 ## Used by
 
-`apps/api`, in `createCaptcha` (`apps/api/src/app/adapters/captcha.factory.ts`),
-when the deployment has no Turnstile keys; the challenge is handed out by
-`CaptchaController` (`apps/api/src/app/captcha`).
+`apps/api`, in `createCaptcha` (`apps/api/src/app/adapters/captcha.factory.ts`);
+the challenge is handed out by `CaptchaController` (`apps/api/src/app/captcha`).
+
+## Answering it without a browser
+
+`tools/solve-captcha.mjs` (at the root of the repository) solves a challenge the
+way the widget does, for what has no browser: `docker/kometio/check.sh` and the
+end-to-end suite's login. `src/testing.ts` is the same for a spec of this
+repository that already depends on this package.
 
 ## Running unit tests
 

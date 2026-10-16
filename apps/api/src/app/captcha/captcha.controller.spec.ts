@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttler.guard';
 import { CaptchaController } from './captcha.controller';
 
@@ -10,12 +9,6 @@ describe('CaptchaController', () => {
     });
 
     expect(await controller.challenge()).toBe(challenge);
-  });
-
-  it('answers 404 when the deployment uses Cloudflare Turnstile: there is no challenge to give', async () => {
-    await expect(new CaptchaController(null).challenge()).rejects.toThrow(
-      NotFoundException,
-    );
   });
 
   /*

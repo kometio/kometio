@@ -13,12 +13,6 @@ import i18next from './i18n';
 // which `afterEach` alone never reaches.
 beforeEach(() => {
   void i18next.changeLanguage('it');
-  // The forms draw Cloudflare's widget when a site has its key, and the one
-  // built into Kometio when it has none (docs/adr/0103). The fake Turnstile
-  // below stands in for the first, so every test gets a key rather than
-  // depending on what the developer's .env holds; a test of the other one
-  // takes it away.
-  vi.stubEnv('VITE_TURNSTILE_SITE_KEY', 'a-site-key-for-tests');
 });
 afterEach(() => {
   void i18next.changeLanguage('it');
@@ -68,17 +62,14 @@ Element.prototype.hasPointerCapture ??= () => false;
 // simulated.
 Element.prototype.scrollIntoView ??= () => undefined;
 
-// jsdom never loads the real Cloudflare Turnstile script (login/forgot-
-// password widget, security review 2026-08-24, point 13) — this fires the
-// widget's callback immediately with a fixed fake token on render, so every
-// existing fill-and-submit test flow keeps working unchanged without
-// knowing Turnstile exists. A test that specifically cares about the
-// pre-token disabled state overrides `window.turnstile` for itself.
-window.turnstile ??= {
-  render: (_container, options) => {
-    options.callback('fake-turnstile-token-for-tests');
-    return 'fake-widget-id';
-  },
-  reset: () => undefined,
-  remove: () => undefined,
-};
+// The captcha widget (login/forgot-password, security review 2026-08-24, point
+// 13) is a download of its own that runs a proof of work in a worker: it never
+// loads in jsdom. Every test gets a stand-in that hands over a fixed token as
+// soon as it is drawn, so each fill-and-submit flow works unchanged without
+// knowing a captcha exists. A test that cares about the moment before the
+// visitor has solved anything says so (`captchaStaysUnsolved`), and the
+// widget's own spec takes the real one back (`vi.unmock`).
+vi.mock('./app/auth/altcha-widget', async () => {
+  const { FakeAltchaWidget } = await import('./test/fake-captcha');
+  return { AltchaWidget: FakeAltchaWidget };
+});

@@ -270,6 +270,7 @@ export class FormsController {
       fields: props.fields,
       steps: props.steps,
       notificationEmails: props.notificationEmails,
+      captchaEnabled: props.captchaEnabled,
       createdAt: props.createdAt.toISOString(),
       updatedAt: props.updatedAt.toISOString(),
       submissionCount,

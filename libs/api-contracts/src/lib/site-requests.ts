@@ -52,6 +52,13 @@ export type UpdateFormSubmissionRetentionBody = z.infer<
   typeof updateFormSubmissionRetentionBodySchema
 >;
 
+export const updateNewsletterCaptchaBodySchema = z.object({
+  newsletterCaptchaEnabled: z.boolean(),
+});
+export type UpdateNewsletterCaptchaBody = z.infer<
+  typeof updateNewsletterCaptchaBodySchema
+>;
+
 // Reuses @kometio/shared-types' schema wholesale (docs/adr/0017) — it already
 // encodes the one real invariant (defaultLocale must be one of
 // enabledLocales), no reason to redeclare it here.

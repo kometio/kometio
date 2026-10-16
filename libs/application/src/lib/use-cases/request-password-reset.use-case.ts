@@ -26,7 +26,7 @@ export interface RequestPasswordResetInput {
   email: string;
   /** e.g. EDITOR_APP_URL — the use-case appends `/reset-password?resetToken=<token>`. */
   resetUrlBase: string;
-  /** Cloudflare Turnstile's client-side widget token — security review 2026-08-24, point 13: without it, a single IP can stay under the per-IP rate limit while still mailing hundreds of reset emails per hour to one victim. */
+  /** The solution of the captcha's challenge — security review 2026-08-24, point 13: without it, a single IP can stay under the per-IP rate limit while still mailing hundreds of reset emails per hour to one victim. */
   captchaToken: string;
 }
 

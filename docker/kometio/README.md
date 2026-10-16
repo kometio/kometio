@@ -288,7 +288,7 @@ setup token from `docker logs kometio`, open the editor, create your account.
 - **The certificates live in the volume**, with everything else, so a restart does
   not ask Let's Encrypt again: it limits how often it will issue for one name.
 - A server runs as `production`: the login cookie is `Secure`, and the container
-  refuses to start on example secrets or on Cloudflare's test captcha keys. Behind
+  refuses to start on example secrets. Behind
   a proxy of your own instead, leave `DOMAIN` out and set the three addresses as
   in [Use other ports](#use-other-ports), with `https://` in them: an address that
   is `https` makes it run as `production` too. It does **not** make it trust your
@@ -542,10 +542,12 @@ Said plainly, so that you do not find out by failing:
   lists the rest).
 - **Its captcha is Kometio's own, and a small one.** The login and the forms of
   your site use a captcha built into Kometio, a proof of work the browser solves
-  in the background: no account, no network. It is meant to keep scripts out, not
-  to be the last word on abuse. To use Cloudflare Turnstile instead, give both of
-  your keys, `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (`-e` on the
-  `docker run`; both, or neither).
+  in the background: no account, no network, nothing from anybody else. It is
+  meant to keep scripts out, not to be the last word on abuse. A form can be
+  made without it, from its own screen in the editor, and the newsletter signup
+  from Settings → Newsletter (docs/adr/0145). There is no
+  other captcha to switch to: a server set up with Cloudflare Turnstile keys
+  before simply stops reading them.
 - **It reports its errors nowhere unless you say where.** With `-e SENTRY_DSN=…`
   (a Sentry project's address) the API and the public site report the errors
   nobody handled: the error, the method, the path and the request id, with no

@@ -31,6 +31,27 @@ describe('form bodies', () => {
     expect(parsed.notificationEmails).toEqual([]);
   });
 
+  it('asks for the captcha when the body does not say: a client that never heard of the choice keeps the form safe', () => {
+    expect(
+      updateFormBodySchema.parse({ name: 'Contact', fields: [] })
+        .captchaEnabled,
+    ).toBe(true);
+    expect(
+      updateFormBodySchema.parse({
+        name: 'Contact',
+        fields: [],
+        captchaEnabled: false,
+      }).captchaEnabled,
+    ).toBe(false);
+    expect(
+      updateFormBodySchema.safeParse({
+        name: 'Contact',
+        fields: [],
+        captchaEnabled: 'no',
+      }).success,
+    ).toBe(false);
+  });
+
   it('trims the notification addresses and refuses more than a team', () => {
     const parsed = updateFormBodySchema.parse({
       name: 'Contact',

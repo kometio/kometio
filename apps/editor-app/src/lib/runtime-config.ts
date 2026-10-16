@@ -22,8 +22,6 @@ import { requireViteEnv } from './require-vite-env';
 export interface KometioRuntimeConfig {
   apiUrl?: string;
   publicSiteUrl?: string;
-  /** Public by design, like the two addresses: see turnstile-site-key.ts. */
-  turnstileSiteKey?: string;
 }
 
 declare global {
