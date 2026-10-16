@@ -12,6 +12,7 @@ import { ApiError } from '../../lib/http-client';
 import { createTestQueryClient } from '../../test/query-client.test-fixture';
 import { WithToasts } from '../../test/toasts.test-fixture';
 import { SecondFactorSection } from './second-factor-section';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 vi.mock('../../lib/second-factor-api-client', async (importOriginal) => {
   const actual =
@@ -126,12 +127,16 @@ describe('SecondFactorSection', () => {
 
       await within(dialog).findByText('abcde-fghjk');
       expect(api.confirmSecondFactor).toHaveBeenCalledWith('123456');
-      const done = within(dialog).getByRole('button', { name: /fatto/i });
-      expect((done as HTMLButtonElement).disabled).toBe(true);
+      const done = instanceOf(
+        within(dialog).getByRole('button', { name: /fatto/i }),
+        HTMLButtonElement,
+        'the Fatto button',
+      );
+      expect(done.disabled).toBe(true);
       fireEvent.click(
         within(dialog).getByRole('checkbox', { name: /li ho conservati/i }),
       );
-      expect((done as HTMLButtonElement).disabled).toBe(false);
+      expect(done.disabled).toBe(false);
     });
 
     it('says a wrong password under the field, and does not move on', async () => {

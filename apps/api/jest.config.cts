@@ -17,8 +17,12 @@ module.exports = {
   // failed them under load for the machine and not for the code.
   testTimeout: 15_000,
   setupFiles: ['<rootDir>/jest.setup.ts'],
-  // After the environment, for `afterAll`: a folder of its own for uploads.
-  setupFilesAfterEnv: ['<rootDir>/jest.uploads.setup.ts'],
+  // After the environment, for `afterAll` and `afterEach`: a folder of its own
+  // for uploads, and no way out of this machine.
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.uploads.setup.ts',
+    '<rootDir>/src/test/no-network.test-fixture.ts',
+  ],
   transform: {
     '^.+\\.[tj]s$': ['@swc/jest', swcJestConfig],
   },

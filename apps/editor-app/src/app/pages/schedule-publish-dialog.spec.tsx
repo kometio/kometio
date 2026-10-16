@@ -4,6 +4,7 @@ import { TooltipProvider } from '../../components/ui/tooltip';
 import { browserTimeZone } from '../../lib/use-format-date';
 import { ToastProvider } from '../shell/toast-provider';
 import { SchedulePublishDialog } from './schedule-publish-dialog';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // Noon, local time: far enough from midnight that "tomorrow at 9" and
 // "an hour ago" are the same calendar day in every time zone a developer's
@@ -74,10 +75,12 @@ describe('SchedulePublishDialog', () => {
     });
 
     expect(screen.getByText(/non sia già passato|has not passed/)).toBeTruthy();
-    const submit = screen.getByRole('button', {
-      name: /^Programma$|^Schedule$/,
-    });
-    expect((submit as HTMLButtonElement).disabled).toBe(true);
+    const submit = instanceOf(
+      screen.getByRole('button', { name: /^Programma$|^Schedule$/ }),
+      HTMLButtonElement,
+      'the Schedule button',
+    );
+    expect(submit.disabled).toBe(true);
     fireEvent.click(submit);
     expect(onSchedule).not.toHaveBeenCalled();
   });
@@ -87,7 +90,9 @@ describe('SchedulePublishDialog', () => {
     const { onCancelSchedule, onOpenChange } = renderDialog({
       scheduledPublishAt: set.toISOString(),
     });
-    expect((field() as HTMLInputElement).value).toBe(fieldValue(set));
+    expect(instanceOf(field(), HTMLInputElement, 'the date field').value).toBe(
+      fieldValue(set),
+    );
 
     fireEvent.click(
       screen.getByRole('button', {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
+import { paginatedPageGroupsSchema } from '@kometio/api-contracts';
 import { STARTER_IDS, type StarterId } from '@kometio/shared-types';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
 import { CollectionsModule } from '../collections/collections.module';
@@ -89,12 +90,9 @@ describe('starting points (integration)', () => {
       .get('/page-groups')
       .query({ siteId, page: 1, pageSize: 100 })
       .expect(200);
-    return list.body.items as {
-      id: string;
-      parentId: string | null;
-      collectionId: string | null;
-      translations: { slug: string; locale: string; status: string }[];
-    }[];
+    // Through the contract the API answers by, so a list that no longer has
+    // the shape the editor reads fails here and not on a missing property.
+    return paginatedPageGroupsSchema.parse(list.body).items;
   }
 
   describe('who may', () => {

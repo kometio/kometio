@@ -134,7 +134,9 @@ export default defineConfig(({ mode }) => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['src/test-setup.ts'],
+    // The second one: nothing here reaches another machine (see
+    // @kometio/testing/no-network).
+    setupFiles: ['src/test-setup.ts', '@kometio/testing/no-network-setup'],
     // A test renders whole screens in jsdom: on an idle machine a few hundred
     // milliseconds, on the one running every suite of the workspace several
     // seconds. Five (the default) failed the slow ones for the load, not the
