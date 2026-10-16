@@ -1,0 +1,650 @@
+---
+import type { ThemeContentShellProps } from '@kometio/theme-runtime';
+
+/**
+ * Where the colour theme says what a page's own blocks look like beyond what a
+ * token can say: a hero set on the left under a black tag of mono capitals,
+ * boxes in a 3px rule with a hard shadow for everything that is pressed or
+ * read as a card, a list of pages as flat coloured cards with a big number, a
+ * marker under every heading, a measure for long text, square bullets.
+ *
+ * The same way `paper` and `night` do it (docs/adr/0139): the wrapper adds no
+ * box (`display: contents`), every selector begins at its own class so nothing
+ * leaves this theme, and each one names a class core keeps stable for this
+ * (`.kometio-hero`, `.kometio-page-grid__card`…). No block is copied; a copy of
+ * the list of pages is not possible at all for a theme (its pagination and its
+ * filter are the public site's own modules).
+ *
+ * The one thing here that no other theme does is paint past the column: a page
+ * that opens with its title is a band of the accent that runs to both edges of
+ * the window, with a rule under it. It is done with shadows as wide as the
+ * window and a clip that keeps them to the hero's own height, which takes no
+ * width from the page (a `100vw` box, or an absolute one pushed past the edges,
+ * would scroll it sideways: a clip does not stop a box from being scrolled to).
+ */
+export type Props = ThemeContentShellProps;
+---
+
+<div class="colour-content">
+	<slot />
+</div>
+
+<style>
+	.colour-content {
+		display: contents;
+	}
+
+	/* The page starts at the header's rule: a hero is a band, and the space the
+	   other themes put above their first block would be a stripe of ground
+	   between the rule and the band. A page that opens with something else
+	   keeps a room of its own. */
+	.colour-content :global(.kometio-root-block:first-child:not(:has(.kometio-hero))) {
+		margin-top: clamp(2rem, 1.2rem + 2.4vw, 3.5rem);
+	}
+
+	/* ---- Buttons: boxes with a shadow, pushed into the page ---------------- */
+
+	.colour-content :global(.kometio-button) {
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		box-shadow: 5px 5px 0 var(--border);
+		background: var(--kometio-override-bg, var(--colour-accent));
+		color: var(--kometio-override-text, var(--foreground));
+		font-weight: 800;
+	}
+
+	.colour-content :global(.kometio-button--md) {
+		padding: 0.9375rem 1.5rem;
+		font-size: 1.125rem;
+		line-height: normal;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-content :global(.kometio-button) {
+			box-shadow: 6px 6px 0 var(--border);
+		}
+
+		.colour-content :global(.kometio-button--md) {
+			padding: 1rem 1.875rem;
+			font-size: 1.1875rem;
+		}
+	}
+
+	/* The ones that are not the filled one are white, in the same rule. */
+	.colour-content :global(.kometio-button--outline),
+	.colour-content :global(.kometio-button--secondary) {
+		background: var(--colour-white);
+		color: var(--foreground);
+		border-color: var(--border);
+	}
+
+	/* A button that is a plain link stays one. */
+	.colour-content :global(.kometio-button--ghost),
+	.colour-content :global(.kometio-button--link) {
+		border-color: transparent;
+		box-shadow: none;
+		background: transparent;
+		color: var(--foreground);
+	}
+
+	.colour-content :global(.kometio-button--link) {
+		text-decoration-thickness: 3px;
+		text-decoration-color: var(--colour-accent);
+	}
+
+	.colour-content :global(.kometio-button:focus-visible) {
+		outline: var(--colour-rule) solid var(--border);
+		outline-offset: 3px;
+	}
+
+	/* Lifted under the pointer and pressed into the page when it is pressed:
+	   nothing of it moves for a reader who asked for less (docs/adr/0060). */
+	@media (prefers-reduced-motion: no-preference) {
+		:global(html:not([data-kometio-motion='off']))
+			.colour-content
+			:global(.kometio-button:not(.kometio-button--ghost):not(.kometio-button--link):hover) {
+			transform: translate(-2px, -2px);
+			box-shadow: 8px 8px 0 var(--border);
+		}
+
+		:global(html:not([data-kometio-motion='off']))
+			.colour-content
+			:global(.kometio-button:not(.kometio-button--ghost):not(.kometio-button--link):active) {
+			transform: translate(5px, 5px);
+			box-shadow: 0 0 0 var(--border);
+		}
+	}
+
+	/* ---- A form: boxes for the fields, the same button to send it ----------- */
+
+	.colour-content :global(.kometio-form),
+	.colour-content :global(.kometio-newsletter-signup) {
+		font-weight: 500;
+	}
+
+	.colour-content :global(.kometio-form label) {
+		font-weight: 700;
+	}
+
+	.colour-content :global(.kometio-form input:not([type='checkbox'])),
+	.colour-content :global(.kometio-form textarea),
+	.colour-content :global(.kometio-form select),
+	.colour-content :global(.kometio-newsletter-signup input) {
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		background: var(--colour-white);
+		color: var(--foreground);
+		font-size: 1.0625rem;
+		padding: 0.6875rem 0.875rem;
+	}
+
+	.colour-content :global(.kometio-form input[type='checkbox']) {
+		accent-color: var(--foreground);
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.colour-content :global(.kometio-form input:focus-visible),
+	.colour-content :global(.kometio-form textarea:focus-visible),
+	.colour-content :global(.kometio-form select:focus-visible),
+	.colour-content :global(.kometio-newsletter-signup input:focus-visible) {
+		outline: var(--colour-rule) solid var(--border);
+		outline-offset: 2px;
+		box-shadow: 5px 5px 0 var(--colour-lavender);
+	}
+
+	.colour-content :global(.kometio-form button),
+	.colour-content :global(.kometio-newsletter-signup button) {
+		padding: 0.9375rem 1.5rem;
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		box-shadow: 5px 5px 0 var(--border);
+		background: var(--colour-accent);
+		color: var(--foreground);
+		font-size: 1.125rem;
+		font-weight: 800;
+	}
+
+	.colour-content :global(.kometio-form__prev) {
+		background: var(--colour-white);
+		color: var(--foreground);
+	}
+
+	/* The captcha's box is a box of the theme's too: core sets the widget's
+	   colours from the theme, but the library derives its border from its own
+	   root, so the rule and the corners are said here. */
+	.colour-content :global(altcha-widget) {
+		--altcha-border-color: var(--border);
+		--altcha-border-width: var(--colour-rule);
+		--altcha-border-radius: 0;
+		--altcha-checkbox-border-color: var(--border);
+		--altcha-checkbox-border-width: var(--colour-rule);
+		--altcha-checkbox-border-radius: 0;
+		--altcha-checkbox-size: 1.5rem;
+	}
+
+	.colour-content :global(altcha-widget .altcha-main) {
+		box-shadow: 4px 4px 0 var(--border);
+		background: var(--colour-white);
+	}
+
+	.colour-content :global(.kometio-form__status),
+	.colour-content :global(.kometio-newsletter-signup__status) {
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		box-shadow: 4px 4px 0 var(--border);
+		padding: 0.875rem 1.125rem;
+		font-weight: 600;
+	}
+
+	/* ---- The hero: set on the left under a black tag ------------------------ */
+
+	.colour-content :global(.kometio-hero) {
+		position: relative;
+		margin-inline: 0;
+		max-width: var(--kometio-override-max-width, none);
+		align-items: var(--kometio-override-align, flex-start);
+		/* The words go where the hero is set: on the left unless somebody said
+		   otherwise (core's own default is the centre, which under a hero set on
+		   the left puts a centred title over a tag and buttons on the left). */
+		text-align: var(--kometio-override-align, start);
+		gap: var(--kometio-override-gap, clamp(1.5rem, 1.28rem + 0.899vw, 2rem));
+		padding-top: var(
+			--kometio-override-padding-y,
+			clamp(2.75rem, 1.54rem + 4.94vw, 5.5rem)
+		);
+		padding-bottom: var(
+			--kometio-override-padding-y,
+			clamp(3.25rem, 2.04rem + 4.94vw, 6rem)
+		);
+	}
+
+	/* The band and the rule under it, as wide as the window (see the note at
+	   the top): a shadow as wide as the window in the colour of the band, and
+	   the rule as a border whose image is let out to both edges. Neither is
+	   part of the page's width; a box that was would scroll it. */
+	.colour-content :global(.kometio-hero) {
+		--colour-band: var(--background);
+		border-bottom: var(--colour-rule) solid var(--border);
+		border-image: linear-gradient(var(--border), var(--border)) 0 0 3 0 /
+			0 0 var(--colour-rule) 0 / 0 100vmax 0 100vmax stretch;
+		box-shadow: 0 0 0 100vmax var(--colour-band);
+		clip-path: inset(0 -100vmax);
+	}
+
+	/* The tag: ink with the ground's own colour on it, in mono capitals. */
+	.colour-content :global(.kometio-hero__eyebrow) {
+		align-self: var(--kometio-override-align, flex-start);
+		margin: 0;
+		padding: 0.3125rem 0.75rem;
+		background: var(--foreground);
+		color: var(--background);
+		font-family: var(--kometio-code-font);
+		font-size: clamp(0.8125rem, 0.7rem + 0.28vw, 0.875rem);
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		line-height: normal;
+		text-transform: uppercase;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-content :global(.kometio-hero__eyebrow) {
+			padding: 0.375rem 0.875rem;
+		}
+	}
+
+	.colour-content :global(.kometio-hero h1) {
+		margin: 0;
+		font-size: var(--kometio-h1-size);
+		font-weight: 900;
+		font-stretch: 112%;
+		line-height: 1;
+		letter-spacing: -0.03em;
+		text-transform: uppercase;
+		max-width: 60rem;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-content :global(.kometio-hero h1) {
+			line-height: 0.98;
+		}
+	}
+
+	.colour-content :global(.kometio-hero .kometio-rich-text) {
+		margin: 0;
+		max-width: 35rem;
+		font-size: clamp(1.1875rem, 1.05rem + 0.56vw, 1.5rem);
+		font-weight: 500;
+		line-height: 1.45;
+		color: var(--foreground);
+	}
+
+	.colour-content :global(.kometio-hero__content) {
+		flex-direction: column;
+		align-items: stretch;
+		align-self: stretch;
+		gap: 1rem;
+		margin-top: clamp(0.25rem, 0rem + 0.9vw, 0.75rem);
+	}
+
+	.colour-content :global(.kometio-hero__content .kometio-button) {
+		justify-content: center;
+	}
+
+	@container (min-width: 32rem) {
+		.colour-content :global(.kometio-hero__content) {
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			align-self: var(--kometio-override-align, flex-start);
+			justify-content: var(--kometio-override-align, flex-start);
+			gap: 1.25rem;
+		}
+	}
+
+	/* A page that opens with its title and nothing else is a band of the accent
+	   that runs to both edges of the window, with its rule under it, and a
+	   smaller title: the design draws one at 76px where the landing is 100. */
+	.colour-content :global(.kometio-hero:not(:has(.kometio-hero__content))) {
+		--colour-band: var(--kometio-override-bg, var(--colour-accent));
+		background: var(--colour-band);
+		gap: var(--kometio-override-gap, clamp(1.5rem, 1.35rem + 0.5vw, 1.75rem));
+		padding-top: var(
+			--kometio-override-padding-y,
+			clamp(2.75rem, 1.98rem + 3.15vw, 4.5rem)
+		);
+		padding-bottom: var(
+			--kometio-override-padding-y,
+			clamp(2.75rem, 1.98rem + 3.15vw, 4.5rem)
+		);
+	}
+
+	.colour-content :global(.kometio-hero:not(:has(.kometio-hero__content)) h1) {
+		font-size: clamp(2.375rem, 1.334rem + 4.27vw, 4.75rem);
+		font-stretch: 110%;
+		line-height: 1;
+		max-width: 62.5rem;
+	}
+
+	.colour-content
+		:global(.kometio-hero:not(:has(.kometio-hero__content)) .kometio-rich-text) {
+		max-width: 40rem;
+	}
+
+	/* ---- Headings and text ---------------------------------------------- */
+
+	/* Every heading of the page's own is set wide, in capitals, with a marker
+	   laid under its words: the colour changes from one to the next, as drawn. */
+	.colour-content :global(.kometio-heading) {
+		width: fit-content;
+		max-width: 100%;
+		font-weight: 900;
+		font-stretch: 108%;
+		letter-spacing: -0.02em;
+		line-height: normal;
+		text-transform: uppercase;
+		box-shadow: inset 0 -0.34em 0 var(--colour-mint);
+	}
+
+	.colour-content :global(.kometio-root-block:nth-child(6n + 5) > .kometio-heading) {
+		box-shadow: inset 0 -0.34em 0 var(--colour-lavender);
+	}
+
+	.colour-content :global(.kometio-root-block:nth-child(6n + 1) > .kometio-heading) {
+		box-shadow: inset 0 -0.34em 0 var(--colour-yellow);
+	}
+
+	/* The title of a list of pages, which is a section of the site and not a
+	   section of a text, is larger and has no marker: the design's 48px where
+	   the others are 36. */
+	.colour-content
+		:global(.kometio-root-block:has(> .kometio-heading):has(+ .kometio-root-block .kometio-page-grid) > .kometio-heading) {
+		font-size: clamp(2.125rem, 1.742rem + 1.573vw, 3rem);
+		font-stretch: 108%;
+		/* Plain, as drawn: the marker is for the headings of a text. */
+		box-shadow: none;
+	}
+
+	/* ...and the list under it starts 36px below it (28px on a phone), further
+	   than a text would. */
+	.colour-content
+		:global(.kometio-root-block:has(> .kometio-heading):has(+ .kometio-root-block .kometio-page-grid)) {
+		margin-bottom: clamp(1.75rem, 1.53rem + 0.9vw, 2.25rem);
+	}
+
+	.colour-content :global(.kometio-root-block > .kometio-text),
+	.colour-content :global(.kometio-root-block > .kometio-list) {
+		max-width: 47.5rem;
+		font-size: clamp(1.125rem, 1.06rem + 0.3vw, 1.25rem);
+		font-weight: 500;
+		line-height: 1.65;
+		color: var(--foreground);
+	}
+
+	/* A link in a text is underlined in the accent, and lit under the pointer. */
+	.colour-content :global(.kometio-rich-text a) {
+		text-decoration-line: underline;
+		text-decoration-thickness: 3px;
+		text-decoration-color: var(--colour-accent);
+		text-underline-offset: 3px;
+	}
+
+	.colour-content :global(.kometio-rich-text a:hover),
+	.colour-content :global(.kometio-rich-text a:focus-visible) {
+		background: var(--colour-accent);
+	}
+
+	/* A bullet is a small square of the accent in the rule, as drawn. */
+	.colour-content :global(.kometio-list--bullet) {
+		list-style: none;
+		padding-inline-start: 0;
+		gap: 0.875rem;
+	}
+
+	.colour-content :global(.kometio-list--bullet .kometio-list-item) {
+		display: grid;
+		grid-template-columns: 1.125rem minmax(0, 1fr);
+		column-gap: 1rem;
+		align-items: start;
+	}
+
+	.colour-content :global(.kometio-list--bullet .kometio-list-item)::before {
+		content: '';
+		width: 1.125rem;
+		height: 1.125rem;
+		margin-top: 0.4375rem;
+		border: var(--colour-rule) solid var(--border);
+		background: var(--colour-accent);
+	}
+
+	/* A note: a flat box of the state's colour in the rule, with the shadow. */
+	.colour-content :global(.kometio-callout) {
+		border: var(--colour-rule) solid var(--border);
+		border-left-width: var(--colour-rule);
+		border-radius: 0;
+		box-shadow: 6px 6px 0 var(--border);
+		padding: 1.25rem 1.5rem;
+		font-size: 1.125rem;
+		font-weight: 600;
+		line-height: 1.5;
+		max-width: 47.5rem;
+	}
+
+	/* ---- The other boxes the site may hold: in the rule, with the shadow ------ */
+
+	/* A review and a plan of a price list are the two blocks that draw a frame
+	   of their own, thin and with soft corners. The rest (a card, a banner, a
+	   section) draw none until somebody asks, and are asked for in the editor. */
+	.colour-content :global(.kometio-testimonial),
+	.colour-content :global(.kometio-pricing-plan) {
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		background: var(--colour-white);
+		box-shadow: 6px 6px 0 var(--border);
+	}
+
+	/* A container that has a colour of its own (the call to action under a page's
+	   text is one) is a box of the same kind; one with none is layout and is
+	   left alone. */
+	.colour-content :global(.kometio-container[style*='--kometio-container-bg']) {
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		box-shadow: 6px 6px 0 var(--border);
+	}
+
+	.colour-content :global(.kometio-pricing-plan--highlighted) {
+		background: var(--colour-yellow);
+	}
+
+	.colour-content :global(.kometio-banner__button),
+	.colour-content :global(.kometio-pricing-plan__button) {
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		background: var(--colour-accent);
+		color: var(--foreground);
+		box-shadow: 4px 4px 0 var(--border);
+		font-weight: 800;
+	}
+
+	/* ---- Code: a box in the rule ------------------------------------------- */
+
+	.colour-content :global(.kometio-code) {
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		box-shadow: 6px 6px 0 var(--border);
+	}
+
+	/* ---- A list of pages: flat coloured cards with a big number ------------- */
+
+	.colour-content :global(.kometio-page-grid--cards),
+	.colour-content :global(.kometio-page-grid--grid) {
+		/* Three across a 1280px window, as drawn, one on a phone. */
+		grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr));
+		gap: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem);
+		counter-reset: colour-row var(--kometio-page-grid-offset, 0);
+	}
+
+	.colour-content :global(.kometio-page-grid--cards .kometio-page-grid__item),
+	.colour-content :global(.kometio-page-grid--grid .kometio-page-grid__item) {
+		counter-increment: colour-row;
+		display: flex;
+	}
+
+	.colour-content :global(.kometio-page-grid--cards .kometio-page-grid__card),
+	.colour-content :global(.kometio-page-grid--grid .kometio-page-grid__card) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		gap: 0.75rem;
+		padding: 1.25rem;
+		border: var(--colour-rule) solid var(--border);
+		background: var(--colour-accent);
+		box-shadow: 6px 6px 0 var(--border);
+		color: var(--foreground);
+		font-weight: 500;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-content :global(.kometio-page-grid--cards .kometio-page-grid__card),
+		.colour-content :global(.kometio-page-grid--grid .kometio-page-grid__card) {
+			gap: 1rem;
+			padding: 1.75rem;
+			box-shadow: 8px 8px 0 var(--border);
+		}
+	}
+
+	/* The three colours of the design, one after the other. */
+	.colour-content
+		:global(.kometio-page-grid__item:nth-child(3n + 2) .kometio-page-grid__card) {
+		background: var(--colour-mint);
+	}
+
+	.colour-content
+		:global(.kometio-page-grid__item:nth-child(3n) .kometio-page-grid__card) {
+		background: var(--colour-lavender);
+	}
+
+	/* The number, first and large. */
+	.colour-content :global(.kometio-page-grid__card)::before {
+		content: counter(colour-row, decimal-leading-zero);
+		font-size: clamp(4rem, 3.34rem + 2.697vw, 5.5rem);
+		font-weight: 900;
+		font-stretch: 112%;
+		line-height: 0.9;
+		letter-spacing: -0.04em;
+	}
+
+	/* A picture, when somebody gave one, runs the card's width in the rule. */
+	.colour-content :global(.kometio-page-grid__image) {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		border: var(--colour-rule) solid var(--border);
+		border-radius: 0;
+		background: var(--colour-white);
+	}
+
+	.colour-content :global(.kometio-page-grid__title) {
+		font-size: clamp(1.5rem, 1.38rem + 0.5vw, 1.75rem);
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.01em;
+	}
+
+	.colour-content :global(.kometio-page-grid__excerpt) {
+		color: var(--foreground);
+		font-size: clamp(1rem, 0.96rem + 0.15vw, 1.0625rem);
+		font-weight: 500;
+		line-height: 1.5;
+	}
+
+	/* The date is a chip at the foot of the card, in mono. */
+	.colour-content :global(.kometio-page-grid__date) {
+		order: 99;
+		align-self: flex-start;
+		padding: 0.25rem 0.625rem;
+		border: 2px solid var(--border);
+		background: var(--colour-white);
+		color: var(--foreground);
+		font-family: var(--kometio-code-font);
+		font-size: clamp(0.75rem, 0.7rem + 0.15vw, 0.8125rem);
+		line-height: normal;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-content :global(.kometio-page-grid__date) {
+			margin-top: 0.25rem;
+		}
+	}
+
+	/* Under the pointer the card rises and its shadow grows with it (core
+	   moves it by --kometio-motion-lift); the title does not underline. */
+	.colour-content :global(.kometio-page-grid__card:hover),
+	.colour-content :global(.kometio-page-grid__card:focus-visible) {
+		box-shadow: 12px 12px 0 var(--border);
+	}
+
+	.colour-content :global(.kometio-page-grid__card:focus-visible) {
+		outline: var(--colour-rule) solid var(--border);
+		outline-offset: 4px;
+	}
+
+	.colour-content
+		:global(.kometio-page-grid__card:hover .kometio-page-grid__title),
+	.colour-content
+		:global(.kometio-page-grid__card:focus-visible .kometio-page-grid__title) {
+		text-decoration: none;
+	}
+
+	/* The plain list of links: a rule between them. */
+	.colour-content :global(.kometio-page-grid--list) {
+		display: block;
+	}
+
+	.colour-content :global(.kometio-page-grid--list .kometio-page-grid__item) {
+		border-top: var(--colour-rule) solid var(--border);
+	}
+
+	.colour-content :global(.kometio-page-grid--list .kometio-page-grid__item:last-child) {
+		border-bottom: var(--colour-rule) solid var(--border);
+	}
+
+	.colour-content :global(.kometio-page-grid__link) {
+		display: block;
+		padding-block: 0.875rem;
+		color: var(--foreground);
+		font-size: var(--kometio-h4-size);
+		font-weight: 800;
+	}
+
+	.colour-content :global(.kometio-page-grid__link:hover),
+	.colour-content :global(.kometio-page-grid__link:focus-visible) {
+		background: var(--colour-yellow);
+		text-decoration: none;
+	}
+
+	/* The pager: boxes in the rule, the position in mono. */
+	.colour-content :global(a.kometio-page-grid__pager-link) {
+		justify-self: start;
+		padding: 0.5rem 1.125rem;
+		border: var(--colour-rule) solid var(--border);
+		background: var(--colour-white);
+		color: var(--foreground);
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.colour-content :global(a.kometio-page-grid__pager-link:last-child) {
+		justify-self: end;
+	}
+
+	.colour-content :global(a.kometio-page-grid__pager-link:hover),
+	.colour-content :global(a.kometio-page-grid__pager-link:focus-visible) {
+		background: var(--colour-yellow);
+	}
+
+	.colour-content :global(.kometio-page-grid__pager-position) {
+		font-family: var(--kometio-code-font);
+		font-size: 0.875rem;
+		color: var(--foreground);
+	}
+</style>

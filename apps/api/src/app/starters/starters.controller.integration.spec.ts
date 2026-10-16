@@ -132,7 +132,7 @@ describe('starting points (integration)', () => {
         fallback: false,
         starters: [
           { id: 'studio', themeName: 'classic', themeAvailable: true },
-          { id: 'portfolio', themeName: 'classic', themeAvailable: true },
+          { id: 'portfolio', themeName: 'colour', themeAvailable: true },
           { id: 'blog', themeName: 'paper', themeAvailable: true },
         ],
       });
@@ -209,6 +209,18 @@ describe('starting points (integration)', () => {
       const site = await admin.get(`/sites/${siteId}`).expect(200);
 
       expect(site.body.themeName).toBe('paper');
+    });
+
+    it('puts a portfolio on colour, the theme it was drawn for', async () => {
+      const { siteId } = await aNewSite();
+      await admin
+        .post(`/sites/${siteId}/starters`)
+        .send({ starterId: 'portfolio' })
+        .expect(201);
+
+      const site = await admin.get(`/sites/${siteId}`).expect(200);
+
+      expect(site.body.themeName).toBe('colour');
     });
 
     it('refuses a second one, and leaves what the first made as it was', async () => {
@@ -391,7 +403,7 @@ describe('starting points in a deployment without the blog’s theme (integratio
 
     expect(offer.body.starters).toEqual([
       { id: 'studio', themeName: 'classic', themeAvailable: true },
-      { id: 'portfolio', themeName: 'classic', themeAvailable: true },
+      { id: 'portfolio', themeName: 'colour', themeAvailable: false },
       { id: 'blog', themeName: 'paper', themeAvailable: false },
     ]);
   });

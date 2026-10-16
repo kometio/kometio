@@ -1,0 +1,127 @@
+/**
+ * "colour" — a loud, flat theme for makers who want their work to be seen:
+ * a cream ground, ink for every line and shadow, three flat colours to put
+ * things on, one accent, Archivo set wide and heavy, and DM Mono for the
+ * small labels (docs/adr/0139).
+ *
+ * Drawn from the design called **Colore**; the values are that design's, as
+ * measured on it: the ground `#FFF6DC`, the ink `#111111`, the accent
+ * `#FF6B57` (its one tweak: it is `--secondary`, so a site's own secondary
+ * colour in Style takes its place), and three colours to put things on, a
+ * yellow `#FFD93D`, a mint `#6EE7B7` and a lavender `#C4B5FD`.
+ *
+ * The ink is `--primary` and the accent is not, as in `paper` (docs/adr/0139):
+ * core sets a link, a menu entry and the page's own small controls in
+ * `--primary`, on the ground, and the accent on the ground is 2.6:1 — a colour
+ * to fill things with, not one to read.
+ *
+ * Tokens here, and the few things a token cannot say in `regions/`. A theme
+ * cannot follow the visitor's light/dark preference (a media query in this
+ * file never reaches the page): this one is cream and ink, and says so in
+ * every token, the four states included.
+ */
+
+:root {
+  /* Type. Archivo for everything, in its width axis too: headlines are set
+     wide (`font-stretch`, in the content shell), heavy and close, in capitals;
+     DM Mono for the small labels (a date, a number, a tag). Both are files of
+     this theme (fonts.css). */
+  --font-sans-value: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --kometio-heading-font:
+    'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --kometio-code-font:
+    'DM Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --kometio-heading-weight: 900;
+  --kometio-h1-weight: 900;
+  --kometio-heading-tracking: -0.03em;
+  --kometio-heading-leading: 1;
+
+  /* The scale is the design's: 46px on a phone, 100px from a 1280px window,
+     one line between them (6.07vw is the slope of 46 → 100 over 390 → 1280). */
+  --kometio-h1-size: clamp(2.875rem, 1.396rem + 6.07vw, 6.25rem);
+  --kometio-h2-size: clamp(1.875rem, 1.6rem + 1.1vw, 2.25rem);
+  --kometio-h3-size: clamp(1.5rem, 1.38rem + 0.5vw, 1.75rem);
+  --kometio-h4-size: 1.25rem;
+  --kometio-h5-size: 1.125rem;
+  --kometio-h6-size: 1rem;
+
+  /* Colour. Contrast, measured: ink 17.5:1 on the ground and 18.9:1 on white,
+     the muted ink 9.0:1 on the ground, the ink on the accent 6.7:1, on the
+     yellow 13.7:1, on the mint 12.4:1, on the lavender 10.2:1, on the orange
+     10.6:1 and on the red 8.3:1. The filled button is the accent with ink on
+     it, as drawn (in the content shell: `--primary` is the ink). */
+  --background: #fff6dc;
+  --foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #fff6dc;
+  --secondary: #ff6b57;
+  --secondary-foreground: #111111;
+  --muted: #ffffff;
+  --muted-foreground: #4a4436;
+  --border: #111111;
+  --link: #111111;
+  --link-hover: #111111;
+  /* This theme's own names, for its regions: the accent (the site's secondary
+     colour), the three colours things are put on, and the white of what is
+     pressed or written in. */
+  --colour-accent: var(--secondary);
+  --colour-yellow: #ffd93d;
+  --colour-mint: #6ee7b7;
+  --colour-lavender: #c4b5fd;
+  --colour-white: #ffffff;
+  --colour-rule: 3px;
+
+  /* Shape and space. No radius at all: the shape is the 3px rule and the hard
+     shadow. A column and a gutter that grow with the window, the design's
+     48px at 1280 and 16px on a phone. */
+  --radius: 0;
+  --kometio-content-width: 80rem;
+  --kometio-content-width-wide: 90rem;
+  --kometio-content-gutter: clamp(1rem, 0.1225rem + 3.6vw, 3rem);
+  --kometio-shell-width: var(--kometio-content-width);
+  /* None above the first block: a page opens with a band that starts at the
+     header's rule (the content shell gives a page that opens otherwise its own
+     room). */
+  --kometio-page-start-gap: 0;
+  --kometio-block-gap: clamp(3rem, 2rem + 4vw, 6rem);
+
+  /* The four states, drawn flat: the tone is the ink that frames them, the
+     wash is a colour of the theme's, and the text on it is the ink. A note is
+     the yellow, as drawn; a success the mint; a warning an orange; an error a
+     red the accent is not. */
+  --kometio-info: #111111;
+  --kometio-info-text: #111111;
+  --kometio-info-surface: #ffd93d;
+  --kometio-success: #111111;
+  --kometio-success-text: #111111;
+  --kometio-success-surface: #6ee7b7;
+  --kometio-warning: #111111;
+  --kometio-warning-text: #111111;
+  --kometio-warning-surface: #ffb347;
+  --kometio-error: #111111;
+  --kometio-error-text: #111111;
+  --kometio-error-surface: #ff8a8a;
+
+  /* Shadows: hard, in ink, and never blurred. What stands on the page casts
+     the same shadow whatever it is; depth is how far it is offset. */
+  --shadow-xs: 2px 2px 0 0 #111111;
+  --shadow-sm: 3px 3px 0 0 #111111;
+  --shadow-md: 4px 4px 0 0 #111111;
+  --shadow-lg: 6px 6px 0 0 #111111;
+  --shadow-xl: 8px 8px 0 0 #111111;
+  --shadow-2xl: 12px 12px 0 0 #111111;
+  --shadow-inner: inset 0 0 0 0 transparent;
+
+  /* Motion (docs/adr/0141): short and square. Things step into place one
+     after the other with a little overshoot, a card rises under the pointer
+     (the shadow grows with it, in the content shell) and a button is pushed
+     into the page. */
+  --kometio-motion-duration-fast: 120ms;
+  --kometio-motion-duration-slow: 500ms;
+  --kometio-motion-ease: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --kometio-motion-reveal: kometio-slide-up;
+  --kometio-motion-distance: 14px;
+  --kometio-motion-stagger: 70ms;
+  --kometio-motion-lift: -4px;
+  --kometio-motion-press: 1;
+}

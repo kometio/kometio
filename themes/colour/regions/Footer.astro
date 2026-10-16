@@ -1,0 +1,105 @@
+---
+import type { ThemeFooterProps } from '@kometio/theme-runtime';
+
+/**
+ * The colour theme's footer: a yellow band under a 3px rule, the line of
+ * rights at one end and the links as white boxes at the other. What the site
+ * put there is two blocks (its links, its line); the region turns the pair end
+ * to end, with the links first on a phone, as drawn.
+ */
+export type Props = ThemeFooterProps;
+
+const { class: className } = Astro.props;
+---
+
+<footer class:list={['colour-footer', 'kometio-shell-inset', className]}>
+	<slot />
+</footer>
+
+<style>
+	.colour-footer {
+		border-top: var(--colour-rule) solid var(--border);
+		background: var(--colour-yellow);
+		/* 28px above and 36 below on a phone, 36 and 44 from a 1280px window. */
+		padding-top: clamp(1.75rem, 1.2rem + 1.8vw, 2.25rem);
+		padding-bottom: clamp(2.25rem, 1.7rem + 1.8vw, 2.75rem);
+		color: var(--foreground);
+	}
+
+	/* The line of rights, then the links, as drawn: the two blocks side by
+	   side where there is room, with the line first, and the links above the
+	   line on a phone (the order the site put them in). Both take half the
+	   width because a Nav measures itself (it is a container) and has none of
+	   its own to size by. */
+	.colour-footer > :global(div) {
+		gap: 1.125rem;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-footer > :global(div) {
+			flex-direction: row-reverse;
+			align-items: center;
+			justify-content: space-between;
+			gap: 2rem;
+		}
+
+		.colour-footer > :global(div > *) {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+
+		.colour-footer :global(.kometio-nav) {
+			justify-content: flex-end;
+		}
+	}
+
+	.colour-footer :global(.kometio-nav) {
+		gap: 0.625rem;
+		flex-wrap: wrap;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-footer :global(.kometio-nav) {
+			gap: 0.875rem;
+		}
+	}
+
+	.colour-footer :global(.kometio-nav-link) {
+		padding: 0.5rem 0.875rem;
+		border: var(--colour-rule) solid var(--border);
+		background: var(--colour-white);
+		color: var(--foreground);
+		font-size: 0.9375rem;
+		font-weight: 700;
+		line-height: normal;
+		text-decoration: none;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-footer :global(.kometio-nav-link) {
+			padding: 0.5rem 1.125rem;
+			font-size: 1rem;
+		}
+	}
+
+	.colour-footer :global(.kometio-nav-link:hover),
+	.colour-footer :global(.kometio-nav-link:focus-visible) {
+		background: var(--colour-mint);
+	}
+
+	.colour-footer :global(.kometio-nav-link[aria-current]) {
+		background: var(--colour-mint);
+	}
+
+	.colour-footer :global(.kometio-text) {
+		font-size: 0.9375rem;
+		font-weight: 600;
+		line-height: normal;
+	}
+
+	@media (min-width: 48rem) {
+		.colour-footer :global(.kometio-text) {
+			font-size: 1rem;
+		}
+	}
+</style>

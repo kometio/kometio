@@ -1,7 +1,8 @@
 # 0139 — Three editorial themes, one at a time: paper, night and colour
 
-**Status**: Accepted — 2026-10-15. `paper` is in; `night` and `colour` follow
-in their own pull requests and amend the table at the end.
+**Status**: Accepted — 2026-10-15. `paper` (#120) and `night` (#121) are in;
+`colour` is the last, in its own pull request, which amends the table at the end
+and adds what is particular to it below.
 
 ## Context
 
@@ -80,8 +81,55 @@ ContentShell.astro`, which wraps a page's blocks in a box that is not there
 - axe reports nothing and the page does not scroll sideways on the eight pages of
   block samples, the starter's pages and the code sample, at 1280 and 390.
 
-| Theme    | Character | Starter   | State                                  |
-| -------- | --------- | --------- | -------------------------------------- |
-| `paper`  | Carta     | Blog      | Approved, in review (PR #120)          |
-| `night`  | Notte     | —         | In this pull request (from Style only) |
-| `colour` | Colore    | Portfolio | After                                  |
+## `colour`
+
+Flat cream, ink for every line and shadow, three flat colours to put things on
+and one accent, Archivo set wide and heavy in capitals, DM Mono for the small
+labels. The values are the design's, measured on it (the build is checked
+against the design's own page at 1280 and 390: the header, the name, the menu,
+the tag, the headline, the cards, the footer come out at the same sizes, to the
+pixel).
+
+- **The ink is `--primary`; the accent is the site's secondary colour.** The same
+  reason as `paper`'s, stronger: core sets a link, a menu entry and the pager in
+  `--primary`, on the ground, and the design's accent on its cream is 2.6:1 —
+  which a page nobody styled (the one that is not found, the search) showed at
+  once, in axe. So the accent is `--secondary` (`--colour-accent` in the theme),
+  which a site can change in Style, and it fills what is pressed or marked and
+  is never a colour to read in.
+- **A page that opens with its title opens with a band.** The accent runs to
+  both edges of the window with a 3px rule under it, and the landing's hero has
+  the rule alone. It is drawn with a shadow as wide as the window, a border whose
+  image is let out to both sides and a clip; none of them is part of the page's
+  width, which a `100vw` box or an absolute one pushed past the edges is (the
+  first version scrolled the page sideways by 1,232px). `--kometio-page-start-gap`
+  is zero so that the band starts at the header's rule.
+- **Every heading of a text is wide, in capitals, with a marker laid under it**;
+  its colour goes round the three of the design. The title of a list of pages is
+  larger and plain, as drawn.
+- **A hero is set on the left unless somebody says otherwise.** Core's own
+  default is the centre, which under a hero set on the left put a centred title
+  over a tag and buttons on the left (the studio starter, which says nothing,
+  showed it on every theme of this family). The three themes now say `start`
+  where the site says nothing; `contentAlign` still wins.
+- **The four states are flat colours with the ink round them**: the note is the
+  yellow, as drawn; success the mint; a warning an orange; an error a red the
+  accent is not.
+- **The menu on a phone** is a mint box in the rule and its panel a white one
+  with the same shadow; not in the design, drawn from its parts.
+- **Left out on purpose:** the phrase of the headline set in the accent and the
+  rotated sticker (a title is plain text, as for `paper`), the "Nota ·" label of
+  the note (a word the theme would have to translate), the date under the title
+  of a project page (a page has none), and the link beside the list's title
+  (the starter puts its button below). The vertical rhythm of a long text is
+  core's and differs from the design's by a few pixels.
+- **The portfolio starts on `colour`.** The studio **stays on `classic`**: it is
+  a centred, business-like site, and the three themes of this family are drawn
+  for a hero on the left and a page that begins with its title. `night` and
+  `colour` stay a choice in Style for it.
+
+| Theme    | Character | Starter   | State                         |
+| -------- | --------- | --------- | ----------------------------- |
+| `paper`  | Carta     | Blog      | In (PR #120)                  |
+| `night`  | Notte     | —         | In (PR #121), from Style only |
+| `colour` | Colore    | Portfolio | In this pull request          |

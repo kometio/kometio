@@ -74,6 +74,10 @@ export type Props = ThemeContentShellProps;
 
 	.night-content :global(.kometio-hero) {
 		margin-inline: 0;
+		/* The words go where the hero is set: on the left unless somebody said
+		   otherwise (core's own default is the centre, which under a hero set on
+		   the left puts a centred title over a tag and buttons on the left). */
+		text-align: var(--kometio-override-align, start);
 		max-width: var(--kometio-override-max-width, none);
 		gap: var(--kometio-override-gap, 0);
 		/* From the header to the line of capitals: the design's 56px on a phone
@@ -94,6 +98,7 @@ export type Props = ThemeContentShellProps;
 	.night-content :global(.kometio-hero__eyebrow) {
 		display: flex;
 		align-items: center;
+		justify-content: var(--kometio-override-align, flex-start);
 		gap: 0.625rem;
 		margin: 0 0 clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
 		font-family: var(--kometio-code-font);
@@ -155,7 +160,8 @@ export type Props = ThemeContentShellProps;
 			flex-direction: row;
 			flex-wrap: wrap;
 			align-items: center;
-			align-self: flex-start;
+			align-self: var(--kometio-override-align, flex-start);
+			justify-content: var(--kometio-override-align, flex-start);
 			gap: 0.75rem;
 		}
 	}
