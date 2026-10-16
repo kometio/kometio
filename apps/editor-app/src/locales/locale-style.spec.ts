@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 /**
  * docs/adr/0140: the typography and the words the texts of the editor and of
@@ -51,44 +52,29 @@ function textsOf(language: Language): Text[] {
 /** Code, not prose: what a person types or a browser reads, so its quotes and dots are the code's. */
 const IS_CODE = /^<script>\.\.\.<\/script>$/;
 
-const TYPOGRAPHY: [string, RegExp][] = [
-  ['a straight apostrophe (use ’)', /'/],
-  ['a straight double quote (use «…» in Italian, “…” in English)', /"/],
-  ['three dots (use …)', /\.\.\./],
-];
+const ruleSchema = z.object({
+  name: z.string(),
+  pattern: z.string(),
+  flags: z.string(),
+});
+type Rule = z.infer<typeof ruleSchema>;
 
-const WORDS: Record<Language, [string, RegExp][]> = {
-  it: [
-    ['bottone (use pulsante)', /\bbotton[ei]\b/i],
-    ['mail server (use server di posta)', /\bmail server\b/i],
-    [
-      'pagina genitore or madre (use pagina superiore)',
-      /\bpagina (genitore|madre)\b/i,
-    ],
-    ['riusabile (a shared section is a sezione condivisa)', /\briusabil/i],
-    [
-      'spegnere or accendere (use disattivare, attivare)',
-      /\b(spegn\w*|accend\w*|riaccend\w*)\b/i,
-    ],
-    [
-      'cancellare for delete (use eliminare)',
-      /\bcancell(a|are|ato|ata|ati|ate|andola|ale|erà|eranno)\b(?! data)/i,
-    ],
-    ['opzionale (use facoltativo)', /\bopzional/i],
-    ['step (use passaggio)', /\bstep\b/i],
-    [
-      'a product that speaks as io (Sto…, Non sono riuscito…)',
-      /\b(Sto \w+|Non sono riuscit\w)\b/,
-    ],
-    ['definitivamente (use per sempre)', /\bdefinitivamente\b/i],
-  ],
-  en: [
-    [
-      'British spelling (colour, centre, favourite, cancelled)',
-      /colour|centre|favour|cancelled/i,
-    ],
-  ],
-};
+const RULES = z
+  .object({
+    typography: z.array(ruleSchema),
+    words: z.object({ it: z.array(ruleSchema), en: z.array(ruleSchema) }),
+  })
+  .parse(
+    JSON.parse(
+      readFileSync(
+        join(REPOSITORY, 'tools', 'locale-style-rules.json'),
+        'utf8',
+      ),
+    ),
+  );
+
+const compiled = (rules: Rule[]): [string, RegExp][] =>
+  rules.map(({ name, pattern, flags }) => [name, new RegExp(pattern, flags)]);
 
 describe.each<Language>(['it', 'en'])('the %s texts', (language) => {
   const texts = textsOf(language).filter(({ text }) => !IS_CODE.test(text));
@@ -97,11 +83,14 @@ describe.each<Language>(['it', 'en'])('the %s texts', (language) => {
     expect(texts.length).toBeGreaterThan(100);
   });
 
-  it.each([...TYPOGRAPHY, ...WORDS[language]])('have no %s', (_, pattern) => {
-    const offenders = texts
-      .filter(({ text }) => pattern.test(text))
-      .map(({ where, text }) => `${where} — ${text}`);
+  it.each(compiled([...RULES.typography, ...RULES.words[language]]))(
+    'have no %s',
+    (_, pattern) => {
+      const offenders = texts
+        .filter(({ text }) => pattern.test(text))
+        .map(({ where, text }) => `${where} — ${text}`);
 
-    expect(offenders).toEqual([]);
-  });
+      expect(offenders).toEqual([]);
+    },
+  );
 });

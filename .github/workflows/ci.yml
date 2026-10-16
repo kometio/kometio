@@ -244,6 +244,11 @@ jobs:
         env:
           POSTGRES_HOST: localhost
 
+      # What reads the documentation site and says what is wrong with its
+      # pages (docs/writing-user-docs.md), checked on pages made up here. It
+      # is outside every project, so no Nx target runs it.
+      - run: pnpm exec tsx --test tools/check-docs-site.test.mts
+
   # The browser suite (apps/e2e, see docs/development.md "End-to-end
   # tests"): the API, the editor and the public site built and started for
   # real against a fresh database and Mailpit, then driven by Playwright.

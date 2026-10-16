@@ -1,0 +1,69 @@
+{
+  "comment": "What docs/adr/0140 forbids, as data: read by apps/editor-app/src/locales/locale-style.spec.ts (the editor's and the public site's own texts) and by tools/check-docs-site.mts (the documentation site). A rule is a name that says what to use instead, a pattern and its flags.",
+  "typography": [
+    { "name": "a straight apostrophe (use ’)", "pattern": "'", "flags": "" },
+    {
+      "name": "a straight double quote (use «…» in Italian, “…” in English)",
+      "pattern": "\"",
+      "flags": ""
+    },
+    { "name": "three dots (use …)", "pattern": "\\.\\.\\.", "flags": "" }
+  ],
+  "words": {
+    "it": [
+      {
+        "name": "bottone (use pulsante)",
+        "pattern": "\\bbotton[ei]\\b",
+        "flags": "i"
+      },
+      {
+        "name": "mail server (use server di posta)",
+        "pattern": "\\bmail server\\b",
+        "flags": "i"
+      },
+      {
+        "name": "pagina genitore or madre (use pagina superiore)",
+        "pattern": "\\bpagina (genitore|madre)\\b",
+        "flags": "i"
+      },
+      {
+        "name": "riusabile (a shared section is a sezione condivisa)",
+        "pattern": "\\briusabil",
+        "flags": "i"
+      },
+      {
+        "name": "spegnere or accendere (use disattivare, attivare)",
+        "pattern": "\\b(spegn\\w*|accend\\w*|riaccend\\w*)\\b",
+        "flags": "i"
+      },
+      {
+        "name": "cancellare for delete (use eliminare)",
+        "pattern": "\\bcancell(a|are|ato|ata|ati|ate|andola|ale|erà|eranno)\\b(?! data)",
+        "flags": "i"
+      },
+      {
+        "name": "opzionale (use facoltativo)",
+        "pattern": "\\bopzional",
+        "flags": "i"
+      },
+      { "name": "step (use passaggio)", "pattern": "\\bstep\\b", "flags": "i" },
+      {
+        "name": "a product that speaks as io (Sto…, Non sono riuscito…)",
+        "pattern": "\\b(Sto \\w+|Non sono riuscit\\w)\\b",
+        "flags": ""
+      },
+      {
+        "name": "definitivamente (use per sempre)",
+        "pattern": "\\bdefinitivamente\\b",
+        "flags": "i"
+      }
+    ],
+    "en": [
+      {
+        "name": "British spelling (colour, centre, favourite, cancelled)",
+        "pattern": "colour|centre|favour|cancelled",
+        "flags": "i"
+      }
+    ]
+  }
+}
