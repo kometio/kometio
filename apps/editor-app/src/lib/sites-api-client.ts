@@ -9,6 +9,7 @@ import {
   type UpdateFormSubmissionRetentionBody,
   type UpdateGeneralSettingsBody,
   type UpdateLocaleSettingsBody,
+  type UpdateNewsletterCaptchaBody,
   type UpdateSeoSettingsBody,
   type UpdateThemePackageBody,
   type UpdateThemeSettingsBody,
@@ -64,6 +65,18 @@ export function updateSeoSettings(
   input: UpdateSeoSettingsInput,
 ): Promise<SiteRecord> {
   return requestSite(`/sites/${id}/seo-settings`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export type UpdateNewsletterCaptchaInput = UpdateNewsletterCaptchaBody;
+
+export function updateNewsletterCaptcha(
+  id: string,
+  input: UpdateNewsletterCaptchaInput,
+): Promise<SiteRecord> {
+  return requestSite(`/sites/${id}/newsletter-captcha`, {
     method: 'PATCH',
     body: JSON.stringify(input),
   });

@@ -16,6 +16,17 @@ describe('Form entity', () => {
     expect(form.notificationEmails).toEqual([]);
   });
 
+  it("create asks for the captcha: turning it off is the owner's choice", () => {
+    const form = Form.create({
+      id: 'form-1',
+      tenantId: 'tenant-1',
+      siteId: 'site-1',
+      name: 'Contattaci',
+    });
+
+    expect(form.captchaEnabled).toBe(true);
+  });
+
   it('fromProps/toProps round-trip without loss', () => {
     const props = {
       id: 'form-1',
@@ -33,6 +44,7 @@ describe('Form entity', () => {
       ],
       steps: [{ id: 'step-1', title: 'Dati personali' }],
       notificationEmails: ['info@example.com'],
+      captchaEnabled: false,
       createdAt: new Date('2026-01-01T00:00:00Z'),
       updatedAt: new Date('2026-01-01T00:00:00Z'),
     };
@@ -41,7 +53,7 @@ describe('Form entity', () => {
     expect(form.toProps()).toEqual(props);
   });
 
-  it('update replaces name, fields, steps, and notification email, bumping updatedAt', () => {
+  it('update replaces name, fields, steps, notification email and captcha choice, bumping updatedAt', () => {
     const form = Form.create({
       id: 'form-1',
       tenantId: 'tenant-1',
@@ -56,6 +68,7 @@ describe('Form entity', () => {
         fields: [{ id: 'f1', label: 'Email', type: 'email', required: true }],
         steps: [{ id: 'step-1', title: 'Contatti' }],
         notificationEmails: ['preventivi@example.com'],
+        captchaEnabled: false,
       },
       new Date('2026-01-02T00:00:00Z'),
     );
@@ -66,6 +79,7 @@ describe('Form entity', () => {
     ]);
     expect(form.steps).toEqual([{ id: 'step-1', title: 'Contatti' }]);
     expect(form.notificationEmails).toEqual(['preventivi@example.com']);
+    expect(form.captchaEnabled).toBe(false);
     expect(form.updatedAt).toEqual(new Date('2026-01-02T00:00:00Z'));
   });
 
@@ -87,6 +101,7 @@ describe('Form entity', () => {
         '',
         'sales@example.com',
       ],
+      captchaEnabled: true,
     });
 
     expect(form.notificationEmails).toEqual([
@@ -109,11 +124,12 @@ describe('Form entity', () => {
         fields: [{ id: 'f1', label: 'Email', type: 'email', required: true }],
         steps: [{ id: 'step-1', title: 'Contatti' }],
         notificationEmails: ['preventivi@example.com'],
+        captchaEnabled: false,
       });
       return form;
     }
 
-    it('has the same site, fields, steps and notification addresses under its own id and name', () => {
+    it('has the same site, fields, steps, notification addresses and captcha choice under its own id and name', () => {
       const copy = original().duplicate({
         id: 'form-2',
         name: 'Copia di Contattaci',
@@ -127,6 +143,7 @@ describe('Form entity', () => {
       expect(copy.fields).toEqual(original().fields);
       expect(copy.steps).toEqual([{ id: 'step-1', title: 'Contatti' }]);
       expect(copy.notificationEmails).toEqual(['preventivi@example.com']);
+      expect(copy.captchaEnabled).toBe(false);
       expect(copy.createdAt).toEqual(new Date('2026-02-01T00:00:00Z'));
       expect(copy.updatedAt).toEqual(new Date('2026-02-01T00:00:00Z'));
     });

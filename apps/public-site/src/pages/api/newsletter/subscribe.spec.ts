@@ -30,7 +30,7 @@ describe('POST /api/newsletter/subscribe', () => {
       _redirectTo: '/',
       _honeypot: '',
       email: 'visitor@example.com',
-      'cf-turnstile-response': 'widget-token',
+      _captcha: 'widget-token',
     });
 
     // @ts-expect-error deliberately partial APIContext

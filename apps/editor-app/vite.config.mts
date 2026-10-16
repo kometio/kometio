@@ -74,12 +74,12 @@ function devCspPlugin(mode: string): Plugin {
         const site = env.VITE_PUBLIC_SITE_URL;
         const policy = [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
           "style-src 'self' 'unsafe-inline'",
           `img-src 'self' data: ${apiOrigin}`,
           "font-src 'self' data:",
-          `connect-src 'self' ws: ${apiOrigin} ${site} https://challenges.cloudflare.com`,
-          `frame-src ${site} https://challenges.cloudflare.com`,
+          `connect-src 'self' ws: ${apiOrigin} ${site}`,
+          `frame-src ${site}`,
           "object-src 'none'",
           "base-uri 'self'",
         ].join('; ');

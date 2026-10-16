@@ -99,7 +99,7 @@ describe('ForgotPasswordForm', () => {
     );
     expect(api.requestPasswordReset).toHaveBeenCalledWith(
       'lele@example.com',
-      'fake-turnstile-token-for-tests',
+      'fake-captcha-token-for-tests',
     );
   });
 

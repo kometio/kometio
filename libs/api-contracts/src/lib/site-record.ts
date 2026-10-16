@@ -46,6 +46,8 @@ export const siteRecordSchema = businessInfoSchema.extend({
   themeFaviconUrl: z.string().nullable(),
   themeOverridesEnabled: z.boolean(),
   themeMotionEnabled: z.boolean(),
+  /** Whether the newsletter signup asks for a captcha (docs/adr/0145). */
+  newsletterCaptchaEnabled: z.boolean(),
   themeAllowedTrackerDomains: z.array(trackerDomainEntrySchema),
   themeTrackerScripts: z.array(trackerScriptEntrySchema),
   cookieBannerSettings: cookieBannerSettingsSchema,

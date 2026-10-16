@@ -1,7 +1,11 @@
 import { AltchaCaptchaAdapter } from '@kometio/altcha-captcha';
+import {
+  asAltchaChallenge,
+  solvedToken,
+} from '@kometio/altcha-captcha/testing';
 import request from 'supertest';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
-import { CAPTCHA_CHALLENGE_PORT } from '../adapters/port.tokens';
+import { CAPTCHA_CHALLENGE_PORT, CAPTCHA_PORT } from '../adapters/port.tokens';
 import { AuthModule } from '../auth/auth.module';
 import { CaptchaModule } from './captcha.module';
 
@@ -44,14 +48,21 @@ describe('CaptchaController (integration)', () => {
     });
   });
 
-  describe('on a deployment with Cloudflare Turnstile', () => {
+  describe('a sign-in answered with the challenge it was given', () => {
     let integration: IntegrationApp;
 
     beforeAll(async () => {
+      // The real captcha, not the fake the fixture puts in: one adapter makes
+      // the challenge and checks the solution, as `createCaptcha` hands it out.
+      const captcha = new AltchaCaptchaAdapter({ secret: 'a-secret', cost: 1 });
       integration = await IntegrationApp.start({
         imports: [CaptchaModule, AuthModule],
         overrideProviders: (builder) =>
-          builder.overrideProvider(CAPTCHA_CHALLENGE_PORT).useValue(null),
+          builder
+            .overrideProvider(CAPTCHA_PORT)
+            .useValue(captcha)
+            .overrideProvider(CAPTCHA_CHALLENGE_PORT)
+            .useValue(captcha),
       });
     });
 
@@ -59,10 +70,21 @@ describe('CaptchaController (integration)', () => {
       await integration.close();
     });
 
-    it('has no challenge to give: 404', async () => {
-      await request(integration.app.getHttpServer())
-        .get('/captcha/challenge')
-        .expect(404);
+    it('signs in with a solved challenge, once: the same solution is spent, and no solution is refused', async () => {
+      const user = await integration.createUser();
+      const server = integration.app.getHttpServer();
+      const challenge = await request(server).get('/captcha/challenge');
+      const captchaToken = await solvedToken(asAltchaChallenge(challenge.body));
+      const signIn = (token: string) =>
+        request(server).post('/auth/login').send({
+          email: user.email,
+          password: user.password,
+          captchaToken: token,
+        });
+
+      await signIn(captchaToken).expect(200);
+      await signIn(captchaToken).expect(400);
+      await signIn('').expect(400);
     });
   });
 });

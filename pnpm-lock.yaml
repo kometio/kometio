@@ -350,9 +350,6 @@ importers:
       '@kometio/totp-authenticator':
         specifier: workspace:*
         version: link:../../libs/adapters/totp-authenticator
-      '@kometio/turnstile-captcha':
-        specifier: workspace:*
-        version: link:../../libs/adapters/turnstile-captcha
       '@kometio/verification-token-adapter':
         specifier: workspace:*
         version: link:../../libs/adapters/verification-token-adapter
@@ -1217,16 +1214,6 @@ importers:
       '@kometio/ports':
         specifier: workspace:*
         version: link:../../ports
-
-  libs/adapters/turnstile-captcha:
-    dependencies:
-      '@kometio/ports':
-        specifier: workspace:*
-        version: link:../../ports
-    devDependencies:
-      '@kometio/testing':
-        specifier: workspace:*
-        version: link:../../testing
 
   libs/adapters/verification-token-adapter:
     dependencies:

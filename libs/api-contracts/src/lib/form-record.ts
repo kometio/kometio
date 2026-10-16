@@ -19,6 +19,8 @@ export const formRecordSchema = z.object({
   steps: z.array(formStepSchema),
   /** Who is emailed each submission; empty means nobody (docs/adr/0086). */
   notificationEmails: z.array(z.string()),
+  /** Whether a visitor solves the built-in captcha to send it (docs/adr/0145). */
+  captchaEnabled: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
   submissionCount: z.number().int().nonnegative(),
@@ -88,12 +90,15 @@ export type PaginatedFormSubmissions = z.infer<
  * `GET /public/forms/:id` — what the public site needs to draw a form.
  * `notificationEmails` is left out on purpose: it is the owner's private
  * configuration, and this response reaches every visitor's page.
+ * `captchaEnabled` is what the page needs to draw the widget or not; the
+ * server asks for the solution on its own account (docs/adr/0145).
  */
 export const publicFormSchema = z.object({
   id: z.string(),
   name: z.string(),
   fields: z.array(formFieldSchema),
   steps: z.array(formStepSchema),
+  captchaEnabled: z.boolean(),
 });
 
 export type PublicForm = z.infer<typeof publicFormSchema>;

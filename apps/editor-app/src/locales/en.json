@@ -1002,6 +1002,16 @@
       "action": "Turn off"
     }
   },
+  "newsletterSettings": {
+    "captchaLabel": "Ask visitors to solve a captcha",
+    "captchaDescription": "A small check the visitor's browser solves in the background. It is built into Kometio: no account, and nothing is sent to anyone else.",
+    "captchaDisclaimer": "It applies to every newsletter signup block on the site. Each form has its own switch, in the form's screen.",
+    "turnOffConfirm": {
+      "title": "Stop asking for a captcha?",
+      "description": "Without it, a script can add addresses to your list as easily as a person can, including addresses of people who never asked. You can turn it back on any time.",
+      "action": "Turn off"
+    }
+  },
   "formSubmissionRetention": {
     "description": "How long the site keeps the answers to its forms.",
     "hint": "It applies to every form on this site. Deleted answers cannot be recovered.",
@@ -1418,6 +1428,9 @@
       "leaveAction": "Leave",
       "notificationEmailsLabel": "Notification emails",
       "notificationEmailsHint": "Every address gets its own email for each answer. Leave empty to email nobody.",
+      "captchaLabel": "Ask visitors to solve a captcha",
+      "captchaDescription": "A small check the visitor's browser solves in the background. It is built into Kometio: no account, and nothing is sent to anyone else.",
+      "captchaOffHint": "Without it, a script can send this form as easily as a person can. The hidden field and the limit on how often the same address can send stay on.",
       "notificationEmailAddress": "Notification email {{number}}",
       "addNotificationEmail": "Add address",
       "removeNotificationEmail": "Remove address",
@@ -4036,6 +4049,7 @@
         "redirects": "Redirects",
         "integrations": "Integrations",
         "ai": "AI generation",
+        "newsletter": "Newsletter",
         "cookies": "Cookies & privacy",
         "retention": "Data retention",
         "users": "Users",
@@ -4052,6 +4066,9 @@
       },
       "seo": {
         "description": "What you tell search engines about the site as a whole."
+      },
+      "newsletter": {
+        "description": "How the newsletter signup of the site protects itself from scripts."
       }
     }
   },
@@ -4069,6 +4086,7 @@
       "integrations": "The integrations were not saved. Try again.",
       "cookieBanner": "The cookie banner was not saved. Try again.",
       "retention": "The retention of answers was not saved. Try again.",
+      "newsletter": "The newsletter setting was not saved. Try again.",
       "style": "The style was not saved. Try again.",
       "term": "The category was not saved. Try again."
     }
@@ -4110,6 +4128,7 @@
       "general": "general",
       "seo": "SEO",
       "retention": "data retention",
+      "newsletter": "newsletter signup",
       "languages": "languages",
       "cookie-banner": "cookie banner",
       "theme-code": "style and scripts",

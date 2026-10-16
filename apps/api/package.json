@@ -144,7 +144,6 @@
     "@kometio/smtp-email-adapter": "workspace:*",
     "@kometio/theme-archive": "workspace:*",
     "@kometio/totp-authenticator": "workspace:*",
-    "@kometio/turnstile-captcha": "workspace:*",
     "@kometio/verification-token-adapter": "workspace:*",
     "@kometio/wordpress-wxr": "workspace:*",
     "@nestjs/common": "^11.2.6",

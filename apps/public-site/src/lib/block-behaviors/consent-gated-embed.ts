@@ -70,7 +70,7 @@ function wireConsentGatedEmbed(button: HTMLElement): void {
 // Shared by VideoEmbed and MapEmbed (both render ConsentGatedEmbed.astro,
 // see that file's own comment) — registered under both block types in
 // block-behavior-registry.ts, same pattern as Form/NewsletterSignup
-// sharing turnstileBehaviors.
+// sharing captchaBehaviors.
 export const consentGatedEmbedBehaviors: BlockBehavior[] = [
   { selector: '.kometio-consent-embed__trigger', wire: wireConsentGatedEmbed },
 ];

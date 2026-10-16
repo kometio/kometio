@@ -1002,6 +1002,16 @@
       "action": "Spegni"
     }
   },
+  "newsletterSettings": {
+    "captchaLabel": "Chiedi ai visitatori di superare il captcha",
+    "captchaDescription": "Un piccolo controllo che il browser del visitatore risolve da solo, in secondo piano. È integrato in Kometio: non serve un account e non viene mandato niente a nessun altro.",
+    "captchaDisclaimer": "Vale per ogni blocco di iscrizione alla newsletter del sito. Ogni modulo ha il suo interruttore, nella schermata del modulo.",
+    "turnOffConfirm": {
+      "title": "Smettere di chiedere il captcha?",
+      "description": "Senza, uno script può aggiungere indirizzi alla tua lista come farebbe una persona, anche di gente che non l’ha chiesto. Puoi riaccenderlo quando vuoi.",
+      "action": "Spegni"
+    }
+  },
   "formSubmissionRetention": {
     "description": "Per quanto tempo il sito tiene le risposte ai moduli.",
     "hint": "Vale per tutti i moduli di questo sito. Le risposte eliminate non si possono recuperare.",
@@ -1418,6 +1428,9 @@
       "leaveAction": "Esci",
       "notificationEmailsLabel": "Email di notifica",
       "notificationEmailsHint": "Ogni indirizzo riceve una sua email per ogni risposta. Lascia vuoto per non avvisare nessuno.",
+      "captchaLabel": "Chiedi ai visitatori di superare il captcha",
+      "captchaDescription": "Un piccolo controllo che il browser del visitatore risolve da solo, in secondo piano. È integrato in Kometio: non serve un account e non viene mandato niente a nessun altro.",
+      "captchaOffHint": "Senza, uno script può inviare questo modulo come farebbe una persona. Il campo nascosto e il limite agli invii ripetuti dallo stesso indirizzo restano attivi.",
       "notificationEmailAddress": "Email di notifica {{number}}",
       "addNotificationEmail": "Aggiungi indirizzo",
       "removeNotificationEmail": "Rimuovi indirizzo",
@@ -4036,6 +4049,7 @@
         "redirects": "Reindirizzamenti",
         "integrations": "Integrazioni",
         "ai": "Generazione AI",
+        "newsletter": "Newsletter",
         "cookies": "Cookie e privacy",
         "retention": "Conservazione dati",
         "users": "Utenti",
@@ -4052,6 +4066,9 @@
       },
       "seo": {
         "description": "Cosa dici ai motori di ricerca sul sito nel suo insieme."
+      },
+      "newsletter": {
+        "description": "Come l’iscrizione alla newsletter del sito si difende dagli script."
       }
     }
   },
@@ -4069,6 +4086,7 @@
       "integrations": "Le integrazioni non sono state salvate. Riprova.",
       "cookieBanner": "Il banner dei cookie non è stato salvato. Riprova.",
       "retention": "La conservazione delle risposte non è stata salvata. Riprova.",
+      "newsletter": "L’impostazione della newsletter non è stata salvata. Riprova.",
       "style": "Lo stile non è stato salvato. Riprova.",
       "term": "La categoria non è stata salvata. Riprova."
     }
@@ -4110,6 +4128,7 @@
       "general": "generali",
       "seo": "SEO",
       "retention": "conservazione dei dati",
+      "newsletter": "iscrizione alla newsletter",
       "languages": "lingue",
       "cookie-banner": "banner dei cookie",
       "theme-code": "stile e script",

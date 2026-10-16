@@ -5,11 +5,10 @@
 # container whose only job is serving static files + an SPA fallback).
 #
 # The two addresses the browser needs — the API's and the public site's —
-# and the captcha's public key are NOT baked in any more (docs/adr/0076):
-# the entrypoint below writes them into /config.js at start, from
-# KOMETIO_API_URL, KOMETIO_PUBLIC_SITE_URL and KOMETIO_TURNSTILE_SITE_KEY,
-# and nginx builds its Content-Security-Policy header from the addresses.
-# One published image therefore serves any domain and any captcha key;
+# are NOT baked in any more (docs/adr/0076): the entrypoint below writes
+# them into /config.js at start, from KOMETIO_API_URL and
+# KOMETIO_PUBLIC_SITE_URL, and nginx builds its Content-Security-Policy
+# header from them. One published image therefore serves any domain;
 # changing one is a restart, not a rebuild.
 #
 # The VITE_* build args stay as the fallback compiled into the bundle (a
@@ -29,10 +28,8 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 ARG VITE_API_URL=http://localhost:3000/api
 ARG VITE_PUBLIC_SITE_URL=http://localhost:4322
-ARG VITE_TURNSTILE_SITE_KEY
 ENV VITE_API_URL=${VITE_API_URL} \
-    VITE_PUBLIC_SITE_URL=${VITE_PUBLIC_SITE_URL} \
-    VITE_TURNSTILE_SITE_KEY=${VITE_TURNSTILE_SITE_KEY}
+    VITE_PUBLIC_SITE_URL=${VITE_PUBLIC_SITE_URL}
 RUN pnpm nx run @kometio/editor-app:build
 
 FROM nginx:alpine AS runtime

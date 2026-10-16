@@ -70,6 +70,7 @@ describe('SettingsNav', () => {
       ['Collezioni', '/settings/collections'],
       ['Reindirizzamenti', '/settings/redirects'],
       ['Integrazioni', '/settings/integrations'],
+      ['Newsletter', '/settings/newsletter'],
       ['Generazione AI', '/settings/ai'],
       ['Cookie e privacy', '/settings/cookies'],
       ['Conservazione dati', '/settings/retention'],

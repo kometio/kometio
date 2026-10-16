@@ -46,18 +46,12 @@ function scriptHash(source: string): string {
  * EDITOR_APP_URL, every real published page never should be), so it's a
  * parameter here rather than baked in.
  */
-// Form.astro/NewsletterSignup.astro's anti-spam widget (docs/adr/0020) —
-// its script renders its own challenge inside an iframe from this same
-// host, and calls home to verify solve state.
-const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
-
 // VideoEmbed.astro/MapEmbed.astro's click-to-load iframes (ConsentGatedEmbed)
 // — every embeddable host is normalized to exactly one of these three by
 // video-embed.ts/MapEmbed.astro itself (YouTube/Vimeo URLs are parsed and
 // re-built into one canonical embed URL, Google Maps only ever gets built
 // from a fixed template), never an arbitrary user-supplied iframe src.
 const EMBEDDABLE_FRAME_ORIGINS = [
-  TURNSTILE_ORIGIN,
   'https://www.youtube-nocookie.com',
   'https://player.vimeo.com',
   'https://www.google.com',
@@ -115,14 +109,14 @@ export function buildContentSecurityPolicy(
   return [
     `default-src 'self'`,
     withExtra(
-      `script-src 'self' 'nonce-${nonce}' ${TURNSTILE_ORIGIN} ${GOOGLE_TAG_MANAGER_ORIGIN} ${META_PIXEL_SCRIPT_ORIGIN} ${scriptHash(PROMO_BAR_DISMISS_SCRIPT)} ${scriptHash(COOKIE_CONSENT_DISMISS_SCRIPT)} ${scriptHash(COOKIE_CONSENT_PANEL_SCRIPT)}`,
+      `script-src 'self' 'nonce-${nonce}' ${GOOGLE_TAG_MANAGER_ORIGIN} ${META_PIXEL_SCRIPT_ORIGIN} ${scriptHash(PROMO_BAR_DISMISS_SCRIPT)} ${scriptHash(COOKIE_CONSENT_DISMISS_SCRIPT)} ${scriptHash(COOKIE_CONSENT_PANEL_SCRIPT)}`,
     ),
     `style-src 'self' 'unsafe-inline' https:`,
     `img-src 'self' data: https: ${META_PIXEL_BEACON_ORIGIN}`,
     `font-src 'self' https: data:`,
     withExtra(`frame-src ${EMBEDDABLE_FRAME_ORIGINS.join(' ')}`),
     withExtra(
-      `connect-src 'self' ${TURNSTILE_ORIGIN} ${GOOGLE_TAG_MANAGER_ORIGIN} ${GOOGLE_ANALYTICS_ORIGINS.join(' ')} ${META_PIXEL_BEACON_ORIGIN}`,
+      `connect-src 'self' ${GOOGLE_TAG_MANAGER_ORIGIN} ${GOOGLE_ANALYTICS_ORIGINS.join(' ')} ${META_PIXEL_BEACON_ORIGIN}`,
     ),
     `object-src 'none'`,
     `base-uri 'self'`,

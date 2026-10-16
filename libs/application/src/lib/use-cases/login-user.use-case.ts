@@ -35,7 +35,7 @@ export interface LoginUserInput {
   tenantId: string;
   email: string;
   password: string;
-  /** Cloudflare Turnstile's client-side widget token — security review 2026-08-24, point 13: credential stuffing distributed across many IPs has no second line of defense without this. */
+  /** The solution of the captcha's challenge — security review 2026-08-24, point 13: credential stuffing distributed across many IPs has no second line of defense without this. */
   captchaToken: string;
   /** The `User-Agent` the sign-in came with: only the label made of it is kept (docs/adr/0129). */
   userAgent?: string;
@@ -46,7 +46,7 @@ export async function loginUser(
   input: LoginUserInput,
 ): Promise<LoginOutcome> {
   // Checked before the DB lookup, same reasoning as submitForm: a failed
-  // check costs nothing beyond the Turnstile API call, no point spending
+  // check costs a verification of the solution, no point spending
   // a query on an attempt that's rejected either way.
   const captchaValid = await deps.captchaPort.verify({
     token: input.captchaToken,

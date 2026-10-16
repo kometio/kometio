@@ -64,6 +64,8 @@ describe('DrizzleFormRepository (integration)', () => {
     expect(found?.fields).toEqual([]);
     expect(found?.steps).toEqual([]);
     expect(found?.notificationEmails).toEqual([]);
+    // A new form asks for the captcha, and what is read back is what was written.
+    expect(found?.captchaEnabled).toBe(true);
 
     const foundFromOtherTenant = await formRepository.findById(
       tenantBId,
@@ -135,6 +137,7 @@ describe('DrizzleFormRepository (integration)', () => {
         ],
         steps: [{ id: 'step-1', title: 'Contatti' }],
         notificationEmails: ['owner@example.com'],
+        captchaEnabled: false,
       },
       new Date(),
     );
@@ -153,6 +156,7 @@ describe('DrizzleFormRepository (integration)', () => {
     ]);
     expect(found?.steps).toEqual([{ id: 'step-1', title: 'Contatti' }]);
     expect(found?.notificationEmails).toEqual(['owner@example.com']);
+    expect(found?.captchaEnabled).toBe(false);
   });
 
   it('deletes a form scoped to its tenant', async () => {

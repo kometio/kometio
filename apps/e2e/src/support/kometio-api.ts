@@ -144,7 +144,13 @@ export class KometioApi {
 
   async updateForm(
     id: string,
-    body: { name: string; fields: FormField[]; notificationEmails: string[] },
+    body: {
+      name: string;
+      fields: FormField[];
+      notificationEmails: string[];
+      /** Left out, the form asks for the captcha. */
+      captchaEnabled?: boolean;
+    },
   ) {
     return formSchema.parse(
       await this.json(

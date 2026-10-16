@@ -6,6 +6,7 @@ import type { PublishedSiteChromeDto } from './public-api-client';
 import {
   fetchCaptchaChallenge,
   getPublicForm,
+  getPublicNewsletterSettings,
   getPublishedAuthorBySlug,
   getPublishedPageBySlug,
   getPublishedSiteChrome,
@@ -353,7 +354,13 @@ describe('public-api-client', () => {
   });
 
   it('fetches a public form by id', async () => {
-    const form = { id: 'form-1', name: 'Contatti', fields: [], steps: [] };
+    const form = {
+      id: 'form-1',
+      name: 'Contatti',
+      fields: [],
+      steps: [],
+      captchaEnabled: false,
+    };
     vi.mocked(fetch).mockResolvedValue(jsonResponse(form));
 
     const result = await getPublicForm('form-1');
@@ -477,6 +484,39 @@ describe('public-api-client', () => {
     expect(result).toEqual({ ok: false, status: 400 });
   });
 
+  describe('whether the newsletter signup draws the captcha (docs/adr/0145)', () => {
+    it('asks the API, which knows the site, and hands the answer back', async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        jsonResponse({ captchaEnabled: false }),
+      );
+
+      expect(await getPublicNewsletterSettings()).toEqual({
+        captchaEnabled: false,
+      });
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/public/pages/newsletter'),
+        expect.anything(),
+      );
+    });
+
+    it('draws the widget when the answer cannot be had: a signup that cannot succeed is worse than a check', async () => {
+      vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 500));
+      expect(await getPublicNewsletterSettings()).toEqual({
+        captchaEnabled: true,
+      });
+
+      vi.mocked(fetch).mockResolvedValue(jsonResponse({ unexpected: true }));
+      expect(await getPublicNewsletterSettings()).toEqual({
+        captchaEnabled: true,
+      });
+
+      vi.mocked(fetch).mockRejectedValue(new Error('connect ECONNREFUSED'));
+      expect(await getPublicNewsletterSettings()).toEqual({
+        captchaEnabled: true,
+      });
+    });
+  });
+
   describe('the challenge of the captcha built into Kometio', () => {
     it('asks the API for a challenge and hands it back', async () => {
       const challenge = { parameters: { nonce: 'n' }, signature: 's' };
@@ -491,9 +531,9 @@ describe('public-api-client', () => {
       expect(result).toEqual({ ok: true, challenge });
     });
 
-    it('reports a refusal with its status, without throwing: 404 where the captcha is Cloudflare’s, 429 for a visitor who asks too often', async () => {
-      vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 404));
-      expect(await fetchCaptchaChallenge()).toEqual({ ok: false, status: 404 });
+    it('reports a refusal with its status, without throwing: 503 for an API that cannot sign one, 429 for a visitor who asks too often', async () => {
+      vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 503));
+      expect(await fetchCaptchaChallenge()).toEqual({ ok: false, status: 503 });
 
       vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 429));
       expect(await fetchCaptchaChallenge()).toEqual({ ok: false, status: 429 });

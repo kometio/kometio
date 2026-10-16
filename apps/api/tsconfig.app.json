@@ -30,9 +30,6 @@
       "path": "../../libs/adapters/verification-token-adapter/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/adapters/turnstile-captcha/tsconfig.lib.json"
-    },
-    {
       "path": "../../libs/adapters/totp-authenticator/tsconfig.lib.json"
     },
     {

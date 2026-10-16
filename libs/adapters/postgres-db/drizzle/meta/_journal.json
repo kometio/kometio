@@ -120,6 +120,13 @@
       "when": 1792066544411,
       "tag": "0016_theme_motion_enabled",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792109737279,
+      "tag": "0017_captcha_choice",
+      "breakpoints": true
     }
   ]
 }

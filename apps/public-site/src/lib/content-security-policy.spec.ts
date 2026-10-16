@@ -55,13 +55,13 @@ describe('buildContentSecurityPolicy', () => {
     expect(scriptSrc).not.toContain('unsafe-eval');
   });
 
-  it('allows the exact iframe origins VideoEmbed/MapEmbed/Turnstile need', () => {
+  it('allows the exact iframe origins VideoEmbed/MapEmbed need, and none for a captcha', () => {
     const policy = buildContentSecurityPolicy(`'self'`, 'abc123');
     const frameSrc = policy
       .split(';')
       .find((directive) => directive.trim().startsWith('frame-src'));
 
-    expect(frameSrc).toContain('https://challenges.cloudflare.com');
+    expect(frameSrc).not.toContain('cloudflare');
     expect(frameSrc).toContain('https://www.youtube-nocookie.com');
     expect(frameSrc).toContain('https://player.vimeo.com');
     expect(frameSrc).toContain('https://www.google.com');

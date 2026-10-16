@@ -256,8 +256,6 @@ function configureEditor() {
     PATH: env.PATH,
     KOMETIO_API_URL: API_PUBLIC_URL,
     KOMETIO_PUBLIC_SITE_URL: SITE_URL,
-    // Empty: no Turnstile keys, and the editor draws the captcha built into Kometio (docs/adr/0103).
-    KOMETIO_TURNSTILE_SITE_KEY: env.TURNSTILE_SITE_KEY ?? '',
   };
   // The same script the editor image runs at its start: it writes /config.js
   // and works out the API's origin for the policy.

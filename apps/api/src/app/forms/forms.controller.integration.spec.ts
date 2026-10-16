@@ -30,6 +30,24 @@ describe('FormsController (integration)', () => {
     await integration.close();
   });
 
+  it("403s an editor trying to turn the captcha off: it is a change that is live at once, a publisher's like every other change to a form (docs/adr/0145)", async () => {
+    const created = await agent
+      .post('/forms')
+      .send({ siteId, name: 'Contatti' })
+      .expect(201);
+    const editor = await integration.login(
+      await integration.createUser({ role: 'editor' }),
+    );
+
+    await editor
+      .patch(`/forms/${created.body.id}`)
+      .send({ name: 'Contatti', fields: [], captchaEnabled: false })
+      .expect(403);
+
+    const read = await agent.get(`/forms/${created.body.id}`).expect(200);
+    expect(read.body.captchaEnabled).toBe(true);
+  });
+
   it('creates, reads, updates, lists and deletes a form', async () => {
     const createRes = await agent
       .post('/forms')

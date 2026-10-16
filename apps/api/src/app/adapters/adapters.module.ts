@@ -225,10 +225,9 @@ const PROVIDERS = [
     const log = new Logger('Email');
     return createEmailPort(env, (entry) => log.warn(entry));
   }),
-  // Cloudflare's when the deployment has its keys, the built-in one when it has
-  // none (docs/adr/0103). One object, so the challenge a visitor is given and the
-  // solution that is checked are the same adapter, with the same memory of the
-  // ones already spent.
+  // The captcha built into Kometio (docs/adr/0103, 0145). One object, so the
+  // challenge a visitor is given and the solution that is checked are the same
+  // adapter, with the same memory of the ones already spent.
   configured(port.DEPLOYMENT_CAPTCHA, createCaptcha),
   {
     provide: port.CAPTCHA_PORT,
@@ -270,7 +269,7 @@ const PROVIDERS = [
 
 /**
  * Which adapter answers each port (port.tokens.ts), decided once for the
- * whole API — the one place that knows Postgres, SMTP, S3 or Turnstile by
+ * whole API — the one place that knows Postgres, SMTP or S3 by
  * name. A feature module imports this and names, in its deps object, the
  * ports its use cases need.
  *

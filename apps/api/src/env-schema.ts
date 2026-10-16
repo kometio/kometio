@@ -109,13 +109,6 @@ const apiEnvBaseSchema = z.object({
   // a line of it. Unset: text, and only the requests that failed.
   KOMETIO_LOG_FORMAT: emptyIsUnset(z.enum(['text', 'json']).optional()),
   KOMETIO_ACCESS_LOG: emptyIsUnset(z.enum(['true', 'false']).optional()),
-  // Both or neither (docs/adr/0103): a site's own Cloudflare Turnstile keys, or
-  // none, and then the captcha is the one built into Kometio. The site key is
-  // read by the editor and the public site, which draw the widget; the API
-  // reads it only to refuse a half-set pair, which would leave the widgets
-  // and the verifier on different captchas.
-  TURNSTILE_SITE_KEY: emptyIsUnset(z.string().min(1).optional()),
-  TURNSTILE_SECRET_KEY: emptyIsUnset(z.string().min(1).optional()),
   // Where an error nobody expected is reported (docs/adr/0114). Unset: nowhere,
   // and nothing is started. The public site reads the same variables; the API
   // validates the address so that a typo is a refusal to start, not a
@@ -181,14 +174,11 @@ const SIGNING_SECRETS = [
 const SIGNING_SECRET_MIN_LENGTH = 32;
 const PASSWORD_MIN_LENGTH = 16;
 
-/** Cloudflare's test secret keys (1x…, 2x…, 3x…): they pass or fail every captcha, whoever solves it. */
-const TURNSTILE_TEST_SECRET = /^[123]x0+[A-Z]*$/;
-
 /**
  * In the production image (NODE_ENV=production, set by its Dockerfile),
  * refuses to start on what a copied example leaves behind: a
- * placeholder, a short signing secret, a short database password, a test
- * captcha key. Development and CI run without NODE_ENV and keep theirs.
+ * placeholder, a short signing secret, a short database password.
+ * Development and CI run without NODE_ENV and keep theirs.
  */
 function refuseExampleSecrets(
   env: z.infer<typeof apiEnvBaseSchema>,
@@ -217,15 +207,6 @@ function refuseExampleSecrets(
       `POSTGRES_APP_PASSWORD must be at least ${PASSWORD_MIN_LENGTH} characters`,
     );
   }
-  if (
-    env.TURNSTILE_SECRET_KEY !== undefined &&
-    TURNSTILE_TEST_SECRET.test(env.TURNSTILE_SECRET_KEY)
-  ) {
-    fail(
-      'TURNSTILE_SECRET_KEY',
-      "TURNSTILE_SECRET_KEY is a Cloudflare test key, which accepts every captcha: use your site's own",
-    );
-  }
 }
 
 export const apiEnvSchema = apiEnvBaseSchema.superRefine((env, ctx) => {
@@ -241,15 +222,6 @@ export const apiEnvSchema = apiEnvBaseSchema.superRefine((env, ctx) => {
           error instanceof Error ? error.message : 'SENTRY_DSN is not valid',
       });
     }
-  }
-  const siteKeyGiven = env.TURNSTILE_SITE_KEY !== undefined;
-  const secretGiven = env.TURNSTILE_SECRET_KEY !== undefined;
-  if (siteKeyGiven !== secretGiven) {
-    ctx.addIssue({
-      code: 'custom',
-      path: [siteKeyGiven ? 'TURNSTILE_SECRET_KEY' : 'TURNSTILE_SITE_KEY'],
-      message: `${siteKeyGiven ? 'TURNSTILE_SECRET_KEY' : 'TURNSTILE_SITE_KEY'} is required when ${siteKeyGiven ? 'TURNSTILE_SITE_KEY' : 'TURNSTILE_SECRET_KEY'} is set: both of your Turnstile keys, or neither to use the captcha built into Kometio`,
-    });
   }
   if (env.SMTP_HOST !== undefined) {
     for (const key of SMTP_REQUIRED_KEYS) {

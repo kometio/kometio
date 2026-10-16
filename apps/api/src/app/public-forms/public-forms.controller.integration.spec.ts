@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { type INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { FakeCaptchaPort, FakeNewsletterPort } from '@kometio/testing';
+import { FakeNewsletterPort } from '@kometio/testing';
 import { FormsModule } from '../forms/forms.module';
 import { PagesModule } from '../pages/pages.module';
 import { PublicFormsModule } from './public-forms.module';
 import { IntegrationApp } from '../../test/integration-app.test-fixture';
-import { CAPTCHA_PORT, NEWSLETTER_PORT } from '../adapters/port.tokens';
+import { NEWSLETTER_PORT } from '../adapters/port.tokens';
 import { idOf } from '../../test/response-body.test-fixture';
 
 /**
@@ -29,16 +29,15 @@ describe('PublicFormsController (integration)', () => {
       // PagesModule only to create a real page the normal way, so the
       // origin recorded below is a row the foreign key actually accepts.
       imports: [FormsModule, PagesModule, PublicFormsModule],
-      // Cloudflare's siteverify and the newsletter provider are live third
-      // parties, unlike Postgres and Mailpit: depending on them would make
-      // this suite depend on their uptime. The fake newsletter port also
-      // records what got subscribed, for the assertions below.
+      // The newsletter provider is a live third party, unlike Postgres and
+      // Mailpit: depending on it would make this suite depend on its uptime.
+      // The fake port also records what got subscribed, for the assertions
+      // below. The captcha is the fixture's fake, which takes any token: what
+      // is asked of this suite is the form, and the proof of work has specs of
+      // its own (altcha-captcha.adapter.spec.ts,
+      // captcha.controller.integration.spec.ts).
       overrideProviders: (builder) =>
-        builder
-          .overrideProvider(CAPTCHA_PORT)
-          .useClass(FakeCaptchaPort)
-          .overrideProvider(NEWSLETTER_PORT)
-          .useValue(newsletterPort),
+        builder.overrideProvider(NEWSLETTER_PORT).useValue(newsletterPort),
     });
     app = integration.app;
     siteId = await integration.createSite();
@@ -93,6 +92,7 @@ describe('PublicFormsController (integration)', () => {
       name: 'Contatti',
       fields: [{ id: 'email', label: 'Email', type: 'email', required: true }],
       steps: [],
+      captchaEnabled: true,
     });
     expect(res.body).not.toHaveProperty('notificationEmails');
   });

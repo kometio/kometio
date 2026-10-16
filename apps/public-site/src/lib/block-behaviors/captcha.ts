@@ -1,13 +1,7 @@
 import { altchaBehaviors } from './altcha';
 import type { BlockBehavior } from './types';
-import { turnstileBehaviors } from './turnstile';
 
-// What a block that can carry a captcha wires: Cloudflare's widget where the
-// page was given its markup, the built-in one where it was given that
-// (CaptchaWidget.astro decides which, and a page has only one). The two are
-// matched by their own selectors, so listing both costs nothing on a page that
-// has the other.
-export const captchaBehaviors: BlockBehavior[] = [
-  ...turnstileBehaviors,
-  ...altchaBehaviors,
-];
+// What a block that can carry a captcha wires: the widget built into Kometio
+// (CaptchaWidget.astro draws its markup, docs/adr/0103, 0145). Form and
+// NewsletterSignup share it, as VideoEmbed and MapEmbed share the consent gate's.
+export const captchaBehaviors: BlockBehavior[] = [...altchaBehaviors];

@@ -60,6 +60,7 @@ export function buildSite(overrides: Partial<SiteProps> = {}): Site {
     themeFaviconUrl: null,
     themeOverridesEnabled: true,
     themeMotionEnabled: true,
+    newsletterCaptchaEnabled: true,
     themeAllowedTrackerDomains: [],
     formSubmissionRetentionDays: null,
     themeTrackerScripts: [],

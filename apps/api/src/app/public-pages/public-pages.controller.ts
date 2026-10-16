@@ -13,6 +13,7 @@ import {
   getPublishedAuthorBySlug,
   getPublishedPageBySlug,
   getPublishedSiteChrome,
+  getPublicNewsletterSettings,
   getPublishedTermByPath,
   listPublishedFeedEntries,
   listPublishedPagesForSitemap,
@@ -22,6 +23,8 @@ import {
 } from '@kometio/application';
 import { ZodValidationPipe } from '../zod-validation.pipe';
 import {
+  type PublicNewsletterSettings,
+  publicNewsletterSettingsSchema,
   type PublicAuthorBySlugQuery,
   publicAuthorBySlugQuerySchema,
   type PublicPageBySlugQuery,
@@ -203,6 +206,25 @@ export class PublicPagesController {
       throw new NotFoundException();
     }
     return result;
+  }
+
+  /**
+   * What the newsletter signup of this deployment's site needs to be drawn
+   * (docs/adr/0145): whether it shows the captcha. No domain is asked of the
+   * caller, unlike the reads around it: the site is the one this deployment
+   * serves, the same one the subscription is checked against, so the page
+   * cannot draw one thing while the server asks for another.
+   */
+  @Get('newsletter')
+  async newsletter(): Promise<PublicNewsletterSettings> {
+    const tenantId = await this.deps.tenant.require();
+    const site = await this.deps.deploymentSiteResolver.require(tenantId);
+    return publicNewsletterSettingsSchema.parse(
+      await getPublicNewsletterSettings(this.deps, {
+        tenantId,
+        siteId: site.id,
+      }),
+    );
   }
 
   @Get('chrome')

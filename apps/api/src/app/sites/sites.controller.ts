@@ -17,6 +17,7 @@ import {
   updateSiteFormSubmissionRetention,
   updateSiteGeneralSettings,
   updateSiteLocaleSettings,
+  updateSiteNewsletterCaptcha,
   updateSiteSeoSettings,
   updateSiteThemePackage,
   updateSiteThemeSettings,
@@ -45,6 +46,8 @@ import {
   updateSeoSettingsBodySchema,
   type UpdateFormSubmissionRetentionBody,
   updateFormSubmissionRetentionBodySchema,
+  type UpdateNewsletterCaptchaBody,
+  updateNewsletterCaptchaBodySchema,
   type UpdateThemeSettingsBody,
   updateThemeSettingsBodySchema,
   type UpdateThemeTokensBody,
@@ -187,6 +190,30 @@ export class SitesController {
       'site.settings_changed',
       id,
       'retention',
+    );
+    return this.toDto(site);
+  }
+
+  @Patch(':id/newsletter-captcha')
+  @Allowed('configureSite')
+  async updateNewsletterCaptcha(
+    @TenantId() tenantId: string,
+    @UserId() actorUserId: string,
+    @UuidParam('id') id: string,
+    @Body(new ZodValidationPipe(updateNewsletterCaptchaBodySchema))
+    body: UpdateNewsletterCaptchaBody,
+  ) {
+    const site = await updateSiteNewsletterCaptcha(this.deps, {
+      tenantId,
+      siteId: id,
+      ...body,
+    });
+    await this.recordChange(
+      tenantId,
+      actorUserId,
+      'site.settings_changed',
+      id,
+      'newsletter',
     );
     return this.toDto(site);
   }
@@ -416,6 +443,7 @@ export class SitesController {
       themeFaviconUrl: props.themeFaviconUrl,
       themeOverridesEnabled: props.themeOverridesEnabled,
       themeMotionEnabled: props.themeMotionEnabled,
+      newsletterCaptchaEnabled: props.newsletterCaptchaEnabled,
       themeAllowedTrackerDomains: props.themeAllowedTrackerDomains,
       themeTrackerScripts: props.themeTrackerScripts,
       cookieBannerSettings: props.cookieBannerSettings,

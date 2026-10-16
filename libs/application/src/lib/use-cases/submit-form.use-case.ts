@@ -61,7 +61,7 @@ export interface SubmitFormInput {
   values: Record<string, unknown>;
   /** CSS-hidden field real visitors never fill (docs/adr/0015). Non-empty means a bot. */
   honeypot: string;
-  /** Cloudflare Turnstile's client-side widget token. */
+  /** The solution of the captcha's challenge, as the widget leaves it in the form. */
   captchaToken: string;
 }
 
@@ -163,19 +163,24 @@ export async function submitForm(
     // Silent accept: the caller gets the same "success" response a real
     // submission would, so a bot can never distinguish "rejected" from
     // "accepted" and tune itself against this check. Checked before the
-    // CAPTCHA verify call below so a caught bot never even burns a
-    // Turnstile API round-trip.
+    // CAPTCHA verify call below so a caught bot never even spends a
+    // solution.
     return { undeliveredNotifications };
   }
 
-  const captchaValid = await deps.captchaPort.verify({
-    token: input.captchaToken,
-  });
-  if (!captchaValid) {
-    // Visible failure, unlike the honeypot above: a real visitor can hit
-    // this from an expired/blocked token and deserves a chance to retry,
-    // not a fake success.
-    throw new InvalidCaptchaError();
+  // The form says whether it asks for one (docs/adr/0145), and this is the
+  // only place that is enforced: a page that drew no widget sends no
+  // solution, and a form that asks for one refuses a request without.
+  if (form.captchaEnabled) {
+    const captchaValid = await deps.captchaPort.verify({
+      token: input.captchaToken,
+    });
+    if (!captchaValid) {
+      // Visible failure, unlike the honeypot above: a real visitor can hit
+      // this from an expired/blocked token and deserves a chance to retry,
+      // not a fake success.
+      throw new InvalidCaptchaError();
+    }
   }
 
   // Only what the visitor was shown counts: a field hidden by its

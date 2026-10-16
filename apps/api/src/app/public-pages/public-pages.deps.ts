@@ -12,6 +12,7 @@ import type {
   UserRepositoryPort,
 } from '@kometio/ports';
 import type { DeploymentTenantResolver } from '../deployment-tenant.resolver';
+import type { DeploymentSiteResolver } from '../sites/deployment-site.resolver';
 
 /** What the public pages module's use cases are built from (see moduleDeps). */
 export interface PublicPagesDeps {
@@ -24,6 +25,8 @@ export interface PublicPagesDeps {
   reusableSectionRepository: ReusableSectionRepositoryPort;
   searchPort: SearchPort;
   tenant: DeploymentTenantResolver;
+  /** The one site this deployment serves — for what is the site's own and not asked of a domain (`newsletter`). */
+  deploymentSiteResolver: DeploymentSiteResolver;
   previewTokenPort: PreviewTokenPort;
   userRepository: UserRepositoryPort;
   mediaStorage: MediaStoragePort;

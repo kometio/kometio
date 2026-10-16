@@ -2,6 +2,7 @@
 import type { NewsletterSignupProps } from '@kometio/shared-types';
 import type { Translator } from '@kometio/theme-runtime';
 import CaptchaWidget from '../parts/CaptchaWidget.astro';
+import { getPublicNewsletterSettings } from '../../lib/public-api-client';
 
 type Props = NewsletterSignupProps & {
   i18n: Translator;
@@ -10,6 +11,11 @@ type Props = NewsletterSignupProps & {
 };
 
 const { title, buttonLabel, i18n, instanceClass } = Astro.props;
+
+// The site's choice (docs/adr/0145), read live like a form's fields: the block
+// has no entity of its own, so the choice is the site's, and the server asks
+// for the solution from the same setting.
+const { captchaEnabled } = await getPublicNewsletterSettings();
 
 // Simple presence flags, not keyed by a block id the way Form.astro keys
 // by form.id — this block has no backing entity (docs/adr/0015's
@@ -65,16 +71,15 @@ const redirectTo =
           />
           <button type="submit" data-kometio-field="buttonLabel">{buttonLabel}</button>
         </div>
-        <CaptchaWidget i18n={i18n} />
+        {captchaEnabled && <CaptchaWidget i18n={i18n} />}
       </form>
     )
   }
 </div>
 
 <script>
-  // The captcha widget: Turnstile rendered explicitly, not via its own
-  // auto-scan (block-behaviors/turnstile.ts says why), or the one built into
-  // Kometio (block-behaviors/altcha.ts) — the same two Form.astro's widget is.
+  // The captcha widget built into Kometio (block-behaviors/altcha.ts): the same
+  // one Form.astro's is.
   import { captchaBehaviors } from '../../lib/block-behaviors/captcha';
   import { runBlockBehaviors } from '../../lib/block-behaviors/run-block-behaviors';
   runBlockBehaviors(document, captchaBehaviors);
@@ -102,8 +107,7 @@ const redirectTo =
   /* The captcha under the row: a slot rendered by CaptchaWidget, which a
      scoped rule here cannot name, and the form here is not a flex column with
      a gap, as Form.astro's is. */
-  .kometio-newsletter-signup :global([data-kometio-altcha]),
-  .kometio-newsletter-signup :global(.cf-turnstile) {
+  .kometio-newsletter-signup :global([data-kometio-altcha]) {
     margin-top: 0.5rem;
   }
   .kometio-newsletter-signup input {

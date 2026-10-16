@@ -11,6 +11,7 @@ import { currentVisitorIp } from './request-context';
 import { pageContentSchema } from '@kometio/shared-types';
 import {
   publicFormSchema,
+  publicNewsletterSettingsSchema,
   publicRedirectAnswerSchema,
   type PublicRedirectAnswer,
   publishedAuthorSchema,
@@ -18,6 +19,7 @@ import {
   publishedSiteSchema,
   publishedTermSchema,
   type PublicForm,
+  type PublicNewsletterSettings,
   type PublishedAuthor,
   type PublishedPage,
   type PublishedTerm,
@@ -501,7 +503,7 @@ export type UploadedFormAttachment = z.infer<
  * become `{ url, filename }` (form-fields.ts's own formFieldFileValueSchema)
  * ahead of that JSON POST, since a File object itself isn't JSON-
  * serializable. No CAPTCHA token needed here: the real API endpoint this
- * calls doesn't re-verify one (a Turnstile token is single-use, and the
+ * calls doesn't re-verify one (a captcha solution is single-use, and the
  * main submission below already verifies it once for the whole
  * transaction — see public-forms.controller.ts's own comment on this).
  */
@@ -546,6 +548,25 @@ export async function submitPublicForm(
   return { ok: false, status: res.status };
 }
 
+/**
+ * Whether the newsletter signup of this site draws the captcha (docs/adr/0145).
+ *
+ * When the answer cannot be had, the widget is drawn: it costs a visitor
+ * nothing the server would not ask of them, and a page that drew none while
+ * the server asked would be a signup that cannot succeed.
+ */
+export async function getPublicNewsletterSettings(): Promise<PublicNewsletterSettings> {
+  try {
+    const res = await timedFetcher.fetch(`${apiUrl()}/public/pages/newsletter`);
+    if (res.ok) {
+      return publicNewsletterSettingsSchema.parse(await res.json());
+    }
+  } catch {
+    // Not a reason to fail the page it is on: see above.
+  }
+  return { captchaEnabled: true };
+}
+
 /** What the proxy endpoint sends the API for a signup: the contract's, and every field is given. */
 export type SubscribeNewsletterInput = Required<SubscribeNewsletterRequest>;
 
@@ -584,8 +605,7 @@ export type CaptchaChallengeResult =
  * challenge.ts), never directly from the browser: the widget on a page asks the
  * site it is on, as the form it belongs to posts to it (docs/adr/0015). The
  * visitor is the one the API counts, through the same two headers every call
- * here carries; a 404 is the API saying that its captcha is Cloudflare's and
- * has no challenge of its own to hand out.
+ * here carries.
  */
 export async function fetchCaptchaChallenge(): Promise<CaptchaChallengeResult> {
   const res = await timedFetcher.fetch(`${apiUrl()}/captcha/challenge`);

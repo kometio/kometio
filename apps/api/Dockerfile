@@ -102,7 +102,7 @@ COPY --from=build /workspace/theme-manifests/ ./themes/
 RUN npm install --global pnpm@10.30.3 && pnpm install --prod --frozen-lockfile
 # This is the production image, and the API reads it as such: the session
 # cookie is `Secure` only here, and the env check refuses example secrets
-# and Cloudflare's test captcha keys only here. It was never set, so every
+# only here. It was never set, so every
 # real deployment sent the session cookie without `Secure`.
 ENV NODE_ENV=production
 USER kometio

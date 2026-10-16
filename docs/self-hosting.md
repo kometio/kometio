@@ -83,12 +83,6 @@ address arrives without a hard refresh.
      `openssl rand -hex 32` each;
    - `POSTGRES_PASSWORD` and `POSTGRES_APP_PASSWORD`: at least 16
      characters (`openssl rand -hex 24`);
-   - `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`, only if you want
-     Cloudflare's captcha: your site's own, from the Cloudflare dashboard
-     (Turnstile → Add site), both or neither. Left empty, the login uses the
-     captcha built into Kometio, a proof of work the browser solves in the
-     background, which needs no account and no network (docs/adr/0103), and so
-     do the forms and the newsletter signup of the public site;
    - the `SMTP_*` values of your mail provider, if you have one (all three of
      `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM_ADDRESS`, or none);
    - `SENTRY_DSN`, only if you want to be told when something breaks: the
@@ -104,9 +98,15 @@ address arrives without a hard refresh.
      server-side scrubbing as well (Sentry → Settings → Security & Privacy →
      Data Scrubber, and Prevent Storing of IP Addresses).
 
-   The API refuses to start with a value left empty or too short, with
-   Cloudflare's test captcha keys (which let every captcha through), or with
-   one of the two Turnstile keys and not the other, and says which one.
+   The API refuses to start with a value left empty or too short, and says
+   which one.
+
+   There is no captcha to configure: the login, the forms and the newsletter
+   signup use the one built into Kometio, a proof of work the browser solves in
+   the background, which needs no account and no network (docs/adr/0103). A form
+   can be made without it, from its own screen in the editor, and the newsletter
+   signup from Settings → Newsletter (docs/adr/0145). A `TURNSTILE_*` variable
+   left over from an earlier release is ignored.
 
    `PUBLIC_API_SERVICE_TOKEN` is the one worth understanding rather than
    pasting. The public site renders pages on the server, so every

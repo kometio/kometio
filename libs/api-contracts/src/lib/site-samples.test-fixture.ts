@@ -89,6 +89,7 @@ export const siteRecordSample = {
   themeFaviconUrl: null,
   themeOverridesEnabled: true,
   themeMotionEnabled: true,
+  newsletterCaptchaEnabled: true,
   themeAllowedTrackerDomains: themeSettingsSample.allowedTrackerDomains,
   themeTrackerScripts: themeSettingsSample.trackerScripts,
   cookieBannerSettings: DEFAULT_COOKIE_BANNER_SETTINGS,

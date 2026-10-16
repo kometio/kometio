@@ -37,6 +37,13 @@ export interface SiteProps {
   /** Whether the site moves (docs/adr/0141): the owner's switch, `true` for every site that existed before it. */
   themeMotionEnabled: boolean;
   themeAllowedTrackerDomains: TrackerDomainEntry[];
+  /**
+   * Whether the newsletter signup of this site asks for a captcha
+   * (docs/adr/0145). Site-wide because the block has no entity of its own to
+   * carry the choice and the server has to be the one that knows it. `true`
+   * for every site that existed before it.
+   */
+  newsletterCaptchaEnabled: boolean;
   /** GDPR/privacy: `null` keeps every form_submissions row forever (default, unchanged from before this field existed). A positive integer is how many days a submission survives past its createdAt before the scheduled cleanup deletes it. */
   formSubmissionRetentionDays: number | null;
   /** Categorized tracker snippets (docs/adr/0039) — see themeSettings getter. */
@@ -78,6 +85,10 @@ export type UpdateThemeSettingsInput = ThemeSettings;
 export interface UpdateFormSubmissionRetentionInput {
   /** `null` = keep forever. A number must be a positive integer (validated at the schema layer, libs/api-contracts/src/lib/site-requests.ts). */
   formSubmissionRetentionDays: number | null;
+}
+
+export interface UpdateNewsletterCaptchaInput {
+  newsletterCaptchaEnabled: boolean;
 }
 
 export type UpdateCookieBannerSettingsInput = CookieBannerSettings;
@@ -166,6 +177,11 @@ export class Site {
     return this.props.createdAt;
   }
 
+  /** Whether the newsletter signup asks for a captcha. See SiteProps.newsletterCaptchaEnabled. */
+  get newsletterCaptchaEnabled(): boolean {
+    return this.props.newsletterCaptchaEnabled;
+  }
+
   /** `null` = keep every form_submissions row forever. See UpdateFormSubmissionRetentionInput. */
   get formSubmissionRetentionDays(): number | null {
     return this.props.formSubmissionRetentionDays;
@@ -248,6 +264,10 @@ export class Site {
     input: UpdateFormSubmissionRetentionInput,
   ): void {
     this.props.formSubmissionRetentionDays = input.formSubmissionRetentionDays;
+  }
+
+  updateNewsletterCaptcha(input: UpdateNewsletterCaptchaInput): void {
+    this.props.newsletterCaptchaEnabled = input.newsletterCaptchaEnabled;
   }
 
   updateThemeSettings(input: UpdateThemeSettingsInput): void {

@@ -108,14 +108,17 @@ MAILPIT_PORT=18025
 EDITOR_URL="http://localhost:${EDITOR_PORT}"
 API_URL="http://localhost:${API_PORT}/api"
 SITE_URL="http://localhost:${SITE_PORT}"
-# Cloudflare's published test keys, which accept every captcha. Only the main
-# installation is given them: the end-to-end suite logs in through the API with a
-# placeholder token, and its form test waits for Turnstile's field, so both need
-# a captcha that passes. The first-run installation is given none, as the
-# quickstart has it, and its login and its public form go through the captcha
-# built into Kometio (docs/adr/0103).
-TURNSTILE_TEST_SITE_KEY=1x00000000000000000000AA
-TURNSTILE_TEST_SECRET_KEY=1x0000000000000000000000000000000AA
+# What answers the captcha of a request that has no browser: the API's own
+# challenge, solved the way the widget solves it (docs/adr/0103). It needs
+# nothing but node, which is what this script asks of the machine.
+SOLVE_CAPTCHA="$(git rev-parse --show-toplevel)/tools/solve-captcha.mjs"
+# A request body for /auth/login, with a captcha solved for it: a token is spent
+# once, so each login asks for its own. $1 the API's address, $2 the password.
+login_body() {
+  local captcha
+  captcha="$(node "$SOLVE_CAPTCHA" "$1")"
+  printf '{"email":"%s","password":"%s","captchaToken":"%s"}' "$ADMIN_EMAIL" "$2" "$captcha"
+}
 
 ADMIN_EMAIL="check-admin@example.test"
 # Invited in the first-run test, on an installation with no mail server.
@@ -254,12 +257,11 @@ check "every page that tells a person which version of the image to run says the
 
 # --- the first run, in a browser ------------------------------------------------
 #
-# On an installation of its own, started the way the quickstart says: no captcha
-# key, no mail server, and an address only because this machine's default ports
-# may be taken. The main installation below is given a captcha key and a mail
-# server so that the rest of the suite can use them, and that hides what a person
-# meets first (docs/adr/0101): a login button that stayed disabled for lack of a
-# key, a login left on the host by another installation, a site "not found".
+# On an installation of its own, started the way the quickstart says: no mail
+# server, and an address only because this machine's default ports may be taken.
+# The main installation below is given a mail server so that the rest of the
+# suite can use it, and that hides what a person meets first (docs/adr/0101): a
+# login left on the host by another installation, a site "not found".
 #
 # It runs twice, on two installations that differ only in how they are reached:
 # on plain ports, and on a server with a name over HTTPS (below).
@@ -299,9 +301,9 @@ first_run() {
   fi
   check "a password reset with no mail server is written to the log, link included" \
     grep -q "${editor_url}/reset-password?resetToken=" <<<"$log"
-  # With no Turnstile keys the captcha is the built-in one, and it hands out a
-  # signed challenge to anyone who asks (the login of the test above solved one).
-  check "with no Turnstile keys the API hands out a challenge of its own" \
+  # The captcha is the one built into Kometio (docs/adr/0103), and it hands out
+  # a signed challenge to anyone who asks (the login of the test above solved one).
+  check "the API hands out a challenge of its own" \
     sh -c "curl -skf '${api_url}/captcha/challenge' | grep -q '\"signature\"'"
 }
 
@@ -373,7 +375,6 @@ docker run -d --name "$NAME" \
   -e "API_PUBLIC_URL=${API_URL}" \
   -e "PUBLIC_SITE_URL=${SITE_URL}" \
   -e SMTP_HOST=host.docker.internal -e "SMTP_PORT=${SMTP_PORT}" -e SMTP_FROM_ADDRESS=kometio@localhost \
-  -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}" \
   -v "${VOLUME}:/data" \
   "$IMAGE" >/dev/null
 seconds="$(wait_for_banners 1)"
@@ -386,13 +387,15 @@ check "the API answers its health check" curl -sf "${API_URL}/health"
 check "it says it has not been set up" sh -c "curl -s '${API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":false'"
 SHOWN_TOKEN="$(setup_token)"
 check "the banner shows a setup token (43 characters)" test "${#SHOWN_TOKEN}" = 43
-check "the editor serves its three addresses and the captcha key" sh -c "
+check "the editor serves its two addresses" sh -c "
   curl -s '${EDITOR_URL}/config.js' | grep -q 'apiUrl.*${API_URL}' &&
-  curl -s '${EDITOR_URL}/config.js' | grep -q 'publicSiteUrl.*${SITE_URL}' &&
-  curl -s '${EDITOR_URL}/config.js' | grep -q 'turnstileSiteKey.*${TURNSTILE_TEST_SITE_KEY}'"
-check "the editor's policy lets the captcha load" sh -c "curl -sI '${EDITOR_URL}/' | grep -i content-security-policy | grep -q challenges.cloudflare.com"
-# The other half of the rule: with Cloudflare's keys there is no challenge of ours.
-check "with Turnstile keys the API has no challenge of its own (404)" test "$(status_code "${API_URL}/captcha/challenge")" = 404
+  curl -s '${EDITOR_URL}/config.js' | grep -q 'publicSiteUrl.*${SITE_URL}'"
+# The captcha is solved in the page and checked by the API: nothing is loaded
+# from, or sent to, anyone else (docs/adr/0145).
+check "the editor's policy names no one else for scripts or frames" \
+  sh -c "! curl -sI '${EDITOR_URL}/' | grep -i content-security-policy | grep -qi 'cloudflare'"
+check "the API hands out a challenge, signed" \
+  sh -c "curl -sf '${API_URL}/captcha/challenge' | grep -q '\"signature\"'"
 # Its own health check, not a page: until the first account exists the site has
 # no tenant to show, and its pages answer 500.
 check "the public site answers its health check" curl -sf "${SITE_URL}/api/health"
@@ -521,7 +524,6 @@ if [ -n "$UPGRADE_FROM" ]; then
       -e "EDITOR_APP_URL=${UPGRADE_EDITOR_URL}" \
       -e "API_PUBLIC_URL=${UPGRADE_API_URL}" \
       -e "PUBLIC_SITE_URL=${UPGRADE_SITE_URL}" \
-      -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}" \
       -v "${UPGRADE_VOLUME}:/data" \
       "$1" >/dev/null
   }
@@ -536,7 +538,6 @@ if [ -n "$UPGRADE_FROM" ]; then
   # sends them: bash expands a brace pair there (`{"a":"b","c":"d"}`) into words
   # when a $(...) is nested in the string.
   UPGRADE_SETUP_BODY="{\"setupToken\":\"$(setup_token "$UPGRADE")\",\"siteName\":\"Upgrade Site\",\"defaultLocale\":\"en\",\"domain\":\"localhost\",\"adminEmail\":\"${ADMIN_EMAIL}\",\"adminPassword\":\"${UPGRADE_PASSWORD}\"}"
-  UPGRADE_LOGIN_BODY="{\"email\":\"${ADMIN_EMAIL}\",\"password\":\"${UPGRADE_PASSWORD}\",\"captchaToken\":\"x\"}"
   check "the previous release is set up, as it asks" \
     test "$(status_code -c "$UPGRADE_COOKIES" -H 'content-type: application/json' \
       -d "$UPGRADE_SETUP_BODY" "${UPGRADE_API_URL}/setup")" = 201
@@ -597,9 +598,11 @@ if [ -n "$UPGRADE_FROM" ]; then
     check "the session made before is still valid" \
       test "$(status_code -b "$UPGRADE_COOKIES" "${UPGRADE_API_URL}/auth/session")" = 200
   fi
+  # A captcha is asked of the server that checks it, now and not at the start: a
+  # challenge lives ten minutes, and the upgrade took longer than that to get here.
   check "the same password signs in" \
     test "$(status_code -H 'content-type: application/json' \
-      -d "$UPGRADE_LOGIN_BODY" "${UPGRADE_API_URL}/auth/login")" = 200
+      -d "$(login_body "$UPGRADE_API_URL" "$UPGRADE_PASSWORD")" "${UPGRADE_API_URL}/auth/login")" = 200
   check "the page is served as it was" \
     sh -c "curl -sfL '${UPGRADE_SITE_URL}/en/made-before-the-upgrade' | grep -q 'Made before the upgrade'"
   check "the file is served as it was" \
@@ -804,19 +807,19 @@ docker run -d --name "$MOVED" \
   -e "EDITOR_APP_URL=http://localhost:${MOVED_EDITOR_PORT}" \
   -e "API_PUBLIC_URL=http://localhost:${MOVED_API_PORT}/api" \
   -e "PUBLIC_SITE_URL=http://moved.localhost:${MOVED_SITE_PORT}" \
-  -e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}" \
   -v "${MOVED_VOLUME}:/data" \
   "$IMAGE" >/dev/null
 wait_for_banners 1 "$MOVED" >/dev/null
 MOVED_API_URL="http://localhost:${MOVED_API_PORT}/api"
 check "the moved site is already set up: no wizard" sh -c "curl -s '${MOVED_API_URL}/setup/status' | grep -q '\"hasBeenSetUp\":true'"
 check "and it asks for no setup token" test -z "$(setup_token "$MOVED")"
-# Cloudflare's test secret is checked by a call to Cloudflare, which a busy minute
-# can refuse; the account is what is being proved here, so a refusal is asked again.
+# The account is what is being proved here, and a busy minute can refuse a
+# request for a reason that has nothing to do with it, so a refusal is asked
+# again, with a captcha of its own: a solved one is spent by the attempt.
 LOGIN_CODE=000
 for attempt in 1 2 3; do
   LOGIN_CODE="$(status_code -H 'content-type: application/json' -H "Origin: http://localhost:${MOVED_EDITOR_PORT}" \
-    -d "{\"email\":\"${ADMIN_EMAIL}\",\"password\":\"${ADMIN_PASSWORD}\",\"captchaToken\":\"x\"}" "${MOVED_API_URL}/auth/login")"
+    -d "$(login_body "$MOVED_API_URL" "$ADMIN_PASSWORD")" "${MOVED_API_URL}/auth/login")"
   [ "$LOGIN_CODE" = 200 ] && break
   [ "$attempt" -lt 3 ] && sleep 3
 done
@@ -845,19 +848,11 @@ step "opening the site from the first-run screen, in a browser"
 IMPORTED_EDITOR_URL="http://localhost:${IMPORTED_EDITOR_PORT}"
 IMPORTED_API_URL="http://localhost:${IMPORTED_API_PORT}/api"
 IMPORTED_SITE_URL="http://localhost:${IMPORTED_SITE_PORT}"
-# The browser run uses the captcha built into Kometio, as a new installation has it.
-# Without a browser (the published image's smoke) the account is signed in through the
-# API, which needs a captcha that accepts a placeholder: Cloudflare's test keys.
-IMPORTED_CAPTCHA=()
-if [ "$SMOKE_ONLY" = true ]; then
-  IMPORTED_CAPTCHA=(-e "TURNSTILE_SITE_KEY=${TURNSTILE_TEST_SITE_KEY}" -e "TURNSTILE_SECRET_KEY=${TURNSTILE_TEST_SECRET_KEY}")
-fi
 docker run -d --name "$IMPORTED" \
   -p "${IMPORTED_EDITOR_PORT}:80" -p "${IMPORTED_API_PORT}:3000" -p "${IMPORTED_SITE_PORT}:4322" \
   -e "EDITOR_APP_URL=${IMPORTED_EDITOR_URL}" \
   -e "API_PUBLIC_URL=${IMPORTED_API_URL}" \
   -e "PUBLIC_SITE_URL=${IMPORTED_SITE_URL}" \
-  ${IMPORTED_CAPTCHA[@]+"${IMPORTED_CAPTCHA[@]}"} \
   -v "${IMPORTED_VOLUME}:/data" \
   "$IMAGE" >/dev/null
 wait_for_banners 1 "$IMPORTED" >/dev/null
@@ -906,7 +901,7 @@ else
   LOGIN_CODE=000
   for attempt in 1 2 3; do
     LOGIN_CODE="$(status_code -H 'content-type: application/json' -H "Origin: ${IMPORTED_EDITOR_URL}" \
-      -d "{\"email\":\"${ADMIN_EMAIL}\",\"password\":\"${ADMIN_PASSWORD}\",\"captchaToken\":\"x\"}" "${IMPORTED_API_URL}/auth/login")"
+      -d "$(login_body "$IMPORTED_API_URL" "$ADMIN_PASSWORD")" "${IMPORTED_API_URL}/auth/login")"
     [ "$LOGIN_CODE" = 200 ] && break
     [ "$attempt" -lt 3 ] && sleep 3
   done

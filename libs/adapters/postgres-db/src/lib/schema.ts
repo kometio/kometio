@@ -254,6 +254,11 @@ export const sites = pgTable(
     // the overrides gate above, and true by default: every site that existed
     // before this column moved exactly as its theme said.
     themeMotionEnabled: boolean('theme_motion_enabled').notNull().default(true),
+    // Whether the newsletter signup asks for a captcha (docs/adr/0145). On for
+    // every site that existed before it.
+    newsletterCaptchaEnabled: boolean('newsletter_captcha_enabled')
+      .notNull()
+      .default(true),
     // ADR-0031 — admin-managed CSP domain whitelist for trackers beyond the
     // hardcoded GTM/GA4/Meta Pixel allowlist. Independent of
     // themeOverridesEnabled above: a tracker script shouldn't stop running
@@ -1170,6 +1175,9 @@ export const forms = pgTable(
       .array()
       .notNull()
       .default([]),
+    // Whether a visitor solves the captcha built into Kometio to send this form
+    // (docs/adr/0145). On for every form that existed before it.
+    captchaEnabled: boolean('captcha_enabled').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

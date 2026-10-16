@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { test as setup, expect } from '@playwright/test';
+import { solvedCaptchaToken } from './support/captcha';
 import { environment } from './support/environment';
 
 /**
@@ -13,8 +14,8 @@ import { environment } from './support/environment';
  * suite a few times in a row would otherwise lock the account out of its
  * own editor. CI starts from nothing every time, so it always logs in.
  *
- * The captcha token is a placeholder: the stack runs with Cloudflare's
- * "always passes" test keys wherever this suite runs.
+ * The captcha is solved the way the widget solves it, from the stack's own
+ * challenge: there is no key that makes it pass for a placeholder.
  */
 setup('log in as the admin', async ({ playwright }) => {
   const saved = await playwright.request
@@ -36,7 +37,7 @@ setup('log in as the admin', async ({ playwright }) => {
     data: {
       email: environment.adminEmail,
       password: environment.adminPassword,
-      captchaToken: 'e2e',
+      captchaToken: await solvedCaptchaToken(),
     },
   });
   expect(response.ok(), await response.text()).toBe(true);

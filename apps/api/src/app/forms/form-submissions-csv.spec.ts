@@ -16,6 +16,7 @@ function form(fields: { id: string; label: string }[]): Form {
     })),
     steps: [],
     notificationEmails: [],
+    captchaEnabled: true,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
   });

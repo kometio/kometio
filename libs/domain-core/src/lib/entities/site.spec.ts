@@ -28,6 +28,7 @@ describe('Site entity', () => {
     themeFaviconUrl: null,
     themeOverridesEnabled: true,
     themeMotionEnabled: true,
+    newsletterCaptchaEnabled: true,
     themeAllowedTrackerDomains: [],
     formSubmissionRetentionDays: null,
     themeTrackerScripts: [],
@@ -159,6 +160,17 @@ describe('Site entity', () => {
 
     site.updateFormSubmissionRetention({ formSubmissionRetentionDays: null });
     expect(site.formSubmissionRetentionDays).toBeNull();
+  });
+
+  it("updateNewsletterCaptcha turns the newsletter signup's captcha off and on", () => {
+    const site = Site.fromProps(props);
+    expect(site.newsletterCaptchaEnabled).toBe(true);
+
+    site.updateNewsletterCaptcha({ newsletterCaptchaEnabled: false });
+    expect(site.newsletterCaptchaEnabled).toBe(false);
+
+    site.updateNewsletterCaptcha({ newsletterCaptchaEnabled: true });
+    expect(site.newsletterCaptchaEnabled).toBe(true);
   });
 
   it('updateLocaleSettings replaces default/enabled locales and the fallback', () => {
