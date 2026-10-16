@@ -67,7 +67,7 @@ describe('SaveBar', () => {
     renderBar({ isSaving: true });
 
     expect(
-      screen.getByRole('button', { name: 'Salvataggio in corso...' }),
+      screen.getByRole('button', { name: 'Salvataggio in corso…' }),
     ).toHaveProperty('disabled', true);
     expect(screen.getByRole('button', { name: 'Annulla' })).toHaveProperty(
       'disabled',

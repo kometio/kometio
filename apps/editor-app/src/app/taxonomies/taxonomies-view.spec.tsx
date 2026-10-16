@@ -182,7 +182,7 @@ describe('TaxonomiesView', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Crea' }));
 
-    expect(await screen.findByText('Categoria “Famiglia” creata')).toBeTruthy();
+    expect(await screen.findByText('Categoria «Famiglia» creata')).toBeTruthy();
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
@@ -249,7 +249,7 @@ describe('TaxonomiesView', () => {
       }),
     );
     expect(
-      await screen.findByText('Categoria rinominata in “Famiglia”'),
+      await screen.findByText('Categoria rinominata in «Famiglia»'),
     ).toBeTruthy();
   });
 
@@ -270,8 +270,10 @@ describe('TaxonomiesView', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Elimina' }));
 
     const dialog = await screen.findByRole('alertdialog');
-    within(dialog).getByText(`Eliminare la categoria “${taxonomy.name.it}”?`);
-    await within(dialog).findByText(/I suoi 2 termini verranno eliminati/);
+    within(dialog).getByText(`Eliminare la categoria «${taxonomy.name.it}»?`);
+    await within(dialog).findByText(
+      /Verranno eliminati anche i suoi 2 termini/,
+    );
     expect(vi.mocked(api.deleteTaxonomy)).not.toHaveBeenCalled();
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Elimina' }));
@@ -280,7 +282,7 @@ describe('TaxonomiesView', () => {
       expect(vi.mocked(api.deleteTaxonomy)).toHaveBeenCalledWith('taxonomy-1'),
     );
     expect(
-      await screen.findByText(`Categoria “${taxonomy.name.it}” eliminata`),
+      await screen.findByText(`Categoria «${taxonomy.name.it}» eliminata`),
     ).toBeTruthy();
   });
 });

@@ -1,11 +1,11 @@
 {
   "common": {
-    "loading": "Caricamento...",
+    "loading": "Caricamento…",
     "error": "Si è verificato un errore.",
     "retry": "Riprova",
     "cancel": "Annulla",
     "save": "Salva",
-    "saving": "Salvataggio in corso...",
+    "saving": "Salvataggio in corso…",
     "delete": "Elimina",
     "yes": "Sì",
     "no": "No",
@@ -33,7 +33,7 @@
       "emailLabel": "Email",
       "passwordLabel": "Password",
       "submitIdle": "Accedi",
-      "submitPending": "Accesso in corso...",
+      "submitPending": "Accesso in corso…",
       "invalidCredentials": "Email o password non corretti.",
       "forgotPassword": "Password dimenticata?",
       "imported": "Il sito è qui. Accedi con l’account che avevi nell’altra installazione."
@@ -41,11 +41,11 @@
     "forgotPassword": {
       "title": "Password dimenticata",
       "description": "Inserisci la tua email per ricevere un link di reimpostazione",
-      "sentMessage": "Se l'indirizzo esiste, ti abbiamo inviato un'email con le istruzioni per reimpostare la password.",
+      "sentMessage": "Se l’indirizzo esiste, ti abbiamo inviato un’email con le istruzioni per reimpostare la password.",
       "sentMessageNoEmail": "Se questo indirizzo ha un account, il link è stato creato, ma questa installazione non può inviare email: lo trovi nel log del server.",
       "backToLogin": "Torna al login",
       "submitIdle": "Invia link di reset",
-      "submitPending": "Invio in corso..."
+      "submitPending": "Invio in corso…"
     },
     "resetPassword": {
       "title": "Reimposta la password",
@@ -54,12 +54,12 @@
       "newPasswordLabel": "Nuova password",
       "error": "Il link non è valido o è scaduto. Richiedi un nuovo link di reset.",
       "submitIdle": "Reimposta password",
-      "submitPending": "Salvataggio..."
+      "submitPending": "Salvataggio…"
     },
     "verifyEmail": {
       "title": "Verifica email",
       "description": "Conferma del tuo indirizzo email",
-      "pending": "Verifica in corso...",
+      "pending": "Verifica in corso…",
       "success": "Email verificata con successo.",
       "error": "Il link non è valido o è scaduto. Richiedi un nuovo link di verifica dal tuo account."
     },
@@ -70,13 +70,13 @@
       "passwordLabel": "Password",
       "error": "Il link non è valido o è scaduto. Chiedi a un amministratore di inviarti un nuovo invito.",
       "submitIdle": "Completa la registrazione",
-      "submitPending": "Salvataggio..."
+      "submitPending": "Salvataggio…"
     },
     "logout": "Esci",
     "confirmEmailChange": {
       "title": "Conferma la nuova email",
       "description": "Conferma del tuo nuovo indirizzo di accesso",
-      "pending": "Conferma in corso...",
+      "pending": "Conferma in corso…",
       "success": "L’email è stata cambiata. Usala al prossimo accesso.",
       "error": "Il link non è valido o è scaduto, oppure l’indirizzo è stato preso da un’altra persona. Chiedi di nuovo il cambio dal tuo profilo.",
       "toEditor": "Vai al tuo profilo"
@@ -90,8 +90,8 @@
       "submitIdle": "Accedi",
       "submitPending": "Controllo…",
       "startAgain": "Ricomincia dalla password",
-      "recoveryCodeUsed_one": "Hai acceduto con un codice di recupero. Te ne resta {{count}}: creane di nuovi dal tuo account.",
-      "recoveryCodeUsed_other": "Hai acceduto con un codice di recupero. Te ne restano {{count}}: creane di nuovi dal tuo account.",
+      "recoveryCodeUsed_one": "Hai effettuato l’accesso con un codice di recupero. Te ne resta {{count}}: creane di nuovi dal tuo account.",
+      "recoveryCodeUsed_other": "Hai effettuato l’accesso con un codice di recupero. Te ne restano {{count}}: creane di nuovi dal tuo account.",
       "locked": "Troppi codici sbagliati. Aspetta qualche minuto, oppure usa uno dei tuoi codici di recupero.",
       "tooManyTries": "Troppi tentativi in poco tempo. Aspetta un minuto e riprova."
     }
@@ -101,7 +101,7 @@
     "body": "Reset della password, cambi di email e notifiche dei moduli non vengono spediti: finiscono nel log del server, con i loro link. Un invito ti mostra il suo link quando lo crei, da mandare tu. Imposta SMTP_HOST (e le altre impostazioni SMTP) sul server per spedirli tutti."
   },
   "demo": {
-    "notice": "Questa è una demo. Altre persone possono provarla nello stesso momento e ogni tanto ricomincia da capo: quello che fai qui non viene conservato. Il caricamento di file e l'account condiviso sono disattivati.",
+    "notice": "Questa è una demo. Altre persone possono provarla nello stesso momento e ogni tanto ricomincia da capo: quello che fai qui non viene conservato. Il caricamento di file e l’account condiviso sono disattivati.",
     "uploadsOff": "Nella demo il caricamento di file è disattivato.",
     "accountShared": "Nella demo tutti accedono con questo account, quindi nome, immagine, indirizzo e password non si modificano da qui."
   },
@@ -109,18 +109,18 @@
     "title": "Benvenuto in Kometio",
     "description": "Questa installazione non è ancora configurata. Crea il tuo account amministratore per iniziare.",
     "tokenLabel": "Token di installazione",
-    "tokenHint": "Viene stampato nel log dell'API all'avvio. Con Docker: «docker logs kometio» per l'installazione a immagine unica, «docker compose logs api» per lo stack compose. Dimostra che sei tu a gestire questo server, così nessun altro può rivendicare l'installazione prima di te.",
-    "tokenError": "Token di installazione non valido. Viene stampato nel log dell'API e cambia a ogni riavvio: ricontrolla il log e usa il più recente.",
+    "tokenHint": "Viene stampato nel log dell’API all’avvio. Con Docker: «docker logs kometio» per l’installazione a immagine unica, «docker compose logs api» per lo stack compose. Dimostra che sei tu a gestire questo server, così nessun altro può rivendicare l’installazione prima di te.",
+    "tokenError": "Token di installazione non valido. Viene stampato nel log dell’API e cambia a ogni riavvio: ricontrolla il log e usa il più recente.",
     "siteNameLabel": "Nome del sito",
     "localeLabel": "Lingua predefinita",
     "localeHint": "La lingua in cui nascono i contenuti del sito. Puoi aggiungerne altre più avanti, dalle impostazioni del sito.",
     "domainLabel": "Dominio",
-    "domainHint": "L'indirizzo del tuo sito come lo digitano i visitatori: senza http:// e senza percorso (per esempio www.iltuosito.it). Abbiamo inserito quello per cui è configurata questa installazione; cambialo se il sito sarà altrove, oppure svuotalo per impostarlo dopo nelle Impostazioni. Finché un sito non ne ha uno, il suo indirizzo risponde «non trovato».",
+    "domainHint": "L’indirizzo del tuo sito come lo digitano i visitatori: senza http:// e senza percorso (per esempio www.iltuosito.it). Abbiamo inserito quello per cui è configurata questa installazione; cambialo se il sito sarà altrove, oppure svuotalo per impostarlo dopo nelle Impostazioni. Finché un sito non ne ha uno, il suo indirizzo risponde «non trovato».",
     "emailLabel": "La tua email",
     "passwordLabel": "Password",
-    "passwordHint": "Almeno {{count}} caratteri. Questo è l'account che nessuno può sbloccare al posto tuo: scegli bene.",
+    "passwordHint": "Almeno {{count}} caratteri. Questo è l’account che nessuno può sbloccare al posto tuo: scegli bene.",
     "submitIdle": "Crea il mio account",
-    "submitPending": "Configurazione in corso...",
+    "submitPending": "Configurazione in corso…",
     "genericError": "Qualcosa è andato storto. Ricarica la pagina e riprova — se questa installazione era già configurata verrai portato alla pagina di accesso.",
     "import": {
       "choose": "Ho già un sito di un’altra installazione",
@@ -130,7 +130,7 @@
       "fileHint": "Il file .tar.gz creato da Impostazioni → Esporta, o da «export» da riga di comando. Viene letto da questo server e non esce da qui.",
       "fileMissing": "Scegli prima il file dell’archivio.",
       "submit": "Apri il sito",
-      "submitPending": "Apro il sito...",
+      "submitPending": "Apertura del sito…",
       "back": "Crea invece un sito nuovo",
       "uploading": "Invio dell’archivio",
       "progress": "{{sent}} di {{total}}",
@@ -165,7 +165,7 @@
     "fallbackLanguage": "Gli esempi esistono in italiano e in inglese. Il tuo sito è in {{language}}, quindi arrivano in inglese: i testi li riscriverai comunque.",
     "choose": "Scegli un esempio, oppure una pagina vuota.",
     "continue": "Continua",
-    "creating": "Sto creando il sito…",
+    "creating": "Creazione del sito…",
     "error": "L’esempio non è stato creato. Riprova.",
     "notBlank": "Questo sito ha già dei contenuti suoi, quindi non si può aggiungere un esempio.",
     "themeMissing": "Usa il tema «{{theme}}», che questa installazione non ha, quindi qui non si può creare. Scegli un altro esempio, oppure una pagina vuota: userà il tema che hai.",
@@ -202,13 +202,13 @@
       "label": "Account",
       "menuLabel": "Account: {{name}}",
       "profile": "Il mio profilo",
-      "language": "Lingua dell'interfaccia",
+      "language": "Lingua dell’interfaccia",
       "theme": "Tema",
       "themeLight": "Chiaro",
       "themeDark": "Scuro",
       "themeSystem": "Come il sistema",
-      "languageHint": "È anche la lingua delle mail che ti inviamo.",
-      "languageNotSaved": "Lingua cambiata qui, ma non salvata: le mail ti arriveranno ancora nella lingua di prima."
+      "languageHint": "È anche la lingua delle email che ti mandiamo.",
+      "languageNotSaved": "Lingua cambiata qui, ma non salvata: le email ti arriveranno ancora nella lingua di prima."
     },
     "menu": {
       "open": "Apri il menu",
@@ -314,7 +314,7 @@
       "tooShort": "La nuova password deve avere almeno {{min}} caratteri.",
       "mismatch": "Le due password non coincidono.",
       "submit": "Cambia password",
-      "busy": "Cambio in corso...",
+      "busy": "Cambio in corso…",
       "done": "Password cambiata. Ogni altro accesso è stato chiuso.",
       "failed": "La password non è stata cambiata. Riprova."
     },
@@ -327,7 +327,7 @@
       "unchanged": "Questa è già la tua email.",
       "taken": "Questo indirizzo è già usato da un’altra persona.",
       "submit": "Invia il link",
-      "busy": "Invio in corso...",
+      "busy": "Invio in corso…",
       "sentTitle": "Controlla la posta",
       "sent": "Abbiamo mandato un link a {{email}}. Finché non lo apri continui ad accedere con {{current}}.",
       "sentNoEmailTitle": "Nessuna email è partita",
@@ -362,7 +362,7 @@
       "codeMismatch": "Il codice non corrisponde. Controlla l’app e riprova.",
       "alreadyOn": "La verifica in due passaggi è già attiva.",
       "startAgain": "Questa procedura è stata sostituita o è scaduta. Chiudi la finestra e ricomincia.",
-      "failed": "Non è andata a buon fine. Riprova.",
+      "failed": "La verifica in due passaggi non è stata modificata. Riprova.",
       "codesIntro_one": "{{count}} codice di recupero. Lo vedi solo ora.",
       "codesIntro_other": "{{count}} codici di recupero. Li vedi solo ora.",
       "codesLabel": "Codici di recupero",
@@ -488,7 +488,7 @@
       "statusPendingShort": "Modifiche non pubblicate",
       "reorderFailed": "Non è stato possibile salvare il nuovo ordine. Ricarica la pagina e riprova.",
       "duplicateFailed": "Non è stato possibile duplicare la pagina. Riprova.",
-      "deleteFailed": "Non è stato possibile cancellare la pagina. Riprova.",
+      "deleteFailed": "Non è stato possibile eliminare la pagina. Riprova.",
       "selectRow": "Seleziona {{title}}",
       "selectAll": "Seleziona tutte le pagine",
       "selection": {
@@ -515,16 +515,16 @@
     "newPageDialog": {
       "title": "Nuova pagina",
       "nameLabel": "Nome pagina",
-      "parentLabel": "Pagina genitore (opzionale)",
+      "parentLabel": "Pagina superiore (facoltativa)",
       "slugPreview": "URL: {{slug}}",
       "cancel": "Annulla",
       "create": "Crea",
-      "creating": "Creazione in corso...",
+      "creating": "Creazione in corso…",
       "slugTaken": "Esiste già una pagina con questo nome in questo sito.",
       "templateLabel": "Parti da",
       "templateHint": "I blocchi del template vengono copiati nella pagina nuova: dopo, la pagina è libera di cambiare.",
       "templateUnavailable": "Quel template non è più disponibile. Scegline un altro.",
-      "parentUnavailable": "La pagina madre non esiste più. Scegline un'altra.",
+      "parentUnavailable": "La pagina superiore non esiste più. Scegline un’altra.",
       "failed": "Non è stato possibile creare la pagina.",
       "nameTooLong": "Il nome è troppo lungo per diventare un indirizzo: al massimo {{max}} caratteri."
     },
@@ -535,16 +535,16 @@
       "descriptionLabel": "Descrizione SEO",
       "cancel": "Annulla",
       "confirm": "Crea copia",
-      "duplicating": "Duplicazione in corso...",
+      "duplicating": "Duplicazione in corso…",
       "slugTaken": "Esiste già una pagina con questo URL in questo sito."
     },
     "deleteDialog": {
-      "description": "\"{{name}}\" e tutte le sue versioni verranno eliminate definitivamente. L'azione non può essere annullata.",
-      "descriptionWithTranslations": "\"{{name}}\" e tutte le sue versioni verranno eliminate definitivamente. Questa pagina è nella lingua predefinita del sito e ha traduzioni in altre lingue ({{locales}}): dopo l'eliminazione, i visitatori che richiedono una lingua senza traduzione non verranno più reindirizzati qui automaticamente. L'azione non può essere annullata.",
-      "hasChildren": "Questa pagina ha delle sottopagine: cancellandola resterebbero a indirizzi che non esistono più. Spostale sotto un'altra pagina, o cancellale, prima.",
+      "description": "«{{name}}» e tutte le sue versioni verranno eliminate per sempre. Non si può annullare.",
+      "descriptionWithTranslations": "«{{name}}» e tutte le sue versioni verranno eliminate per sempre. È la pagina nella lingua predefinita del sito e ha traduzioni in altre lingue ({{locales}}): dopo l’eliminazione, chi apre il sito in una lingua senza traduzione non verrà più indirizzato qui. Non si può annullare.",
+      "hasChildren": "Questa pagina ha delle sottopagine: se la elimini, resterebbero a indirizzi che non esistono più. Prima spostale sotto un’altra pagina, oppure eliminale.",
       "title_one": "Eliminare questa pagina?",
       "title_other": "Eliminare {{count}} pagine?",
-      "descriptionMany": "{{names}} e tutte le loro versioni verranno eliminate definitivamente. L’azione non può essere annullata.",
+      "descriptionMany": "{{names}} e tutte le loro versioni verranno eliminate per sempre. Non si può annullare.",
       "subpagesMoveUpNamed_one": "La sottopagina {{children}} passa al primo livello e il suo indirizzo cambia: quello attuale non porterà più da nessuna parte.",
       "subpagesMoveUpNamed_other": "Le {{count}} sottopagine ({{children}}) passano al primo livello e i loro indirizzi cambiano: quelli attuali non porteranno più da nessuna parte.",
       "subpagesMoveUp_one": "Una sottopagina passa al primo livello e il suo indirizzo cambia: quello attuale non porterà più da nessuna parte.",
@@ -552,7 +552,7 @@
     },
     "editor": {
       "backToList": "Pagine",
-      "published": "Pubblicato",
+      "published": "Pubblicata",
       "viewPage": "Visualizza pagina",
       "unpublishedChangesAt": "Modifiche non pubblicate — salvate alle {{time}}",
       "noLanguage": {
@@ -588,7 +588,7 @@
       "noIndexHint": "Chi conosce l’indirizzo la apre comunque. Esce dalla sitemap e si chiede ai motori di ricerca di non elencarla; nella ricerca del sito resta.",
       "cancel": "Annulla",
       "save": "Salva",
-      "saving": "Salvataggio in corso...",
+      "saving": "Salvataggio in corso…",
       "saved": "Impostazioni SEO salvate",
       "saveFailed": "Le impostazioni SEO non sono state salvate. Riprova."
     },
@@ -624,10 +624,10 @@
       "slugLabel": "URL",
       "slugPreview": "URL: {{slug}}",
       "create": "Crea traduzione",
-      "creating": "Creazione in corso...",
+      "creating": "Creazione in corso…",
       "conflict": "Esiste già una traduzione in questa lingua per questa pagina.",
       "drift": "Struttura non allineata",
-      "driftWarning": "L'originale (lingua predefinita) ha blocchi diversi da quando questa traduzione è stata creata o aggiornata l'ultima volta.",
+      "driftWarning": "I blocchi dell’originale, nella lingua predefinita, sono cambiati da quando questa traduzione è stata creata o aggiornata.",
       "markSynced": "Segna come allineata",
       "slugForLocale": "URL in {{locale}}",
       "createFailed": "La versione non è stata aggiunta. Riprova.",
@@ -642,20 +642,20 @@
       "searchPlaceholder": "Cerca per titolo…"
     },
     "parent": {
-      "label": "Pagina genitore",
-      "none": "— Nessuno (livello radice) —",
+      "label": "Pagina superiore",
+      "none": "— Nessuna (primo livello) —",
       "hint": "La pagina vive sotto quella che scegli, e il suo indirizzo comincia con l’indirizzo di quella."
     },
     "moveToCollection": {
       "title": "Sposta in una collezione",
-      "description": "Dove “{{name}}” viene elencata. Mantiene il suo indirizzo, il suo posto nell’albero e tutto quello che ha dentro.",
+      "description": "Dove «{{name}}» viene elencata. Mantiene il suo indirizzo, il suo posto nell’albero e tutto quello che ha dentro.",
       "none": "Pagine (nessuna collezione)",
       "confirm": "Sposta",
       "failed": "Non è stato possibile spostare la pagina."
     },
     "moveToParent": {
       "title": "Sposta nell’albero",
-      "description": "Dove vive “{{name}}”. Cambia il suo indirizzo e quello di tutto ciò che ha sotto: il vecchio indirizzo continua a rispondere, reindirizzando a quello nuovo.",
+      "description": "Dove vive «{{name}}». Cambia il suo indirizzo e quello di tutto ciò che ha sotto: il vecchio indirizzo continua a rispondere, reindirizzando a quello nuovo.",
       "confirm": "Sposta",
       "cancel": "Annulla",
       "failed": "Non è stato possibile spostare la pagina."
@@ -664,7 +664,7 @@
       "open": "Salva come template",
       "nameLabel": "Nome del template",
       "submit": "Salva template",
-      "saved": "Template “{{name}}” salvato: lo trovi quando crei una nuova pagina.",
+      "saved": "Template «{{name}}» salvato: lo trovi quando crei una nuova pagina.",
       "failed": "Non è stato possibile salvare il template.",
       "unsaved": "L’ultima modifica non è arrivata al server, quindi il template non la conterrebbe. Fai una piccola modifica alla pagina per salvarla di nuovo, poi riprova."
     }
@@ -675,7 +675,7 @@
     "nameLabel": "Nome",
     "prefixLabel": "Prefisso URL",
     "prefixPlaceholder": "ricavato dal nome",
-    "prefixHint": "I termini rispondono a /{locale}/{prefisso}/{slug}. Senza prefisso vivono alla radice del sito: più bello, e più facile che vada a sbattere contro l'indirizzo di una pagina.",
+    "prefixHint": "I termini rispondono a /{lingua}/{prefisso}/{slug}. Senza prefisso stanno alla radice del sito: l’indirizzo è più corto, ma è più facile che coincida con quello di una pagina.",
     "rootMounted": "Nessun prefisso (radice del sito)",
     "prefixTaken": "Un’altra categoria o una pagina risponde già a quell’indirizzo.",
     "atRoot": "alla radice del sito",
@@ -691,13 +691,13 @@
     "termSlug": "Slug",
     "termSlugEmpty": "non pubblicato in questa lingua",
     "deleteTerm": "Elimina termine",
-    "addressTaken": "Quell'indirizzo è già occupato da un altro termine o da una pagina.",
+    "addressTaken": "Quell’indirizzo è già occupato da un altro termine o da una pagina.",
     "pageTitle": "Categorie",
     "pageHint": "La stessa per tutte le lingue di questa pagina.",
     "pageEmpty": "Nessuna categoria definita, per ora.",
     "pageSaved": "Categorie della pagina salvate",
     "termDescription": "Descrizione",
-    "termDescriptionHint": "Compare sopra l'elenco delle pagine classificate con questo termine",
+    "termDescriptionHint": "Compare sopra l’elenco delle pagine classificate con questo termine",
     "termSeo": "SEO",
     "termSeoTitle": "SEO di «{{term}}» ({{locale}})",
     "landingPage": "Pagina di destinazione",
@@ -711,31 +711,31 @@
     "termNoindexHint": "La pagina continua a funzionare per chi ci arriva, ma chiede ai motori di non indicizzarla e sparisce dalla sitemap. Utile per un termine con pochissimi contenuti.",
     "deleteTermDialog": {
       "title": "Eliminare questo termine?",
-      "description": "I termini che stanno dentro salgono al primo livello invece di essere eliminati con lui."
+      "description": "I termini che contiene salgono al primo livello invece di essere eliminati insieme a lui."
     },
     "deleteDialog": {
       "description": "Le pagine restano, smettono solo di essere classificate così.",
-      "title": "Eliminare la categoria “{{name}}”?",
+      "title": "Eliminare la categoria «{{name}}»?",
       "noTerms": "Non contiene termini.",
-      "terms_one": "Il suo termine verrà eliminato con lei.",
-      "terms_other": "I suoi {{count}} termini verranno eliminati con lei."
+      "terms_one": "Verrà eliminato anche il suo unico termine.",
+      "terms_other": "Verranno eliminati anche i suoi {{count}} termini."
     },
     "new": "Nuova categoria",
     "createSubmit": "Crea",
-    "creating": "Creazione in corso...",
+    "creating": "Creazione in corso…",
     "hierarchical": "Termini annidati (gerarchia)",
     "hierarchicalHint": "Un termine può stare dentro un altro. Senza, tutti i termini stanno allo stesso livello.",
     "rename": "Rinomina",
     "renameDialog": {
       "title": "Rinomina la categoria"
     },
-    "created": "Categoria “{{name}}” creata",
-    "renamed": "Categoria rinominata in “{{name}}”",
-    "deleted": "Categoria “{{name}}” eliminata",
+    "created": "Categoria «{{name}}» creata",
+    "renamed": "Categoria rinominata in «{{name}}»",
+    "deleted": "Categoria «{{name}}» eliminata",
     "prefixFixed": "Non si cambia dopo la creazione: gli indirizzi dei termini esistenti si romperebbero.",
     "childCount_one": "{{count}} termine dentro",
     "childCount_other": "{{count}} termini dentro",
-    "termDeleted": "Termine “{{name}}” eliminato",
+    "termDeleted": "Termine «{{name}}» eliminato",
     "term": {
       "breadcrumb": "Dove ti trovi",
       "kindOf": "Categoria {{name}}",
@@ -754,8 +754,8 @@
       "downShort": "Giù",
       "failed": "Non è stato possibile cambiare l’ordine. Riprova."
     },
-    "deleteTermFailed": "La voce non è stata eliminata. Riprova.",
-    "addTermFailed": "La voce non è stata aggiunta. Riprova.",
+    "deleteTermFailed": "Il termine non è stato eliminato. Riprova.",
+    "addTermFailed": "Il termine non è stato aggiunto. Riprova.",
     "createFailed": "La categoria non è stata creata. Riprova.",
     "deleteFailed": "La categoria non è stata eliminata. Riprova.",
     "pageSaveFailed": "Le categorie della pagina non sono state salvate. Riprova."
@@ -774,9 +774,9 @@
     "published": "Pubblicata — tutte le pagine che la usano sono aggiornate",
     "nameTaken": "Esiste già una sezione con questo nome.",
     "templates": "Template",
-    "makeReusable": "Trasforma in sezione riusabile",
+    "makeReusable": "Trasforma in sezione condivisa",
     "makeReusableSubmit": "Crea sezione",
-    "makeReusableBusy": "Creazione in corso...",
+    "makeReusableBusy": "Creazione in corso…",
     "usedOnPages_one": "su {{count}} pagina",
     "usedOnPages_other": "su {{count}} pagine",
     "usedNowhere": "non ancora inserita da nessuna parte",
@@ -785,7 +785,7 @@
     "deleteConfirmInTemplates_one": "Sta anche dentro un template: le pagine create da lì in poi avranno una striscia vuota al suo posto.",
     "deleteConfirmInTemplates_other": "Sta anche dentro {{count}} template: le pagine create da lì in poi avranno una striscia vuota al suo posto.",
     "deleteDialog": {
-      "title": "Eliminare “{{name}}”?",
+      "title": "Eliminare «{{name}}»?",
       "unused": "Nessuna pagina la mostra.",
       "usedOnPages_one": "È su una pagina, che non mostrerà più niente al suo posto.",
       "usedOnPages_other": "È su {{count}} pagine, e ognuna non mostrerà più niente al suo posto."
@@ -808,17 +808,17 @@
       "template": "Un template è un punto di partenza: chi crea una pagina da lì ne riceve una copia e poi la cambia come vuole."
     },
     "createSubmit": "Crea",
-    "creating": "Creazione in corso...",
-    "deleteNamed": "Elimina “{{name}}”",
-    "deleted": "“{{name}}” è stato eliminato",
+    "creating": "Creazione in corso…",
+    "deleteNamed": "Elimina «{{name}}»",
+    "deleted": "«{{name}}» è stato eliminato",
     "templateDraftHint": "Pubblicalo per poterlo usare nelle pagine.",
     "rename": "Rinomina",
     "renameDialog": {
       "title": "Rinomina",
       "submit": "Rinomina",
-      "busy": "Salvataggio in corso..."
+      "busy": "Salvataggio in corso…"
     },
-    "renamed": "Nome cambiato in “{{name}}”",
+    "renamed": "Nome cambiato in «{{name}}»",
     "unpublishedTemplates_one": "{{count}} template è in bozza: pubblicalo da Sezioni › Template per usarlo qui.",
     "unpublishedTemplates_other": "{{count}} template sono in bozza: pubblicali da Sezioni › Template per usarli qui.",
     "renameFailed": "La sezione non è stata rinominata. Riprova.",
@@ -836,7 +836,7 @@
     "editor": {
       "backToList": "Header e footer",
       "published": "Pubblicato",
-      "noPageToPreview": "Crea prima una pagina in questa lingua — il canvas ha bisogno di una pagina vera su cui visualizzare l'anteprima di {{section}}.",
+      "noPageToPreview": "Crea prima una pagina in questa lingua — il canvas ha bisogno di una pagina vera su cui visualizzare l’anteprima di {{section}}.",
       "headerSettings": "Impostazioni dell’header",
       "sticky": "Fisso durante lo scorrimento",
       "stickyHint": "L’header resta in cima alla pagina mentre chi visita scorre. Vale subito, senza pubblicare.",
@@ -854,10 +854,10 @@
     },
     "grid": {
       "upload": "Carica file",
-      "uploading": "Caricamento in corso...",
-      "empty": "La libreria è ancora vuota. Carica un file qualsiasi — un'immagine, un video, un PDF — e diventa disponibile per ogni blocco che ne chiede uno.",
+      "uploading": "Caricamento in corso…",
+      "empty": "La libreria è ancora vuota. Carica un file qualsiasi — un’immagine, un video, un PDF — e diventa disponibile per ogni blocco che ne chiede uno.",
       "noMatches": "Nessun file corrisponde a quello che cerchi.",
-      "uploadWarning": "Puoi caricare qualsiasi file, e Kometio non controlla cosa contiene: carica solo file che arrivano da fonti di cui ti fidi. Tutto ciò che non è un'immagine, un video o un audio si scarica quando lo apri, non viene mai mostrato.",
+      "uploadWarning": "Puoi caricare qualsiasi file, e Kometio non controlla cosa contiene: carica solo file che arrivano da fonti di cui ti fidi. Tutto ciò che non è un’immagine, un video o un audio si scarica quando lo apri, non viene mai mostrato.",
       "emptyKind": {
         "image": "Ancora nessuna immagine.",
         "video": "Ancora nessun video.",
@@ -868,13 +868,13 @@
     },
     "deleteDialog": {
       "title": "Eliminare questo file?",
-      "description": "\"{{name}}\" verrà eliminato definitivamente. L'azione non può essere annullata.",
+      "description": "«{{name}}» verrà eliminato per sempre. Non si può annullare.",
       "usedOn_one": "È usato in {{count}} punto del sito: eliminandolo, quel punto resterà vuoto.",
       "usedOn_other": "È usato in {{count}} punti del sito: eliminandolo, quei punti resteranno vuoti."
     },
     "picker": {
       "title": "Scegli un file",
-      "titleImage": "Scegli un'immagine",
+      "titleImage": "Scegli un’immagine",
       "titleVideo": "Scegli un video",
       "titleAudio": "Scegli un audio",
       "titleDocument": "Scegli un documento"
@@ -912,7 +912,7 @@
       "copyFailed": "Non è stato possibile copiare: l’URL è selezionato, premi Ctrl/⌘ + C.",
       "download": "Scarica",
       "delete": "Elimina",
-      "deleted": "“{{name}}” eliminato",
+      "deleted": "«{{name}}» eliminato",
       "nameLabel": "Nome",
       "altLabel": "Testo alternativo",
       "altHint": "Descrive l’immagine a chi non la vede. Lascia vuoto se è solo decorativa.",
@@ -958,7 +958,7 @@
   "icons": {
     "picker": {
       "setsLabel": "Set di icone",
-      "title": "Scegli un'icona",
+      "title": "Scegli un’icona",
       "search": "Cerca icona…",
       "empty": "Nessuna icona trovata.",
       "sets": {
@@ -976,7 +976,7 @@
     }
   },
   "generalSettings": {
-    "nameLabel": "Nome sito",
+    "nameLabel": "Nome del sito",
     "domainLabel": "Dominio",
     "domainPlaceholder": "www.iltuosito.it",
     "domainDescription": "Il dominio su cui è servito il sito (es. www.iltuosito.it). Deve corrispondere esattamente a quello reale, altrimenti le pagine non verranno trovate.",
@@ -993,13 +993,13 @@
     }
   },
   "seoSettings": {
-    "indexingLabel": "Consenti l'indicizzazione",
+    "indexingLabel": "Consenti ai motori di ricerca di indicizzare il sito",
     "indexingDescription": "Se disattivato, il sito chiede ai motori di ricerca di non indicizzarlo (utile durante lo sviluppo, prima del lancio).",
     "indexingDisclaimer": "Nota: è una richiesta, non una garanzia — dipende dal rispetto di questa indicazione da parte dei motori di ricerca.",
     "turnOffConfirm": {
-      "title": "Spegnere l’indicizzazione?",
-      "description": "Google e gli altri motori di ricerca smetteranno di mostrare il sito nei risultati. Puoi riaccenderla quando vuoi, ma il ritorno nei risultati non è immediato.",
-      "action": "Spegni"
+      "title": "Disattivare l’indicizzazione?",
+      "description": "Google e gli altri motori di ricerca smetteranno di mostrare il sito nei risultati. Puoi riattivarla quando vuoi, ma tornare nei risultati non è immediato.",
+      "action": "Disattiva"
     }
   },
   "newsletterSettings": {
@@ -1008,8 +1008,8 @@
     "captchaDisclaimer": "Vale per ogni blocco di iscrizione alla newsletter del sito. Ogni modulo ha il suo interruttore, nella schermata del modulo.",
     "turnOffConfirm": {
       "title": "Smettere di chiedere il captcha?",
-      "description": "Senza, uno script può aggiungere indirizzi alla tua lista come farebbe una persona, anche di gente che non l’ha chiesto. Puoi riaccenderlo quando vuoi.",
-      "action": "Spegni"
+      "description": "Senza il captcha, uno script può aggiungere indirizzi alla tua lista come farebbe una persona, anche di gente che non l’ha chiesto. Puoi riattivarlo quando vuoi.",
+      "action": "Disattiva"
     }
   },
   "formSubmissionRetention": {
@@ -1052,7 +1052,7 @@
       "bottomRight": "In basso a destra",
       "centerModal": "Centrato"
     },
-    "acceptButtonSideLabel": "Lato del bottone di accettazione",
+    "acceptButtonSideLabel": "Lato del pulsante di accettazione",
     "side": {
       "left": "Sinistra",
       "right": "Destra"
@@ -1069,9 +1069,9 @@
     "legalDocumentsLink": "Genera bozze di Privacy Policy, Cookie Policy e Termini",
     "titleLabel": "Titolo",
     "bodyLabel": "Testo",
-    "acceptAllLabel": "Bottone accetta tutti",
-    "rejectAllLabel": "Bottone rifiuta tutti",
-    "customizeLabel": "Bottone personalizza",
+    "acceptAllLabel": "Pulsante «Accetta tutti»",
+    "rejectAllLabel": "Pulsante «Rifiuta tutti»",
+    "customizeLabel": "Pulsante «Personalizza»",
     "preview": {
       "label": "Anteprima del banner cookie",
       "stages": "Momento da mostrare",
@@ -1090,7 +1090,7 @@
   },
   "legalDocuments": {
     "title": "Generatore documenti legali",
-    "intro": "Genera bozze di Privacy Policy, Cookie Policy e Termini e Condizioni a partire dai dati già presenti sul sito. Vengono sempre create come bozze — fai revisionare da un legale prima di pubblicare.",
+    "intro": "Genera bozze di Privacy Policy, Cookie Policy e Termini e Condizioni a partire dai dati già presenti sul sito. Vengono sempre create come bozze: prima di pubblicarle, falle controllare da un avvocato.",
     "step": {
       "identity": "Chi sei",
       "usage": "Cosa raccogli",
@@ -1099,10 +1099,10 @@
     },
     "legalEntityNameLabel": "Ragione sociale",
     "contactEmailLabel": "Email di contatto privacy",
-    "vatIdLabel": "Partita IVA (opzionale)",
+    "vatIdLabel": "Partita IVA (facoltativa)",
     "domainLabel": "Dominio del sito",
-    "addressLabel": "Indirizzo (opzionale)",
-    "phoneLabel": "Telefono (opzionale)",
+    "addressLabel": "Indirizzo (facoltativo)",
+    "phoneLabel": "Telefono (facoltativo)",
     "dataCollectedLabel": "Dati raccolti",
     "dataCollectedHint": "Spunta solo quello che il sito raccoglie davvero — questo testo finisce nella policy generata.",
     "dataCollected": {
@@ -1117,7 +1117,7 @@
     "removeThirdParty": "Rimuovi {{service}}",
     "retentionDaysLabel": "Conservazione moduli inviati (giorni)",
     "retentionDaysPlaceholder": "Lascia vuoto per conservarli per sempre",
-    "retentionDaysHint": "Precompilato dall'impostazione di conservazione dei moduli inviati.",
+    "retentionDaysHint": "Precompilato dall’impostazione di conservazione dei moduli inviati.",
     "documentsLabel": "Quali documenti generare",
     "kind": {
       "privacy-policy": "Privacy Policy",
@@ -1130,31 +1130,31 @@
     "documentsRequired": "Scegli almeno un documento.",
     "localesRequired": "Scegli almeno una lingua.",
     "jurisdictionRequired": "Scegli il paese la cui legge regola i Termini e Condizioni.",
-    "disclaimer": "Questi documenti sono un punto di partenza generato automaticamente, non una consulenza legale. Fai revisionare da un legale prima di pubblicare.",
-    "loadingPreview": "Generazione anteprima in corso...",
-    "previewFailed": "Non è stato possibile generare l'anteprima. Riprova.",
+    "disclaimer": "Questi documenti sono un punto di partenza generato in automatico, non una consulenza legale. Prima di pubblicarli, falli controllare da un avvocato.",
+    "loadingPreview": "Generazione dell’anteprima…",
+    "previewFailed": "Non è stato possibile generare l’anteprima. Riprova.",
     "generateFailed": "Non è stato possibile generare i documenti. Riprova.",
-    "confirmLabel": "Ho capito che sono bozze e verranno revisionate prima della pubblicazione",
+    "confirmLabel": "Ho capito che sono bozze e che vanno controllate prima di pubblicarle",
     "back": "Indietro",
     "next": "Avanti",
     "generate": "Genera bozze",
-    "generating": "Generazione in corso...",
+    "generating": "Generazione…",
     "successTitle": "Bozze create",
     "successHint": "Ogni documento è stato creato come pagina bozza, mai pubblicata automaticamente.",
     "openDraft": "Apri bozza",
     "jurisdictionPlaceholder": "Scegli un paese",
     "legalEntityNameRequired": "Scrivi la ragione sociale.",
-    "contactEmailRequired": "Scrivi l’email a cui scrivere per la privacy.",
+    "contactEmailRequired": "Scrivi l’email a cui i visitatori possono rivolgersi per la privacy.",
     "contactEmailInvalid": "Questa non sembra un’email: controlla che ci sia la @ e il dominio.",
     "domainRequired": "Scrivi il dominio del sito, per esempio esempio.it.",
     "retentionDaysInvalid": "Scrivi un numero intero di giorni, oppure lascia vuoto.",
     "removeThirdPartyShort": "Rimuovi",
     "thirdPartyServiceNameLabel": "Nome del servizio",
     "backToCookies": "Cookie e privacy",
-    "tooManyServices": "Puoi elencare al massimo {{max}} servizi: toglierne qualcuno per continuare."
+    "tooManyServices": "Puoi elencare al massimo {{max}} servizi: rimuovine qualcuno per continuare."
   },
   "themeSettings": {
-    "themeLocked": "Il tema attivo non permette a un sito di stilarlo, quindi niente di quello che c'è in questa pagina — né sui blocchi — arriverà al sito pubblicato. È una scelta del tema stesso, nel suo theme.json.",
+    "themeLocked": "Il tema attivo non permette a un sito di stilarlo, quindi niente di quello che c’è in questa pagina — né sui blocchi — arriverà al sito pubblicato. È una scelta del tema stesso, nel suo theme.json.",
     "title": "Stile del sito",
     "intro": "Queste impostazioni si applicano sopra il tema attivo del sito — lascia un campo disattivato per mantenere il valore predefinito del tema.",
     "overridesEnabledLabel": "Applica queste impostazioni",
@@ -1166,7 +1166,7 @@
     "contrastWarning": "Contrasto basso: con questo colore, il testo del tema raggiunge solo un rapporto di {{ratio}}:1 (consigliato 4.5:1) — potrebbe risultare difficile da leggere.",
     "fontLabel": "Font",
     "fontInherit": "Predefinito del tema",
-    "fontCustom": "Personalizzato (nome Google Fonts)...",
+    "fontCustom": "Personalizzato (nome da Google Fonts)…",
     "fontCustomPlaceholder": "es. Space Grotesk",
     "faviconLabel": "Icona del sito (favicon)",
     "customCssLabel": "CSS personalizzato",
@@ -1196,19 +1196,19 @@
   },
   "integrations": {
     "title": "Integrazioni",
-    "intro": "Script di terze parti (analytics, chat, pixel di tracciamento...) e i domini a cui devono poter parlare.",
+    "intro": "Script di terze parti (analytics, chat, pixel di tracciamento…) e i domini a cui devono poter parlare.",
     "headScriptLabel": "Codice in cima a ogni pagina",
     "bodyScriptLabel": "Codice in fondo a ogni pagina",
-    "scriptDisclaimer": "Iniettato così com'è in ogni pagina del sito. Incolla solo codice da fonti di cui ti fidi.",
-    "trackerDomainsDisclaimer": "Un dominio qui autorizzato può eseguire codice ed effettuare chiamate dal tuo sito esattamente come se lo avessi scritto tu stesso — aggiungi solo domini di provider di cui ti fidi (es. quello indicato nella documentazione dello script sopra).",
+    "scriptDisclaimer": "Viene inserito così com’è in ogni pagina del sito. Incolla solo codice che arriva da fonti di cui ti fidi.",
+    "trackerDomainsDisclaimer": "Un dominio autorizzato qui può eseguire codice e fare richieste dal tuo sito esattamente come se lo avessi scritto tu: aggiungi solo domini di fornitori di cui ti fidi (per esempio quello indicato nella documentazione dello script qui sopra).",
     "domainLabelPlaceholder": "Nome, es. Hotjar",
     "domainPlaceholder": "es. static.hotjar.com",
     "domainName": "Nome del servizio",
     "domainHost": "Dominio",
     "addDomain": "Aggiungi dominio",
     "removeDomain": "Rimuovi",
-    "invalidDomain": "Dominio non valido — solo nome host, es. static.hotjar.com o *.hotjar.io (niente https://, niente percorso)",
-    "trackerScriptsDisclaimer": "Un fornitore riconosciuto (Google Tag Manager, Google Analytics, Meta Pixel) incollato sopra viene rilevato automaticamente e spostato qui al salvataggio, controllato in base alla categoria di consenso. Tutto il resto resta nei campi sopra, eseguito per ogni visitatore indipendentemente dal consenso.",
+    "invalidDomain": "Dominio non valido: scrivi solo il nome del dominio, per esempio static.hotjar.com o *.hotjar.io (senza https:// e senza percorso).",
+    "trackerScriptsDisclaimer": "Se incolli qui sopra il codice di un servizio noto (Google Tag Manager, Google Analytics, Meta Pixel), viene riconosciuto e spostato qui al salvataggio: da quel momento parte solo se il visitatore accetta la sua categoria di consenso. Tutto il resto resta nei campi qui sopra ed è eseguito per ogni visitatore, anche senza consenso.",
     "trackerScriptLabelPlaceholder": "Nome, es. Google Analytics",
     "trackerScriptHtmlPlaceholder": "<script>...</script>",
     "trackerScriptName": "Nome dello script",
@@ -1231,10 +1231,10 @@
     "bodyScriptHint": "Per esempio un widget di chat. Va prima della chiusura del <body>.",
     "domainsHint": "Se uno script carica file da un altro sito (es. static.hotjar.com), aggiungilo qui, altrimenti il browser lo blocca.",
     "consentHint": "Partono solo dopo che il visitatore ha accettato la categoria scelta nel banner cookie.",
-    "removeDomainNamed": "Rimuovi il dominio “{{name}}”",
-    "removeTrackerScriptNamed": "Elimina lo script “{{name}}”",
+    "removeDomainNamed": "Rimuovi il dominio «{{name}}»",
+    "removeTrackerScriptNamed": "Elimina lo script «{{name}}»",
     "editScript": "Modifica codice",
-    "editScriptNamed": "Modifica il codice di “{{name}}”",
+    "editScriptNamed": "Modifica il codice di «{{name}}»",
     "scriptCodeFor": "Codice di {{name}}",
     "consentWarning_one": "{{count}} script aspetta il consenso, ma il banner cookie è spento: non partirà mai.",
     "consentWarning_other": "{{count}} script aspettano il consenso, ma il banner cookie è spento: non partiranno mai.",
@@ -1248,11 +1248,11 @@
     "themeTitle": "Tema",
     "themeHint": "Quale dei temi di questo sito è in uso. Si applica subito, senza salvare.",
     "themeUpload": {
-      "hint": "Oppure carica un tema come zip: theme.json, con un \"name\", e theme.css in cima. Il repository di un tema scaricato come zip va bene così com'è.",
+      "hint": "Oppure carica un tema come zip: theme.json, con un «name», e theme.css in cima. Il repository di un tema scaricato come zip va bene così com’è.",
       "choose": "Carica un tema",
       "sending": "Caricamento…",
       "queued": "«{{name}}» è in attesa di essere costruito.",
-      "building": "Costruzione del sito con «{{name}}». Ci vuole un minuto o due; nel frattempo il sito resta com'è.",
+      "building": "Costruzione del sito con «{{name}}». Ci vuole un minuto o due; nel frattempo il sito resta com’è.",
       "published": "«{{name}}» è pronto.",
       "use": "Usa «{{name}}» per questo sito",
       "log": "Output della build",
@@ -1265,19 +1265,19 @@
         "encrypted": "Questo zip è cifrato. Caricalo senza password.",
         "no-manifest": "Manca theme.json in cima al tema.",
         "bad-manifest": "theme.json non è un JSON valido.",
-        "bad-name": "theme.json ha bisogno di un \"name\": lettere minuscole, cifre e trattini, fino a 40 caratteri.",
+        "bad-name": "theme.json ha bisogno di un «name»: lettere minuscole, cifre e trattini, fino a 40 caratteri.",
         "no-stylesheet": "Manca theme.css in cima al tema.",
         "core-name": "Quel nome è di uno dei temi di Kometio. Dai al tuo un nome suo.",
-        "build-failed": "Il sito non si è costruito con questo tema. L'output qui sotto dice perché; il sito resta com'era.",
+        "build-failed": "Il sito non si è costruito con questo tema. L’output qui sotto dice perché; il sito resta com’era.",
         "interrupted": "La costruzione si è fermata prima di finire. Carica di nuovo il tema.",
         "unknown": "Non è stato possibile caricare il tema. Riprova."
       }
     },
-    "themeSaving": "Cambio tema in corso...",
+    "themeSaving": "Cambio del tema in corso…",
     "blockStylesTitle": "Stile per blocco",
     "blockStylesHint": "Scegli un tipo di blocco per cambiarne lo stile su tutto il sito — sfondo, colore del testo, angoli, spaziatura. Si applica subito, senza salvare.",
     "themeChanged": "Tema cambiato in «{{name}}»",
-    "blockStylesSaving": "Salvataggio in corso...",
+    "blockStylesSaving": "Salvataggio in corso…",
     "blockStylesSaved": "Modifiche salvate.",
     "themeChangeFailed": "Il tema non è stato cambiato. Riprova."
   },
@@ -1285,26 +1285,26 @@
     "localesLabel": "Lingue attive",
     "defaultBadge": "Predefinita",
     "setDefault": "Imposta come predefinita",
-    "newLocalePlaceholder": "Cerca una lingua...",
+    "newLocalePlaceholder": "Cerca una lingua…",
     "noMatches": "Nessuna lingua trovata",
     "addLocale": "Aggiungi lingua",
     "fallbackLabel": "Quando una pagina non è ancora tradotta",
     "fallbackRedirectDescription": "Chi apre la pagina viene portato alla stessa pagina in un’altra lingua: prima quella predefinita, poi le altre, in ordine.",
     "fallbackNotAvailableDescription": "Chi apre la pagina vede un avviso: in questa lingua non esiste.",
     "fallbackRedirectLabel": "Porta a un’altra lingua",
-    "fallbackNotAvailableLabel": "Mostra “non disponibile”",
+    "fallbackNotAvailableLabel": "Mostra «non disponibile»",
     "remove": "Rimuovi",
     "removeNamed": "Rimuovi {{language}}",
     "setDefaultNamed": "Imposta {{language}} come predefinita",
     "defaultCannotBeRemoved": "La lingua predefinita non si rimuove: scegline prima un’altra come predefinita.",
     "lastCannotBeRemoved": "Il sito ha bisogno di almeno una lingua.",
     "removeConfirm": {
-      "title_one": "Togliere questa lingua?",
-      "title_other": "Togliere queste lingue?",
-      "description_one": "Le pagine in {{languages}} non compariranno più nel selettore di lingua né nella sitemap. Nessun testo viene cancellato: se riaggiungi la lingua, tornano.",
-      "description_other": "Le pagine in {{languages}} non compariranno più nel selettore di lingua né nella sitemap. Nessun testo viene cancellato: se riaggiungi le lingue, tornano.",
-      "action_one": "Togli la lingua",
-      "action_other": "Togli le lingue"
+      "title_one": "Rimuovere questa lingua?",
+      "title_other": "Rimuovere queste lingue?",
+      "description_one": "Le pagine in {{languages}} non compariranno più nel selettore di lingua né nella sitemap. Non viene eliminato nulla: se aggiungi di nuovo la lingua, le pagine tornano.",
+      "description_other": "Le pagine in {{languages}} non compariranno più nel selettore di lingua né nella sitemap. Non viene eliminato nulla: se aggiungi di nuovo le lingue, le pagine tornano.",
+      "action_one": "Rimuovi la lingua",
+      "action_other": "Rimuovi le lingue"
     }
   },
   "businessInfo": {
@@ -1365,16 +1365,16 @@
       "title": "Nuovo modulo",
       "nameLabel": "Nome modulo",
       "create": "Crea",
-      "creating": "Creazione in corso..."
+      "creating": "Creazione in corso…"
     },
     "deleteDialog": {
       "title_one": "Eliminare questo modulo?",
       "title_other": "Eliminare {{count}} moduli?",
-      "description_one": "{{names}} verrà eliminato definitivamente. Le pagine che lo usano smetteranno di mostrarlo.",
-      "description_other": "{{names}} verranno eliminati definitivamente. Le pagine che li usano smetteranno di mostrarli.",
+      "description_one": "{{names}} verrà eliminato per sempre. Le pagine che lo usano smetteranno di mostrarlo.",
+      "description_other": "{{names}} verranno eliminati per sempre. Le pagine che li usano smetteranno di mostrarli.",
       "submissions_one": "Verrà eliminata anche la risposta ricevuta.",
       "submissions_other": "Verranno eliminate anche le {{count}} risposte ricevute.",
-      "irreversible": "L’azione non può essere annullata."
+      "irreversible": "Non si può annullare."
     },
     "picker": {
       "title": "Scegli un modulo",
@@ -1386,24 +1386,24 @@
       "backToList": "Moduli",
       "save": "Salva",
       "savedByPublisher": "Un modulo va online appena salvato: lo salva un Publisher",
-      "saving": "Salvataggio in corso...",
+      "saving": "Salvataggio in corso…",
       "saved": "Modulo salvato",
       "nameLabel": "Nome modulo",
       "notificationEmailPlaceholder": "Nessuna notifica se lasciato vuoto",
-      "stepsLabel": "Step (facoltativi)",
-      "stepsHint": "Suddividi il modulo in più pagine. Senza step, il modulo resta a pagina singola.",
-      "addStep": "Aggiungi step",
-      "noSteps": "Nessuno step: il modulo è a pagina singola.",
-      "stepTitlePlaceholder": "Titolo dello step",
-      "removeStep": "Rimuovi step",
-      "untitledStep": "Step senza titolo",
+      "stepsLabel": "Passaggi (facoltativi)",
+      "stepsHint": "Suddividi il modulo in più pagine. Senza passaggi, il modulo resta in una sola pagina.",
+      "addStep": "Aggiungi passaggio",
+      "noSteps": "Nessun passaggio: il modulo è in una sola pagina.",
+      "stepTitlePlaceholder": "Titolo del passaggio",
+      "removeStep": "Rimuovi passaggio",
+      "untitledStep": "Passaggio senza titolo",
       "fieldsLabel": "Campi",
       "addField": "Aggiungi campo",
       "noFields": "Nessun campo ancora.",
       "fieldLabelLabel": "Etichetta",
       "fieldTypeLabel": "Tipo",
-      "fieldStepLabel": "Step",
-      "fieldStepNone": "Nessuno step",
+      "fieldStepLabel": "Passaggio",
+      "fieldStepNone": "Nessun passaggio",
       "fieldRequiredLabel": "Obbligatorio",
       "fieldOptionsLabel": "Opzioni (una per riga)",
       "fieldOptionsPlaceholder": "Opzione 1\nOpzione 2",
@@ -1436,10 +1436,10 @@
       "removeNotificationEmail": "Rimuovi indirizzo",
       "conditionLabel": "Mostra",
       "conditionAlways": "Sempre",
-      "conditionWhen": "Solo se \"{{field}}\"",
+      "conditionWhen": "Solo se «{{field}}»",
       "conditionAnswerLabel": "Risposta che mostra questo campo",
       "conditionAnyAnswer": "ha una risposta qualsiasi",
-      "conditionIs": "è \"{{option}}\"",
+      "conditionIs": "è «{{option}}»",
       "conditionIsTicked": "è spuntata",
       "conditionIsFilled": "è compilato",
       "untitledField": "Campo senza nome",
@@ -1485,8 +1485,8 @@
       "submissions": "Risposte",
       "fields": "Struttura"
     },
-    "created": "Modulo “{{name}}” creato",
-    "deleted": "Modulo “{{name}}” eliminato",
+    "created": "Modulo «{{name}}» creato",
+    "deleted": "Modulo «{{name}}» eliminato",
     "deletedMany_one": "{{count}} modulo eliminato",
     "deletedMany_other": "{{count}} moduli eliminati",
     "duplicateDialog": {
@@ -1494,9 +1494,9 @@
       "nameLabel": "Nome della copia",
       "copyName": "Copia di {{name}}",
       "submit": "Crea la copia",
-      "busy": "Duplicazione in corso..."
+      "busy": "Duplicazione in corso…"
     },
-    "duplicated": "Modulo “{{name}}” creato come copia. Le risposte non vengono copiate.",
+    "duplicated": "Modulo «{{name}}» creato come copia. Le risposte non vengono copiate.",
     "openCopy": "Apri la copia"
   },
   "openingHours": {
@@ -1529,7 +1529,7 @@
       "statusInactive": "Disattivato",
       "deactivate": "Disattiva",
       "reactivate": "Riattiva",
-      "actionFailed": "Non è stato possibile applicare la modifica.",
+      "actionFailed": "Non è stato possibile modificare l’utente. Riprova.",
       "deactivateConfirm": {
         "title": "Disattivare questo utente?",
         "description": "{{name}} verrà disconnesso subito e non potrà più accedere finché qualcuno non lo riattiva."
@@ -1544,7 +1544,7 @@
       "resendInvite": "Reinvia invito",
       "cancelInvite": "Annulla invito",
       "inviteResent": "Invito reinviato a {{email}}",
-      "inviteResentNotMailed": "L’invito per {{email}} è pronto, ma l’email non è partita. Riprova quando il mail server funziona.",
+      "inviteResentNotMailed": "L’invito per {{email}} è pronto, ma l’email non è partita. Riprova quando il server di posta funziona.",
       "inviteCancelled": "Invito a {{email}} annullato",
       "cancelInviteConfirm": {
         "title": "Annullare l’invito?",
@@ -1567,21 +1567,21 @@
       "roleLabel": "Ruolo",
       "cancel": "Annulla",
       "invite": "Invita",
-      "inviting": "Invio in corso...",
+      "inviting": "Invio in corso…",
       "emailTaken": "Esiste già un utente con questa email.",
       "sent": "Invito inviato a {{email}}: riceverà un’email per scegliere la password.",
-      "notMailed": "{{email}} è stato invitato, ma l’email non è partita. Quando il mail server funziona, usa «Reinvia invito».",
+      "notMailed": "{{email}} è stato invitato, ma l’email non è partita. Quando il server di posta funziona, usa «Reinvia invito».",
       "languageLabel": "Lingua",
-      "languageHint": "L’invito e ogni mail che riceverà dopo saranno scritti in questa lingua, finché non ne sceglie un’altra.",
+      "languageHint": "L’invito e ogni email che riceverà dopo saranno scritti in questa lingua, finché non ne sceglie un’altra.",
       "failed": "L’invito non è stato inviato. Riprova."
     },
     "inviteLinkDialog": {
       "title": "Invito per {{email}}",
-      "description": "Questo server non ha un mail server, quindi non è partita nessuna email. Manda tu questo link a {{email}}: serve a scegliere una password e ad accedere, e scade tra 7 giorni.",
+      "description": "Questo server non può inviare email, quindi non ne è partita nessuna. Manda tu questo link a {{email}}: serve a scegliere una password e ad accedere, e scade tra 7 giorni.",
       "linkLabel": "Link dell’invito",
       "copy": "Copia il link",
       "copied": "Link copiato",
-      "copyFailed": "Impossibile copiare: il link è selezionato, premi Ctrl/⌘ + C.",
+      "copyFailed": "Non è stato possibile copiare: il link è selezionato, premi Ctrl/⌘ + C.",
       "onlyOnce": "Lo vedi solo adesso. Per averne uno nuovo usa «Reinvia invito» nella lista.",
       "done": "Fatto"
     },
@@ -1628,7 +1628,7 @@
     },
     "expandChildren": "Espandi",
     "layerMissingIcon": "Assente nel tema, quindi non si vede sul sito: {{names}}",
-    "layerHidesMissingIcon": "Contiene blocchi con un'icona che il tema non ha",
+    "layerHidesMissingIcon": "Contiene blocchi con un’icona che il tema non ha",
     "removeBlock": "Rimuovi blocco",
     "addChild": "Aggiungi elemento",
     "publish": "Pubblica",
@@ -1681,35 +1681,35 @@
     "style": {
       "editType": "Stile di tutti i blocchi {{type}}",
       "editTypeHint": "Questi valori si applicano a OGNI blocco {{type}} del sito.",
-      "saveError": "Salvataggio dello stile non riuscito. Riprova."
+      "saveError": "Non è stato possibile salvare lo stile. Riprova."
     },
     "blockStyle": {
       "colors": {
         "backgroundColor": "Colore di sfondo",
-        "textColor": "Colore testo",
+        "textColor": "Colore del testo",
         "borderColor": "Colore del bordo",
         "overlayColor": "Velatura"
       },
       "lengths": {
         "borderRadius": {
-          "fieldLabel": "Raggio angoli",
-          "placeholder": "es. 6px, 9999px per un pill"
+          "fieldLabel": "Raggio degli angoli",
+          "placeholder": "es. 6px; 9999px per angoli del tutto arrotondati"
         },
         "paddingX": {
           "fieldLabel": "Padding orizzontale",
-          "placeholder": "es. 1.25rem — vuoto per il default"
+          "placeholder": "es. 1.25rem — vuoto per il valore del tema"
         },
         "paddingY": {
           "fieldLabel": "Padding verticale",
-          "placeholder": "es. 1.25rem — vuoto per il default"
+          "placeholder": "es. 1.25rem — vuoto per il valore del tema"
         },
         "marginTop": {
           "fieldLabel": "Spazio sopra",
-          "placeholder": "es. 2rem — vuoto per il default"
+          "placeholder": "es. 2rem — vuoto per il valore del tema"
         },
         "marginBottom": {
           "fieldLabel": "Spazio sotto",
-          "placeholder": "es. 4rem — vuoto per il default"
+          "placeholder": "es. 4rem — vuoto per il valore del tema"
         },
         "borderWidth": {
           "fieldLabel": "Spessore del bordo",
@@ -1737,7 +1737,7 @@
         },
         "animationDuration": {
           "fieldLabel": "Durata animazione",
-          "placeholder": "es. 600ms — vuoto per il valore predefinito"
+          "placeholder": "es. 600ms — vuoto per il valore del tema"
         },
         "animationDelay": {
           "fieldLabel": "Ritardo animazione",
@@ -1756,7 +1756,7 @@
           }
         },
         "backgroundPosition": {
-          "fieldLabel": "Posizione dell'immagine",
+          "fieldLabel": "Posizione dell’immagine",
           "options": {
             "center": "Centro",
             "top": "Alto",
@@ -1766,15 +1766,15 @@
           }
         },
         "backgroundSize": {
-          "fieldLabel": "Dimensione dell'immagine",
+          "fieldLabel": "Dimensione dell’immagine",
           "options": {
             "cover": "Riempi il blocco",
-            "contain": "Contieni nell'area",
+            "contain": "Adatta all’interno",
             "auto": "Dimensione originale"
           }
         },
         "backgroundRepeat": {
-          "fieldLabel": "Ripetizione dell'immagine",
+          "fieldLabel": "Ripetizione dell’immagine",
           "options": {
             "no-repeat": "Non ripetere",
             "repeat": "Affianca",
@@ -1806,12 +1806,12 @@
           }
         },
         "animation": {
-          "fieldLabel": "Animazione d'ingresso",
+          "fieldLabel": "Animazione d’ingresso",
           "options": {
             "none": "Nessuna",
             "fade": "Dissolvenza",
             "slide-up": "Scorre dal basso",
-            "slide-down": "Scorre dall'alto",
+            "slide-down": "Scorre dall’alto",
             "slide-left": "Scorre da destra",
             "slide-right": "Scorre da sinistra",
             "zoom": "Ingrandimento"
@@ -1820,11 +1820,11 @@
         "animationEasing": {
           "fieldLabel": "Andamento",
           "options": {
-            "ease-out": "In uscita",
+            "ease-out": "Rallenta alla fine",
             "ease": "Morbido",
-            "ease-in": "In entrata",
-            "ease-in-out": "In entrata e uscita",
-            "linear": "Lineare"
+            "ease-in": "Parte piano",
+            "ease-in-out": "Parte piano e rallenta alla fine",
+            "linear": "Velocità costante"
           }
         },
         "hoverEffect": {
@@ -1874,7 +1874,7 @@
     "blockSearch": {
       "label": "Cerca blocchi",
       "placeholder": "Cerca blocchi…",
-      "noResults": "Nessun blocco corrisponde a “{{query}}”."
+      "noResults": "Nessun blocco corrisponde a «{{query}}»."
     },
     "pickers": {
       "media": {
@@ -1893,7 +1893,7 @@
         "change": "Cambia icona",
         "choose": "Scegli icona",
         "remove": "Rimuovi icona",
-        "missingFromTheme": "Il tema non ha l'icona «{{name}}»: sul sito non si vede. Scegline un'altra."
+        "missingFromTheme": "Il tema non ha l’icona «{{name}}»: sul sito non si vede. Scegline un’altra."
       },
       "file": {
         "choose": "Scegli un file",
@@ -1901,12 +1901,12 @@
       }
     },
     "placement": {
-      "refused": "{{block}} sta solo dentro {{parents}}, quindi qui non c'è posto per inserirlo."
+      "refused": "{{block}} si può mettere solo dentro {{parents}}: qui non c’è posto."
     },
     "publishSkipped": {
       "title": "Pubblicare con blocchi che il sito lascia fuori?",
-      "body_one": "{{count}} blocco non è compilato come il suo tipo richiede, quindi il sito lo lascia fuori e chi visita non vede nulla al suo posto: {{names}}. Il canvas lo segnala dov'è.",
-      "body_other": "{{count}} blocchi non sono compilati come il loro tipo richiede, quindi il sito li lascia fuori e chi visita non vede nulla al loro posto: {{names}}. Il canvas li segnala dov'è.",
+      "body_one": "{{count}} blocco non è compilato come il suo tipo richiede, quindi il sito lo lascia fuori e chi visita non vede nulla al suo posto: {{names}}. Il canvas lo segnala dov’è.",
+      "body_other": "{{count}} blocchi non sono compilati come il loro tipo richiede, quindi il sito li lascia fuori e chi visita non vede nulla al loro posto: {{names}}. Il canvas li segnala dov’è.",
       "action": "Pubblica comunque"
     },
     "status": {
@@ -1936,11 +1936,11 @@
       "commandMenu": "Cerca blocchi e comandi",
       "addBlock": "Aggiungi un blocco"
     },
-    "dragLayer": "Trascina \"{{name}}\"",
+    "dragLayer": "Trascina «{{name}}»",
     "layerPlaceholder": "Ha un segnaposto da sostituire prima di pubblicare.",
     "layerHidesPlaceholder": "Un blocco qui dentro ha un segnaposto da sostituire prima di pubblicare.",
     "rail": {
-      "label": "Strumenti dell'editor",
+      "label": "Strumenti dell’editor",
       "insert": "Aggiungi",
       "layers": "Livelli",
       "styles": "Stili",
@@ -1950,7 +1950,7 @@
       "stylesFullName": "Stili — si apre in una nuova scheda"
     },
     "mobileBar": {
-      "label": "Pannelli dell'editor",
+      "label": "Pannelli dell’editor",
       "properties": "Proprietà",
       "close": "Chiudi"
     },
@@ -2021,14 +2021,14 @@
       "content": "Contenuto",
       "conversion": "Moduli e conversione",
       "media": "Media",
-      "socialProof": "Prova sociale",
+      "socialProof": "Riprova sociale",
       "interactive": "Interattivo",
       "shop": "Negozio",
       "localBusiness": "Attività locale",
       "headerFooter": "Blocchi"
     },
     "section": {
-      "label": "Sezione riusabile",
+      "label": "Sezione condivisa",
       "fields": {
         "section": {
           "fieldLabel": "Sezione"
@@ -2125,7 +2125,7 @@
       "label": "Accordion/FAQ"
     },
     "backToTop": {
-      "label": "Bottone \"torna su\""
+      "label": "Pulsante «torna su»"
     },
     "banner": {
       "label": "Banner/CTA",
@@ -2137,7 +2137,7 @@
           "fieldLabel": "Testo"
         },
         "buttonLabel": {
-          "fieldLabel": "Testo bottone"
+          "fieldLabel": "Testo pulsante"
         }
       },
       "variants": {
@@ -2149,16 +2149,16 @@
       "label": "Prima/dopo",
       "fields": {
         "beforeImage": {
-          "fieldLabel": "Immagine \"prima\""
+          "fieldLabel": "Immagine «prima»"
         },
         "afterImage": {
-          "fieldLabel": "Immagine \"dopo\""
+          "fieldLabel": "Immagine «dopo»"
         },
         "beforeLabel": {
-          "fieldLabel": "Etichetta \"prima\""
+          "fieldLabel": "Etichetta «prima»"
         },
         "afterLabel": {
-          "fieldLabel": "Etichetta \"dopo\""
+          "fieldLabel": "Etichetta «dopo»"
         }
       }
     },
@@ -2171,7 +2171,7 @@
       }
     },
     "button": {
-      "label": "Bottone (CTA)",
+      "label": "Pulsante (CTA)",
       "fields": {
         "label": {
           "fieldLabel": "Testo"
@@ -2492,15 +2492,15 @@
           "fieldLabel": "Titolo"
         },
         "buttonLabel": {
-          "fieldLabel": "Testo bottone"
+          "fieldLabel": "Testo pulsante"
         }
       }
     },
     "pricingPlan": {
-      "label": "Piano prezzo",
+      "label": "Piano tariffario",
       "fields": {
         "name": {
-          "fieldLabel": "Nome piano"
+          "fieldLabel": "Nome del piano"
         },
         "price": {
           "fieldLabel": "Prezzo"
@@ -2515,7 +2515,7 @@
           "fieldLabel": "In evidenza"
         },
         "buttonLabel": {
-          "fieldLabel": "Testo bottone"
+          "fieldLabel": "Testo pulsante"
         }
       }
     },
@@ -2577,7 +2577,7 @@
           "fieldLabel": "Quante al massimo (0 = tutte)"
         },
         "emptyText": {
-          "fieldLabel": "Testo quando non c'è niente da elencare"
+          "fieldLabel": "Testo quando non c’è niente da elencare"
         },
         "order": {
           "fieldLabel": "Ordine",
@@ -2718,7 +2718,7 @@
       }
     },
     "whatsAppButton": {
-      "label": "Bottone WhatsApp",
+      "label": "Pulsante WhatsApp",
       "fields": {
         "phoneNumber": {
           "fieldLabel": "Numero di telefono"
@@ -2758,7 +2758,7 @@
       "label": "Link social"
     },
     "socialLink": {
-      "label": "Singolo link social",
+      "label": "Link a un profilo social",
       "fields": {
         "icon": {
           "fieldLabel": "Icona"
@@ -2868,7 +2868,7 @@
           "fieldLabel": "Si presenta come",
           "options": {
             "chips": "Pillole",
-            "buttons": "Bottoni",
+            "buttons": "Pulsanti",
             "links": "Collegamenti",
             "dropdown": "Menu a tendina"
           }
@@ -2986,14 +2986,14 @@
           "fieldLabel": "Testo"
         },
         "mediaSide": {
-          "fieldLabel": "Lato dell'immagine",
+          "fieldLabel": "Lato dell’immagine",
           "options": {
             "start": "Inizio della riga",
             "end": "Fine della riga"
           }
         },
         "mediaWidth": {
-          "fieldLabel": "Larghezza dell'immagine",
+          "fieldLabel": "Larghezza dell’immagine",
           "options": {
             "third": "Un terzo",
             "half": "Metà",
@@ -3045,16 +3045,16 @@
       "label": "Contatti",
       "fields": {
         "showAddress": {
-          "fieldLabel": "Mostra l'indirizzo"
+          "fieldLabel": "Mostra l’indirizzo"
         },
         "showPhone": {
           "fieldLabel": "Mostra il telefono"
         },
         "showEmail": {
-          "fieldLabel": "Mostra l'email"
+          "fieldLabel": "Mostra l’email"
         },
         "showMapLink": {
-          "fieldLabel": "Collega l'indirizzo a una mappa"
+          "fieldLabel": "Collega l’indirizzo a una mappa"
         }
       }
     },
@@ -3090,7 +3090,7 @@
           "fieldLabel": "Immagine"
         },
         "alt": {
-          "fieldLabel": "Descrizione dell'immagine (testo alternativo)"
+          "fieldLabel": "Descrizione dell’immagine (testo alternativo)"
         },
         "name": {
           "fieldLabel": "Nome del prodotto"
@@ -3099,7 +3099,7 @@
           "fieldLabel": "Descrizione breve"
         },
         "badge": {
-          "fieldLabel": "Etichetta (es. \"Novità\", \"-20%\")"
+          "fieldLabel": "Etichetta (es. «Novità», «-20%»)"
         },
         "structuredData": {
           "fieldLabel": "Comunica il prezzo ai motori di ricerca (schema.org Product)"
@@ -3118,7 +3118,7 @@
       "label": "Prezzo scontato",
       "fields": {
         "note": {
-          "fieldLabel": "Nota (es. \"IVA inclusa\")"
+          "fieldLabel": "Nota (es. «IVA inclusa»)"
         }
       }
     },
@@ -3126,7 +3126,7 @@
       "label": "Pulsante acquista",
       "fields": {
         "label": {
-          "fieldLabel": "Testo del pulsante (vuoto = \"Acquista\")"
+          "fieldLabel": "Testo del pulsante (vuoto = «Acquista»)"
         },
         "url": {
           "fieldLabel": "Link di pagamento (Stripe, PayPal…)"
@@ -3137,7 +3137,7 @@
       "label": "Varianti prodotto",
       "fields": {
         "label": {
-          "fieldLabel": "Titolo (es. \"Taglie\")"
+          "fieldLabel": "Titolo (es. «Taglie»)"
         },
         "options": {
           "fieldLabel": "Opzioni, una per riga"
@@ -3176,7 +3176,7 @@
           "fieldLabel": "Caratteristica"
         },
         "values": {
-          "fieldLabel": "Un valore per colonna, uno per riga (\"sì\"/\"no\" diventano ✓/✗)"
+          "fieldLabel": "Un valore per colonna, uno per riga («sì»/«no» diventano ✓/✗)"
         }
       }
     },
@@ -3187,7 +3187,7 @@
           "fieldLabel": "Codice"
         },
         "description": {
-          "fieldLabel": "Cosa dà (es. \"10% sul primo ordine\")"
+          "fieldLabel": "Cosa dà (es. «10% sul primo ordine»)"
         },
         "expiresOn": {
           "fieldLabel": "Valido fino al (vuoto = senza scadenza)"
@@ -3245,7 +3245,7 @@
           "fieldLabel": "Stripe"
         },
         "text": {
-          "fieldLabel": "Testo accanto ai loghi (es. \"Pagamenti sicuri\")"
+          "fieldLabel": "Testo accanto ai loghi (es. «Pagamenti sicuri»)"
         }
       }
     },
@@ -3271,7 +3271,7 @@
           "fieldLabel": "Descrizione"
         },
         "price": {
-          "fieldLabel": "Prezzo (come vuoi che sia scritto, es. \"12\" o \"8 / 12\")"
+          "fieldLabel": "Prezzo (come vuoi che sia scritto, es. «12» o «8 / 12»)"
         },
         "dietary": {
           "fieldLabel": "Indicazioni, separate da virgola (es. vegano, senza glutine)"
@@ -3337,7 +3337,7 @@
       "label": "Pulsanti di condivisione",
       "fields": {
         "label": {
-          "fieldLabel": "Titolo (es. \"Condividi\")"
+          "fieldLabel": "Titolo (es. «Condividi»)"
         },
         "whatsapp": {
           "fieldLabel": "WhatsApp"
@@ -3363,7 +3363,7 @@
       "label": "Preferenze cookie",
       "fields": {
         "label": {
-          "fieldLabel": "Testo del link (vuoto = \"Preferenze cookie\")"
+          "fieldLabel": "Testo del link (vuoto = «Preferenze cookie»)"
         }
       }
     },
@@ -3374,7 +3374,7 @@
           "fieldLabel": "Direzione",
           "options": {
             "horizontal": "Affiancati",
-            "vertical": "Uno sotto l'altro"
+            "vertical": "Uno sotto l’altro"
           }
         }
       }
@@ -3406,10 +3406,10 @@
       "label": "Specifica",
       "fields": {
         "label": {
-          "fieldLabel": "Nome (es. \"Peso\")"
+          "fieldLabel": "Nome (es. «Peso»)"
         },
         "value": {
-          "fieldLabel": "Valore (es. \"1,2 kg\")"
+          "fieldLabel": "Valore (es. «1,2 kg»)"
         }
       }
     },
@@ -3474,7 +3474,7 @@
       "label": "Glossario",
       "fields": {
         "showIndex": {
-          "fieldLabel": "Mostra l'indice A–Z"
+          "fieldLabel": "Mostra l’indice A–Z"
         }
       }
     },
@@ -3499,7 +3499,7 @@
           "fieldLabel": "Immagine"
         },
         "alt": {
-          "fieldLabel": "Descrizione dell'immagine (testo alternativo)"
+          "fieldLabel": "Descrizione dell’immagine (testo alternativo)"
         }
       }
     },
@@ -3510,7 +3510,7 @@
           "fieldLabel": "Posizione da sinistra (%)"
         },
         "y": {
-          "fieldLabel": "Posizione dall'alto (%)"
+          "fieldLabel": "Posizione dall’alto (%)"
         },
         "title": {
           "fieldLabel": "Titolo"
@@ -3539,11 +3539,11 @@
       "moveDown": "Sposta giù",
       "remove": "Rimuovi",
       "add": "Aggiungi immagine",
-      "unreadable": "Questa galleria contiene immagini in un formato che l'editor non sa leggere, quindi qui non è modificabile: salvarci sopra le perderebbe."
+      "unreadable": "Questa galleria contiene immagini in un formato che l’editor non sa leggere, quindi qui non è modificabile: salvarci sopra le perderebbe."
     }
   },
   "collections": {
-    "actionFailed": "Non è stato possibile applicare la modifica.",
+    "actionFailed": "La modifica alla collezione non è stata salvata. Riprova.",
     "dialog": {
       "description": "Una collezione raccoglie pagine di un tipo — News, Eventi, Casi studio — e ha una voce di menu sua. Sotto la scocca restano pagine normali.",
       "newLabel": "Nuova collezione",
@@ -3554,7 +3554,7 @@
         "title": "Eliminare questa collezione?",
         "description": "{{name}} sparisce dal menu. Le pagine che conteneva restano e tornano fra le Pagine."
       },
-      "defaultTemplate": "Nuove pagine da",
+      "defaultTemplate": "Le nuove pagine partono da",
       "iconLabel": "Icona",
       "icons": {
         "newspaper": "Notizie",
@@ -3570,10 +3570,10 @@
       },
       "name": "Nome"
     },
-    "created": "Collezione “{{name}}” creata",
-    "templateChanged": "Punto di partenza di “{{name}}” cambiato",
-    "deleted": "Collezione “{{name}}” eliminata",
-    "saved": "Collezione “{{name}}” aggiornata",
+    "created": "Collezione «{{name}}» creata",
+    "templateChanged": "Punto di partenza di «{{name}}» cambiato",
+    "deleted": "Collezione «{{name}}» eliminata",
+    "saved": "Collezione «{{name}}» aggiornata",
     "save": "Salva",
     "saving": "Salvataggio…",
     "cancel": "Annulla",
@@ -3703,7 +3703,7 @@
         "redirect": "Quell’indirizzo è a sua volta reindirizzato, verso {{location}}.",
         "gone": "Quell’indirizzo è segnato come rimosso.",
         "broken": "Quell’indirizzo ha un reindirizzamento verso una pagina non pubblicata.",
-        "loop": "Quell’indirizzo fa parte di un giro di reindirizzamenti.",
+        "loop": "Quell’indirizzo fa parte di un ciclo di reindirizzamenti.",
         "none": "A quell’indirizzo non risponde nessuna pagina, quindi i visitatori vedrebbero «non trovato». Controlla come è scritto, o crea prima la pagina.",
         "other": "Un indirizzo di un altro sito: qui non viene controllato."
       },
@@ -3728,7 +3728,7 @@
         "redirect302": "I visitatori vengono mandati a {{location}} con un reindirizzamento temporaneo.",
         "gone": "L’indirizzo è segnato come rimosso: i visitatori ricevono la risposta «410 Gone».",
         "broken": "Un reindirizzamento corrisponde, ma la pagina a cui porta non è pubblicata: i visitatori vedono «non trovato».",
-        "loop": "I reindirizzamenti mandano i visitatori in tondo. Modificane uno.",
+        "loop": "I reindirizzamenti formano un ciclo: il visitatore girerebbe in tondo. Modificane uno.",
         "none": "Lì non risponde nulla: i visitatori vedono «non trovato»."
       },
       "addFor": "Aggiungi un reindirizzamento",
@@ -3818,7 +3818,7 @@
       "ignore": "Ignora",
       "ignoreLabel": "Ignora {{path}}",
       "ignored": "{{path}} tolto dall’elenco",
-      "failed": "Non è stato possibile completare l’azione."
+      "failed": "Non è stato possibile aggiornare l’elenco dei non trovati. Riprova."
     },
     "problems": {
       "unknown": "Questo reindirizzamento non si può usare.",
@@ -3868,8 +3868,8 @@
     "uploadHint": "Il file .xml che WordPress produce da Strumenti → Esporta.",
     "choose": "Scegli un file",
     "uploading": "Caricamento…",
-    "analyzing": "Sto leggendo il file…",
-    "failed": "Non sono riuscito a leggere questo file.",
+    "analyzing": "Lettura del file…",
+    "failed": "Non è stato possibile leggere questo file.",
     "history": "Tentativi precedenti",
     "report": {
       "found": "Che cosa contiene",
@@ -3890,10 +3890,10 @@
       "fromValues": "dai soli valori"
     },
     "warnings": {
-      "page-builder": "Un page builder tiene il layout in un formato che non so leggere: su {{count}} pagine arriverebbe il testo, non la disposizione.",
+      "page-builder": "Un page builder tiene il layout in un formato che qui non si può leggere: su {{count}} pagine arriverebbe il testo, non la disposizione.",
       "multilingual": "Sito multilingua. Le traduzioni arriverebbero come pagine separate, da riunire a mano.",
       "content-outside-the-post": "{{count}} pagine hanno il corpo vuoto nell’export: il loro contenuto vive altrove (tipicamente in campi ACF) e arriverebbero con il solo titolo.",
-      "unsupported-post-types": "{{count}} voci sono in tipi di contenuto che non importo: resterebbero fuori.",
+      "unsupported-post-types": "{{count}} voci sono in tipi di contenuto che non vengono importati: resterebbero fuori.",
       "menus": "{{count}} voci di menu. I menu si ricostruiscono a mano nell’editor.",
       "fields-not-described": "{{count}} blocchi tengono i propri campi nel codice del tema, non nella base dati: arriva il loro contenuto, ma senza sapere che cosa sia ciascun pezzo."
     },
@@ -3915,25 +3915,25 @@
     "pickedUpPlain": "Hai preso {{name}}.",
     "moved": "{{name}} ora è in posizione {{position}} di {{total}}.",
     "movedPlain": "Hai spostato {{name}}.",
-    "outside": "{{name}} è fuori dall'elenco.",
+    "outside": "{{name}} è fuori dall’elenco.",
     "dropped": "Hai lasciato {{name}} in posizione {{position}} di {{total}}.",
     "droppedPlain": "Hai lasciato {{name}}.",
-    "droppedOutside": "Hai lasciato {{name}} fuori dall'elenco: resta dov'era.",
-    "cancelled": "Spostamento di {{name}} annullato: resta dov'era."
+    "droppedOutside": "Hai lasciato {{name}} fuori dall’elenco: resta dov’era.",
+    "cancelled": "Spostamento di {{name}} annullato: resta dov’era."
   },
   "aiSettings": {
-    "title": "Generare le pagine con l'AI",
+    "title": "Generare le pagine con l’AI",
     "intro": "Il provider che scrive una pagina quando qualcuno la chiede, con la chiave di questo sito. La chiave è salvata cifrata e non viene più mostrata.",
     "loadError": "Non è stato possibile caricare le impostazioni AI. Ricarica la pagina per riprovare.",
-    "serverDisabled": "Questo server non ha un posto sicuro dove tenere una chiave, quindi non può generare pagine. Chi ha installato Kometio può attivarlo: vedi \"Generating pages with AI\" nella guida al self-hosting.",
+    "serverDisabled": "Questo server non ha un posto sicuro dove tenere una chiave, quindi non può generare pagine. Chi ha installato Kometio può attivarlo: vedi «Generating pages with AI» nella guida al self-hosting (in inglese).",
     "provider": "Provider",
     "providerAnthropic": "Claude (Anthropic)",
     "providerOpenAiCompatible": "Compatibile OpenAI",
     "baseUrl": "Indirizzo del server",
-    "baseUrlHint": "OpenAI stessa, o qualsiasi server che parli la sua API. L'indirizzo a cui risponde, che finisce con /v1: https://api.openai.com/v1, oppure http://localhost:11434/v1 per un server locale. Un server su questa macchina o in una rete privata deve anche essere permesso da chi gestisce Kometio (KOMETIO_AI_ALLOW_PRIVATE_HOSTS).",
+    "baseUrlHint": "OpenAI stessa, o qualsiasi server che parli la sua API. L’indirizzo a cui risponde, che finisce con /v1: https://api.openai.com/v1, oppure http://localhost:11434/v1 per un server locale. Un server su questa macchina o in una rete privata deve anche essere permesso da chi gestisce Kometio (KOMETIO_AI_ALLOW_PRIVATE_HOSTS).",
     "model": "Modello",
     "modelHintAnthropic": "claude-opus-5 scrive le pagine migliori; claude-sonnet-5 è più veloce e costa meno.",
-    "modelHintOpenAiCompatible": "Il nome del modello come lo conosce quel server, per esempio gpt-5 o qwen3:14b. Deve supportare l'output strutturato (JSON schema).",
+    "modelHintOpenAiCompatible": "Il nome del modello come lo conosce quel server, per esempio gpt-5 o qwen3:14b. Deve supportare l’output strutturato (JSON schema).",
     "apiKey": "Chiave API",
     "apiKeyStored": "È salvata una chiave che finisce con {{hint}}. Lascia vuoto per tenerla.",
     "apiKeyStoredShort": "È salvata una chiave. Lascia vuoto per tenerla.",
@@ -3951,23 +3951,23 @@
   "pageGeneration": {
     "open": "Genera con AI",
     "title": "Genera con AI",
-    "description": "Descrivi la pagina: viene scritta in {{language}} con i blocchi di questo sito. Non si pubblica nulla: prima la rivedi nell'editor.",
+    "description": "Descrivi la pagina: viene scritta in {{language}} con i blocchi di questo sito. Non si pubblica nulla: prima la rivedi nell’editor.",
     "promptLabel": "Cosa deve dire la pagina?",
-    "promptHint": "A chi si rivolge, cosa offre, cosa deve fare chi la visita. Più dici, meno c'è da cambiare dopo.",
+    "promptHint": "A chi si rivolge, cosa offre, cosa deve fare chi la visita. Più dici, meno c’è da cambiare dopo.",
     "modeLabel": "La pagina ha già dei blocchi",
     "modeAppend": "Aggiungi le nuove sezioni in fondo",
     "modeReplace": "Sostituisci tutta la pagina",
-    "starting": "Richiesta al provider...",
-    "writing_one": "Scrittura della pagina... {{count}} carattere finora",
-    "writing_other": "Scrittura della pagina... {{count}} caratteri finora",
+    "starting": "Richiesta al provider…",
+    "writing_one": "Scrittura della pagina… {{count}} carattere finora",
+    "writing_other": "Scrittura della pagina… {{count}} caratteri finora",
     "generate": "Genera",
-    "generating": "Generazione...",
+    "generating": "Generazione…",
     "stop": "Interrompi",
     "replaceConfirmTitle": "Sostituire tutta la pagina?",
     "replaceConfirmBody_one": "Il suo {{count}} blocco viene sostituito dalla pagina generata. Annulla, o la cronologia delle versioni, lo riporta indietro.",
     "replaceConfirmBody_other": "I suoi {{count}} blocchi vengono sostituiti dalla pagina generata. Annulla, o la cronologia delle versioni, li riporta indietro.",
     "replaceConfirmAction": "Genera e sostituisci",
-    "unavailableLinked": "Questa lingua condivide i blocchi con la pagina originale, quindi una pagina generata qui sostituirebbe anche l'originale. Generala nella lingua originale, oppure scollega prima questa lingua (menu della pagina, \"Scollega questa lingua\").",
+    "unavailableLinked": "Questa lingua condivide i blocchi con la pagina originale, quindi una pagina generata qui sostituirebbe anche l’originale. Generala nella lingua originale, oppure scollega prima questa lingua (menu della pagina, «Scollega questa lingua»).",
     "unavailableNotConfigured": "Non si possono ancora generare pagine: un amministratore deve scegliere il provider AI in Integrazioni.",
     "unavailableNotConfiguredAdmin": "Non si possono ancora generare pagine: scegli il provider AI e la sua chiave in Integrazioni.",
     "openSettings": "Apri Integrazioni",
@@ -3978,27 +3978,27 @@
     "donePlaceholders_one": "{{count}} ha ancora un segnaposto da sostituire: lo segnala Livelli.",
     "donePlaceholders_other": "{{count}} hanno ancora un segnaposto da sostituire: li segnala Livelli.",
     "emptyTitle": "Questa pagina è vuota",
-    "emptyBody": "Aggiungi blocchi dal pannello a sinistra, oppure descrivi la pagina e lascia che la scriva l'AI.",
-    "startFrom": "Descrivila all'AI",
-    "startFromHint": "La pagina si apre nell'editor e viene scritta lì; non si pubblica nulla.",
+    "emptyBody": "Aggiungi blocchi dal pannello a sinistra, oppure descrivi la pagina e lascia che la scriva l’AI.",
+    "startFrom": "Descrivila all’AI",
+    "startFromHint": "La pagina si apre nell’editor e viene scritta lì; non si pubblica nulla.",
     "failures": {
       "not-configured": "Per questo sito non è impostato nessun provider AI. Un amministratore può sceglierlo in Integrazioni.",
       "key-unreadable": "La chiave salvata non si può più leggere: la chiave dei segreti del server è cambiata. Inserisci di nuovo la chiave in Integrazioni.",
       "rejected-credentials": "Il provider ha rifiutato la chiave. Controllala in Integrazioni.",
-      "rate-limited": "Il provider sta ricevendo troppe richieste, oppure il credito dell'account è finito. Riprova fra qualche minuto.",
-      "unreachable": "Non è stato possibile raggiungere il provider. Controlla l'indirizzo del server in Integrazioni, o riprova.",
+      "rate-limited": "Il provider sta ricevendo troppe richieste, oppure il credito dell’account è finito. Riprova fra qualche minuto.",
+      "unreachable": "Non è stato possibile raggiungere il provider. Controlla l’indirizzo del server in Integrazioni, o riprova.",
       "refused": "Il provider non ha voluto scrivere questa pagina. Descrivila in un altro modo e riprova.",
       "truncated": "La pagina è venuta troppo lunga ed è stata tagliata. Chiedi meno sezioni.",
-      "not-json": "Il provider ha risposto con qualcosa che non è una pagina. Riprova, oppure scegli un modello che supporti l'output strutturato.",
+      "not-json": "Il provider ha risposto con qualcosa che non è una pagina. Riprova, oppure scegli un modello che supporti l’output strutturato.",
       "empty": "Niente di quello che ha scritto il provider era utilizzabile. Descrivi la pagina in un altro modo e riprova.",
-      "too-many-requests": "Troppe pagine generate nell'ultimo minuto. Aspetta un momento e riprova.",
+      "too-many-requests": "Troppe pagine generate nell’ultimo minuto. Aspetta un momento e riprova.",
       "timed-out": "Il provider ci ha messo troppo a rispondere. Riprova, oppure chiedi una pagina più corta.",
       "unexpected": "Qualcosa è andato storto durante la generazione. Riprova.",
-      "busy": "Per questo sito si sta già scrivendo un'altra pagina. Aspetta che finisca, poi riprova.",
-      "private-address": "L'indirizzo del server è dentro la rete in cui gira Kometio, per esempio questa stessa macchina, e questa installazione non lo permette. Chi gestisce Kometio può permetterlo con KOMETIO_AI_ALLOW_PRIVATE_HOSTS=true (vedi la guida al self-hosting)."
+      "busy": "Per questo sito si sta già scrivendo un’altra pagina. Aspetta che finisca, poi riprova.",
+      "private-address": "L’indirizzo del server è dentro la rete in cui gira Kometio, per esempio questa stessa macchina, e questa installazione non lo permette. Chi gestisce Kometio può permetterlo con KOMETIO_AI_ALLOW_PRIVATE_HOSTS=true (vedi la guida al self-hosting)."
     },
     "publishPlaceholdersTitle": "Pubblicare con i segnaposto?",
-    "publishPlaceholdersBody_one": "{{count}} blocco ha ancora un segnaposto al posto di un nome, un ruolo, un prezzo o un numero veri; lo segnala Livelli. Chi visita il sito lo vedrebbe così com'è.",
+    "publishPlaceholdersBody_one": "{{count}} blocco ha ancora un segnaposto al posto di un nome, un ruolo, un prezzo o un numero veri; lo segnala Livelli. Chi visita il sito lo vedrebbe così com’è.",
     "publishPlaceholdersBody_other": "{{count}} blocchi hanno ancora un segnaposto al posto di un nome, un ruolo, un prezzo o un numero veri; li segnala Livelli. Chi visita il sito li vedrebbe così come sono.",
     "publishPlaceholdersAction": "Pubblica comunque"
   },
@@ -4018,7 +4018,7 @@
     },
     "secret": {
       "title": "Custodisci il file come una password",
-      "body": "Contiene l’impronta della password di ogni account e ogni pagina, bozza e modulo. Conservalo dove solo tu puoi leggerlo e cancellalo quando non ti serve più."
+      "body": "Contiene le impronte (hash) delle password di tutti gli account, oltre a tutte le pagine, le bozze e i moduli. Conservalo dove solo tu puoi leggerlo ed eliminalo quando non ti serve più."
     },
     "download": "Scarica il sito",
     "downloadHint": "Il download parte subito e il file è completo quando il browser dice che ha finito: un sito grande richiede un po’ di tempo. Se fallisce, riprova tra un minuto; si può fare una sola esportazione alla volta.",
@@ -4059,7 +4059,7 @@
     },
     "sections": {
       "general": {
-        "description": "Il nome del sito e l'indirizzo a cui è online."
+        "description": "Il nome del sito e l’indirizzo a cui è online."
       },
       "languages": {
         "description": "Le lingue in cui esiste il sito, e cosa vede chi apre una pagina non tradotta."
@@ -4092,7 +4092,7 @@
     }
   },
   "commandMenu": {
-    "empty": "Nessun risultato per “{{query}}”.",
+    "empty": "Nessun risultato per «{{query}}».",
     "hint": "↑↓ per scegliere · Invio per eseguire · Esc per chiudere",
     "searching": "Ricerca…"
   },
@@ -4120,7 +4120,7 @@
       "archive.exported": "Ha scaricato l’archivio del sito",
       "account.two_factor_enabled": "Ha attivato la verifica in due passaggi",
       "account.two_factor_disabled": "Ha disattivato la verifica in due passaggi",
-      "account.recovery_code_used": "Ha acceduto con un codice di recupero",
+      "account.recovery_code_used": "Ha effettuato l’accesso con un codice di recupero",
       "account.two_factor_reset": "Ha azzerato la verifica in due passaggi di {{target}}"
     },
     "sections": {

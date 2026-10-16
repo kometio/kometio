@@ -41,10 +41,12 @@ describe('SeoSettingsSection', () => {
   it('turns the switch from its own label', () => {
     renderSection(true);
     const indexing = screen.getByRole('switch', {
-      name: "Consenti l'indicizzazione",
+      name: 'Consenti ai motori di ricerca di indicizzare il sito',
     });
 
-    fireEvent.click(screen.getByText("Consenti l'indicizzazione"));
+    fireEvent.click(
+      screen.getByText('Consenti ai motori di ricerca di indicizzare il sito'),
+    );
 
     expect(indexing.getAttribute('aria-checked')).toBe('false');
   });
@@ -62,7 +64,7 @@ describe('SeoSettingsSection', () => {
     expect(dialog.textContent).toContain('smetteranno di mostrare il sito');
     expect(api.updateSeoSettings).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Spegni' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Disattiva' }));
 
     await waitFor(() =>
       expect(api.updateSeoSettings).toHaveBeenCalledWith('site-1', {

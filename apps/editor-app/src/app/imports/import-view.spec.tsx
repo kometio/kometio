@@ -152,7 +152,7 @@ describe('ImportView', () => {
     renderView([job({ status: 'analyzing', report: null })]);
 
     expect(
-      await screen.findByText(/Sto leggendo|Reading the file/),
+      await screen.findByText(/Lettura del file|Reading the file/),
     ).toBeTruthy();
   });
 

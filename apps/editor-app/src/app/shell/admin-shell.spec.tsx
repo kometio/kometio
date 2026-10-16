@@ -299,7 +299,7 @@ describe('AdminShell', () => {
     fireEvent.click(await screen.findByRole('button', { name: /^account:/i }));
 
     expect(
-      await screen.findByLabelText("Lingua dell'interfaccia"),
+      await screen.findByLabelText('Lingua dell’interfaccia'),
     ).toBeTruthy();
     // Three choices rather than a dark on/off switch: "follow the system"
     // is the default now, and a two-position toggle cannot say it.

@@ -75,7 +75,7 @@ describe('LayersPanel', () => {
     expect(container.querySelector('li[role="button"]')).toBeNull();
     expect(
       screen
-        .getByRole('button', { name: 'Trascina "Testo"' })
+        .getByRole('button', { name: 'Trascina «Testo»' })
         .getAttribute('aria-roledescription'),
     ).toBe('sortable');
   });
@@ -446,7 +446,7 @@ describe('LayersPanel', () => {
       'Etichetta di stato',
     );
     expect(
-      screen.getByRole('button', { name: 'Trascina "Etichetta di stato"' }),
+      screen.getByRole('button', { name: 'Trascina «Etichetta di stato»' }),
     ).toBeTruthy();
   });
 
@@ -476,7 +476,7 @@ describe('LayersPanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Comprimi' }));
     expect(screen.getByTestId('layer-row').textContent).toContain(
-      "Contiene blocchi con un'icona che il tema non ha",
+      'Contiene blocchi con un’icona che il tema non ha',
     );
   });
 

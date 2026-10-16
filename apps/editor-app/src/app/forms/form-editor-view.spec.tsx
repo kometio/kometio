@@ -266,19 +266,21 @@ describe('FormEditorView — multi-step', () => {
     renderView();
 
     expect(
-      screen.getByText('Nessuno step: il modulo è a pagina singola.'),
+      screen.getByText('Nessun passaggio: il modulo è in una sola pagina.'),
     ).toBeTruthy();
-    expect(screen.queryByLabelText('Step')).toBeFalsy();
+    expect(screen.queryByLabelText('Passaggio')).toBeFalsy();
   });
 
   it('adding a step reveals a per-field step-assignment dropdown', () => {
     renderView();
 
-    fireEvent.click(screen.getByRole('button', { name: /aggiungi step/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /aggiungi passaggio/i }),
+    );
 
-    expect(screen.getByPlaceholderText('Titolo dello step')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Titolo del passaggio')).toBeTruthy();
     // Two fields in sampleForm, each now shows its own step dropdown.
-    expect(screen.getAllByLabelText('Step')).toHaveLength(2);
+    expect(screen.getAllByLabelText('Passaggio')).toHaveLength(2);
   });
 
   it('assigning a field to a step, then removing that step, clears the assignment back to none', () => {
@@ -288,18 +290,18 @@ describe('FormEditorView — multi-step', () => {
     });
 
     const fieldStepSelect = instanceOf(
-      screen.getAllByLabelText('Step')[0],
+      screen.getAllByLabelText('Passaggio')[0],
       HTMLElement,
       'the first field’s step dropdown',
     );
     chooseOption(fieldStepSelect, 'Dati');
     expect(fieldStepSelect.textContent).toContain('Dati');
 
-    fireEvent.click(screen.getByRole('button', { name: /rimuovi step/i }));
+    fireEvent.click(screen.getByRole('button', { name: /rimuovi passaggio/i }));
 
     // No steps left at all now, so the dropdown disappears entirely —
     // the field's stepId was cleared, not left dangling on a deleted step.
-    expect(screen.queryByLabelText('Step')).toBeFalsy();
+    expect(screen.queryByLabelText('Passaggio')).toBeFalsy();
   });
 
   it('saves the current steps alongside name and fields', async () => {
@@ -309,8 +311,10 @@ describe('FormEditorView — multi-step', () => {
     });
     renderView();
 
-    fireEvent.click(screen.getByRole('button', { name: /aggiungi step/i }));
-    fireEvent.change(screen.getByPlaceholderText('Titolo dello step'), {
+    fireEvent.click(
+      screen.getByRole('button', { name: /aggiungi passaggio/i }),
+    );
+    fireEvent.change(screen.getByPlaceholderText('Titolo del passaggio'), {
       target: { value: 'Dati personali' },
     });
     fireEvent.click(screen.getByRole('button', { name: /^salva$/i }));

@@ -143,7 +143,7 @@ describe('GeneralSettingsSection', () => {
     });
     renderSection();
 
-    fireEvent.change(screen.getByLabelText('Nome sito'), {
+    fireEvent.change(screen.getByLabelText('Nome del sito'), {
       target: { value: 'Nuovo nome' },
     });
     fireEvent.click(screen.getByRole('button', { name: /^salva$/i }));

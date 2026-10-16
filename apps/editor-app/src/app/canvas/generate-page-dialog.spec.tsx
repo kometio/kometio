@@ -159,7 +159,7 @@ describe('GeneratePageDialog', () => {
     describePage('La home di un forno');
     fireEvent.click(screen.getByRole('button', { name: 'Genera' }));
 
-    await screen.findByText('Scrittura della pagina... 1240 caratteri finora');
+    await screen.findByText('Scrittura della pagina… 1240 caratteri finora');
     fireEvent.click(screen.getByRole('button', { name: 'Interrompi' }));
     expect(seenSignal?.aborted).toBe(true);
     expect(onOpenChange).toHaveBeenCalledWith(false);

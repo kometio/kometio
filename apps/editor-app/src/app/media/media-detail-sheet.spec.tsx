@@ -187,7 +187,7 @@ describe('MediaDetailSheet', () => {
     const { onClose } = renderSheet(photo);
 
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
-    expect(screen.getByText(/verrà eliminato definitivamente/i)).toBeTruthy();
+    expect(screen.getByText(/verrà eliminato per sempre/i)).toBeTruthy();
     expect(api.deleteMedia).not.toHaveBeenCalled();
 
     clickConfirmDelete();
@@ -195,7 +195,7 @@ describe('MediaDetailSheet', () => {
     await waitFor(() =>
       expect(api.deleteMedia).toHaveBeenCalledWith('media-7'),
     );
-    expect(await screen.findByText('“listino.png” eliminato')).toBeTruthy();
+    expect(await screen.findByText('«listino.png» eliminato')).toBeTruthy();
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
 

@@ -86,7 +86,7 @@ describe('AcceptInviteForm', () => {
     );
 
     expect(
-      await screen.findByRole('button', { name: 'Salvataggio...' }),
+      await screen.findByRole('button', { name: 'Salvataggio…' }),
     ).toHaveProperty('disabled', true);
   });
 });

@@ -65,7 +65,7 @@ describe('NewsletterSettingsSection', () => {
     expect(dialog.textContent).toContain('uno script può aggiungere indirizzi');
     expect(api.updateNewsletterCaptcha).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Spegni' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Disattiva' }));
 
     await waitFor(() =>
       expect(api.updateNewsletterCaptcha).toHaveBeenCalledWith('site-1', {

@@ -117,7 +117,7 @@ describe('IconPickerField', () => {
     expect(isMissingFromTheme).toHaveBeenCalledWith('palette');
     expect(
       screen.getByText(
-        "Il tema non ha l'icona «palette»: sul sito non si vede. Scegline un'altra.",
+        'Il tema non ha l’icona «palette»: sul sito non si vede. Scegline un’altra.',
       ),
     ).toBeTruthy();
     // Still changeable and removable: the warning is the way out, not a wall.

@@ -198,7 +198,7 @@ describe('TermEditorView', () => {
 
       expect(
         await screen.findByText(
-          "Quell'indirizzo è già occupato da un altro termine o da una pagina.",
+          'Quell’indirizzo è già occupato da un altro termine o da una pagina.',
         ),
       ).toBeTruthy();
       expect(
@@ -347,7 +347,7 @@ describe('TermEditorView', () => {
         expect(api.deleteTerm).toHaveBeenCalledWith('macchine'),
       );
       expect(
-        await screen.findByText('Termine “Macchine” eliminato'),
+        await screen.findByText('Termine «Macchine» eliminato'),
       ).toBeTruthy();
       await waitFor(() =>
         expect(navigate).toHaveBeenCalledWith({ to: '/taxonomies' }),

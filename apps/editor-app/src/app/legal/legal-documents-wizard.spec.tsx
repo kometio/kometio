@@ -154,7 +154,7 @@ describe('LegalDocumentsWizard', { timeout: 15_000 }, () => {
     fireEvent.click(screen.getByRole('button', { name: /avanti/i }));
 
     const emailMessage = await screen.findByText(
-      /scrivi l’email a cui scrivere/i,
+      /Scrivi l’email a cui i visitatori possono rivolgersi/i,
     );
     const domainMessage = screen.getByText(/scrivi il dominio del sito/i);
     for (const [field, message] of [
@@ -454,7 +454,7 @@ describe('LegalDocumentsWizard', { timeout: 15_000 }, () => {
     await walkToReview();
 
     expect(
-      await screen.findByText(/non è stato possibile generare l'anteprima/i),
+      await screen.findByText(/non è stato possibile generare l’anteprima/i),
     ).toBeTruthy();
     expect(screen.queryByText(/Failed to fetch/)).toBeNull();
   });

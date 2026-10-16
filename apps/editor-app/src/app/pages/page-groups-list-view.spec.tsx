@@ -545,7 +545,7 @@ describe('PageGroupsListView', () => {
     renderView({ isRefreshing: true });
 
     expect(screen.queryByText('Chi siamo')).toBeNull();
-    expect(screen.getByText('Caricamento...')).toBeTruthy();
+    expect(screen.getByText('Caricamento…')).toBeTruthy();
   });
 });
 

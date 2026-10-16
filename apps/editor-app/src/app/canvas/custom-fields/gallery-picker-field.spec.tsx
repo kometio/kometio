@@ -256,7 +256,7 @@ describe('GalleryPickerField', () => {
     );
 
     expect(screen.getByRole('alert').textContent).toContain(
-      "l'editor non sa leggere",
+      'l’editor non sa leggere',
     );
     expect(screen.queryByText('Aggiungi immagine')).toBeNull();
     expect(onChange).not.toHaveBeenCalled();

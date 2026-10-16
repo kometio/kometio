@@ -144,7 +144,7 @@ describe('TermTreeEditor', () => {
 
     expect(
       await screen.findByText(
-        "Quell'indirizzo è già occupato da un altro termine o da una pagina.",
+        'Quell’indirizzo è già occupato da un altro termine o da una pagina.',
       ),
     ).toBeTruthy();
   });

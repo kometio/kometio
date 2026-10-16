@@ -90,7 +90,7 @@ describe('SetupImportForm', () => {
     await screen.findByRole('status');
     expect(
       screen
-        .getByRole('button', { name: 'Apro il sito...' })
+        .getByRole('button', { name: 'Apertura del sito…' })
         .hasAttribute('disabled'),
     ).toBe(true);
     expect(

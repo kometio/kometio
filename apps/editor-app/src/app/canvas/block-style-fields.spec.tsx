@@ -15,7 +15,7 @@ describe('BlockStyleFields', () => {
       />,
     );
 
-    expect(screen.getByText('Raggio angoli')).toBeTruthy();
+    expect(screen.getByText('Raggio degli angoli')).toBeTruthy();
     expect(screen.getByText('Colore di sfondo')).toBeTruthy();
     expect(screen.queryByText('Padding orizzontale')).toBeNull();
     expect(screen.queryByText('Colore testo')).toBeNull();
@@ -32,7 +32,7 @@ describe('BlockStyleFields', () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText('Raggio angoli'), {
+    fireEvent.change(screen.getByLabelText('Raggio degli angoli'), {
       target: { value: '9999px' },
     });
 
@@ -53,7 +53,7 @@ describe('BlockStyleFields', () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText('Raggio angoli'), {
+    fireEvent.change(screen.getByLabelText('Raggio degli angoli'), {
       target: { value: '' },
     });
 

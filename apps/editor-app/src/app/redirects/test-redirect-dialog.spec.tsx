@@ -66,7 +66,7 @@ describe('TestRedirectDialog', () => {
     ],
     [
       { outcome: 'loop', ruleId: 'r' },
-      'I reindirizzamenti mandano i visitatori in tondo. Modificane uno.',
+      'I reindirizzamenti formano un ciclo: il visitatore girerebbe in tondo. Modificane uno.',
     ],
     [
       { outcome: 'none' },
