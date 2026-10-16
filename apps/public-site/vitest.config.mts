@@ -8,6 +8,8 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'node',
+    // Nothing here reaches another machine: see @kometio/testing/no-network.
+    setupFiles: ['@kometio/testing/no-network-setup'],
     // Vitest stubs .css imports to an empty string by default (real CSS
     // processing is usually irrelevant to unit tests) — but
     // theme-registry.ts's `import.meta.glob(..., {query: '?raw'})` needs

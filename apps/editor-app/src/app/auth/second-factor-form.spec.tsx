@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../../lib/http-client';
 import { SecondFactorForm } from './second-factor-form';
+import { instanceOf } from '../../test/dom.test-fixture';
 
 // The suite runs pinned to Italian (test-setup.ts).
 function renderForm(onSubmit = vi.fn().mockResolvedValue(undefined)) {
@@ -58,9 +59,9 @@ describe('SecondFactorForm', () => {
       'textContent',
       expect.stringMatching(/non è giusto/i),
     );
-    expect((screen.getByLabelText('Codice') as HTMLInputElement).value).toBe(
-      '',
-    );
+    expect(
+      instanceOf(screen.getByLabelText('Codice'), HTMLInputElement).value,
+    ).toBe('');
     typeCode('654321');
     await waitFor(() =>
       expect(onSubmit).toHaveBeenLastCalledWith('c2', '654321'),
