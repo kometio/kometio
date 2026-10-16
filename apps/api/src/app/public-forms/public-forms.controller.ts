@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { memoryStorage } from 'multer';
 import {
   getPublicForm,
@@ -32,14 +32,27 @@ import {
 import type { PublicFormsDeps } from './public-forms.deps';
 import { PUBLIC_FORMS_DEPS } from './public-forms.tokens';
 import { UndeliveredEmailLog } from '../emails/undelivered-email-log';
+import { PublicPagesThrottlerGuard } from '../public-pages/public-pages-throttler.guard';
+
+/**
+ * What the page's own read of a form may cost one visitor: the same as any
+ * other public page read (PublicPagesModule's 120 a minute), since every view
+ * of a page that has a form makes one.
+ */
+const FORM_READS_PER_MINUTE = 120;
 
 // No SessionAuthGuard — the public, unauthenticated path apps/public-site's
 // Form block calls (field definitions live-fetched, docs/adr/0015) and its
-// same-origin submission proxy posts through. ThrottlerGuard is stricter
-// than PublicPagesController's read traffic (120/60s): a write endpoint is
-// the one a spam bot actually wants to hit repeatedly.
+// same-origin submission proxy posts through. The writes are limited to the
+// module's ten a minute — a write endpoint is the one a spam bot actually
+// wants to hit repeatedly — and the read is not: it is a page view.
+//
+// Counted per visitor, not per address: every call comes from the public
+// site's server, so with a plain guard the whole site shared ten page views
+// and ten answers a minute, and the eleventh visitor's page lost its form
+// (PublicPagesThrottlerGuard says how the visitor is told).
 @Controller('public/forms')
-@UseGuards(ThrottlerGuard)
+@UseGuards(PublicPagesThrottlerGuard)
 export class PublicFormsController {
   constructor(
     @Inject(PUBLIC_FORMS_DEPS) private readonly deps: PublicFormsDeps,
@@ -47,6 +60,7 @@ export class PublicFormsController {
   ) {}
 
   @Get(':id')
+  @Throttle({ default: { limit: FORM_READS_PER_MINUTE, ttl: 60_000 } })
   async findById(@UuidParam('id') id: string): Promise<PublicForm> {
     return publicFormSchema.parse(
       await getPublicForm(this.deps, {
