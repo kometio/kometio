@@ -414,7 +414,8 @@ const englishWords: Words = {
 
 export const portfolioStarter: Starter = {
   id: 'portfolio',
-  themeName: 'classic',
+  // Where it was drawn: the design called Colore (docs/adr/0139).
+  themeName: 'colour',
   content: {
     it: (context) => build(context, italianWords),
     en: (context) => build(context, englishWords),

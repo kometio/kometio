@@ -109,7 +109,7 @@ async function arrange(
     reusableSectionRepository: new InMemoryReusableSectionRepository(),
     searchPort: new InMemorySearchPort(),
     themeCatalog: new InMemoryThemeCatalog(
-      (overrides.themes ?? ['classic', 'docs-showcase', 'paper']).map(
+      (overrides.themes ?? ['classic', 'docs-showcase', 'paper', 'colour']).map(
         (name) => ({
           name,
           uploaded: false,
@@ -359,6 +359,15 @@ describe('applyStarter', () => {
     expect(site?.themeName).toBe('paper');
   });
 
+  it('puts the portfolio on colour, where it was drawn, when the deployment carries it', async () => {
+    const world = await arrange({ themes: ['classic', 'colour'] });
+
+    await apply(world.deps, 'portfolio');
+
+    const site = await world.deps.siteRepository.findById(TENANT, SITE);
+    expect(site?.themeName).toBe('colour');
+  });
+
   describe('when the deployment does not have the starter’s theme', () => {
     async function narrowed() {
       return arrange({ themeName: 'docs-showcase', themes: ['docs-showcase'] });
@@ -577,7 +586,7 @@ describe('getStarterOffer', () => {
       fallback: false,
       starters: [
         { id: 'studio', themeName: 'classic', themeAvailable: true },
-        { id: 'portfolio', themeName: 'classic', themeAvailable: true },
+        { id: 'portfolio', themeName: 'colour', themeAvailable: true },
         { id: 'blog', themeName: 'paper', themeAvailable: true },
       ],
     });
@@ -595,7 +604,7 @@ describe('getStarterOffer', () => {
       offer.starters.map(({ id, themeAvailable }) => [id, themeAvailable]),
     ).toEqual([
       ['studio', true],
-      ['portfolio', true],
+      ['portfolio', false],
       ['blog', false],
     ]);
   });

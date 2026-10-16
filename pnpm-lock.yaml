@@ -1471,6 +1471,22 @@ importers:
         specifier: ^7.3.8
         version: 7.3.8(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.8.1)(sass-embedded@1.105.1)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
 
+  themes/colour:
+    dependencies:
+      '@kometio/block-sdk':
+        specifier: workspace:*
+        version: link:../../libs/block-sdk
+      '@kometio/shared-types':
+        specifier: workspace:*
+        version: link:../../libs/shared-types
+      '@kometio/theme-runtime':
+        specifier: workspace:*
+        version: link:../../libs/theme-runtime
+    devDependencies:
+      astro:
+        specifier: ^7.3.8
+        version: 7.3.8(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(less@4.8.1)(sass-embedded@1.105.1)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
+
   themes/docs-showcase:
     dependencies:
       '@kometio/api-contracts':

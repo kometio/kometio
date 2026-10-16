@@ -173,6 +173,9 @@
     },
     {
       "path": "./themes/night"
+    },
+    {
+      "path": "./themes/colour"
     }
   ],
   "compilerOptions": {}
