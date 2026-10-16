@@ -70,6 +70,13 @@ boolean not null default true` (migration 0017), so every form that existed
   visitor-aware guard of the other public page reads (120 a minute), not the
   write endpoints' (10); when the page cannot get the answer it draws the
   widget, since a signup that cannot succeed is worse than a check.
+- **Who may turn it off follows what is being edited.** A form's switch is
+  part of the form, which has no draft, so it is a **publisher's**
+  (`changeLiveSite`, as every other change to a form: docs/roles.md) and the
+  PATCH of a form is the only way to set it; a copy keeps the original's and a
+  starter's forms ask. The newsletter's is a setting of the site, so it is an
+  **administrator's** (`configureSite`, as the retention and the SEO settings
+  are). An editor changes neither.
 - **Login, password reset and the first-run setup are not switchable.** They
   always ask: they are the doors to the accounts.
 - **Scripts solve it like the widget does.** `tools/solve-captcha.mjs` fetches
