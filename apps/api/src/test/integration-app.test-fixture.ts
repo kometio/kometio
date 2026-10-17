@@ -20,6 +20,7 @@ import { trustProxyHops } from '../app/trusted-proxy';
 import { rejectCrossSiteWrites } from '../app/cross-site-writes.middleware';
 import { requireEnv } from '@kometio/env-config';
 import { AUTH_PORT, CAPTCHA_PORT } from '../app/adapters/port.tokens';
+import { AbandonedImportJobsService } from '../app/imports/abandoned-import-jobs.service';
 
 export interface IntegrationAppOptions {
   imports: NonNullable<ModuleMetadata['imports']>;
@@ -49,6 +50,15 @@ export interface IntegrationUser {
  * spec that is about the captcha itself puts the real one back with
  * `overrideProviders` (captcha.controller.integration.spec.ts).
  *
+ * Starting the app does not close the import jobs that are "running". In
+ * production that is right: the reading happens in this process, so a job
+ * still running when it starts again has nobody doing it. Here every spec
+ * shares one database and one tenant, and specs run in parallel: the app of
+ * one spec starting would fail the job another spec is waiting on, with "the
+ * server restarted" — which is what red runs of the imports and the
+ * redirects-from-WordPress specs said. The sweep has a spec of its own,
+ * without a database (abandoned-import-jobs.service.spec.ts).
+ *
  * Every row lives under DEFAULT_TENANT_ID, the tenant `/auth/login`
  * resolves, and that tenant cannot be deleted. So the app remembers each
  * site and user it creates and `close()` deletes exactly those. A user a
@@ -76,7 +86,9 @@ export class IntegrationApp {
       imports: options.imports,
     })
       .overrideProvider(CAPTCHA_PORT)
-      .useClass(FakeCaptchaPort);
+      .useClass(FakeCaptchaPort)
+      .overrideProvider(AbandonedImportJobsService)
+      .useValue({ onApplicationBootstrap: async () => undefined });
     const moduleRef = await (
       options.overrideProviders?.(builder) ?? builder
     ).compile();
