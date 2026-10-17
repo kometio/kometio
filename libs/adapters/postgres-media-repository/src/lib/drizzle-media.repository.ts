@@ -126,6 +126,7 @@ export class DrizzleMediaRepository
           video: countOf('video'),
           audio: countOf('audio'),
           document: countOf('document'),
+          font: countOf('font'),
           other: countOf('other'),
         })
         .from(media)
@@ -155,6 +156,7 @@ function kindCondition(kind: MediaKind): SQL {
     case 'image':
     case 'video':
     case 'audio':
+    case 'font':
       return like(media.mimeType, `${kind}/%`);
     case 'document':
       return isDocument;
@@ -164,6 +166,7 @@ function kindCondition(kind: MediaKind): SQL {
           not(like(media.mimeType, 'image/%')),
           not(like(media.mimeType, 'video/%')),
           not(like(media.mimeType, 'audio/%')),
+          not(like(media.mimeType, 'font/%')),
           not(isDocument),
         ),
       );

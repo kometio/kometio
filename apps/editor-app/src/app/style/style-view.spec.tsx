@@ -45,6 +45,7 @@ vi.mock('../../lib/theme-uploads-api-client', async (importOriginal) => ({
 vi.mock('../../lib/media-api-client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/media-api-client')>()),
   listMedia: vi.fn(),
+  uploadMedia: vi.fn(),
 }));
 
 // No resolved defaults in these tests — without a mock the query would make
@@ -227,6 +228,95 @@ describe('StyleView — the page, section by section', () => {
         expect(api.updateThemeSettings).toHaveBeenCalledWith(
           'site-1',
           expect.objectContaining({ fontFamily: 'lora' }),
+        ),
+      );
+    });
+
+    // docs/adr/0147
+    const uploadedFont = {
+      family: 'Biscotto',
+      faces: [
+        {
+          mediaId: '00000000-0000-4000-8000-000000000001',
+          url: 'https://api.test/uploads/a.woff2',
+          weight: 'variable' as const,
+          style: 'normal' as const,
+        },
+      ],
+    };
+
+    it('offers the font the site uploaded, by its name, and saves it', async () => {
+      vi.mocked(api.updateThemeSettings).mockResolvedValue(site);
+      renderView({ themeUploadedFont: uploadedFont });
+
+      expect(screen.getByText('Font caricato: Biscotto, 1 file')).toBeTruthy();
+      fireEvent.click(screen.getByRole('combobox', { name: 'Font' }));
+      fireEvent.click(
+        screen.getByRole('option', { name: 'Biscotto (caricato)' }),
+      );
+      fireEvent.click(await screen.findByRole('button', { name: /^salva$/i }));
+
+      await waitFor(() =>
+        expect(api.updateThemeSettings).toHaveBeenCalledWith(
+          'site-1',
+          expect.objectContaining({ fontFamily: 'uploaded', uploadedFont }),
+        ),
+      );
+    });
+
+    // The dialog's form sits inside the page's in React's tree, and a submit
+    // bubbles through it: uploading saved the page before the font was in it.
+    it('uploads a font without saving the page, and then offers it to save', async () => {
+      vi.mocked(mediaApi.uploadMedia).mockResolvedValue(
+        buildMediaRecord({
+          id: '00000000-0000-4000-8000-000000000001',
+          url: 'https://api.test/uploads/a.woff2',
+        }),
+      );
+      vi.mocked(api.updateThemeSettings).mockResolvedValue(site);
+      renderView();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Carica un font' }));
+      const input = document.querySelector<HTMLInputElement>(
+        'input[type="file"][accept*="woff2"]',
+      );
+      if (!input) throw new Error('no font input');
+      fireEvent.change(input, {
+        target: { files: [new File(['wOF2'], 'Biscotto[wght].woff2')] },
+      });
+      fireEvent.click(screen.getByRole('checkbox', { name: /Ho il diritto/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Carica' }));
+
+      expect(
+        await screen.findByText('Font caricato: Biscotto, 1 file'),
+      ).toBeTruthy();
+      expect(api.updateThemeSettings).not.toHaveBeenCalled();
+      fireEvent.click(await screen.findByRole('button', { name: /^salva$/i }));
+      await waitFor(() =>
+        expect(api.updateThemeSettings).toHaveBeenCalledWith(
+          'site-1',
+          expect.objectContaining({
+            fontFamily: 'uploaded',
+            uploadedFont: uploadedFont,
+          }),
+        ),
+      );
+    });
+
+    it('goes back to the theme’s font when the uploaded one is removed while picked', async () => {
+      vi.mocked(api.updateThemeSettings).mockResolvedValue(site);
+      renderView({
+        themeUploadedFont: uploadedFont,
+        themeFontFamily: 'uploaded',
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rimuovi' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^salva$/i }));
+
+      await waitFor(() =>
+        expect(api.updateThemeSettings).toHaveBeenCalledWith(
+          'site-1',
+          expect.objectContaining({ fontFamily: null, uploadedFont: null }),
         ),
       );
     });

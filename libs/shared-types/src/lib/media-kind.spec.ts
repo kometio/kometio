@@ -17,7 +17,8 @@ describe('mediaKindOfMime', () => {
     ],
     ['application/zip', 'other'],
     ['application/octet-stream', 'other'],
-    ['font/woff2', 'other'],
+    ['font/woff2', 'font'],
+    ['font/ttf', 'font'],
   ])('%s is %s', (mimeType, kind) => {
     expect(mediaKindOfMime(mimeType)).toBe(kind);
   });

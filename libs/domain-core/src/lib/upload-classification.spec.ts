@@ -20,6 +20,27 @@ describe('classifyUpload', () => {
     });
   });
 
+  // docs/adr/0147: a page loads it from the library's address, so it has to
+  // be served in place, and its bytes are what earn that.
+  it('serves a web font in place, as the font its bytes say it is', () => {
+    expect(classifyUpload(text('wOF2....'), 'Biscotto.woff2')).toEqual({
+      mimeType: 'font/woff2',
+      kind: 'font',
+      extension: 'woff2',
+      inline: true,
+    });
+  });
+
+  it('keeps a TrueType font, or a file only called .woff2, as a download in the fonts', () => {
+    expect(classifyUpload(text('\x00\x01\x00\x00'), 'Biscotto.ttf')).toEqual({
+      mimeType: 'font/ttf',
+      kind: 'font',
+      extension: 'ttf',
+      inline: false,
+    });
+    expect(classifyUpload(PNG.slice(1), 'not-a-font.woff2').inline).toBe(false);
+  });
+
   it('takes a PDF it cannot vouch for, as a document served for download', () => {
     expect(classifyUpload(text('%PDF-1.7 ...'), 'Listino 2026.PDF')).toEqual({
       mimeType: 'application/pdf',

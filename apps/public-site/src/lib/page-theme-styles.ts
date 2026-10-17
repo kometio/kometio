@@ -26,6 +26,7 @@ export type EffectiveThemeSettings = Pick<
   | 'primaryColor'
   | 'secondaryColor'
   | 'fontFamily'
+  | 'uploadedFont'
   | 'customCss'
   | 'contentWidth'
   | 'faviconUrl'
@@ -34,6 +35,8 @@ export type EffectiveThemeSettings = Pick<
 
 export interface PageThemeStyles {
   theme: EffectiveThemeSettings;
+  /** The `@font-face` rules of a font the site uploaded (docs/adr/0147), or `''`. */
+  fontFaceCss: string;
   /** The active theme's own tokens, as `name: value !important;` declarations. */
   themeBaseTokenDeclarations: string;
   /** The site's Tier 1 colours, font and content width, as declarations. */
@@ -134,12 +137,13 @@ export function resolvePageThemeStyles({
         primaryColor: null,
         secondaryColor: null,
         fontFamily: null,
+        uploadedFont: null,
         customCss: null,
         contentWidth: null,
         faviconUrl: null,
         overridesEnabled: false,
       };
-  const themeFont = resolveThemeFont(theme.fontFamily);
+  const themeFont = resolveThemeFont(theme.fontFamily, theme.uploadedFont);
   // The per-type block styles (docs/adr/0022, per variant since ADR-0047).
   // The theme's ceiling, not the site's Tier 1 switch — see the two
   // constants above for why they are no longer the same thing.
@@ -211,6 +215,7 @@ export function resolvePageThemeStyles({
 
   return {
     theme,
+    fontFaceCss: themeFont?.fontFaceCss ?? '',
     themeBaseTokenDeclarations,
     themeOverrideDeclarations,
     blockStyleCss,

@@ -56,6 +56,7 @@ export class KometioApi {
           headScript: current.themeHeadScript,
           bodyScript: current.themeBodyScript,
           faviconUrl: current.themeFaviconUrl,
+          uploadedFont: current.themeUploadedFont,
           overridesEnabled: current.themeOverridesEnabled,
           motionEnabled: enabled,
           allowedTrackerDomains: current.themeAllowedTrackerDomains,

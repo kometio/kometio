@@ -53,6 +53,7 @@ import {
   storedFormFieldsSchema,
   trackerDomainEntriesSchema,
   trackerScriptEntriesSchema,
+  uploadedFontSchema,
   wordPressAnalysisSchema,
   wordPressPermalinksSchema,
 } from '@kometio/shared-types';
@@ -244,6 +245,11 @@ export const sites = pgTable(
     themeHeadScript: text('theme_head_script'),
     themeBodyScript: text('theme_body_script'),
     themeFaviconUrl: text('theme_favicon_url'),
+    // docs/adr/0147: the font the site uploaded, a family and up to four files.
+    themeUploadedFont: validatedJsonb(
+      'theme_uploaded_font',
+      uploadedFontSchema,
+    ),
     // Site-level gate under the theme's own theme.json ceiling
     // (docs/adr/0021) — defaults true so an existing/fresh site with no
     // Tier 1 fields set behaves identically to before this column existed.

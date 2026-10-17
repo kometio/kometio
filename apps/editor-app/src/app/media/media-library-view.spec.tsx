@@ -62,7 +62,14 @@ function firstSearchUpdate(navigate: {
   return options;
 }
 
-const counts = { image: 21, video: 0, audio: 2, document: 3, other: 1 };
+const counts = {
+  image: 21,
+  video: 0,
+  audio: 2,
+  document: 3,
+  font: 0,
+  other: 1,
+};
 
 function renderView(
   items: MediaRecord[],
@@ -123,6 +130,7 @@ describe('MediaLibraryView', () => {
       'Video0 file',
       'Audio2 file',
       'Documenti3 file',
+      'Font0 file',
       'Altro1 file',
     ]);
     expect(links[3].getAttribute('href')).toBe('/media?page=1&kind=document');

@@ -1,4 +1,10 @@
-import { File, FileAudio, FileText, FileVideo } from 'lucide-react';
+import {
+  File,
+  FileAudio,
+  FileText,
+  FileVideo,
+  Type as FontIcon,
+} from 'lucide-react';
 import { mediaKindOfMime } from '@kometio/shared-types';
 import type { MediaRecord } from '../../lib/media-api-client';
 import { formatBytes } from '../../lib/format-bytes';
@@ -31,6 +37,7 @@ const KIND_GLYPH = {
   video: FileVideo,
   audio: FileAudio,
   document: FileText,
+  font: FontIcon,
   other: File,
 } as const;
 

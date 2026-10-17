@@ -33,6 +33,7 @@ import {
   ImportJobHasNoPermalinksError,
   ImportJobNotAnalyzedError,
   ImportJobNotFoundError,
+  InvalidUploadedFontError,
   MediaNotFoundError,
   NotAPageTemplateError,
   PageGroupHasChildrenError,
@@ -154,6 +155,7 @@ const DOMAIN_ERROR_MAPPINGS: Array<[Type<Error>, DomainErrorFactory]> = [
     (m) => new HttpException(m, HttpStatus.INSUFFICIENT_STORAGE),
   ],
   [MediaNotFoundError, (m) => new NotFoundException(m)],
+  [InvalidUploadedFontError, (m) => new BadRequestException(m)],
   [ImportJobNotFoundError, (m) => new NotFoundException(m)],
   // 409, with a code as the message: the file is there, but not in the state
   // the request needs (still being read; read before addresses were kept).

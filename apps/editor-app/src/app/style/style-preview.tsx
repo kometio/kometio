@@ -1,6 +1,6 @@
 import {
   curatedThemeFontLabel,
-  type CuratedThemeFont,
+  type ThemeFontChoice,
 } from '@kometio/shared-types';
 import { useTranslation } from '../../lib/use-translation';
 
@@ -9,8 +9,10 @@ export interface StylePreviewProps {
   primary: string | undefined;
   /** The text colour the theme puts on the primary colour, as it writes it. */
   primaryForeground: string | undefined;
-  /** The font the form holds now: one of the curated fonts, or `null` for the theme's own. */
-  font: CuratedThemeFont | null;
+  /** The font the form holds now: a curated one, the uploaded one, or `null` for the theme's own. */
+  font: ThemeFontChoice | null;
+  /** The name of the uploaded font, when that is the one. The editor does not load its files: it is drawn with something like it. */
+  uploadedFamily?: string;
 }
 
 /**
@@ -26,12 +28,13 @@ export function StylePreview({
   primary,
   primaryForeground,
   font,
+  uploadedFamily,
 }: StylePreviewProps) {
   const { t } = useTranslation();
   const family =
     font === null || font === 'system'
       ? undefined
-      : `"${curatedThemeFontLabel(font)}", system-ui, sans-serif`;
+      : `"${font === 'uploaded' ? (uploadedFamily ?? '') : curatedThemeFontLabel(font)}", system-ui, sans-serif`;
 
   return (
     <div className="flex flex-col gap-1.5">

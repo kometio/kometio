@@ -669,6 +669,7 @@ describe('router', () => {
       video: 0,
       audio: 0,
       document: 0,
+      font: 0,
       other: 0,
     });
 

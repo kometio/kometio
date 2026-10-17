@@ -17,6 +17,7 @@ const SETTINGS: ThemeSettings = {
   headScript: null,
   bodyScript: null,
   faviconUrl: 'https://cdn.example.test/fav.png',
+  uploadedFont: null,
   overridesEnabled: true,
   motionEnabled: true,
   allowedTrackerDomains: [],
@@ -74,6 +75,7 @@ describe('resolvePageThemeStyles', () => {
         primaryColor: null,
         secondaryColor: null,
         fontFamily: null,
+        uploadedFont: null,
         customCss: null,
         contentWidth: null,
         faviconUrl: null,
@@ -138,6 +140,45 @@ describe('resolvePageThemeStyles', () => {
       });
 
       expect(styles.motionEnabled).toBe(false);
+    });
+  });
+
+  // docs/adr/0147
+  describe('a font the site uploaded', () => {
+    const uploaded = {
+      ...SETTINGS,
+      fontFamily: 'uploaded' as const,
+      uploadedFont: {
+        family: 'Biscotto',
+        faces: [
+          {
+            mediaId: '00000000-0000-4000-8000-000000000001',
+            url: 'https://api.example.test/uploads/a.woff2',
+            weight: 'variable' as const,
+            style: 'normal' as const,
+          },
+        ],
+      },
+    };
+
+    it('is drawn with, from the site’s own address', () => {
+      const styles = resolve({ themeSettings: uploaded });
+
+      expect(styles.themeOverrideDeclarations).toContain(
+        "--font-sans-value: 'kometio-uploaded-font', ui-sans-serif, system-ui, sans-serif !important;",
+      );
+      expect(styles.fontFaceCss).toContain(
+        '/api/site-font?href=https%3A%2F%2Fapi.example.test%2Fuploads%2Fa.woff2',
+      );
+    });
+
+    it('is left out with the rest of Tier 1 when the site’s switch is off', () => {
+      const styles = resolve({
+        themeSettings: { ...uploaded, overridesEnabled: false },
+      });
+
+      expect(styles.fontFaceCss).toBe('');
+      expect(styles.themeOverrideDeclarations).toBe('');
     });
   });
 

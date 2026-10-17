@@ -2,7 +2,8 @@ import {
   isCuratedThemeFont,
   type BusinessAddress,
   type CookieBannerSettings,
-  type CuratedThemeFont,
+  type ThemeFontChoice,
+  type UploadedFont,
   type OpeningHoursDay,
   type ThemeSettings,
   type TrackerDomainEntry,
@@ -35,6 +36,8 @@ export interface SiteProps {
   themeHeadScript: string | null;
   themeBodyScript: string | null;
   themeFaviconUrl: string | null;
+  /** The font the site uploaded (docs/adr/0147), whether or not it is the one picked. */
+  themeUploadedFont: UploadedFont | null;
   themeOverridesEnabled: boolean;
   /** Whether the site moves (docs/adr/0141): the owner's switch, `true` for every site that existed before it. */
   themeMotionEnabled: boolean;
@@ -202,10 +205,14 @@ export class Site {
    * The font chosen in Style, or `null` for the theme's own. A value that is
    * not one of the curated fonts reads as `null`: until docs/adr/0146 the
    * column took any Google Fonts name, and a site that typed one goes back
-   * to its theme's font, the way the public site already draws it.
+   * to its theme's font, the way the public site already draws it. So does
+   * `uploaded` without an uploaded font (docs/adr/0147).
    */
-  get themeFontFamily(): CuratedThemeFont | null {
+  get themeFontFamily(): ThemeFontChoice | null {
     const stored = this.props.themeFontFamily;
+    if (stored === 'uploaded') {
+      return this.props.themeUploadedFont ? 'uploaded' : null;
+    }
     return stored !== null && isCuratedThemeFont(stored) ? stored : null;
   }
 
@@ -219,6 +226,7 @@ export class Site {
       headScript: this.props.themeHeadScript,
       bodyScript: this.props.themeBodyScript,
       faviconUrl: this.props.themeFaviconUrl,
+      uploadedFont: this.props.themeUploadedFont,
       overridesEnabled: this.props.themeOverridesEnabled,
       motionEnabled: this.props.themeMotionEnabled,
       allowedTrackerDomains: this.props.themeAllowedTrackerDomains,
@@ -292,6 +300,7 @@ export class Site {
     this.props.themeHeadScript = input.headScript;
     this.props.themeBodyScript = input.bodyScript;
     this.props.themeFaviconUrl = input.faviconUrl;
+    this.props.themeUploadedFont = input.uploadedFont;
     this.props.themeOverridesEnabled = input.overridesEnabled;
     this.props.themeMotionEnabled = input.motionEnabled;
     this.props.themeAllowedTrackerDomains = input.allowedTrackerDomains;

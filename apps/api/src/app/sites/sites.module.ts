@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AdaptersModule } from '../adapters/adapters.module';
 import {
   FORM_SUBMISSION_REPOSITORY,
+  MEDIA_REPOSITORY,
+  MEDIA_STORAGE,
   SITE_REPOSITORY,
   SITE_THEME_BLOCK_STYLES_REPOSITORY,
   THEME_CATALOG,
@@ -25,6 +27,8 @@ import { SITES_DEPS } from './sites.tokens';
       siteThemeBlockStylesRepository: SITE_THEME_BLOCK_STYLES_REPOSITORY,
       themeCatalog: THEME_CATALOG,
       deploymentSiteResolver: DEPLOYMENT_SITE_RESOLVER,
+      mediaRepository: MEDIA_REPOSITORY,
+      mediaStorage: MEDIA_STORAGE,
     }),
   ],
 })

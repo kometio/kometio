@@ -7,6 +7,7 @@ import {
   Folder,
   Image as ImageIcon,
   Music,
+  Type as FontIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { MEDIA_KINDS, type MediaKind } from '@kometio/shared-types';
@@ -17,6 +18,7 @@ export const MEDIA_KIND_LABEL = {
   video: 'media.filters.kindVideo',
   audio: 'media.filters.kindAudio',
   document: 'media.filters.kindDocument',
+  font: 'media.filters.kindFont',
   other: 'media.filters.kindOther',
 } as const satisfies Record<MediaKind, string>;
 
@@ -26,6 +28,7 @@ const KIND_ICON: Record<MediaKind, LucideIcon> = {
   video: Film,
   audio: Music,
   document: FileText,
+  font: FontIcon,
   other: File,
 };
 

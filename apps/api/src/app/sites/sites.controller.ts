@@ -441,6 +441,7 @@ export class SitesController {
       themeHeadScript: props.themeHeadScript,
       themeBodyScript: props.themeBodyScript,
       themeFaviconUrl: props.themeFaviconUrl,
+      themeUploadedFont: props.themeUploadedFont,
       themeOverridesEnabled: props.themeOverridesEnabled,
       themeMotionEnabled: props.themeMotionEnabled,
       newsletterCaptchaEnabled: props.newsletterCaptchaEnabled,

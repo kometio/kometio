@@ -863,6 +863,7 @@
         "video": "Ancora nessun video.",
         "audio": "Ancora nessun audio.",
         "document": "Ancora nessun documento.",
+        "font": "Ancora nessun font.",
         "other": "Ancora nessun altro file."
       }
     },
@@ -877,7 +878,8 @@
       "titleImage": "Scegli un’immagine",
       "titleVideo": "Scegli un video",
       "titleAudio": "Scegli un audio",
-      "titleDocument": "Scegli un documento"
+      "titleDocument": "Scegli un documento",
+      "titleFont": "Scegli un font"
     },
     "filters": {
       "searchLabel": "Cerca per nome",
@@ -888,6 +890,7 @@
       "kindVideo": "Video",
       "kindAudio": "Audio",
       "kindDocument": "Documenti",
+      "kindFont": "Font",
       "kindOther": "Altro"
     },
     "folders": {
@@ -1167,6 +1170,41 @@
     "fontLabel": "Font",
     "fontInherit": "Predefinito del tema",
     "fontSystem": "Font di sistema",
+    "uploadedFont": {
+      "option": "{{family}} (caricato)",
+      "current_one": "Font caricato: {{family}}, {{count}} file",
+      "current_other": "Font caricato: {{family}}, {{count}} file",
+      "upload": "Carica un font",
+      "replace": "Sostituisci",
+      "remove": "Rimuovi",
+      "hint": "File WOFF2 o WOFF dal tuo computer. I visitatori li scaricano da questo sito, mai da un altro server.",
+      "filesStay": "Se lo rimuovi, i suoi file restano nella libreria: eliminali lì se non ti servono più.",
+      "dialog": {
+        "title": "Carica un font",
+        "nameLabel": "Nome",
+        "nameHint": "Lo vedi solo qui, in Stile.",
+        "filesLabel": "File",
+        "choose": "Scegli i file…",
+        "filesHint": "WOFF2 o WOFF. Un file variabile contiene tutti i pesi; altrimenti fino a quattro: normale, corsivo, grassetto e grassetto corsivo. Un file TTF o OTF va prima convertito in WOFF2.",
+        "weightFor": "Peso di {{name}}",
+        "styleFor": "Stile di {{name}}",
+        "weightVariable": "Variabile (tutti i pesi)",
+        "styleNormal": "Normale",
+        "styleItalic": "Corsivo",
+        "removeFile": "Rimuovi {{name}}",
+        "licenceLabel": "Ho il diritto di usare questo font su un sito web",
+        "submit": "Carica",
+        "uploading": "Caricamento…",
+        "nameMissing": "Dai un nome al font.",
+        "nameRule": "Il nome può avere lettere, cifre, spazi, trattini e apostrofi, fino a 60.",
+        "noFiles": "Scegli almeno un file.",
+        "tooMany": "Al massimo quattro file.",
+        "wrongType": "{{name}} non è un file WOFF2 o WOFF.",
+        "duplicate": "Due file hanno lo stesso peso e lo stesso stile.",
+        "licence": "Spunta la casella: serve il diritto di usare questo font su un sito web.",
+        "failed": "{{name}} non è stato caricato."
+      }
+    },
     "faviconLabel": "Icona del sito (favicon)",
     "customCssLabel": "CSS personalizzato",
     "contentWidthLabel": "Larghezza del contenuto",
