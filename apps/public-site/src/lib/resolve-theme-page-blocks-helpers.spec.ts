@@ -113,6 +113,17 @@ describe('buildThemeBlocksResponseEntry', () => {
     expect(entry.locales.en.label).toBe('FAQ');
   });
 
+  it('keeps the icon a block declared, which the editor draws beside it', () => {
+    const entry = buildThemeBlocksResponseEntry({
+      basename: 'Faq',
+      descriptor: { ...descriptor, icon: 'circle-help' },
+      hasRenderComponent: true,
+      locales,
+    });
+
+    expect(entry.descriptor.icon).toBe('circle-help');
+  });
+
   it('throws if locales is missing (validation should have caught this first)', () => {
     expect(() =>
       buildThemeBlocksResponseEntry({

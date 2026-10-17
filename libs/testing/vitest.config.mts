@@ -23,6 +23,9 @@ export default defineConfig(() => ({
         'src/**/*.test-fixture.ts',
         'src/index.ts',
         'src/records.ts',
+        // The file other projects list in `setupFiles`: it runs in all of
+        // theirs, and not in a run of this one.
+        'src/no-network.setup.ts',
       ],
       thresholds: {
         statements: 80,

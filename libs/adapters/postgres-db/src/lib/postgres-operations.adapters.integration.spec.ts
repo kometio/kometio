@@ -27,15 +27,25 @@ describe('Postgres operations adapters (integration)', () => {
   });
 
   it('lists the tenants, no more than it is asked for', async () => {
-    const tenantId = process.env['DEFAULT_TENANT_ID'];
     const directory = new PostgresTenantDirectory(db);
-
-    const ids = await directory.listIds(2);
-
-    expect(ids.length).toBeGreaterThan(0);
-    expect(ids.length).toBeLessThanOrEqual(2);
-    expect(ids).toContain(tenantId);
-    expect(await directory.listIds(1)).toHaveLength(1);
+    // Which tenants a limited listing returns is the database's to choose (the
+    // port promises how many, not which), and the other suites of a run make
+    // and drop tenants of their own while this one reads: so the limit is
+    // tested against tenants this test made, enough of them to be over it, and
+    // the development tenant is looked for in a listing that has room for it.
+    const made = [
+      await createIntegrationTenant(db),
+      await createIntegrationTenant(db),
+    ];
+    try {
+      expect(await directory.listIds(1)).toHaveLength(1);
+      expect(await directory.listIds(2)).toHaveLength(2);
+      expect(await directory.listIds(1_000)).toContain(
+        process.env['DEFAULT_TENANT_ID'],
+      );
+    } finally {
+      await deleteIntegrationTenants(db, made);
+    }
   });
 
   it("runs the clean-ups on a tenant's own rows only, and finds nothing to remove in a new one", async () => {

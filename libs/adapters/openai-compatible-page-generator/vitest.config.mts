@@ -9,6 +9,8 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'node',
+    // Nothing here reaches another machine: see @kometio/testing/no-network.
+    setupFiles: ['@kometio/testing/no-network-setup'],
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {

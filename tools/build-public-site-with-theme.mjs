@@ -133,6 +133,35 @@ for (const entry of readdirSync(siteModules)) {
   }
 }
 
+// The block types the theme adds are checked here, and not only by the site
+// when it draws its first page: there nobody reads the message. A theme with
+// one block in a category it may not use built without a word and then made
+// every page of the site answer "Internal server error".
+//
+// Exit status 1 is the checker saying what is wrong. Anything else (no `tsx`
+// where this runs, a crash) means it could not check, which is said, and not
+// held against the theme.
+try {
+  execFileSync(
+    'pnpm',
+    ['exec', 'tsx', 'tools/validate-theme-blocks.mts', name],
+    {
+      cwd: ROOT,
+      stdio: 'inherit',
+    },
+  );
+} catch (error) {
+  if (error?.status === 1) {
+    fail(
+      `themes/${name} has a block the site could not draw; the list above says which.`,
+    );
+  }
+  console.warn(
+    `! The blocks of themes/${name} could not be checked (${error?.message ?? error}); ` +
+      'the site checks them when it draws its first page.',
+  );
+}
+
 console.log(`Building the public site with themes/${name} …`);
 try {
   // Astro itself, not `nx run @kometio/public-site:build`, which runs the

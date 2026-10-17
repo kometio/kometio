@@ -70,7 +70,10 @@ node --env-file=.env apps/public-site/server.mjs
 ```
 
 The script checks the theme, links the public site's own packages where the
-theme's imports look for them, and builds. Then pick the theme in the
+theme's imports look for them, checks the blocks the theme adds (a category a
+theme may not use, a missing translation, a name core already has: it stops
+and lists what is wrong, because a site built with such a block would answer
+"Internal server error" on every page), and builds. Then pick the theme in the
 editor's Style dialog ("Tema"), which writes `Site.themeName`. Switching
 between themes after that needs nothing but a page reload.
 

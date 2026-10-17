@@ -166,14 +166,38 @@ pnpm exec nx run @kometio/public-site:dev                 # Astro public site
 pnpm run verify
 ```
 
-Runs the four gates CI runs, in one command: the tsconfig convention
-check, `typecheck`, `lint`, and the test suite **with coverage**. The
-`git push` hook runs the same set minus `typecheck`, which CI keeps as a
-job of its own. The coverage thresholds ([ADR-0009](adr/0009-enforced-coverage-thresholds.md))
-are only enforced with `--coverage`, so a run of plain `nx run-many -t
-test` can be green while the push is refused. Running this first is the
-difference between finding that out now and finding it out at the end of
-a long session.
+Runs the gates CI runs, in one command: the tsconfig convention check,
+the image-modules check, `typecheck`, `lint`, and the test suite **with
+coverage**.
+
+The `git push` hook runs less, on purpose: the tsconfig check, then `lint`
+and `test` one project at a time, **without coverage** and without
+`typecheck` (`.husky/pre-push` says why: instrumented runs on a laptop that
+is also running the stack were the heaviest moment of the day, and the one
+that crashed). CI runs what the hook leaves out. So a change can pass the
+hook and fail CI on a coverage threshold
+([ADR-0009](adr/0009-enforced-coverage-thresholds.md)) or on a type error,
+and the pull request that did exactly that is the reason this paragraph is
+written down. Running `pnpm run verify` before a push of any size is the
+difference between finding that out now and finding it out twelve minutes
+into CI.
+
+### What a test may reach
+
+A test talks to **this machine and to nothing else**: a Postgres on
+`localhost`, the application it starts itself. The API's Jest suites and the
+Vitest projects whose code has an HTTP client (the public site, the editor,
+the newsletter, AI and Sentry adapters) run with a guard that refuses any
+connection to another machine and fails the test with the address it asked
+for (`@kometio/testing/no-network`). The guard fails the test even when the
+code under test caught the refusal and turned it into a 500 or an empty
+list, which is what such code is written to do.
+
+If a test needs something that lives elsewhere, it needs a fake: the ports
+in `libs/testing` (`FakeCaptchaPort`, `FakeEmailPort`, …) are there for that.
+The reason is a failure that is on record: a login that asked Cloudflare, over
+the network, whether a test token was good, and one run in which four tests of
+one suite answered 500 while the next run passed.
 
 ### End-to-end tests
 

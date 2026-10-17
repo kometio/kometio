@@ -129,6 +129,14 @@ export const themeBlockDescriptorSchema = z.object({
   type: z.string(),
   label: z.string(),
   category: themeBlockCategorySchema,
+  /**
+   * The picture the editor draws beside the block in the picker and in
+   * Layers, a lucide icon name (`BlockDescriptor.icon`). It has to be here:
+   * the entry is parsed with this schema on its way to the editor, and a key
+   * the schema does not name is dropped, so a theme block that declared an
+   * icon was shown with the plain square of a block that has none.
+   */
+  icon: z.string().optional(),
   defaultProps: z.record(z.string(), z.unknown()),
   fields: z.array(themeFieldDescriptorSchema),
   isContainer: z.boolean().optional(),

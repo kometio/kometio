@@ -81,6 +81,29 @@ async function enrol(deps: Deps) {
   return { secret: begun.secret, recoveryCodes: confirmed.recoveryCodes };
 }
 
+/**
+ * What an attempt that is expected to be refused was refused with. An
+ * attempt that went through, or that failed for another reason, fails the
+ * test saying so: a test that read the error as the refusal it expected
+ * would go on to assert on something that was never there.
+ */
+async function refusal(
+  attempt: Promise<unknown>,
+): Promise<InvalidSecondFactorError> {
+  const outcome = await attempt.then(
+    (value) => ({ failed: false as const, value }),
+    (error: unknown) => ({ failed: true as const, error }),
+  );
+  if (outcome.failed && outcome.error instanceof InvalidSecondFactorError) {
+    return outcome.error;
+  }
+  throw new Error(
+    outcome.failed
+      ? `Expected the second step to refuse the code, it failed with: ${String(outcome.error)}`
+      : 'Expected the second step to refuse the code, and it went through',
+  );
+}
+
 describe('turning the second step on', () => {
   let deps: Deps;
   beforeEach(async () => {
@@ -344,14 +367,15 @@ describe('the second step of a sign-in', () => {
   });
 
   it('answers a wrong code with a fresh challenge to try again with', async () => {
-    const error = await completeSecondFactorLogin(deps, {
-      challenge: await challenge(),
-      code: '000000',
-      now: LATER,
-    }).catch((e: unknown) => e);
+    const error = await refusal(
+      completeSecondFactorLogin(deps, {
+        challenge: await challenge(),
+        code: '000000',
+        now: LATER,
+      }),
+    );
 
-    expect(error).toBeInstanceOf(InvalidSecondFactorError);
-    const again = (error as InvalidSecondFactorError).nextChallenge;
+    const again = error.nextChallenge;
     expect(again).toEqual(expect.any(String));
     // The new one works, and the typo cost nothing but a try.
     const result = await completeSecondFactorLogin(deps, {
@@ -368,13 +392,13 @@ describe('the second step of a sign-in', () => {
     let last: InvalidSecondFactorError | null = null;
     while (token !== null && tries < SECOND_FACTOR_MAX_ATTEMPTS + 2) {
       tries += 1;
-      const error: unknown = await completeSecondFactorLogin(deps, {
-        challenge: token,
-        code: '000000',
-        now: LATER,
-      }).catch((e: unknown) => e);
-      expect(error).toBeInstanceOf(InvalidSecondFactorError);
-      last = error as InvalidSecondFactorError;
+      last = await refusal(
+        completeSecondFactorLogin(deps, {
+          challenge: token,
+          code: '000000',
+          now: LATER,
+        }),
+      );
       token = last.nextChallenge;
     }
 
