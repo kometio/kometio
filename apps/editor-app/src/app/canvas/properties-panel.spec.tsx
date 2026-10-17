@@ -162,6 +162,46 @@ describe('PropertiesPanel style fields', () => {
   });
 
   /*
+   * Motion is base only (docs/adr/0060): the public site reads the entrance,
+   * its timing and the hover effect from the base tier and from nowhere
+   * else. A field at Tablet or Mobile saved a value nothing would ever read,
+   * and said nothing about it.
+   */
+  const MOTION_LABELS = [
+    'Animazione d’ingresso',
+    'Durata animazione',
+    'Ritardo animazione',
+    'Andamento',
+    'Al passaggio del mouse',
+  ];
+
+  it('offers the motion fields for a root-level block at the base size', () => {
+    renderPanel(<PropertiesPanel {...baseProps()} isRootLevel={true} />);
+
+    for (const label of MOTION_LABELS) {
+      expect(screen.getByText(label), label).toBeTruthy();
+    }
+  });
+
+  it.each(['tablet', 'mobile'] as const)(
+    'offers no motion fields at %s, but still the margins, which do change by size',
+    (breakpoint) => {
+      renderPanel(
+        <PropertiesPanel
+          {...baseProps()}
+          isRootLevel={true}
+          breakpoint={breakpoint}
+        />,
+      );
+
+      for (const label of MOTION_LABELS) {
+        expect(screen.queryByText(label), label).toBeNull();
+      }
+      expect(screen.getByLabelText('Spazio sotto')).toBeTruthy();
+    },
+  );
+
+  /*
    * The panel is always on screen now, which means it has to answer for
    * "nothing is selected" too — a tab that vanishes and comes back is a tab
    * nobody can aim at.

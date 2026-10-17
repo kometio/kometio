@@ -67,6 +67,15 @@ function styleFieldDefaults(
   return { ...themeDefaults, ...inherited };
 }
 
+/** What an entrance and a hover effect are made of; the public site reads all five from the base tier only (docs/adr/0060). */
+const MOTION_PROPERTIES: readonly BlockStylePropertyName[] = [
+  'animation',
+  'animationDuration',
+  'animationDelay',
+  'animationEasing',
+  'hoverEffect',
+];
+
 /**
  * The selected block's content, look and styling — the panel itself, now
  * that it has somewhere to live.
@@ -158,11 +167,9 @@ export function PropertiesPanel({
             // The motion set (docs/adr/0060) joins the margins for the same
             // two reasons: per-instance only, and root-level only — what
             // animates is the wrapper, which exists once per placement.
-            'animation',
-            'animationDuration',
-            'animationDelay',
-            'animationEasing',
-            'hoverEffect',
+            // And it is base only: nothing reads it from Tablet or Mobile,
+            // so a field there would save a value that never applies.
+            ...(breakpoint === 'base' ? MOTION_PROPERTIES : []),
           ]
         : stylableProperties;
   const canStyleInstance = instanceStylableProperties.length > 0;
