@@ -201,7 +201,7 @@ test('a person who starts the image reaches a working site, and can sign in agai
   const sendLink = forgot.getByRole('button', { name: 'Send reset link' });
   await expect(sendLink).toBeEnabled({ timeout: 30_000 });
   await sendLink.click();
-  await expect(forgot.getByText(/it is in the server's log/)).toBeVisible();
+  await expect(forgot.getByText(/it is in the server’s log/)).toBeVisible();
 
   // A form on the site, sent by a visitor.
   const api = new KometioApi(

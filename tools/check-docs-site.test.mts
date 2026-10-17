@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  contextFor,
   findingsFor,
   textOf,
   type CheckContext,
@@ -175,6 +176,15 @@ describe('findingsFor', () => {
     );
   });
 
+  it('lets an item of a list name what it is about, even four things', () => {
+    const body = `<ul><li><strong>Images</strong>: PNG, JPG, GIF, WebP and AVIF.</li></ul><p>${filler(70)}</p>`;
+    const blocks = [title('T'), section('S'), text(body)];
+
+    assert.ok(
+      !rules(findingsFor(page(blocks), context)).includes('list-as-sentence'),
+    );
+  });
+
   it('says what the typography and the word rules forbid, in the language they are for', () => {
     const blocks = [
       title('T'),
@@ -251,6 +261,40 @@ describe('findingsFor', () => {
     assert.deepEqual(found, []);
   });
 
+  it('knows a sentence of the editor without its full stop, and a label that is followed by a colon and a value', () => {
+    // Both are in the editor's own files: “It is not used anywhere.” and “Not uploaded: {{reason}}”.
+    const body = `<p>It says <strong>It is not used anywhere</strong> or <strong>Not uploaded</strong>. ${filler(70)}</p>`;
+    const blocks = [title('T'), section('S'), text(body)];
+
+    const found = findingsFor(page(blocks), contextFor('en', ['en'])).filter(
+      (f) => f.rule === 'ui-label' && f.where.includes('[en]'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('knows a label with a quoted value in it, as the editor writes it (“Only when “…””)', () => {
+    const body = `<p>Choose <strong>Only when</strong>. ${filler(70)}</p>`;
+    const blocks = [title('T'), section('S'), text(body)];
+
+    const found = findingsFor(page(blocks), contextFor('en', ['en'])).filter(
+      (f) => f.rule === 'ui-label' && f.where.includes('[en]'),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('leaves what is in code alone: a straight quote there is the code’s', () => {
+    const body = `<p>Write <code>kind: 'custom'</code> and a <code>control</code>. ${filler(70)}</p>`;
+    const blocks = [title('T'), section('S'), text(body)];
+
+    const found = findingsFor(page(blocks), context).filter(
+      (f) => f.rule === 'style',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('says a bold name that the editor does not use, and lets the ones it uses and the emphasis be', () => {
     const body = `<p>Open <strong>Forms</strong>, press <strong>Cmd/Ctrl + S</strong>, then <strong>Create form</strong>. <strong>Nothing is lost.</strong> ${filler(70)}</p>`;
     const blocks = [title('T'), section('S'), text(body)];
@@ -284,5 +328,10 @@ describe('textOf', () => {
       textOf('<p>A &amp; B</p><ul><li>one</li><li>two</li></ul>'),
       'A & B one two',
     );
+  });
+
+  it('leaves no tag behind when one is written inside another', () => {
+    // Removing the inner tag once would leave `<script>` assembled.
+    assert.ok(!textOf('<p>a<scr<script>ipt>b</p>').includes('<'));
   });
 });

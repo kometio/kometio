@@ -24,6 +24,7 @@ import { pathToFileURL } from 'node:url';
 // By path, not by package name: `tools/` is outside the pnpm workspace, so
 // `@kometio/*` does not resolve from here (the same as the other tools).
 import { pageBlocks } from '../libs/block-registry/src/index';
+import { stripTags } from '../libs/shared-types/src/lib/rich-text-to-plain-text';
 import { captchaTokenFrom } from './solve-captcha.mjs';
 
 export type Severity = 'error' | 'warning';
@@ -83,9 +84,7 @@ const VAGUE_ENGLISH = /\b(simply|just|(?<!as )easily|and so on)\b|\betc\b\.?/i;
 
 /** The text of some HTML, as a reader meets it. */
 export function textOf(html: string): string {
-  return html
-    .replace(/<\/(p|li|h[1-6]|div|tr)>|<br\s*\/?>/gi, ' ')
-    .replace(/<[^>]*>/g, '')
+  return stripTags(html.replace(/<\/(p|li|h[1-6]|div|tr)>|<br\s*\/?>/gi, ' '))
     .replace(/&nbsp;/g, ' ')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -233,7 +232,15 @@ export function findingsFor(page: DocsPage, context: CheckContext): Finding[] {
         const plain = textOf(value);
         if (plain === '') continue;
         words += wordsIn(plain);
-        styleFindings(plain, locale, block, add, context);
+        // A name in code is written the way the code writes it: a straight
+        // quote in `kind: 'custom'` is not a typing habit.
+        styleFindings(
+          textOf(value.replace(/<code>[\s\S]*?<\/code>/gi, ' ')),
+          locale,
+          block,
+          add,
+          context,
+        );
         if (block.type === 'Text' && key === 'body') {
           bodyFindings(value, locale, block, add, context);
         }
@@ -299,11 +306,17 @@ function bodyFindings(
 ) {
   // A paragraph is a <p> or one item of a list: the sentences of five items
   // are not one paragraph of five sentences.
-  const paragraphs = html
-    .split(/<\/(?:p|li)>/i)
-    .map(textOf)
-    .filter(Boolean);
-  for (const paragraph of paragraphs) {
+  const parts = [...html.matchAll(/<(p|li)>([\s\S]*?)<\/\1>/gi)]
+    .map((match) => ({
+      isItem: match[1]?.toLowerCase() === 'li',
+      // Without the code in it: `audio, color, date` is a name, not a list a
+      // sentence made.
+      text: textOf((match[2] ?? '').replace(/<code>[\s\S]*?<\/code>/gi, ' ')),
+    }))
+    .filter((part) => part.text !== '');
+  if (parts.length === 0 && textOf(html) !== '')
+    parts.push({ isItem: false, text: textOf(html) });
+  for (const { isItem, text: paragraph } of parts) {
     const sentences = sentencesIn(paragraph);
     if (sentences > LONG_PARAGRAPH) {
       add(
@@ -314,7 +327,10 @@ function bodyFindings(
         block,
       );
     }
-    if (/:\s[^.:]*,[^.:]*,[^.:]*,[^.:]*\./.test(paragraph)) {
+    // An item that names four things after its own name (“Images: PNG, JPG,
+    // GIF and WebP.”) is already in a list; it is a sentence in a paragraph
+    // that should have been one.
+    if (!isItem && /:\s[^.:]*,[^.:]*,[^.:]*,[^.:]*\./.test(paragraph)) {
       add(
         'warning',
         'list-as-sentence',
@@ -380,11 +396,18 @@ function isEmphasis(label: string): boolean {
 
 function flattenStrings(node: Json, into: Set<string>) {
   if (typeof node === 'string') {
-    into.add(plainLabel(node));
-    // A text with a value in it (“Only when “{{field}}””): what comes before the value is the label.
+    // The editor ends a sentence with a full stop and a page names it without
+    // one, in bold: both are the same text.
+    const add = (text: string) => {
+      const label = plainLabel(text);
+      into.add(label);
+      into.add(label.replace(/[.:]+$/, ''));
+    };
+    add(node);
+    // A text with a value in it (“Only when “{{field}}””, “Not uploaded: {{reason}}”): what comes before the value is the label.
     const before = node.split('{{')[0];
     if (before !== undefined && before !== node)
-      into.add(plainLabel(before).replace(/["\s]+$/, ''));
+      add(plainLabel(before).replace(/["\s]+$/, ''));
   } else if (isRecord(node))
     for (const child of Object.values(node)) flattenStrings(child, into);
 }

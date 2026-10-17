@@ -55,7 +55,7 @@ describe('GeneralSettingsSection', () => {
     expect(domain().value).toBe('www.nuovo.it');
     expect(
       screen.getByText(
-        'Ho tolto “https://”, “/chi-siamo”: qui serve solo il dominio.',
+        'Tolto “https://”, “/chi-siamo”: qui serve solo il dominio.',
       ),
     ).toBeTruthy();
   });
