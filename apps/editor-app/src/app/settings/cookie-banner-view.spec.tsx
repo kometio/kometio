@@ -82,7 +82,7 @@ describe('CookieBannerView', () => {
     });
 
     expect(screen.getByText('Posizione')).toBeTruthy();
-    expect(screen.getByText('Lato del bottone di accettazione')).toBeTruthy();
+    expect(screen.getByText('Lato del pulsante di accettazione')).toBeTruthy();
   });
 
   it('shows the reopen tab position only when the reopen tab is on', () => {

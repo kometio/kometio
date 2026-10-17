@@ -95,7 +95,7 @@ describe('ForgotPasswordForm', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText(/se l'indirizzo esiste/i)).toBeTruthy(),
+      expect(screen.getByText(/se l’indirizzo esiste/i)).toBeTruthy(),
     );
     expect(api.requestPasswordReset).toHaveBeenCalledWith(
       'lele@example.com',
@@ -117,7 +117,7 @@ describe('ForgotPasswordForm', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText(/se l'indirizzo esiste/i)).toBeTruthy(),
+      expect(screen.getByText(/se l’indirizzo esiste/i)).toBeTruthy(),
     );
   });
 

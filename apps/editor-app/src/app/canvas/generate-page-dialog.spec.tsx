@@ -133,7 +133,7 @@ describe('GeneratePageDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Genera' }));
 
     expect((await screen.findByRole('alert')).textContent).toBe(
-      'Il provider ha rifiutato la chiave. Controllala in Integrazioni.',
+      'Il provider ha rifiutato la chiave. Controllala in Impostazioni → Generazione AI.',
     );
     expect(
       screen.getByLabelText<HTMLTextAreaElement>('Cosa deve dire la pagina?')
@@ -159,7 +159,7 @@ describe('GeneratePageDialog', () => {
     describePage('La home di un forno');
     fireEvent.click(screen.getByRole('button', { name: 'Genera' }));
 
-    await screen.findByText('Scrittura della pagina... 1240 caratteri finora');
+    await screen.findByText('Scrittura della pagina… 1240 caratteri finora');
     fireEvent.click(screen.getByRole('button', { name: 'Interrompi' }));
     expect(seenSignal?.aborted).toBe(true);
     expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -189,7 +189,7 @@ describe('GeneratePageDialog', () => {
 
     expect(
       screen
-        .getByRole('link', { name: 'Apri Integrazioni' })
+        .getByRole('link', { name: 'Apri Generazione AI' })
         .getAttribute('href'),
     ).toBe('/settings/ai');
   });

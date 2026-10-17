@@ -13,7 +13,7 @@ describe('Translator', () => {
   it('substitutes {var} placeholders', () => {
     expect(
       new Translator('it').t('form.stepIndicator', { current: 2, total: 4 }),
-    ).toBe('Passo 2 di 4');
+    ).toBe('Passaggio 2 di 4');
   });
 
   it('falls back to the base language subtag (en-US -> en)', () => {

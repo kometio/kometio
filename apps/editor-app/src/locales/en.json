@@ -1,11 +1,11 @@
 {
   "common": {
-    "loading": "Loading...",
+    "loading": "Loading…",
     "error": "Something went wrong.",
     "retry": "Retry",
     "cancel": "Cancel",
     "save": "Save",
-    "saving": "Saving...",
+    "saving": "Saving…",
     "delete": "Delete",
     "yes": "Yes",
     "no": "No",
@@ -33,7 +33,7 @@
       "emailLabel": "Email",
       "passwordLabel": "Password",
       "submitIdle": "Log in",
-      "submitPending": "Logging in...",
+      "submitPending": "Logging in…",
       "invalidCredentials": "Incorrect email or password.",
       "forgotPassword": "Forgot your password?",
       "imported": "The site is here. Sign in with the account you had in the other installation."
@@ -41,11 +41,11 @@
     "forgotPassword": {
       "title": "Forgot password",
       "description": "Enter your email to receive a reset link",
-      "sentMessage": "If that address exists, we've sent you an email with instructions to reset your password.",
-      "sentMessageNoEmail": "If that address has an account, a reset link was made, but this installation cannot send email: it is in the server's log.",
+      "sentMessage": "If that address exists, we’ve sent you an email with instructions to reset your password.",
+      "sentMessageNoEmail": "If that address has an account, a reset link was made, but this installation cannot send email: it is in the server’s log.",
       "backToLogin": "Back to login",
       "submitIdle": "Send reset link",
-      "submitPending": "Sending..."
+      "submitPending": "Sending…"
     },
     "resetPassword": {
       "title": "Reset your password",
@@ -54,12 +54,12 @@
       "newPasswordLabel": "New password",
       "error": "This link is invalid or has expired. Request a new reset link.",
       "submitIdle": "Reset password",
-      "submitPending": "Saving..."
+      "submitPending": "Saving…"
     },
     "verifyEmail": {
       "title": "Verify email",
       "description": "Confirming your email address",
-      "pending": "Verifying...",
+      "pending": "Verifying…",
       "success": "Email verified successfully.",
       "error": "This link is invalid or has expired. Request a new verification link from your account."
     },
@@ -70,13 +70,13 @@
       "passwordLabel": "Password",
       "error": "This link is invalid or has expired. Ask an admin to send you a new invite.",
       "submitIdle": "Complete registration",
-      "submitPending": "Saving..."
+      "submitPending": "Saving…"
     },
     "logout": "Log out",
     "confirmEmailChange": {
       "title": "Confirm your new email",
       "description": "Confirming your new sign-in address",
-      "pending": "Confirming...",
+      "pending": "Confirming…",
       "success": "Your email was changed. Use it the next time you sign in.",
       "error": "This link is invalid or has expired, or somebody has taken the address since. Ask for the change again from your profile.",
       "toEditor": "Go to your profile"
@@ -98,7 +98,7 @@
   },
   "emailNotice": {
     "title": "This installation cannot send email",
-    "body": "Password resets, email changes and form notifications are not mailed: they are written to the server's log, with their links. An invitation shows you its link when you make it, for you to send. Set SMTP_HOST (and the other SMTP settings) on the server to send them all."
+    "body": "Password resets, email changes and form notifications are not mailed: they are written to the server’s log, with their links. An invitation shows you its link when you make it, for you to send. Set SMTP_HOST (and the other SMTP settings) on the server to send them all."
   },
   "demo": {
     "notice": "This is a demo. Others may be trying it at the same time, and it starts over from time to time: nothing you do here is kept. Uploads and the shared account are turned off.",
@@ -109,19 +109,19 @@
     "title": "Welcome to Kometio",
     "description": "This installation has not been set up yet. Create your administrator account to get started.",
     "tokenLabel": "Setup token",
-    "tokenHint": "Printed in the API's log when it starts. With Docker: “docker logs kometio” for the one-image install, “docker compose logs api” for the compose stack. It proves you are the person running this server, so nobody else can claim the installation before you.",
-    "tokenError": "That setup token is not valid. It is printed in the API's log and changes every time the API restarts — check the log again and use the most recent one.",
+    "tokenHint": "Printed in the API’s log when it starts. With Docker: “docker logs kometio” for the one-image install, “docker compose logs api” for the compose stack. It proves you are the person running this server, so nobody else can claim the installation before you.",
+    "tokenError": "That setup token is not valid. It is printed in the API’s log and changes every time the API restarts — check the log again and use the most recent one.",
     "siteNameLabel": "Site name",
     "localeLabel": "Default language",
-    "localeHint": "The language your site's content starts in. You can add more later, in Site settings.",
+    "localeHint": "The language your site’s content starts in. You can add more later, in Site settings.",
     "domainLabel": "Domain",
     "domainHint": "The address of your site as visitors type it: no http:// and no path (for example www.yoursite.com). We filled in the one this installation was set up for; change it if the site will live somewhere else, or empty it to set it later in Settings. Until a site has one, its address answers “not found”.",
     "emailLabel": "Your email",
     "passwordLabel": "Password",
     "passwordHint": "At least {{count}} characters. This is the account nobody can unlock for you, so make it a good one.",
     "submitIdle": "Create my account",
-    "submitPending": "Setting things up...",
-    "genericError": "Something went wrong. Reload the page and try again — if this installation was already set up, you'll be sent to the login page.",
+    "submitPending": "Setting things up…",
+    "genericError": "Something went wrong. Reload the page and try again — if this installation was already set up, you’ll be sent to the login page.",
     "import": {
       "choose": "I already have a site from another installation",
       "title": "Open a site from another installation",
@@ -130,7 +130,7 @@
       "fileHint": "The .tar.gz file made by Settings → Export, or by “export” on the command line. It is read on this server and never leaves it.",
       "fileMissing": "Choose the archive file first.",
       "submit": "Open the site",
-      "submitPending": "Opening the site...",
+      "submitPending": "Opening the site…",
       "back": "Set up a new site instead",
       "uploading": "Uploading the archive",
       "progress": "{{sent}} of {{total}}",
@@ -314,7 +314,7 @@
       "tooShort": "The new password needs at least {{min}} characters.",
       "mismatch": "The two passwords are not the same.",
       "submit": "Change password",
-      "busy": "Changing...",
+      "busy": "Changing…",
       "done": "Password changed. Every other sign-in was ended.",
       "failed": "The password was not changed. Try again."
     },
@@ -327,11 +327,11 @@
       "unchanged": "That is already your email.",
       "taken": "Someone else already uses this address.",
       "submit": "Send the link",
-      "busy": "Sending...",
+      "busy": "Sending…",
       "sentTitle": "Check your inbox",
       "sent": "We sent a link to {{email}}. Until you open it you keep signing in with {{current}}.",
       "sentNoEmailTitle": "No email was sent",
-      "sentNoEmail": "This installation cannot send email, so the link for {{email}} was written to the server's log. Until you open it you keep signing in with {{current}}.",
+      "sentNoEmail": "This installation cannot send email, so the link for {{email}} was written to the server’s log. Until you open it you keep signing in with {{current}}.",
       "sentNote": "The link works for 24 hours.",
       "failed": "The request to change the email was not sent. Try again."
     },
@@ -362,7 +362,7 @@
       "codeMismatch": "That code does not match. Check the app and try again.",
       "alreadyOn": "Two-step verification is already on.",
       "startAgain": "This setup was replaced or has ended. Close this window and start again.",
-      "failed": "This did not work. Try again.",
+      "failed": "Two-step verification was not changed. Try again.",
       "codesIntro_one": "{{count}} recovery code. It is shown only now.",
       "codesIntro_other": "{{count}} recovery codes. They are shown only now.",
       "codesLabel": "Recovery codes",
@@ -407,7 +407,7 @@
       "newSubmissions_one": "{{count}} new submission",
       "newSubmissions_other": "{{count}} new submissions"
     },
-    "emptyState": "This site doesn't have any pages or media yet — start from the Pages section.",
+    "emptyState": "This site doesn’t have any pages or media yet — start from the Pages section.",
     "actions": {
       "newPage": "New page",
       "openSite": "Open the site"
@@ -519,10 +519,10 @@
       "slugPreview": "URL: {{slug}}",
       "cancel": "Cancel",
       "create": "Create",
-      "creating": "Creating...",
+      "creating": "Creating…",
       "slugTaken": "A page with this name already exists on this site.",
       "templateLabel": "Start from",
-      "templateHint": "The template's blocks are copied into the new page; after that, the page is free to change.",
+      "templateHint": "The template’s blocks are copied into the new page; after that, the page is free to change.",
       "templateUnavailable": "That template is no longer available. Pick another one.",
       "parentUnavailable": "The parent page no longer exists. Pick another one.",
       "failed": "The page could not be created.",
@@ -535,16 +535,16 @@
       "descriptionLabel": "SEO description",
       "cancel": "Cancel",
       "confirm": "Create copy",
-      "duplicating": "Duplicating...",
+      "duplicating": "Duplicating…",
       "slugTaken": "A page with this URL already exists on this site."
     },
     "deleteDialog": {
-      "description": "\"{{name}}\" and all of its versions will be permanently deleted. This action cannot be undone.",
-      "descriptionWithTranslations": "\"{{name}}\" and all of its versions will be permanently deleted. This page is the site's default locale and has translations in other languages ({{locales}}): after deletion, visitors requesting a language with no translation will no longer be redirected here automatically. This action cannot be undone.",
-      "hasChildren": "This page has subpages, and deleting it would leave them at addresses that no longer exist. Move them under another page, or delete them, first.",
+      "description": "“{{name}}” and all of its versions will be deleted permanently. This cannot be undone.",
+      "descriptionWithTranslations": "“{{name}}” and all of its versions will be deleted permanently. It is the page in the site’s default language and it has translations ({{locales}}): afterwards, a visitor whose language has no translation will no longer be redirected to it. This cannot be undone.",
+      "hasChildren": "This page has subpages, and deleting it would leave them at addresses that no longer exist. First move them under another page, or delete them.",
       "title_one": "Delete this page?",
       "title_other": "Delete {{count}} pages?",
-      "descriptionMany": "{{names}} and all their versions will be deleted permanently. This cannot be undone.",
+      "descriptionMany": "{{names}} and all of their versions will be deleted permanently. This cannot be undone.",
       "subpagesMoveUpNamed_one": "The subpage {{children}} moves to the top level and its address changes: the current one will no longer lead anywhere.",
       "subpagesMoveUpNamed_other": "The {{count}} subpages ({{children}}) move to the top level and their addresses change: the current ones will no longer lead anywhere.",
       "subpagesMoveUp_one": "One subpage moves to the top level and its address changes: the current one will no longer lead anywhere.",
@@ -565,7 +565,7 @@
       "open": "Version history",
       "sourcesLabel": "History of",
       "title": "Version history",
-      "description": "Restore a previous version's content as the draft. This does not publish automatically.",
+      "description": "Restore a previous version’s content as the draft. This does not publish automatically.",
       "empty": "No saved versions.",
       "current": "Current version",
       "restore": "Restore",
@@ -588,7 +588,7 @@
       "noIndexHint": "Anyone with the address can still open it. It leaves the sitemap and search engines are asked not to list it; the site’s own search keeps it.",
       "cancel": "Cancel",
       "save": "Save",
-      "saving": "Saving...",
+      "saving": "Saving…",
       "saved": "SEO settings saved",
       "saveFailed": "The SEO settings were not saved. Try again."
     },
@@ -624,10 +624,10 @@
       "slugLabel": "URL",
       "slugPreview": "URL: {{slug}}",
       "create": "Create translation",
-      "creating": "Creating...",
+      "creating": "Creating…",
       "conflict": "A translation in this language already exists for this page.",
       "drift": "Structure out of sync",
-      "driftWarning": "The original (default locale) has different blocks than when this translation was last created or updated.",
+      "driftWarning": "The blocks of the original page, in the default language, have changed since this translation was last created or updated.",
       "markSynced": "Mark as synced",
       "slugForLocale": "URL in {{locale}}",
       "createFailed": "The version was not added. Try again.",
@@ -643,7 +643,7 @@
     },
     "parent": {
       "label": "Parent page",
-      "none": "— None (root level) —",
+      "none": "— None (top level) —",
       "hint": "The page lives under the one you choose, and its address starts with that page’s address."
     },
     "moveToCollection": {
@@ -675,7 +675,7 @@
     "nameLabel": "Name",
     "prefixLabel": "URL prefix",
     "prefixPlaceholder": "derived from the name",
-    "prefixHint": "Terms answer at /{locale}/{prefix}/{slug}. With no prefix they live at the site root — prettier, and more likely to collide with a page's address.",
+    "prefixHint": "Terms are served at /{locale}/{prefix}/{slug}. Without a prefix they sit at the site root: the address is shorter, but more likely to clash with the address of a page.",
     "rootMounted": "No prefix (site root)",
     "prefixTaken": "Another category or a page already answers at that address.",
     "atRoot": "at the site root",
@@ -711,18 +711,18 @@
     "termNoindexHint": "The page still works for anyone who reaches it, but asks search engines not to index it and leaves the sitemap. Useful for a term with very little under it.",
     "deleteTermDialog": {
       "title": "Delete this term?",
-      "description": "Any term inside it moves up to the top level rather than being deleted with it."
+      "description": "Any term inside it moves up to the top level instead of being deleted with it."
     },
     "deleteDialog": {
       "description": "The pages themselves stay, they simply stop being classified along it.",
       "title": "Delete the category “{{name}}”?",
       "noTerms": "It has no terms.",
-      "terms_one": "Its one term will be deleted with it.",
+      "terms_one": "Its only term will be deleted with it.",
       "terms_other": "Its {{count}} terms will be deleted with it."
     },
     "new": "New category",
     "createSubmit": "Create",
-    "creating": "Creating...",
+    "creating": "Creating…",
     "hierarchical": "Nested terms (hierarchy)",
     "hierarchicalHint": "A term can sit inside another. Without it, every term is on the same level.",
     "rename": "Rename",
@@ -774,9 +774,9 @@
     "published": "Published — every page using it is updated",
     "nameTaken": "A section with that name already exists.",
     "templates": "Templates",
-    "makeReusable": "Turn into a reusable section",
+    "makeReusable": "Turn into a shared section",
     "makeReusableSubmit": "Create section",
-    "makeReusableBusy": "Creating...",
+    "makeReusableBusy": "Creating…",
     "usedOnPages_one": "on {{count}} page",
     "usedOnPages_other": "on {{count}} pages",
     "usedNowhere": "not placed anywhere yet",
@@ -808,7 +808,7 @@
       "template": "A template is a starting point: a page made from it gets a copy, and then changes it as it likes."
     },
     "createSubmit": "Create",
-    "creating": "Creating...",
+    "creating": "Creating…",
     "deleteNamed": "Delete “{{name}}”",
     "deleted": "“{{name}}” deleted",
     "templateDraftHint": "Publish it to use it on pages.",
@@ -816,7 +816,7 @@
     "renameDialog": {
       "title": "Rename",
       "submit": "Rename",
-      "busy": "Saving..."
+      "busy": "Saving…"
     },
     "renamed": "Renamed to “{{name}}”",
     "unpublishedTemplates_one": "{{count}} template is a draft: publish it from Sections › Templates to use it here.",
@@ -854,7 +854,7 @@
     },
     "grid": {
       "upload": "Upload files",
-      "uploading": "Uploading...",
+      "uploading": "Uploading…",
       "empty": "Nothing in the library yet. Upload any file — an image, a video, a PDF — and it becomes available to every block that asks for one.",
       "noMatches": "No file matches what you are looking for.",
       "uploadWarning": "Any file can be uploaded, and Kometio does not check what is inside it: only upload files from sources you trust. Anything that is not an image, a video or an audio file is downloaded when opened, never displayed.",
@@ -868,7 +868,7 @@
     },
     "deleteDialog": {
       "title": "Delete this file?",
-      "description": "\"{{name}}\" will be permanently deleted. This action cannot be undone.",
+      "description": "“{{name}}” will be permanently deleted. This cannot be undone.",
       "usedOn_one": "It is used in {{count}} place on the site: if you delete it, that place will be left empty.",
       "usedOn_other": "It is used in {{count}} places on the site: if you delete it, those places will be left empty."
     },
@@ -967,7 +967,7 @@
         "image": "Image"
       },
       "image": {
-        "hint": "For a logo the sets do not have — LinkedIn, for instance — use an image from the library. It shows as it is: it does not take the text colour the way the other icons do.",
+        "hint": "For a logo the sets do not have — LinkedIn, for instance — use an image from the library. It shows as it is: it does not take the text color the way the other icons do.",
         "choose": "Choose from the library…"
       }
     },
@@ -979,7 +979,7 @@
     "nameLabel": "Site name",
     "domainLabel": "Domain",
     "domainPlaceholder": "www.yoursite.com",
-    "domainDescription": "The domain the site is served on (e.g. www.yoursite.com). Must exactly match the real one, otherwise pages won't be found.",
+    "domainDescription": "The domain the site is served on (e.g. www.yoursite.com). Must exactly match the real one, otherwise pages won’t be found.",
     "domainInvalid": "This does not look like a domain. Use letters, numbers, hyphens and dots, for example www.yoursite.com.",
     "domainRemoved": "Removed {{removed}}: only the domain goes here.",
     "domainChange": {
@@ -993,7 +993,7 @@
     }
   },
   "seoSettings": {
-    "indexingLabel": "Allow search engine indexing",
+    "indexingLabel": "Let search engines index the site",
     "indexingDescription": "When off, the site asks search engines not to index it (useful during development, before launch).",
     "indexingDisclaimer": "Note: this is a request, not a guarantee — it depends on search engines respecting it.",
     "turnOffConfirm": {
@@ -1004,11 +1004,11 @@
   },
   "newsletterSettings": {
     "captchaLabel": "Ask visitors to solve a captcha",
-    "captchaDescription": "A small check the visitor's browser solves in the background. It is built into Kometio: no account, and nothing is sent to anyone else.",
-    "captchaDisclaimer": "It applies to every newsletter signup block on the site. Each form has its own switch, in the form's screen.",
+    "captchaDescription": "A small check the visitor’s browser solves in the background. It is built into Kometio: no account, and nothing is sent to anyone else.",
+    "captchaDisclaimer": "It applies to every newsletter signup block on the site. Each form has its own switch, in the form’s screen.",
     "turnOffConfirm": {
       "title": "Stop asking for a captcha?",
-      "description": "Without it, a script can add addresses to your list as easily as a person can, including addresses of people who never asked. You can turn it back on any time.",
+      "description": "Without it, a script can add addresses to your list as easily as a person can, including addresses of people who never asked to be on it. You can turn it back on at any time.",
       "action": "Turn off"
     }
   },
@@ -1052,7 +1052,7 @@
       "bottomRight": "Bottom right",
       "centerModal": "Centered"
     },
-    "acceptButtonSideLabel": "Accept button side",
+    "acceptButtonSideLabel": "Side of the accept button",
     "side": {
       "left": "Left",
       "right": "Right"
@@ -1090,7 +1090,7 @@
   },
   "legalDocuments": {
     "title": "Legal document generator",
-    "intro": "Generate draft Privacy Policy, Cookie Policy and Terms & Conditions pages from your site's own data. Always created as drafts — review with a lawyer before publishing.",
+    "intro": "Generate draft Privacy Policy, Cookie Policy and Terms & Conditions pages from the data your site already holds. They are always created as drafts: have a lawyer check them before you publish.",
     "step": {
       "identity": "Who you are",
       "usage": "What you collect",
@@ -1130,21 +1130,21 @@
     "documentsRequired": "Choose at least one document.",
     "localesRequired": "Choose at least one language.",
     "jurisdictionRequired": "Choose the country whose law governs the Terms & Conditions.",
-    "disclaimer": "These documents are a generated starting point, not legal advice. Have a lawyer review them before publishing.",
-    "loadingPreview": "Generating a preview...",
+    "disclaimer": "These documents are a generated starting point, not legal advice. Have a lawyer check them before you publish.",
+    "loadingPreview": "Generating the preview…",
     "previewFailed": "The preview could not be generated. Try again.",
     "generateFailed": "The documents could not be generated. Try again.",
-    "confirmLabel": "I understand these are drafts and will be reviewed before publishing",
+    "confirmLabel": "I understand these are drafts and must be checked before they are published",
     "back": "Back",
     "next": "Next",
     "generate": "Generate drafts",
-    "generating": "Generating...",
+    "generating": "Generating…",
     "successTitle": "Drafts created",
     "successHint": "Each document was created as a draft page, never published automatically.",
     "openDraft": "Open draft",
     "jurisdictionPlaceholder": "Choose a country",
     "legalEntityNameRequired": "Enter the legal name.",
-    "contactEmailRequired": "Enter the email people write to about privacy.",
+    "contactEmailRequired": "Enter the email address visitors can write to about privacy.",
     "contactEmailInvalid": "This does not look like an email: check the @ and the domain.",
     "domainRequired": "Enter the site’s domain, for example example.com.",
     "retentionDaysInvalid": "Enter a whole number of days, or leave it empty.",
@@ -1154,26 +1154,26 @@
     "tooManyServices": "You can list at most {{max}} services: remove some to continue."
   },
   "themeSettings": {
-    "themeLocked": "The active theme does not allow a site to style on top of it, so nothing on this page — or on any block — will reach the published site. This is the theme's own choice, in its theme.json.",
+    "themeLocked": "The active theme does not allow a site to style on top of it, so nothing on this page — or on any block — will reach the published site. This is the theme’s own choice, in its theme.json.",
     "title": "Site style",
-    "intro": "These settings apply on top of the site's active theme — leave a field off to keep the theme's own default.",
+    "intro": "These settings apply on top of the site’s active theme — leave a field off to keep the theme’s own default.",
     "overridesEnabledLabel": "Apply these settings",
     "overridesEnabledDescription": "Off: the site uses only the theme’s own values.",
     "primaryColorLabel": "Primary color",
     "secondaryColorLabel": "Secondary color",
-    "currentThemeValue": "The active theme's own base value — customize it here, or by editing the theme itself",
+    "currentThemeValue": "The active theme’s own base value — customize it here, or by editing the theme itself",
     "override": "Override",
-    "contrastWarning": "Low contrast: with this color, the theme's own text color reaches only a {{ratio}}:1 ratio against it (4.5:1 recommended) — text may be hard to read.",
+    "contrastWarning": "Low contrast: with this color, the theme’s own text color reaches only a {{ratio}}:1 ratio against it (4.5:1 recommended) — text may be hard to read.",
     "fontLabel": "Font",
     "fontInherit": "Theme default",
-    "fontCustom": "Custom (Google Fonts name)...",
+    "fontCustom": "Custom (name from Google Fonts)…",
     "fontCustomPlaceholder": "e.g. Space Grotesk",
     "faviconLabel": "Site icon (favicon)",
     "customCssLabel": "Custom CSS",
     "contentWidthLabel": "Content width",
-    "contentWidthHelp": "How wide the readable column is on every page — a CSS length such as 64rem or 1100px. Leave empty to use the theme's own width. A block can still be set to Wide or Full width on its own.",
+    "contentWidthHelp": "How wide the readable column is on every page — a CSS length such as 64rem or 1100px. Leave empty to use the theme’s own width. A block can still be set to Wide or Full width on its own.",
     "overridesHowSummary": "How it works",
-    "overridesHow": "When off, every field on this page (colours, font, width, icon, CSS) is ignored and the theme’s own values are used, even ones you saved before. It does not touch the styles set on blocks. The active theme can also lock it all: then that holds for the block styles too.",
+    "overridesHow": "When off, every field on this page (colors, font, width, icon, CSS) is ignored and the theme’s own values are used, even ones you saved before. It does not touch the styles set on blocks. The active theme can also lock it all: then that holds for the block styles too.",
     "colorsTitle": "Colors",
     "typographyTitle": "Typography",
     "fontCustomLabel": "Font name (Google Fonts)",
@@ -1196,19 +1196,19 @@
   },
   "integrations": {
     "title": "Integrations",
-    "intro": "Third-party scripts (analytics, chat, tracking pixels...) and the domains they need to talk to.",
+    "intro": "Third-party scripts (analytics, chat, tracking pixels…) and the domains they need to talk to.",
     "headScriptLabel": "Code at the top of every page",
     "bodyScriptLabel": "Code at the bottom of every page",
-    "scriptDisclaimer": "Injected verbatim into every page of the site. Only paste code from sources you trust.",
-    "trackerDomainsDisclaimer": "A domain allowed here can run code and make calls from your site exactly as if you'd written it yourself — only add domains from providers you trust (e.g. the one named in the script's own docs above).",
+    "scriptDisclaimer": "Inserted as it is into every page of the site. Only paste code from sources you trust.",
+    "trackerDomainsDisclaimer": "A domain allowed here can run code and make requests from your site exactly as if you had written it yourself: only add domains of providers you trust (for example, the one named in the documentation of the script above).",
     "domainLabelPlaceholder": "Name, e.g. Hotjar",
     "domainPlaceholder": "e.g. static.hotjar.com",
     "domainName": "Service name",
     "domainHost": "Domain",
     "addDomain": "Add domain",
     "removeDomain": "Remove",
-    "invalidDomain": "Invalid domain — bare hostname only, e.g. static.hotjar.com or *.hotjar.io (no https://, no path)",
-    "trackerScriptsDisclaimer": "A known vendor (Google Tag Manager, Google Analytics, Meta Pixel) pasted above is detected automatically and moved here on save, gated by consent category. Anything else stays in the fields above, running for every visitor regardless of consent.",
+    "invalidDomain": "Invalid domain: enter the hostname only, for example static.hotjar.com or *.hotjar.io (no https:// and no path).",
+    "trackerScriptsDisclaimer": "The code of a known service (Google Tag Manager, Google Analytics, Meta Pixel) pasted above is recognised and moved here when you save: from then on it runs only if the visitor accepts its consent category. Anything else stays in the fields above and runs for every visitor, with or without consent.",
     "trackerScriptLabelPlaceholder": "Name, e.g. Google Analytics",
     "trackerScriptHtmlPlaceholder": "<script>...</script>",
     "trackerScriptName": "Script name",
@@ -1248,7 +1248,7 @@
     "themeTitle": "Theme",
     "themeHint": "Which of this deployment’s themes the site uses. Applied at once, without saving.",
     "themeUpload": {
-      "hint": "Or upload a theme as a zip: theme.json, with a \"name\", and theme.css at the top. A theme's repository downloaded as a zip works as it is.",
+      "hint": "Or upload a theme as a zip: theme.json, with a “name”, and theme.css at the top. A theme’s repository downloaded as a zip works as it is.",
       "choose": "Upload a theme",
       "sending": "Uploading…",
       "queued": "“{{name}}” is waiting to be built.",
@@ -1265,19 +1265,19 @@
         "encrypted": "This zip is encrypted. Upload it without a password.",
         "no-manifest": "theme.json is missing from the top of the theme.",
         "bad-manifest": "theme.json is not valid JSON.",
-        "bad-name": "theme.json needs a \"name\": lowercase letters, digits and dashes, up to 40 characters.",
+        "bad-name": "theme.json needs a “name”: lowercase letters, digits and dashes, up to 40 characters.",
         "no-stylesheet": "theme.css is missing from the top of the theme.",
-        "core-name": "That name belongs to one of Kometio's own themes. Give yours a name of its own.",
+        "core-name": "That name belongs to one of Kometio’s own themes. Give yours a name of its own.",
         "build-failed": "The site did not build with this theme. The output below says why; the site stays as it was.",
         "interrupted": "The build stopped before it finished. Upload the theme again.",
         "unknown": "The theme could not be uploaded. Try again."
       }
     },
-    "themeSaving": "Switching theme...",
+    "themeSaving": "Switching theme…",
     "blockStylesTitle": "Style by block",
-    "blockStylesHint": "Choose a block type to change its style across the whole site — background, text colour, corners, spacing. Applied at once, without saving.",
+    "blockStylesHint": "Choose a block type to change its style across the whole site — background, text color, corners, spacing. Applied at once, without saving.",
     "themeChanged": "Theme changed to “{{name}}”",
-    "blockStylesSaving": "Saving...",
+    "blockStylesSaving": "Saving…",
     "blockStylesSaved": "Changes saved.",
     "themeChangeFailed": "The theme was not changed. Try again."
   },
@@ -1285,7 +1285,7 @@
     "localesLabel": "Active languages",
     "defaultBadge": "Default",
     "setDefault": "Set as default",
-    "newLocalePlaceholder": "Search a language...",
+    "newLocalePlaceholder": "Search a language…",
     "noMatches": "No languages found",
     "addLocale": "Add language",
     "fallbackLabel": "When a page is not translated yet",
@@ -1365,7 +1365,7 @@
       "title": "New form",
       "nameLabel": "Form name",
       "create": "Create",
-      "creating": "Creating..."
+      "creating": "Creating…"
     },
     "deleteDialog": {
       "title_one": "Delete this form?",
@@ -1374,7 +1374,7 @@
       "description_other": "{{names}} will be permanently deleted. Pages using them will stop showing them.",
       "submissions_one": "The submission received will be deleted too.",
       "submissions_other": "The {{count}} submissions received will be deleted too.",
-      "irreversible": "This action cannot be undone."
+      "irreversible": "This cannot be undone."
     },
     "picker": {
       "title": "Choose a form",
@@ -1386,14 +1386,14 @@
       "backToList": "Forms",
       "save": "Save",
       "savedByPublisher": "A form is live once saved: a Publisher saves it",
-      "saving": "Saving...",
+      "saving": "Saving…",
       "saved": "Form saved",
       "nameLabel": "Form name",
       "notificationEmailPlaceholder": "No notification if left empty",
       "stepsLabel": "Steps (optional)",
-      "stepsHint": "Split the form across multiple pages. With no steps, the form stays single-page.",
+      "stepsHint": "Split the form across several pages. Without steps, the form stays on a single page.",
       "addStep": "Add step",
-      "noSteps": "No steps: the form is single-page.",
+      "noSteps": "No steps: the form is on a single page.",
       "stepTitlePlaceholder": "Step title",
       "removeStep": "Remove step",
       "untitledStep": "Untitled step",
@@ -1429,17 +1429,17 @@
       "notificationEmailsLabel": "Notification emails",
       "notificationEmailsHint": "Every address gets its own email for each answer. Leave empty to email nobody.",
       "captchaLabel": "Ask visitors to solve a captcha",
-      "captchaDescription": "A small check the visitor's browser solves in the background. It is built into Kometio: no account, and nothing is sent to anyone else.",
+      "captchaDescription": "A small check the visitor’s browser solves in the background. It is built into Kometio: no account, and nothing is sent to anyone else.",
       "captchaOffHint": "Without it, a script can send this form as easily as a person can. The hidden field and the limit on how often the same address can send stay on.",
       "notificationEmailAddress": "Notification email {{number}}",
       "addNotificationEmail": "Add address",
       "removeNotificationEmail": "Remove address",
       "conditionLabel": "Show",
       "conditionAlways": "Always",
-      "conditionWhen": "Only when \"{{field}}\"",
+      "conditionWhen": "Only when “{{field}}”",
       "conditionAnswerLabel": "Answer that shows this field",
       "conditionAnyAnswer": "has any answer",
-      "conditionIs": "is \"{{option}}\"",
+      "conditionIs": "is “{{option}}”",
       "conditionIsTicked": "is ticked",
       "conditionIsFilled": "is filled in",
       "untitledField": "Untitled field",
@@ -1449,7 +1449,7 @@
         "unknown-field": "The field this depended on no longer exists.",
         "not-earlier": "The field this depends on has to come before it. Move it up, or choose another.",
         "equals-needs-select": "Only a choice field can be matched against an answer.",
-        "unknown-option": "That answer is no longer one of the field's options."
+        "unknown-option": "That answer is no longer one of the field’s options."
       },
       "saveFailed": "The form was not saved. Try again."
     },
@@ -1494,7 +1494,7 @@
       "nameLabel": "Name of the copy",
       "copyName": "Copy of {{name}}",
       "submit": "Create copy",
-      "busy": "Duplicating..."
+      "busy": "Duplicating…"
     },
     "duplicated": "Form “{{name}}” created as a copy. Its answers are not copied.",
     "openCopy": "Open the copy"
@@ -1524,12 +1524,12 @@
       "title": "Users",
       "invite": "Invite user",
       "empty": "No users yet.",
-      "roleLabel": "{{name}}'s role",
+      "roleLabel": "{{name}}’s role",
       "statusActive": "Active",
       "statusInactive": "Deactivated",
       "deactivate": "Deactivate",
       "reactivate": "Reactivate",
-      "actionFailed": "That change could not be made.",
+      "actionFailed": "The change to this user could not be made. Try again.",
       "deactivateConfirm": {
         "title": "Deactivate this user?",
         "description": "{{name}} will be signed out immediately and will not be able to sign in again until somebody reactivates them."
@@ -1544,14 +1544,14 @@
       "resendInvite": "Resend invite",
       "cancelInvite": "Cancel invite",
       "inviteResent": "Invite sent again to {{email}}",
-      "inviteResentNotMailed": "The invitation for {{email}} is ready, but the email could not be sent. Try again once the mail server works.",
-      "inviteCancelled": "Invite to {{email}} cancelled",
+      "inviteResentNotMailed": "The invitation for {{email}} is ready, but the email could not be sent. Try again once the server can send email.",
+      "inviteCancelled": "Invite to {{email}} canceled",
       "cancelInviteConfirm": {
         "title": "Cancel this invite?",
         "description": "The link {{email}} received will stop working and they will leave the list. You can invite them again any time."
       },
       "language": "Language: {{name}}",
-      "languageOfTheSite": "Language: the site's",
+      "languageOfTheSite": "Language: the site’s",
       "secondFactorOn": "2-step on",
       "resetSecondFactor": "Reset 2-step",
       "resetSecondFactorConfirm": {
@@ -1567,17 +1567,17 @@
       "roleLabel": "Role",
       "cancel": "Cancel",
       "invite": "Invite",
-      "inviting": "Inviting...",
+      "inviting": "Inviting…",
       "emailTaken": "A user with this email already exists.",
       "sent": "Invitation sent to {{email}}: they will get an email to choose a password.",
-      "notMailed": "{{email}} is invited, but the email could not be sent. Once the mail server works, use “Resend invite”.",
+      "notMailed": "{{email}} is invited, but the email could not be sent. Once the server can send email, use “Resend invite”.",
       "languageLabel": "Language",
       "languageHint": "The invitation and every email they get afterwards will be written in this language, until they choose another.",
       "failed": "The invitation was not sent. Try again."
     },
     "inviteLinkDialog": {
       "title": "Invitation for {{email}}",
-      "description": "This server has no mail server, so no email was sent. Send this link to {{email}} yourself: it lets them choose a password and sign in, and it expires in 7 days.",
+      "description": "This server cannot send email, so none was sent. Send this link to {{email}} yourself: it lets them choose a password and sign in, and it expires in 7 days.",
       "linkLabel": "Invitation link",
       "copy": "Copy link",
       "copied": "Link copied",
@@ -1672,16 +1672,16 @@
       "relinkConfirmBody": "This language will follow the shared structure again: blocks that also exist there keep the text they have here, while images, settings and layout go back to the shared ones.",
       "relinkConfirmLost_one": "{{count}} block exists only in this language and will be removed.",
       "relinkConfirmLost_other": "{{count}} blocks exist only in this language and will be removed.",
-      "relinkConfirmHistory": "The unlinked version stays in this language's history and can be restored.",
+      "relinkConfirmHistory": "The unlinked version stays in this language’s history and can be restored.",
       "relinkConfirmAction": "Relink",
       "relinked": "{{locale}} follows the shared structure again.",
-      "relinkUnsaved": "A save didn't go through, so the language was not relinked. Try again once your changes show as saved.",
-      "relinkFailed": "The language couldn't be relinked."
+      "relinkUnsaved": "A save didn’t go through, so the language was not relinked. Try again once your changes show as saved.",
+      "relinkFailed": "The language couldn’t be relinked."
     },
     "style": {
       "editType": "Style all {{type}} blocks",
       "editTypeHint": "These values apply to EVERY {{type}} block on the site.",
-      "saveError": "Couldn't save the style. Try again."
+      "saveError": "The style was not saved. Try again."
     },
     "blockStyle": {
       "colors": {
@@ -1693,23 +1693,23 @@
       "lengths": {
         "borderRadius": {
           "fieldLabel": "Corner radius",
-          "placeholder": "e.g. 6px, 9999px for a pill"
+          "placeholder": "e.g. 6px; 9999px for fully rounded corners"
         },
         "paddingX": {
           "fieldLabel": "Horizontal padding",
-          "placeholder": "e.g. 1.25rem — empty for default"
+          "placeholder": "e.g. 1.25rem — empty uses the theme’s value"
         },
         "paddingY": {
           "fieldLabel": "Vertical padding",
-          "placeholder": "e.g. 1.25rem — empty for default"
+          "placeholder": "e.g. 1.25rem — empty uses the theme’s value"
         },
         "marginTop": {
           "fieldLabel": "Space above",
-          "placeholder": "e.g. 2rem — empty for default"
+          "placeholder": "e.g. 2rem — empty uses the theme’s value"
         },
         "marginBottom": {
           "fieldLabel": "Space below",
-          "placeholder": "e.g. 4rem — empty for default"
+          "placeholder": "e.g. 4rem — empty uses the theme’s value"
         },
         "borderWidth": {
           "fieldLabel": "Border width",
@@ -1717,15 +1717,15 @@
         },
         "minHeight": {
           "fieldLabel": "Minimum height",
-          "placeholder": "e.g. 60vh — empty for default"
+          "placeholder": "e.g. 60vh — empty uses the theme’s value"
         },
         "maxWidth": {
           "fieldLabel": "Maximum width",
-          "placeholder": "e.g. 48rem — empty for default"
+          "placeholder": "e.g. 48rem — empty uses the theme’s value"
         },
         "gap": {
           "fieldLabel": "Space between items",
-          "placeholder": "e.g. 1.5rem — empty for default"
+          "placeholder": "e.g. 1.5rem — empty uses the theme’s value"
         },
         "boxShadow": {
           "fieldLabel": "Shadow",
@@ -1737,7 +1737,7 @@
         },
         "animationDuration": {
           "fieldLabel": "Animation duration",
-          "placeholder": "e.g. 600ms — empty for default"
+          "placeholder": "e.g. 600ms — empty uses the theme’s value"
         },
         "animationDelay": {
           "fieldLabel": "Animation delay",
@@ -1820,11 +1820,11 @@
         "animationEasing": {
           "fieldLabel": "Easing",
           "options": {
-            "ease-out": "Ease out",
-            "ease": "Ease",
-            "ease-in": "Ease in",
-            "ease-in-out": "Ease in and out",
-            "linear": "Linear"
+            "ease-out": "Slows down at the end",
+            "ease": "Smooth",
+            "ease-in": "Starts slowly",
+            "ease-in-out": "Starts slowly, slows down at the end",
+            "linear": "Constant speed"
           }
         },
         "hoverEffect": {
@@ -1853,11 +1853,11 @@
       "urlPrompt": "Web address"
     },
     "colorPicker": {
-      "themeColours": "Theme colours",
+      "themeColours": "Theme colors",
       "inherit": "Inherits from theme",
-      "clear": "Back to the theme colour",
-      "useToken": "Use the theme's {{token}} colour",
-      "asCode": "{{label}} as a code (hex or theme colour)",
+      "clear": "Back to the theme color",
+      "useToken": "Use the theme’s {{token}} color",
+      "asCode": "{{label}} as a code (hex or theme color)",
       "tokens": {
         "primary": "Primary",
         "secondary": "Secondary",
@@ -1869,7 +1869,7 @@
         "link": "Link"
       },
       "themeNamed": "Theme: {{name}}",
-      "selectedToken": "Theme colour: {{name}}"
+      "selectedToken": "Theme color: {{name}}"
     },
     "blockSearch": {
       "label": "Search blocks",
@@ -1901,7 +1901,7 @@
       }
     },
     "placement": {
-      "refused": "{{block}} only belongs inside {{parents}}, so there is nowhere to put it here."
+      "refused": "{{block}} can only go inside {{parents}}, so it cannot be placed here."
     },
     "publishSkipped": {
       "title": "Publish with blocks the site will leave out?",
@@ -1936,7 +1936,7 @@
       "commandMenu": "Search blocks and commands",
       "addBlock": "Add a block"
     },
-    "dragLayer": "Drag \"{{name}}\"",
+    "dragLayer": "Drag “{{name}}”",
     "layerPlaceholder": "Has a placeholder to replace before publishing.",
     "layerHidesPlaceholder": "A block inside has a placeholder to replace before publishing.",
     "rail": {
@@ -2028,7 +2028,7 @@
       "headerFooter": "Blocks"
     },
     "section": {
-      "label": "Reusable section",
+      "label": "Shared section",
       "fields": {
         "section": {
           "fieldLabel": "Section"
@@ -2081,7 +2081,7 @@
         "fieldLabel": "Alignment",
         "options": {
           "start": "Left",
-          "center": "Centre",
+          "center": "Center",
           "end": "Right"
         }
       },
@@ -2125,7 +2125,7 @@
       "label": "Accordion/FAQ"
     },
     "backToTop": {
-      "label": "\"Back to top\" button"
+      "label": "“Back to top” button"
     },
     "banner": {
       "label": "Banner/CTA",
@@ -2149,16 +2149,16 @@
       "label": "Before/after",
       "fields": {
         "beforeImage": {
-          "fieldLabel": "\"Before\" image"
+          "fieldLabel": "“Before” image"
         },
         "afterImage": {
-          "fieldLabel": "\"After\" image"
+          "fieldLabel": "“After” image"
         },
         "beforeLabel": {
-          "fieldLabel": "\"Before\" label"
+          "fieldLabel": "“Before” label"
         },
         "afterLabel": {
-          "fieldLabel": "\"After\" label"
+          "fieldLabel": "“After” label"
         }
       }
     },
@@ -2861,7 +2861,7 @@
           "fieldLabel": "A click",
           "options": {
             "filter": "Narrows this page",
-            "browse": "Opens the term's own page"
+            "browse": "Opens the term’s own page"
           }
         },
         "style": {
@@ -3099,7 +3099,7 @@
           "fieldLabel": "Short description"
         },
         "badge": {
-          "fieldLabel": "Badge (e.g. \"New\", \"-20%\")"
+          "fieldLabel": "Badge (e.g. “New”, “-20%”)"
         },
         "structuredData": {
           "fieldLabel": "Tell search engines the price (schema.org Product)"
@@ -3118,7 +3118,7 @@
       "label": "Discounted price",
       "fields": {
         "note": {
-          "fieldLabel": "Note (e.g. \"VAT included\")"
+          "fieldLabel": "Note (e.g. “VAT included”)"
         }
       }
     },
@@ -3126,7 +3126,7 @@
       "label": "Buy button",
       "fields": {
         "label": {
-          "fieldLabel": "Button text (empty = \"Buy\")"
+          "fieldLabel": "Button text (empty = “Buy”)"
         },
         "url": {
           "fieldLabel": "Payment link (Stripe, PayPal…)"
@@ -3137,7 +3137,7 @@
       "label": "Product options",
       "fields": {
         "label": {
-          "fieldLabel": "Title (e.g. \"Sizes\")"
+          "fieldLabel": "Title (e.g. “Sizes”)"
         },
         "options": {
           "fieldLabel": "Options, one per line"
@@ -3176,7 +3176,7 @@
           "fieldLabel": "Feature"
         },
         "values": {
-          "fieldLabel": "One value per column, one per line (\"yes\"/\"no\" become ✓/✗)"
+          "fieldLabel": "One value per column, one per line (“yes”/“no” become ✓/✗)"
         }
       }
     },
@@ -3187,7 +3187,7 @@
           "fieldLabel": "Code"
         },
         "description": {
-          "fieldLabel": "What it gives (e.g. \"10% off your first order\")"
+          "fieldLabel": "What it gives (e.g. “10% off your first order”)"
         },
         "expiresOn": {
           "fieldLabel": "Valid until (empty = no end)"
@@ -3245,7 +3245,7 @@
           "fieldLabel": "Stripe"
         },
         "text": {
-          "fieldLabel": "Text beside the logos (e.g. \"Secure payments\")"
+          "fieldLabel": "Text beside the logos (e.g. “Secure payments”)"
         }
       }
     },
@@ -3271,7 +3271,7 @@
           "fieldLabel": "Description"
         },
         "price": {
-          "fieldLabel": "Price (as you want it written, e.g. \"12\" or \"8 / 12\")"
+          "fieldLabel": "Price (as you want it written, e.g. “12” or “8 / 12”)"
         },
         "dietary": {
           "fieldLabel": "Dietary notes, comma-separated (e.g. vegan, gluten-free)"
@@ -3337,7 +3337,7 @@
       "label": "Share buttons",
       "fields": {
         "label": {
-          "fieldLabel": "Title (e.g. \"Share\")"
+          "fieldLabel": "Title (e.g. “Share”)"
         },
         "whatsapp": {
           "fieldLabel": "WhatsApp"
@@ -3363,7 +3363,7 @@
       "label": "Cookie preferences",
       "fields": {
         "label": {
-          "fieldLabel": "Link text (empty = \"Cookie preferences\")"
+          "fieldLabel": "Link text (empty = “Cookie preferences”)"
         }
       }
     },
@@ -3406,10 +3406,10 @@
       "label": "Specification",
       "fields": {
         "label": {
-          "fieldLabel": "Name (e.g. \"Weight\")"
+          "fieldLabel": "Name (e.g. “Weight”)"
         },
         "value": {
-          "fieldLabel": "Value (e.g. \"1.2 kg\")"
+          "fieldLabel": "Value (e.g. “1.2 kg”)"
         }
       }
     },
@@ -3543,7 +3543,7 @@
     }
   },
   "collections": {
-    "actionFailed": "That change could not be made.",
+    "actionFailed": "The change to the collection was not saved. Try again.",
     "dialog": {
       "description": "A collection holds pages of one kind — News, Events, Case studies — and gets a menu entry of its own. Underneath they are ordinary pages.",
       "newLabel": "New collection",
@@ -3566,7 +3566,7 @@
         "camera": "Galleries",
         "package": "Products",
         "graduation-cap": "Courses",
-        "heart": "Favourites"
+        "heart": "Favorites"
       },
       "name": "Name"
     },
@@ -3703,7 +3703,7 @@
         "redirect": "That address is itself redirected, to {{location}}.",
         "gone": "That address is marked as removed.",
         "broken": "That address has a redirect to a page that isn’t published.",
-        "loop": "That address is part of a circle of redirects.",
+        "loop": "That address is part of a redirect loop.",
         "none": "No page answers at that address, so visitors would see “not found”. Check the spelling, or create the page first.",
         "other": "An address on another site: it isn’t checked here."
       },
@@ -3728,7 +3728,7 @@
         "redirect302": "Visitors are sent to {{location}} with a temporary redirect.",
         "gone": "The address is marked as removed: visitors get a “410 Gone” answer.",
         "broken": "A redirect matches, but the page it points to isn’t published, so visitors see “not found”.",
-        "loop": "The redirects send visitors round in a circle. Change one of them.",
+        "loop": "The redirects form a loop: a visitor would be sent round and round. Change one of them.",
         "none": "Nothing answers there: visitors see “not found”."
       },
       "addFor": "Add a redirect for it",
@@ -3818,7 +3818,7 @@
       "ignore": "Ignore",
       "ignoreLabel": "Ignore {{path}}",
       "ignored": "{{path}} taken off the list",
-      "failed": "That could not be done."
+      "failed": "The Not found list could not be updated. Try again."
     },
     "problems": {
       "unknown": "This redirect cannot be used.",
@@ -3872,7 +3872,7 @@
     "failed": "This file could not be read.",
     "history": "Earlier attempts",
     "report": {
-      "found": "What's in it",
+      "found": "What’s in it",
       "pages": "pages",
       "posts": "posts",
       "attachments": "media",
@@ -3890,10 +3890,10 @@
       "fromValues": "from its values alone"
     },
     "warnings": {
-      "page-builder": "A page builder holds the layout in a format this cannot read: on {{count}} pages the words would come across, the arrangement would not.",
+      "page-builder": "A page builder keeps the layout in a format that cannot be read here: on {{count}} pages the text would come across, the arrangement would not.",
       "multilingual": "Multilingual site. Translations would arrive as separate pages, to be reunited by hand.",
       "content-outside-the-post": "{{count}} pages have an empty body in the export: their content lives elsewhere (typically in ACF fields) and they would arrive with their title alone.",
-      "unsupported-post-types": "{{count}} entries are in post types this does not import: they would be left out.",
+      "unsupported-post-types": "{{count}} entries are in post types that are not imported: they would be left out.",
       "menus": "{{count}} menu items. Menus are rebuilt by hand in the editor.",
       "fields-not-described": "{{count}} blocks keep their fields in the theme’s code rather than in the database: their content comes across, without knowing what each piece of it is."
     },
@@ -3919,13 +3919,13 @@
     "dropped": "{{name}} dropped at position {{position}} of {{total}}.",
     "droppedPlain": "{{name}} dropped.",
     "droppedOutside": "{{name}} dropped outside the list; it stays where it was.",
-    "cancelled": "Moving {{name}} was cancelled; it stays where it was."
+    "cancelled": "Moving {{name}} was canceled; it stays where it was."
   },
   "aiSettings": {
     "title": "Generating pages with AI",
-    "intro": "The provider that writes a page when someone asks for one, with this site's own key. The key is stored encrypted and never shown again.",
+    "intro": "The provider that writes a page when someone asks for one, with this site’s own key. The key is stored encrypted and never shown again.",
     "loadError": "The AI settings could not be loaded. Reload the page to try again.",
-    "serverDisabled": "This server has nowhere safe to keep a key, so pages cannot be generated. Whoever installed Kometio can turn it on: see \"Generating pages with AI\" in the self-hosting guide.",
+    "serverDisabled": "This server has nowhere safe to keep a key, so pages cannot be generated. Whoever installed Kometio can turn it on: see “Generating pages with AI” in the self-hosting guide.",
     "provider": "Provider",
     "providerAnthropic": "Claude (Anthropic)",
     "providerOpenAiCompatible": "OpenAI-compatible",
@@ -3933,7 +3933,7 @@
     "baseUrlHint": "OpenAI itself, or any server that speaks its API. The address it answers on, ending in /v1: https://api.openai.com/v1, or http://localhost:11434/v1 for a local server. A server on this machine or a private network also has to be allowed by whoever runs Kometio (KOMETIO_AI_ALLOW_PRIVATE_HOSTS).",
     "model": "Model",
     "modelHintAnthropic": "claude-opus-5 writes the best pages; claude-sonnet-5 is faster and costs less.",
-    "modelHintOpenAiCompatible": "The model's name as that server knows it, such as gpt-5 or qwen3:14b. It has to support structured output (JSON schema).",
+    "modelHintOpenAiCompatible": "The model’s name as that server knows it, such as gpt-5 or qwen3:14b. It has to support structured output (JSON schema).",
     "apiKey": "API key",
     "apiKeyStored": "A key ending in {{hint}} is saved. Leave this empty to keep it.",
     "apiKeyStoredShort": "A key is saved. Leave this empty to keep it.",
@@ -3951,26 +3951,26 @@
   "pageGeneration": {
     "open": "Generate with AI",
     "title": "Generate with AI",
-    "description": "Describe the page, and it is written in {{language}} with this site's blocks. Nothing is published: you review it in the editor first.",
+    "description": "Describe the page, and it is written in {{language}} with this site’s blocks. Nothing is published: you review it in the editor first.",
     "promptLabel": "What should the page say?",
     "promptHint": "Who it is for, what it offers, what the visitor should do next. The more you say, the less there is to change.",
     "modeLabel": "The page already has blocks",
     "modeAppend": "Add the new sections at the end",
     "modeReplace": "Replace the whole page",
-    "starting": "Asking the provider...",
-    "writing_one": "Writing the page... {{count}} character so far",
-    "writing_other": "Writing the page... {{count}} characters so far",
+    "starting": "Asking the provider…",
+    "writing_one": "Writing the page… {{count}} character so far",
+    "writing_other": "Writing the page… {{count}} characters so far",
     "generate": "Generate",
-    "generating": "Generating...",
+    "generating": "Generating…",
     "stop": "Stop",
     "replaceConfirmTitle": "Replace the whole page?",
     "replaceConfirmBody_one": "Its {{count}} block is replaced by the generated page. Undo, or the version history, brings it back.",
     "replaceConfirmBody_other": "Its {{count}} blocks are replaced by the generated page. Undo, or the version history, brings them back.",
     "replaceConfirmAction": "Generate and replace",
-    "unavailableLinked": "This language shares its blocks with the original page, so a page generated here would replace the original too. Generate it in the original language, or unlink this language first (page menu, \"Unlink this language\").",
-    "unavailableNotConfigured": "Pages cannot be generated yet: an administrator has to choose the AI provider in Integrations.",
-    "unavailableNotConfiguredAdmin": "Pages cannot be generated yet: choose the AI provider and its key in Integrations.",
-    "openSettings": "Open Integrations",
+    "unavailableLinked": "This language shares its blocks with the original page, so a page generated here would replace the original too. Generate it in the original language, or unlink this language first (page menu, “Unlink this language”).",
+    "unavailableNotConfigured": "Pages cannot be generated yet: an administrator has to choose the AI provider in Settings → AI generation.",
+    "unavailableNotConfiguredAdmin": "Pages cannot be generated yet: choose the AI provider and its key in Settings → AI generation.",
+    "openSettings": "Open AI generation",
     "done_one": "{{count}} block added to the page.",
     "done_other": "{{count}} blocks added to the page.",
     "doneDropped_one": "{{count}} block could not be used and was left out.",
@@ -3982,11 +3982,11 @@
     "startFrom": "Describe it to AI",
     "startFromHint": "The page opens in the editor and is written there; nothing is published.",
     "failures": {
-      "not-configured": "No AI provider is set for this site. An administrator can choose one in Integrations.",
-      "key-unreadable": "The saved key can no longer be read: the server's secrets key has changed. Enter the key again in Integrations.",
-      "rejected-credentials": "The provider refused the key. Check it in Integrations.",
+      "not-configured": "No AI provider is set for this site. An administrator can choose one in Settings → AI generation.",
+      "key-unreadable": "The saved key can no longer be read: the server’s secrets key has changed. Enter the key again in Settings → AI generation.",
+      "rejected-credentials": "The provider refused the key. Check it in Settings → AI generation.",
       "rate-limited": "The provider is receiving too many requests, or the account has run out of credit. Try again in a few minutes.",
-      "unreachable": "The provider could not be reached. Check the server address in Integrations, or try again.",
+      "unreachable": "The provider could not be reached. Check the server address in Settings → AI generation, or try again.",
       "refused": "The provider declined to write this page. Describe it differently and try again.",
       "truncated": "The page came out too long and was cut off. Ask for fewer sections.",
       "not-json": "The provider answered with something that is not a page. Try again, or choose a model that supports structured output.",
@@ -3995,7 +3995,7 @@
       "timed-out": "The provider took too long to answer. Try again, or ask for a shorter page.",
       "unexpected": "Something went wrong while generating the page. Try again.",
       "busy": "Another page is being written for this site right now. Wait for it to finish, then try again.",
-      "private-address": "The server's address is inside the network Kometio runs in, such as this machine, which this installation does not allow. Whoever runs Kometio can allow it with KOMETIO_AI_ALLOW_PRIVATE_HOSTS=true (see the self-hosting guide)."
+      "private-address": "The server’s address is inside the network Kometio runs in, such as this machine, which this installation does not allow. Whoever runs Kometio can allow it with KOMETIO_AI_ALLOW_PRIVATE_HOSTS=true (see the self-hosting guide)."
     },
     "publishPlaceholdersTitle": "Publish with placeholders?",
     "publishPlaceholdersBody_one": "{{count}} block still has a placeholder where a real name, role, price or figure should go; Layers marks it. Visitors would see it as it is.",
@@ -4018,7 +4018,7 @@
     },
     "secret": {
       "title": "Keep the file the way you keep a password",
-      "body": "It holds the password hashes of every account and every page, draft and form. Store it where only you can read it, and delete it when you no longer need it."
+      "body": "It holds the password hashes of every account, as well as every page, draft and form. Store it where only you can read it, and delete it when you no longer need it."
     },
     "download": "Download the site",
     "downloadHint": "The download starts at once and is whole when your browser says it is done: a large site takes a little while. If it fails, try again in a minute; only one export runs at a time.",
@@ -4059,7 +4059,7 @@
     },
     "sections": {
       "general": {
-        "description": "The site's name and the address it is online at."
+        "description": "The site’s name and the address it is online at."
       },
       "languages": {
         "description": "The languages the site exists in, and what a visitor sees for a page that is not translated."
@@ -4107,17 +4107,17 @@
       "user.invite_resent": "Sent the invitation to {{target}} again",
       "user.invite_cancelled": "Withdrew the invitation to {{target}}",
       "user.role_changed": "Made {{target}} {{role}}",
-      "user.activated": "Switched {{target}} on",
-      "user.deactivated": "Switched {{target}} off",
+      "user.activated": "Reactivated {{target}}",
+      "user.deactivated": "Deactivated {{target}}",
       "account.password_changed": "Changed their password",
       "account.password_reset": "Their password was reset from a link",
       "account.email_change_requested": "Asked to sign in with {{target}}",
       "account.email_changed": "Changed the address they sign in with",
-      "site.settings_changed": "Changed the site's settings: {{section}}",
+      "site.settings_changed": "Changed the site’s settings: {{section}}",
       "site.theme_changed": "Changed the theme: {{section}}",
       "site.ai_changed": "Changed the AI settings",
       "theme.uploaded": "Uploaded the theme {{target}}",
-      "archive.exported": "Downloaded the site's archive",
+      "archive.exported": "Downloaded the site’s archive",
       "account.two_factor_enabled": "Turned on two-step verification",
       "account.two_factor_disabled": "Turned off two-step verification",
       "account.recovery_code_used": "Signed in with a recovery code",

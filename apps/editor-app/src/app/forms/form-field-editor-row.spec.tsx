@@ -141,7 +141,7 @@ describe('FormFieldEditorRow', () => {
       [],
     );
 
-    expect(screen.queryByLabelText('Step')).toBeFalsy();
+    expect(screen.queryByLabelText('Passaggio')).toBeFalsy();
   });
 
   it('shows a step dropdown listing every step, plus "no step", when the form has steps', () => {
@@ -155,10 +155,10 @@ describe('FormFieldEditorRow', () => {
       steps,
     );
 
-    const select = screen.getByLabelText('Step');
-    expect(select.textContent).toContain('Nessuno step');
+    const select = screen.getByLabelText('Passaggio');
+    expect(select.textContent).toContain('Nessun passaggio');
     expect(optionNames(select)).toEqual([
-      'Nessuno step',
+      'Nessun passaggio',
       'Dati personali',
       'Dettagli',
     ]);
@@ -173,7 +173,7 @@ describe('FormFieldEditorRow', () => {
       steps,
     );
 
-    chooseOption(screen.getByLabelText('Step'), 'Dati personali');
+    chooseOption(screen.getByLabelText('Passaggio'), 'Dati personali');
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ stepId: 'step-1' }),
     );
@@ -188,7 +188,7 @@ describe('FormFieldEditorRow', () => {
       steps,
     );
 
-    chooseOption(screen.getByLabelText('Step'), 'Nessuno step');
+    chooseOption(screen.getByLabelText('Passaggio'), 'Nessun passaggio');
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ stepId: null }),
     );
@@ -240,8 +240,8 @@ describe('FormFieldEditorRow', () => {
 
       expect(optionNames(screen.getByLabelText('Mostra'))).toEqual([
         'Sempre',
-        'Solo se "Motivo"',
-        'Solo se "Newsletter"',
+        'Solo se «Motivo»',
+        'Solo se «Newsletter»',
       ]);
     });
 
@@ -249,7 +249,7 @@ describe('FormFieldEditorRow', () => {
       const onChange = vi.fn();
       const { rerender } = renderRow(details, onChange, [], [reason]);
 
-      chooseOption(screen.getByLabelText('Mostra'), 'Solo se "Motivo"');
+      chooseOption(screen.getByLabelText('Mostra'), 'Solo se «Motivo»');
       const withCondition = onChange.mock.lastCall?.[0];
       expect(withCondition.showWhen).toEqual({
         fieldId: 'reason',
@@ -273,7 +273,7 @@ describe('FormFieldEditorRow', () => {
       );
       chooseOption(
         screen.getByLabelText('Risposta che mostra questo campo'),
-        'è "Altro"',
+        'è «Altro»',
       );
       expect(onChange.mock.lastCall?.[0].showWhen).toEqual({
         fieldId: 'reason',

@@ -182,7 +182,7 @@ describe('BlockToolbarOverlay labels', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
     fireEvent.click(
-      screen.getByRole('button', { name: 'Trasforma in sezione riusabile' }),
+      screen.getByRole('button', { name: 'Trasforma in sezione condivisa' }),
     );
 
     expect(onMakeReusable).toHaveBeenCalledTimes(1);

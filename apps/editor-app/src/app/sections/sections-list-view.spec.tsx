@@ -120,11 +120,11 @@ describe('SectionsListView — where a shared section is used', () => {
     ]);
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Elimina “Newsletter”' }),
+      screen.getByRole('button', { name: 'Elimina «Newsletter»' }),
     );
 
     const dialog = screen.getByRole('alertdialog');
-    within(dialog).getByText('Eliminare “Newsletter”?');
+    within(dialog).getByText('Eliminare «Newsletter»?');
     within(dialog).getByText(
       'È su 2 pagine, e ognuna non mostrerà più niente al suo posto. Sta anche dentro un template: le pagine create da lì in poi avranno una striscia vuota al suo posto.',
     );
@@ -139,7 +139,7 @@ describe('SectionsListView — where a shared section is used', () => {
     renderList([section({ id: 'section-1', usedOnPages: 1 })]);
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Elimina “Newsletter”' }),
+      screen.getByRole('button', { name: 'Elimina «Newsletter»' }),
     );
     const dialog = screen.getByRole('alertdialog');
     within(dialog).getByText(
@@ -312,7 +312,7 @@ describe('SectionsListView — the two lists', () => {
     renderList([shared]);
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Elimina “Newsletter”' }),
+      screen.getByRole('button', { name: 'Elimina «Newsletter»' }),
     );
     fireEvent.click(
       within(screen.getByRole('alertdialog')).getByRole('button', {
@@ -321,7 +321,7 @@ describe('SectionsListView — the two lists', () => {
     );
 
     expect(
-      await screen.findByText('“Newsletter” è stato eliminato'),
+      await screen.findByText('«Newsletter» è stato eliminato'),
     ).toBeTruthy();
   });
 });

@@ -52,7 +52,7 @@ describe('useDragAnnouncements', () => {
     ).toBe('Hai lasciato Immagine in posizione 1 di 3.');
     expect(
       announcements.onDragCancel({ active: active('c', 2), over: null }),
-    ).toBe("Spostamento di Immagine annullato: resta dov'era.");
+    ).toBe('Spostamento di Immagine annullato: resta dov’era.');
   });
 
   it('still names the item where no list position is known', () => {
@@ -65,7 +65,7 @@ describe('useDragAnnouncements', () => {
       announcements.onDragOver({ active: active('a'), over: over('b') }),
     ).toBe('Hai spostato Titolo.');
     expect(announcements.onDragOver({ active: active('a'), over: null })).toBe(
-      "Titolo è fuori dall'elenco.",
+      'Titolo è fuori dall’elenco.',
     );
   });
 

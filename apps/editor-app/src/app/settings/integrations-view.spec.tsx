@@ -123,7 +123,7 @@ describe('IntegrationsView', () => {
     });
 
     fireEvent.click(
-      screen.getByRole('button', { name: /rimuovi il dominio “Hotjar”/i }),
+      screen.getByRole('button', { name: /rimuovi il dominio «Hotjar»/i }),
     );
 
     expect(screen.queryByText('Hotjar')).toBeNull();
@@ -159,7 +159,7 @@ describe('IntegrationsView', () => {
     });
 
     fireEvent.click(
-      screen.getByRole('button', { name: /rimuovi il dominio “Hotjar”/i }),
+      screen.getByRole('button', { name: /rimuovi il dominio «Hotjar»/i }),
     );
 
     expect(api.updateThemeSettings).not.toHaveBeenCalled();
@@ -214,7 +214,9 @@ describe('IntegrationsView — what each field is for', () => {
     ).toBeTruthy();
     // The warning stays under the two code fields.
     expect(
-      screen.getByText(/Incolla solo codice da fonti di cui ti fidi/),
+      screen.getByText(
+        /Incolla solo codice che arriva da fonti di cui ti fidi/,
+      ),
     ).toBeTruthy();
   });
 
@@ -255,7 +257,7 @@ describe('IntegrationsView — what each field is for', () => {
 
       expect(screen.getByText('Google Analytics')).toBeTruthy();
       const edit = screen.getByRole('button', {
-        name: 'Modifica il codice di “Google Analytics”',
+        name: 'Modifica il codice di «Google Analytics»',
       });
       expect(edit.getAttribute('aria-expanded')).toBe('false');
       fireEvent.click(edit);
@@ -285,7 +287,7 @@ describe('IntegrationsView — what each field is for', () => {
 
       fireEvent.click(
         screen.getByRole('button', {
-          name: 'Elimina lo script “Google Analytics”',
+          name: 'Elimina lo script «Google Analytics»',
         }),
       );
 

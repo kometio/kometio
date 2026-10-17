@@ -270,7 +270,7 @@ function focusPropertiesPanel() {
 
 function rail() {
   return within(
-    screen.getByRole('navigation', { name: "Strumenti dell'editor" }),
+    screen.getByRole('navigation', { name: 'Strumenti dell’editor' }),
   );
 }
 
@@ -598,13 +598,13 @@ describe('CanvasEditorShell', () => {
       const iframe = await findCanvasIframe();
 
       expect(
-        screen.queryByRole('navigation', { name: "Strumenti dell'editor" }),
+        screen.queryByRole('navigation', { name: 'Strumenti dell’editor' }),
       ).toBeNull();
       expect(
         screen.queryByRole('complementary', { name: 'Livelli' }),
       ).toBeNull();
       const bar = within(
-        screen.getByRole('navigation', { name: "Pannelli dell'editor" }),
+        screen.getByRole('navigation', { name: 'Pannelli dell’editor' }),
       );
 
       fireEvent.click(bar.getByRole('button', { name: 'Livelli' }));

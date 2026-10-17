@@ -163,7 +163,7 @@ describe('NewPageGroupDialog', () => {
 
     typeName('Idraulica');
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Pagina genitore' }),
+      await screen.findByRole('button', { name: 'Pagina superiore' }),
     );
     fireEvent.click(await screen.findByRole('button', { name: /Servizi/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Crea' }));
@@ -218,7 +218,7 @@ describe('NewPageGroupDialog', () => {
     typeName('Idraulica');
     expect(screen.getByText('URL: /idraulica')).toBeTruthy();
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Pagina genitore' }),
+      await screen.findByRole('button', { name: 'Pagina superiore' }),
     );
     fireEvent.click(await screen.findByRole('button', { name: /Servizi/ }));
 
@@ -325,7 +325,7 @@ describe('NewPageGroupDialog', () => {
     // No templates, but a choice all the same: blank, or written by AI.
     const select = await screen.findByRole('combobox', { name: 'Parti da' });
     fireEvent.click(select);
-    fireEvent.click(screen.getByRole('option', { name: "Descrivila all'AI" }));
+    fireEvent.click(screen.getByRole('option', { name: 'Descrivila all’AI' }));
     typeName('Chi siamo');
     const create = screen.getByRole('button', { name: 'Crea' });
     expect(create.hasAttribute('disabled')).toBe(true);
@@ -354,7 +354,7 @@ describe('NewPageGroupDialog', () => {
 
     fireEvent.click(await screen.findByRole('combobox', { name: 'Parti da' }));
     expect(
-      screen.queryByRole('option', { name: "Descrivila all'AI" }),
+      screen.queryByRole('option', { name: 'Descrivila all’AI' }),
     ).toBeNull();
   });
 
@@ -475,7 +475,7 @@ describe('NewPageGroupDialog', () => {
     });
 
     fireEvent.click(await screen.findByRole('combobox', { name: 'Parti da' }));
-    fireEvent.click(screen.getByRole('option', { name: "Descrivila all'AI" }));
+    fireEvent.click(screen.getByRole('option', { name: 'Descrivila all’AI' }));
     typeName('Chi siamo');
     fireEvent.change(screen.getByLabelText('Cosa deve dire la pagina?'), {
       target: { value: 'La storia del forno dal 1987' },

@@ -120,7 +120,7 @@ describe('CommandMenu', () => {
 
     fireEvent.change(field, { target: { value: 'zzz' } });
 
-    expect(screen.getByText('Nessun risultato per “zzz”.')).toBeTruthy();
+    expect(screen.getByText('Nessun risultato per «zzz».')).toBeTruthy();
   });
 
   it('runs an entry on click', () => {

@@ -54,13 +54,13 @@ describe('LocaleSettingsSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /^salva$/i }));
 
     const dialog = await screen.findByRole('alertdialog');
-    expect(dialog.textContent).toContain('Togliere questa lingua?');
+    expect(dialog.textContent).toContain('Rimuovere questa lingua?');
     expect(dialog.textContent).toContain('Le pagine in francese');
     expect(dialog.textContent).toContain('selettore di lingua');
-    expect(dialog.textContent).toContain('Nessun testo viene cancellato');
+    expect(dialog.textContent).toContain('Non viene eliminato nulla');
     expect(api.updateLocaleSettings).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Togli la lingua' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi la lingua' }));
 
     await waitFor(() =>
       expect(api.updateLocaleSettings).toHaveBeenCalledWith('site-1', {
@@ -79,11 +79,11 @@ describe('LocaleSettingsSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /^salva$/i }));
 
     const dialog = await screen.findByRole('alertdialog');
-    expect(dialog.textContent).toContain('Togliere queste lingue?');
+    expect(dialog.textContent).toContain('Rimuovere queste lingue?');
     expect(dialog.textContent).toContain('inglese');
     expect(dialog.textContent).toContain('francese');
     expect(
-      screen.getByRole('button', { name: 'Togli le lingue' }),
+      screen.getByRole('button', { name: 'Rimuovi le lingue' }),
     ).toBeTruthy();
   });
 
@@ -117,7 +117,7 @@ describe('LocaleSettingsSection', () => {
       name: 'Porta a un’altra lingua',
     });
     const notAvailable = screen.getByRole('radio', {
-      name: 'Mostra “non disponibile”',
+      name: 'Mostra «non disponibile»',
     });
     expect(redirect.getAttribute('aria-checked')).toBe('true');
     expect(notAvailable.getAttribute('aria-checked')).toBe('false');
@@ -137,7 +137,7 @@ describe('LocaleSettingsSection', () => {
     renderSection();
 
     fireEvent.click(
-      screen.getByRole('radio', { name: 'Mostra “non disponibile”' }),
+      screen.getByRole('radio', { name: 'Mostra «non disponibile»' }),
     );
     fireEvent.click(screen.getByRole('button', { name: /^salva$/i }));
 

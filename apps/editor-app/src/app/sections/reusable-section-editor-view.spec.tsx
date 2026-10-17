@@ -141,7 +141,7 @@ describe('ReusableSectionEditorView', () => {
         ),
       );
       expect(
-        await screen.findByText('Nome cambiato in “Scheda prodotto”'),
+        await screen.findByText('Nome cambiato in «Scheda prodotto»'),
       ).toBeTruthy();
       // The bar follows.
       expect(

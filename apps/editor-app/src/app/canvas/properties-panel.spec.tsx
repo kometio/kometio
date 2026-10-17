@@ -103,7 +103,7 @@ describe('PropertiesPanel style fields', () => {
   it('offers the instance style fields whenever the type has stylableProperties, regardless of typeStyle', () => {
     renderPanel(<PropertiesPanel {...baseProps()} />);
 
-    expect(screen.getByLabelText('Raggio angoli')).toBeTruthy();
+    expect(screen.getByLabelText('Raggio degli angoli')).toBeTruthy();
   });
 
   it('is pre-filled from block.styleOverride and calls onChangeInstanceStyle on edit', () => {
@@ -121,12 +121,12 @@ describe('PropertiesPanel style fields', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Raggio angoli')).toHaveProperty(
+    expect(screen.getByLabelText('Raggio degli angoli')).toHaveProperty(
       'value',
       '6px',
     );
 
-    fireEvent.change(screen.getByLabelText('Raggio angoli'), {
+    fireEvent.change(screen.getByLabelText('Raggio degli angoli'), {
       target: { value: '9999px' },
     });
 

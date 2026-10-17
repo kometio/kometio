@@ -45,7 +45,7 @@ const ENTITIES: Record<string, string> = {
  * so. A scanner cannot leave a fragment behind: it never re-reads what it
  * has already passed.
  */
-function stripTags(value: string): string {
+export function stripTags(value: string): string {
   let out = '';
   let insideTag = false;
   for (const character of value) {

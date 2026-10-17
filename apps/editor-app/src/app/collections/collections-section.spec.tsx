@@ -78,7 +78,7 @@ describe('CollectionsSection — default template', () => {
     renderSection();
 
     const select = await screen.findByRole('combobox', {
-      name: 'Nuove pagine da',
+      name: 'Le nuove pagine partono da',
     });
     expect(select.textContent).toBe('Articolo blog');
 
@@ -92,7 +92,7 @@ describe('CollectionsSection — default template', () => {
     );
     // Said, since the select alone does not tell that it was kept.
     expect(
-      await screen.findByText('Punto di partenza di “News” cambiato'),
+      await screen.findByText('Punto di partenza di «News» cambiato'),
     ).toBeTruthy();
   });
 
@@ -100,7 +100,9 @@ describe('CollectionsSection — default template', () => {
     renderSection();
 
     fireEvent.click(
-      await screen.findByRole('combobox', { name: 'Nuove pagine da' }),
+      await screen.findByRole('combobox', {
+        name: 'Le nuove pagine partono da',
+      }),
     );
     fireEvent.click(screen.getByRole('option', { name: 'Pagina vuota' }));
 
@@ -120,7 +122,7 @@ describe('CollectionsSection — default template', () => {
     renderSection([template('event', 'Evento')]);
 
     const select = await screen.findByRole('combobox', {
-      name: 'Nuove pagine da',
+      name: 'Le nuove pagine partono da',
     });
     expect(select.textContent).toBe('Pagina vuota');
   });
@@ -223,7 +225,7 @@ describe('CollectionsSection — changing a collection', () => {
       }),
     );
     expect(
-      await screen.findByText('Collezione “Notizie” aggiornata'),
+      await screen.findByText('Collezione «Notizie» aggiornata'),
     ).toBeTruthy();
     // Nothing left to save, so no button.
     await waitFor(() =>

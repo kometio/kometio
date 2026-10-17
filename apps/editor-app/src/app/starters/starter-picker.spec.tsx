@@ -115,7 +115,7 @@ describe('StarterPicker', () => {
   it('holds still while it works', () => {
     renderPicker({ pending: true });
 
-    const button = screen.getByRole('button', { name: /sto creando/i });
+    const button = screen.getByRole('button', { name: /creazione del sito/i });
 
     expect(button.hasAttribute('disabled')).toBe(true);
   });

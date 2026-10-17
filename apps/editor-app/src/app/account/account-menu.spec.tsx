@@ -84,7 +84,7 @@ describe('AccountMenu', () => {
 
     // A select rather than a switch: the label says what it is, and each
     // language is written in itself so it can be found from any other.
-    const language = await screen.findByLabelText("Lingua dell'interfaccia");
+    const language = await screen.findByLabelText('Lingua dell’interfaccia');
     chooseOption(language, 'English');
 
     expect(i18n.language).toBe('en');
@@ -107,7 +107,7 @@ describe('AccountMenu', () => {
     await openMenu();
 
     chooseOption(
-      await screen.findByLabelText("Lingua dell'interfaccia"),
+      await screen.findByLabelText('Lingua dell’interfaccia'),
       'English',
     );
 
@@ -130,7 +130,7 @@ describe('AccountMenu', () => {
     await openMenu();
 
     chooseOption(
-      await screen.findByLabelText("Lingua dell'interfaccia"),
+      await screen.findByLabelText('Lingua dell’interfaccia'),
       'English',
     );
 

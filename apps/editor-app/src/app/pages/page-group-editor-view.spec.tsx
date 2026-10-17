@@ -302,7 +302,7 @@ describe('PageGroupEditorView', () => {
       );
       expect(
         await screen.findByText(
-          'Template “Scheda servizio” salvato: lo trovi quando crei una nuova pagina.',
+          'Template «Scheda servizio» salvato: lo trovi quando crei una nuova pagina.',
         ),
       ).toBeTruthy();
       await waitFor(() =>

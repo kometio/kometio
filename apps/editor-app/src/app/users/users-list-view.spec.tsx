@@ -395,7 +395,7 @@ describe('UsersListView', () => {
 
       const dialog = await screen.findByRole('dialog');
       expect(
-        within(dialog).getByText(/non è partita nessuna email/i),
+        within(dialog).getByText(/non ne è partita nessuna/i),
       ).toBeTruthy();
       expect(
         within(dialog).getByLabelText<HTMLInputElement>('Link dell’invito')
@@ -415,7 +415,7 @@ describe('UsersListView', () => {
 
       expect(
         await screen.findByText(
-          'L’invito per nuova@example.com è pronto, ma l’email non è partita. Riprova quando il mail server funziona.',
+          'L’invito per nuova@example.com è pronto, ma l’email non è partita. Riprova quando il server di posta funziona.',
         ),
       ).toBeTruthy();
       expect(screen.queryByText(/reinviato a/)).toBeNull();
@@ -449,7 +449,9 @@ describe('UsersListView', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Reinvia invito' }));
 
       expect(
-        await screen.findByText('Non è stato possibile applicare la modifica.'),
+        await screen.findByText(
+          'Non è stato possibile modificare l’utente. Riprova.',
+        ),
       ).toBeTruthy();
     });
   });
@@ -547,7 +549,7 @@ describe('UsersListView', () => {
     expect(link.readOnly).toBe(true);
     expect(
       screen.getByText(
-        /non è partita nessuna email. Manda tu questo link a nuova@example.com/i,
+        /non ne è partita nessuna. Manda tu questo link a nuova@example.com/i,
       ),
     ).toBeTruthy();
     expect(screen.queryByText(/riceverà un’email/)).toBeNull();
@@ -592,7 +594,7 @@ describe('UsersListView', () => {
 
     expect(
       await screen.findByText(
-        'nuova@example.com è stato invitato, ma l’email non è partita. Quando il mail server funziona, usa «Reinvia invito».',
+        'nuova@example.com è stato invitato, ma l’email non è partita. Quando il server di posta funziona, usa «Reinvia invito».',
       ),
     ).toBeTruthy();
     expect(screen.queryByText(/riceverà un’email/)).toBeNull();
@@ -643,7 +645,7 @@ describe('UsersListView', () => {
       await fillInvitation();
       chooseOption(screen.getByLabelText('Lingua'), 'English');
       expect(
-        screen.getByText(/ogni mail che riceverà dopo saranno scritti/i),
+        screen.getByText(/ogni email che riceverà dopo saranno scritti/i),
       ).toBeTruthy();
       fireEvent.click(screen.getByRole('button', { name: 'Invita' }));
 

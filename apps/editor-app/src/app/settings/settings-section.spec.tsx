@@ -52,7 +52,7 @@ describe('a site settings section', () => {
   it('starts from the site, with nothing to save and no bar', () => {
     renderInProviders(<GeneralSettingsSection site={site} />);
 
-    expect(screen.getByLabelText('Nome sito')).toHaveProperty(
+    expect(screen.getByLabelText('Nome del sito')).toHaveProperty(
       'value',
       'Forno Esempio',
     );
@@ -66,7 +66,7 @@ describe('a site settings section', () => {
     );
 
     renderInProviders(<GeneralSettingsSection site={site} />);
-    fireEvent.change(screen.getByLabelText('Nome sito'), {
+    fireEvent.change(screen.getByLabelText('Nome del sito'), {
       target: { value: '  Forno Nuovo  ' },
     });
     fireEvent.change(screen.getByLabelText('Dominio'), {
@@ -87,7 +87,7 @@ describe('a site settings section', () => {
     );
     expect(await screen.findByText('Salvato')).toBeTruthy();
     // What the server kept is what the form shows now, and it is saved.
-    expect(screen.getByLabelText('Nome sito')).toHaveProperty(
+    expect(screen.getByLabelText('Nome del sito')).toHaveProperty(
       'value',
       'Forno Nuovo',
     );
@@ -105,7 +105,7 @@ describe('a site settings section', () => {
     );
 
     renderInProviders(<GeneralSettingsSection site={site} />);
-    fireEvent.change(screen.getByLabelText('Nome sito'), {
+    fireEvent.change(screen.getByLabelText('Nome del sito'), {
       target: { value: 'Altro nome' },
     });
     fireEvent.click(await screen.findByRole('button', { name: 'Salva' }));
@@ -124,7 +124,7 @@ describe('a site settings section', () => {
     );
 
     renderInProviders(<GeneralSettingsSection site={site} />);
-    fireEvent.change(screen.getByLabelText('Nome sito'), {
+    fireEvent.change(screen.getByLabelText('Nome del sito'), {
       target: { value: 'Altro nome' },
     });
     fireEvent.click(await screen.findByRole('button', { name: 'Salva' }));
@@ -169,7 +169,7 @@ describe('a site settings section', () => {
     );
 
     renderInProviders(<GeneralSettingsSection site={site} />);
-    fireEvent.change(screen.getByLabelText('Nome sito'), {
+    fireEvent.change(screen.getByLabelText('Nome del sito'), {
       target: { value: 'Mai salvato' },
     });
     fireEvent.click(await screen.findByRole('button', { name: 'Salva' }));
@@ -177,7 +177,7 @@ describe('a site settings section', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
 
-    expect(screen.getByLabelText('Nome sito')).toHaveProperty(
+    expect(screen.getByLabelText('Nome del sito')).toHaveProperty(
       'value',
       'Forno Esempio',
     );
@@ -188,7 +188,7 @@ describe('a site settings section', () => {
 
   it('cannot be saved while what it holds could not be sent', async () => {
     renderInProviders(<GeneralSettingsSection site={site} />);
-    fireEvent.change(screen.getByLabelText('Nome sito'), {
+    fireEvent.change(screen.getByLabelText('Nome del sito'), {
       target: { value: '   ' },
     });
 

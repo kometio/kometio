@@ -43,7 +43,7 @@ describe('ConfirmEmailChangeView', () => {
 
     renderView('a-token');
 
-    expect(screen.getByText('Conferma in corso...')).toBeTruthy();
+    expect(screen.getByText('Conferma in corso…')).toBeTruthy();
     await waitFor(() =>
       expect(
         screen.getByText(

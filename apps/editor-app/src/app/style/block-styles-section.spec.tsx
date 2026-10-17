@@ -110,7 +110,7 @@ describe('BlockStylesSection', () => {
     renderSection();
     openHero();
 
-    await screen.findByText('Raggio angoli');
+    await screen.findByText('Raggio degli angoli');
     fireEvent.change(screen.getByPlaceholderText(/9999px/), {
       target: { value: '8px' },
     });
@@ -135,7 +135,7 @@ describe('BlockStylesSection', () => {
     renderSection();
     openHero();
 
-    await screen.findByText('Raggio angoli');
+    await screen.findByText('Raggio degli angoli');
     fireEvent.change(screen.getByPlaceholderText(/9999px/), {
       target: { value: '8px' },
     });
@@ -147,7 +147,7 @@ describe('BlockStylesSection', () => {
   it('goes back to the list from a type', async () => {
     renderSection();
     openHero();
-    await screen.findByText('Raggio angoli');
+    await screen.findByText('Raggio degli angoli');
 
     fireEvent.click(screen.getByRole('button', { name: /indietro/i }));
 
@@ -172,7 +172,7 @@ describe('BlockStylesSection', () => {
       </QueryClientProvider>,
     );
     openHero();
-    await screen.findByText('Raggio angoli');
+    await screen.findByText('Raggio degli angoli');
 
     const field = screen.getByPlaceholderText(/9999px/);
     const notCancelled = fireEvent.keyDown(field, { key: 'Enter' });

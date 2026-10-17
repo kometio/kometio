@@ -199,7 +199,7 @@ describe('FormsListView', () => {
 
     await waitFor(() => expect(api.deleteForm).toHaveBeenCalledWith('form-2'));
     expect(
-      await screen.findByText('Modulo “Newsletter” eliminato'),
+      await screen.findByText('Modulo «Newsletter» eliminato'),
     ).toBeTruthy();
   });
 
@@ -244,7 +244,7 @@ describe('FormsListView', () => {
 
     expect(await screen.findByText('Storage is down')).toBeTruthy();
     expect(
-      await screen.findByText('Modulo “Contact form” eliminato'),
+      await screen.findByText('Modulo «Contact form» eliminato'),
     ).toBeTruthy();
     expect(
       screen
@@ -279,7 +279,7 @@ describe('FormsListView', () => {
     );
     expect(
       await screen.findByText(
-        /Modulo “Copia di Contact form” creato come copia/,
+        /Modulo «Copia di Contact form» creato come copia/,
       ),
     ).toBeTruthy();
     // It stays on the list; the copy is one click away, not taken.

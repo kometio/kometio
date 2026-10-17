@@ -28,9 +28,7 @@ describe('SiteArchiveSection', () => {
     expect(
       screen.getByText('Custodisci il file come una password'),
     ).toBeTruthy();
-    expect(
-      screen.getByText(/impronta della password di ogni account/),
-    ).toBeTruthy();
+    expect(screen.getByText(/impronte \(hash\) delle password/)).toBeTruthy();
   });
 
   // A link and not a request: the archive can be large, and only the browser

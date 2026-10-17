@@ -97,7 +97,7 @@ describe('ThemeUploadPanel', () => {
     await choose(container);
 
     expect((await screen.findByRole('alert')).textContent).toContain(
-      'theme.json ha bisogno di un "name"',
+      'theme.json ha bisogno di un «name»',
     );
   });
 

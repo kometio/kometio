@@ -38,7 +38,7 @@ describe('LocaleListEditor', () => {
     renderEditor(['it-it'], 'it-it', onChange);
     openPicker();
 
-    fireEvent.change(screen.getByPlaceholderText('Cerca una lingua...'), {
+    fireEvent.change(screen.getByPlaceholderText('Cerca una lingua…'), {
       target: { value: 'EN-US' },
     });
     fireEvent.click(screen.getByRole('button', { name: /en-us/i }));
@@ -52,7 +52,7 @@ describe('LocaleListEditor', () => {
     renderEditor(['it-it'], 'it-it');
     openPicker();
 
-    fireEvent.change(screen.getByPlaceholderText('Cerca una lingua...'), {
+    fireEvent.change(screen.getByPlaceholderText('Cerca una lingua…'), {
       target: { value: 'francese' },
     });
 
@@ -65,7 +65,7 @@ describe('LocaleListEditor', () => {
     const onChange = vi.fn();
     renderEditor(['it-it'], 'it-it', onChange);
     openPicker();
-    const search = screen.getByPlaceholderText('Cerca una lingua...');
+    const search = screen.getByPlaceholderText('Cerca una lingua…');
 
     fireEvent.change(search, { target: { value: 'fr' } });
     const offered = screen
@@ -84,7 +84,7 @@ describe('LocaleListEditor', () => {
     renderEditor(['it-it'], 'it-it');
     openPicker();
 
-    fireEvent.change(screen.getByPlaceholderText('Cerca una lingua...'), {
+    fireEvent.change(screen.getByPlaceholderText('Cerca una lingua…'), {
       target: { value: 'it-it' },
     });
 

@@ -55,7 +55,7 @@ describe('GeneralSettingsSection', () => {
     expect(domain().value).toBe('www.nuovo.it');
     expect(
       screen.getByText(
-        'Ho tolto “https://”, “/chi-siamo”: qui serve solo il dominio.',
+        'Tolto “https://”, “/chi-siamo”: qui serve solo il dominio.',
       ),
     ).toBeTruthy();
   });
@@ -143,7 +143,7 @@ describe('GeneralSettingsSection', () => {
     });
     renderSection();
 
-    fireEvent.change(screen.getByLabelText('Nome sito'), {
+    fireEvent.change(screen.getByLabelText('Nome del sito'), {
       target: { value: 'Nuovo nome' },
     });
     fireEvent.click(screen.getByRole('button', { name: /^salva$/i }));

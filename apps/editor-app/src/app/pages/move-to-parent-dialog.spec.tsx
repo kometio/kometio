@@ -77,7 +77,7 @@ describe('MoveToParentDialog', () => {
     const { onMove } = renderDialog('services');
 
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Pagina genitore' }),
+      await screen.findByRole('button', { name: 'Pagina superiore' }),
     );
     fireEvent.click(await screen.findByRole('button', { name: /Casa/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Sposta' }));
@@ -89,10 +89,10 @@ describe('MoveToParentDialog', () => {
     const { onMove } = renderDialog('services');
 
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Pagina genitore' }),
+      await screen.findByRole('button', { name: 'Pagina superiore' }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /livello radice/i }),
+      await screen.findByRole('button', { name: /primo livello/i }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Sposta' }));
 
@@ -110,7 +110,7 @@ describe('MoveToParentDialog', () => {
     renderDialog(null);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Pagina genitore' }),
+      await screen.findByRole('button', { name: 'Pagina superiore' }),
     );
 
     await waitFor(() =>
