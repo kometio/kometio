@@ -3,7 +3,11 @@ import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { pageBlockCategories, pageBlocks } from '@kometio/block-registry';
-import { CURATED_THEME_FONTS, isCssLength } from '@kometio/shared-types';
+import {
+  CURATED_THEME_FONTS,
+  isCssLength,
+  isCuratedThemeFont,
+} from '@kometio/shared-types';
 import { InlineError } from '../../components/ui/inline-error';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -47,19 +51,10 @@ export interface StyleViewProps {
 // means "no site-level override", i.e. themeFontFamily stays `null` and
 // the active filesystem theme's own default font applies (docs/adr/0021).
 const INHERIT_THEME_FONT = '__inherit__';
-const CUSTOM_FONT = '__custom__';
-const CURATED_FONT_VALUES: string[] = CURATED_THEME_FONTS.map(
-  (font) => font.value,
-);
 
-function initialFontState(themeFontFamily: string | null) {
-  if (themeFontFamily === null) {
-    return { fontChoice: INHERIT_THEME_FONT, customFontName: '' };
-  }
-  if (CURATED_FONT_VALUES.includes(themeFontFamily)) {
-    return { fontChoice: themeFontFamily, customFontName: '' };
-  }
-  return { fontChoice: CUSTOM_FONT, customFontName: themeFontFamily };
+/** What the font menu saves: one of the curated fonts, or `null` for the theme's. */
+function fontOfChoice(choice: string) {
+  return isCuratedThemeFont(choice) ? choice : null;
 }
 
 interface StyleFormValues {
@@ -70,7 +65,6 @@ interface StyleFormValues {
   secondaryColorEnabled: boolean;
   secondaryColor: string | null;
   fontChoice: string;
-  customFontName: string;
   faviconUrl: string;
   // Empty string = "not customized" (stored as null), so the theme's own
   // width applies — the same convention as every other field here.
@@ -86,7 +80,7 @@ function toFormValues(site: SiteRecord): StyleFormValues {
     primaryColor: site.themePrimaryColor,
     secondaryColorEnabled: site.themeSecondaryColor !== null,
     secondaryColor: site.themeSecondaryColor,
-    ...initialFontState(site.themeFontFamily),
+    fontChoice: site.themeFontFamily ?? INHERIT_THEME_FONT,
     faviconUrl: site.themeFaviconUrl ?? '',
     contentWidth: site.themeContentWidth ?? '',
     customCss: site.themeCustomCss ?? '',
@@ -169,12 +163,7 @@ export function StyleView({ site }: StyleViewProps) {
       secondaryColor: values.secondaryColorEnabled
         ? brandColor('secondary', values.secondaryColor, baseTokens?.secondary)
         : null,
-      fontFamily:
-        values.fontChoice === INHERIT_THEME_FONT
-          ? null
-          : values.fontChoice === CUSTOM_FONT
-            ? values.customFontName.trim() || null
-            : values.fontChoice,
+      fontFamily: fontOfChoice(values.fontChoice),
       customCss: values.customCss.trim() || null,
       contentWidth: values.contentWidth.trim() || null,
       // Owned by IntegrationsView now, not this page — round-tripped
@@ -209,7 +198,6 @@ export function StyleView({ site }: StyleViewProps) {
   });
   const secondaryColor = useWatch({ control, name: 'secondaryColor' });
   const fontChoice = useWatch({ control, name: 'fontChoice' });
-  const customFontName = useWatch({ control, name: 'customFontName' });
   const faviconUrl = useWatch({ control, name: 'faviconUrl' });
   // A value set from code has to say it is a change, or the bar that
   // saves never appears (see the locale settings).
@@ -220,12 +208,7 @@ export function StyleView({ site }: StyleViewProps) {
   const previewPrimary = primaryColorEnabled
     ? brandColor('primary', primaryColor, baseTokens?.primary)
     : (themeColorAsHex(baseTokens?.primary) ?? undefined);
-  const previewFont =
-    fontChoice === INHERIT_THEME_FONT
-      ? null
-      : fontChoice === CUSTOM_FONT
-        ? customFontName.trim() || null
-        : fontChoice;
+  const previewFont = fontOfChoice(fontChoice);
 
   return (
     // The favicon is chosen from the library, and the block styles' colour
@@ -328,21 +311,13 @@ export function StyleView({ site }: StyleViewProps) {
                     </SelectItem>
                     {CURATED_THEME_FONTS.map((font) => (
                       <SelectItem key={font.value} value={font.value}>
-                        {font.label}
+                        {font.value === 'system'
+                          ? t('themeSettings.fontSystem')
+                          : font.label}
                       </SelectItem>
                     ))}
-                    <SelectItem value={CUSTOM_FONT}>
-                      {t('themeSettings.fontCustom')}
-                    </SelectItem>
                   </SelectContent>
                 </Select>
-                {fontChoice === CUSTOM_FONT && (
-                  <Input
-                    aria-label={t('themeSettings.fontCustomLabel')}
-                    placeholder={t('themeSettings.fontCustomPlaceholder')}
-                    {...register('customFontName')}
-                  />
-                )}
               </div>
               <StylePreview
                 primary={previewPrimary}

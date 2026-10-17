@@ -5,7 +5,7 @@ import {
   type ThemeSettings,
   type ThemeTokens,
 } from '@kometio/shared-types';
-import { resolveThemeFont, type ResolvedThemeFont } from './theme-font';
+import { resolveThemeFont } from './theme-font';
 
 export interface PageThemeStylesInput {
   /** `site.themeSettings`: the site's own Tier 1 settings. */
@@ -34,7 +34,6 @@ export type EffectiveThemeSettings = Pick<
 
 export interface PageThemeStyles {
   theme: EffectiveThemeSettings;
-  themeFont: ResolvedThemeFont | null;
   /** The active theme's own tokens, as `name: value !important;` declarations. */
   themeBaseTokenDeclarations: string;
   /** The site's Tier 1 colours, font and content width, as declarations. */
@@ -212,7 +211,6 @@ export function resolvePageThemeStyles({
 
   return {
     theme,
-    themeFont,
     themeBaseTokenDeclarations,
     themeOverrideDeclarations,
     blockStyleCss,

@@ -87,7 +87,6 @@ Only what the site has been configured to send, and each on one trigger.
 | Sentry                                                      | The unhandled errors of the API and the site: the error, the method, the path and the request number; no body, header, cookie, query string or person (ADR-0114)     | Only with a `SENTRY_DSN`                                                                                                                       |
 | An S3 bucket                                                | The uploaded files                                                                                                                                                   | Only if chosen                                                                                                                                 |
 | Let's Encrypt                                               | The domain name                                                                                                                                                      | A server with a `DOMAIN` asks for its certificate                                                                                              |
-| **Google Fonts**                                            | **The visitor's address and browser, at every page view**                                                                                                            | **When the site's font is anything but "system" (Settings → Style), whether or not the visitor agreed to anything**                            |
 | Whoever an embed or a script belongs to                     | What a video, a map, a booking widget, an analytics script learns                                                                                                    | When the page is shown; with the cookie banner on, a block that sets cookies or loads a third party waits for the visitor's consent (ADR-0131) |
 
 The captcha is not in the table because it sends nothing: the login, the forms
@@ -142,15 +141,12 @@ the site's owner added sets is theirs to declare.
 These are the places where this is less than what a site subject to GDPR would
 like to say, listed so that they are decided and not found:
 
-1. **Google Fonts is loaded without asking** whenever the font is not the system
-   one. The fix is to serve the curated fonts from the site itself; until then,
-   the choice "system" keeps the visitor's address away from Google.
-2. **No erasure of an account**, only deactivation (above).
-3. **No record of consents on the server.** The choice is in the visitor's browser;
+1. **No erasure of an account**, only deactivation (above).
+2. **No record of consents on the server.** The choice is in the visitor's browser;
    if a site has to prove, later, that a person agreed, there is nothing to show
    (a consent ledger was considered and left out for now).
-4. **Form answers are kept for ever by default.** Setting a number of days is one
+3. **Form answers are kept for ever by default.** Setting a number of days is one
    field, and is the site's decision to take, not the software's.
-5. **A backup is a copy of everything**, the activity log and the answers a person
+4. **A backup is a copy of everything**, the activity log and the answers a person
    asked to be erased included, until it is replaced (seven or fourteen days, by
    default).

@@ -1,11 +1,13 @@
-import type {
-  BusinessAddress,
-  CookieBannerSettings,
-  OpeningHoursDay,
-  ThemeSettings,
-  TrackerDomainEntry,
-  TrackerScriptEntry,
-  UntranslatedPageFallback,
+import {
+  isCuratedThemeFont,
+  type BusinessAddress,
+  type CookieBannerSettings,
+  type CuratedThemeFont,
+  type OpeningHoursDay,
+  type ThemeSettings,
+  type TrackerDomainEntry,
+  type TrackerScriptEntry,
+  type UntranslatedPageFallback,
 } from '@kometio/shared-types';
 import { LocaleNotEnabledError } from '../errors';
 
@@ -196,11 +198,22 @@ export class Site {
    * baked in here — `null` must stay meaningful all the way to
    * rendering, not get coerced into a default value at this layer.
    */
+  /**
+   * The font chosen in Style, or `null` for the theme's own. A value that is
+   * not one of the curated fonts reads as `null`: until docs/adr/0146 the
+   * column took any Google Fonts name, and a site that typed one goes back
+   * to its theme's font, the way the public site already draws it.
+   */
+  get themeFontFamily(): CuratedThemeFont | null {
+    const stored = this.props.themeFontFamily;
+    return stored !== null && isCuratedThemeFont(stored) ? stored : null;
+  }
+
   get themeSettings(): ThemeSettings {
     return {
       primaryColor: this.props.themePrimaryColor,
       secondaryColor: this.props.themeSecondaryColor,
-      fontFamily: this.props.themeFontFamily,
+      fontFamily: this.themeFontFamily,
       customCss: this.props.themeCustomCss,
       contentWidth: this.props.themeContentWidth,
       headScript: this.props.themeHeadScript,

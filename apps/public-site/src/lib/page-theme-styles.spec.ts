@@ -80,7 +80,6 @@ describe('resolvePageThemeStyles', () => {
         overridesEnabled: false,
       });
       expect(styles.themeOverrideDeclarations).toBe('');
-      expect(styles.themeFont).toBeNull();
     });
 
     it('does NOT clear the block styles: the switch is not theirs', () => {

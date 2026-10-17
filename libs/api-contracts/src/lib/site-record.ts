@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  CURATED_THEME_FONT_VALUES,
   businessInfoSchema,
   cookieBannerSettingsSchema,
   cssLengthTokenSchema,
@@ -36,7 +37,7 @@ export const siteRecordSchema = businessInfoSchema.extend({
   formSubmissionRetentionDays: z.number().int().positive().nullable(),
   themePrimaryColor: hexColorSchema.nullable(),
   themeSecondaryColor: hexColorSchema.nullable(),
-  themeFontFamily: z.string().nullable(),
+  themeFontFamily: z.enum(CURATED_THEME_FONT_VALUES).nullable(),
   themeCustomCss: z.string().nullable(),
   // ADR-0049 — same guarded CSS length the Tier 1 settings schema uses, not
   // a bare string: it is interpolated into a stylesheet on every page.

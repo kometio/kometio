@@ -1,42 +1,33 @@
-import { CURATED_THEME_FONTS } from '@kometio/shared-types';
+import {
+  curatedThemeFontLabel,
+  isCuratedThemeFont,
+} from '@kometio/shared-types';
 
 export interface ResolvedThemeFont {
-  /** The family[:wght@...] segment for the fonts.googleapis.com URL. */
-  googleFontsFamily: string;
   /** The CSS font-family value, ready to assign to --font-sans-value. */
   cssFontFamily: string;
 }
 
+const SYSTEM_FONT_STACK = 'ui-sans-serif, system-ui, sans-serif';
+
 /**
- * Resolves an admin-picked font (docs/adr/0021 — a curated key, or a
- * free-text Google Fonts family name typed into the "custom" escape hatch)
- * into what PageLayout.astro needs to load it. `null` means "load nothing
- * external, don't override --font-sans-value" — covers both `fontFamily`
- * left unset (Tier 1 not touched) and the curated `system` choice, which
- * deliberately has no `googleFontsFamily` of its own.
+ * The font a site chose in Style (docs/adr/0021, docs/adr/0146) as the
+ * value of `--font-sans-value`, or `null` to leave the theme's own.
+ *
+ * Nothing to load here: each curated font is a file of the site, declared by
+ * its `src/fonts/<font>/fonts.css` and bundled with the themes' fonts
+ * (theme-fonts.ts), and an `@font-face` that no rule uses downloads nothing.
+ *
+ * `system` is the visitor's own interface font. A value that is not one of
+ * the curated fonts gives `null` too: the field used to take any Google Fonts
+ * name, and a site that typed one goes back to its theme's font.
  */
 export function resolveThemeFont(
   fontFamily: string | null,
 ): ResolvedThemeFont | null {
-  if (!fontFamily) return null;
-
-  const curated = CURATED_THEME_FONTS.find((font) => font.value === fontFamily);
-  if (curated) {
-    if (!curated.googleFontsFamily) return null; // 'system'
-    return {
-      googleFontsFamily: curated.googleFontsFamily,
-      cssFontFamily: `'${curated.label}', ui-sans-serif, system-ui, sans-serif`,
-    };
-  }
-
-  // Free-text name: only letters, digits, spaces and hyphens survive —
-  // every real Google Fonts family name is made of those, and this value
-  // gets interpolated into a raw <style> block below, not passed through a
-  // CSS-safe API, so anything else is stripped rather than trusted.
-  const safeName = fontFamily.replace(/[^a-zA-Z0-9 -]/g, '').trim();
-  if (!safeName) return null;
+  if (!fontFamily || !isCuratedThemeFont(fontFamily)) return null;
+  if (fontFamily === 'system') return { cssFontFamily: SYSTEM_FONT_STACK };
   return {
-    googleFontsFamily: safeName.replace(/ /g, '+'),
-    cssFontFamily: `'${safeName}', ui-sans-serif, system-ui, sans-serif`,
+    cssFontFamily: `'${curatedThemeFontLabel(fontFamily)}', ${SYSTEM_FONT_STACK}`,
   };
 }

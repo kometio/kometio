@@ -435,7 +435,7 @@ export class SitesController {
       formSubmissionRetentionDays: props.formSubmissionRetentionDays,
       themePrimaryColor: props.themePrimaryColor,
       themeSecondaryColor: props.themeSecondaryColor,
-      themeFontFamily: props.themeFontFamily,
+      themeFontFamily: site.themeFontFamily,
       themeCustomCss: props.themeCustomCss,
       themeContentWidth: props.themeContentWidth,
       themeHeadScript: props.themeHeadScript,
