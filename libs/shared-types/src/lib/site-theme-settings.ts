@@ -10,46 +10,50 @@ export const hexColorSchema = z
   .regex(/^#[0-9a-fA-F]{6}$/, 'Must be a hex color, e.g. #18181b');
 
 /**
- * Curated choices an admin can pick without typing anything (docs/adr/0021)
- * — `themeFontFamily` itself is a free string, not restricted to this list:
- * an admin can also type any Google Fonts family name directly. `system`
- * loads nothing external, using the OS/browser's own UI font stack; every
- * other entry's `googleFontsFamily` is the exact family[:wght@...] segment
- * public-site builds the fonts.googleapis.com <link> from.
+ * The fonts a site can choose in Style without bringing its own
+ * (docs/adr/0021, docs/adr/0146). Every one of them is a file of the
+ * product, served by the site from its own address: nothing is asked of a
+ * font service, so a visitor's address goes nowhere it was not sent.
+ *
+ * `label` is the family name the stylesheet declares and the editor shows.
+ * `system` has no file: it is the visitor's own interface font.
  */
-export const CURATED_THEME_FONTS = [
-  { value: 'system', label: 'Sistema', googleFontsFamily: null },
-  {
-    value: 'inter',
-    label: 'Inter',
-    googleFontsFamily: 'Inter:wght@400;500;600;700',
-  },
-  {
-    value: 'roboto',
-    label: 'Roboto',
-    googleFontsFamily: 'Roboto:wght@400;500;700',
-  },
-  {
-    value: 'poppins',
-    label: 'Poppins',
-    googleFontsFamily: 'Poppins:wght@400;500;600;700',
-  },
-  {
-    value: 'lora',
-    label: 'Lora',
-    googleFontsFamily: 'Lora:wght@400;500;600;700',
-  },
-  {
-    value: 'playfair-display',
-    label: 'Playfair Display',
-    googleFontsFamily: 'Playfair+Display:wght@400;600;700',
-  },
-  {
-    value: 'jetbrains-mono',
-    label: 'JetBrains Mono',
-    googleFontsFamily: 'JetBrains+Mono:wght@400;500;700',
-  },
+export const CURATED_THEME_FONT_VALUES = [
+  'system',
+  'inter',
+  'roboto',
+  'poppins',
+  'lora',
+  'playfair-display',
+  'jetbrains-mono',
 ] as const;
+
+export type CuratedThemeFont = (typeof CURATED_THEME_FONT_VALUES)[number];
+
+// A record and not a second list, so a value without a label does not compile.
+const CURATED_THEME_FONT_LABELS: Record<CuratedThemeFont, string> = {
+  system: 'System',
+  inter: 'Inter',
+  roboto: 'Roboto',
+  poppins: 'Poppins',
+  lora: 'Lora',
+  'playfair-display': 'Playfair Display',
+  'jetbrains-mono': 'JetBrains Mono',
+};
+
+export const CURATED_THEME_FONTS = CURATED_THEME_FONT_VALUES.map((value) => ({
+  value,
+  label: CURATED_THEME_FONT_LABELS[value],
+}));
+
+/** The family name a curated font is declared and shown under. */
+export function curatedThemeFontLabel(value: CuratedThemeFont): string {
+  return CURATED_THEME_FONT_LABELS[value];
+}
+
+export function isCuratedThemeFont(value: string): value is CuratedThemeFont {
+  return CURATED_THEME_FONT_VALUES.some((font) => font === value);
+}
 
 // Bare hostname, optional `*.` wildcard subdomain prefix, no scheme/path —
 // CSP source-list shape (see content-security-policy.ts's own hardcoded
@@ -76,7 +80,12 @@ export const trackerDomainEntriesSchema = z.array(trackerDomainEntrySchema);
 export const themeSettingsSchema = z.object({
   primaryColor: hexColorSchema.nullable(),
   secondaryColor: hexColorSchema.nullable(),
-  fontFamily: z.string().min(1).nullable(),
+  /**
+   * One of the fonts above, or `null` for the theme's own. Not a free name
+   * any more: a name could only be looked up at a font service, and that is
+   * what this field no longer does (docs/adr/0146).
+   */
+  fontFamily: z.enum(CURATED_THEME_FONT_VALUES).nullable(),
   customCss: z.string().nullable(),
   /**
    * How wide the readable content column is on this site (ADR-0049), or

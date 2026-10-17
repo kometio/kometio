@@ -339,6 +339,28 @@ describe('SitesController (integration)', () => {
     expect(getRes.body.themeFaviconUrl).toBe('https://example.com/favicon.png');
   });
 
+  // A name could only be looked up at a font service, which is what the site no
+  // longer asks (docs/adr/0146).
+  it('refuses a font that is not one of the site’s own', async () => {
+    await agent
+      .patch(`/sites/${siteId}/theme-settings`)
+      .send({
+        primaryColor: null,
+        secondaryColor: null,
+        fontFamily: 'Space Grotesk',
+        customCss: null,
+        contentWidth: null,
+        headScript: null,
+        bodyScript: null,
+        faviconUrl: null,
+        overridesEnabled: true,
+        motionEnabled: true,
+        allowedTrackerDomains: [],
+        trackerScripts: [],
+      })
+      .expect(400);
+  });
+
   it('defaults theme overrides to enabled, and can be turned off (docs/adr/0021 two-gate composition)', async () => {
     const getRes = await agent.get(`/sites/${siteId}`).expect(200);
     expect(getRes.body.themeOverridesEnabled).toBe(true);

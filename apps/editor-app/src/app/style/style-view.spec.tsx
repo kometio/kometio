@@ -192,6 +192,64 @@ describe('StyleView — the page, section by section', () => {
    * panel, and the two had started to disagree. This page is the one home,
    * and its parts come in an order somebody can follow.
    */
+  // The fonts are files of the site now (docs/adr/0146): there is nothing a
+  // name could be looked up in any more, so there is no name to type.
+  describe('the font', () => {
+    it('offers the theme’s own, the system font and the six fonts of the site, and no name to type', () => {
+      renderView();
+
+      fireEvent.click(screen.getByRole('combobox', { name: 'Font' }));
+
+      expect(
+        screen.getAllByRole('option').map((option) => option.textContent),
+      ).toEqual([
+        'Predefinito del tema',
+        'Font di sistema',
+        'Inter',
+        'Roboto',
+        'Poppins',
+        'Lora',
+        'Playfair Display',
+        'JetBrains Mono',
+      ]);
+      expect(screen.queryByText(/Google Fonts/)).toBeNull();
+    });
+
+    it('saves the font that was picked', async () => {
+      vi.mocked(api.updateThemeSettings).mockResolvedValue(site);
+      renderView();
+
+      fireEvent.click(screen.getByRole('combobox', { name: 'Font' }));
+      fireEvent.click(screen.getByRole('option', { name: 'Lora' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^salva$/i }));
+
+      await waitFor(() =>
+        expect(api.updateThemeSettings).toHaveBeenCalledWith(
+          'site-1',
+          expect.objectContaining({ fontFamily: 'lora' }),
+        ),
+      );
+    });
+
+    it('saves the theme’s own as no font at all', async () => {
+      vi.mocked(api.updateThemeSettings).mockResolvedValue(site);
+      renderView({ themeFontFamily: 'inter' });
+
+      fireEvent.click(screen.getByRole('combobox', { name: 'Font' }));
+      fireEvent.click(
+        screen.getByRole('option', { name: 'Predefinito del tema' }),
+      );
+      fireEvent.click(await screen.findByRole('button', { name: /^salva$/i }));
+
+      await waitFor(() =>
+        expect(api.updateThemeSettings).toHaveBeenCalledWith(
+          'site-1',
+          expect.objectContaining({ fontFamily: null }),
+        ),
+      );
+    });
+  });
+
   it('has its sections in order: theme, colours, typography, width, motion, block styles, icon, advanced', () => {
     renderView();
 

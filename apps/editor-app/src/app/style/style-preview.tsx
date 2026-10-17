@@ -1,4 +1,7 @@
-import { CURATED_THEME_FONTS } from '@kometio/shared-types';
+import {
+  curatedThemeFontLabel,
+  type CuratedThemeFont,
+} from '@kometio/shared-types';
 import { useTranslation } from '../../lib/use-translation';
 
 export interface StylePreviewProps {
@@ -6,13 +9,8 @@ export interface StylePreviewProps {
   primary: string | undefined;
   /** The text colour the theme puts on the primary colour, as it writes it. */
   primaryForeground: string | undefined;
-  /** The font the form holds now: a curated value, a name typed, or `null` for the theme's own. */
-  font: string | null;
-}
-
-/** The family a font choice draws with — the label of a curated one, else the name as typed. */
-function familyOf(font: string): string {
-  return CURATED_THEME_FONTS.find((one) => one.value === font)?.label ?? font;
+  /** The font the form holds now: one of the curated fonts, or `null` for the theme's own. */
+  font: CuratedThemeFont | null;
 }
 
 /**
@@ -33,7 +31,7 @@ export function StylePreview({
   const family =
     font === null || font === 'system'
       ? undefined
-      : `"${familyOf(font)}", system-ui, sans-serif`;
+      : `"${curatedThemeFontLabel(font)}", system-ui, sans-serif`;
 
   return (
     <div className="flex flex-col gap-1.5">

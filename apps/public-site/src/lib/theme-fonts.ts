@@ -1,5 +1,5 @@
 /**
- * The themes' own fonts, self-hosted (docs/adr/0042 and its successor). A
+ * The themes' own fonts, and the ones a site can pick in Style, self-hosted (docs/adr/0042 and its successor). A
  * theme that wants a font of its own declares a `fonts.css` in its
  * directory and takes the font package as a dependency — the same pattern
  * icons already use with `lucide-static`: a versioned package, never a CDN.
@@ -19,3 +19,8 @@
  * in `theme.css` would never get.
  */
 import.meta.glob('../../../../themes/*/fonts.css', { eager: true });
+
+// The fonts a site can pick in Style (docs/adr/0146), the same way and for the
+// same reasons: a family nobody picked costs a few lines of stylesheet and no
+// download.
+import.meta.glob('../fonts/*/fonts.css', { eager: true });

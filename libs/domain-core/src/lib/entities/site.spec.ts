@@ -206,6 +206,21 @@ describe('Site entity', () => {
     });
   });
 
+  // Until docs/adr/0146 the column took any Google Fonts name. Such a value
+  // reads as the theme's own font, the way the public site draws it.
+  it('reads a stored font that is not one of the curated fonts as the theme’s own', () => {
+    const site = Site.fromProps({ ...props, themeFontFamily: 'Space Grotesk' });
+
+    expect(site.themeFontFamily).toBeNull();
+    expect(site.themeSettings.fontFamily).toBeNull();
+  });
+
+  it('reads a curated font as it is', () => {
+    const site = Site.fromProps({ ...props, themeFontFamily: 'lora' });
+
+    expect(site.themeSettings.fontFamily).toBe('lora');
+  });
+
   it('updateThemeSettings replaces every theme field, including trackerScripts', () => {
     const site = Site.fromProps(props);
 
