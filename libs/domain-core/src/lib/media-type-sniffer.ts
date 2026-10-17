@@ -1,12 +1,14 @@
 import { UnsupportedMediaTypeError } from './errors';
 
 /**
- * The three kinds a browser renders in a page — and so the only three a
- * sniffer ever vouches for. Not `MediaKind` from shared-types, which also
- * has documents and everything else: those are never served inline, so
- * there is nothing for their bytes to prove.
+ * The kinds a browser uses in a page — and so the only ones a sniffer ever
+ * vouches for. Not `MediaKind` from shared-types, which also has documents
+ * and everything else: those are never served inline, so there is nothing
+ * for their bytes to prove. A web font is one since a site can draw its
+ * pages with one it uploaded (docs/adr/0147): a stylesheet loads it from the
+ * library's own address, which a file served as a download is not.
  */
-export type InlineMediaKind = 'image' | 'video' | 'audio';
+export type InlineMediaKind = 'image' | 'video' | 'audio' | 'font';
 
 export interface SniffedMediaType {
   mimeType: string;
@@ -137,6 +139,22 @@ const SIGNATURES: MediaSignature[] = [
     kind: 'audio',
     extension: 'ogg',
     matches: (b) => startsWith(b, ascii('OggS')),
+  },
+  // The two web font containers. Tables of outlines and metrics, compressed:
+  // nothing in them runs, and the only thing that reads them is the font
+  // engine. TrueType and OpenType files are not here: a site serves WOFF2 or
+  // WOFF, smaller by half or more, so those stay downloads (docs/adr/0147).
+  {
+    mimeType: 'font/woff2',
+    kind: 'font',
+    extension: 'woff2',
+    matches: (b) => startsWith(b, ascii('wOF2')),
+  },
+  {
+    mimeType: 'font/woff',
+    kind: 'font',
+    extension: 'woff',
+    matches: (b) => startsWith(b, ascii('wOFF')),
   },
 ];
 

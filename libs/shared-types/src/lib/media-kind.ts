@@ -4,7 +4,8 @@
  *
  * Five and not three since the library stopped refusing files it did not
  * recognise (ADR-0070): a PDF, a spreadsheet or a zip is a file somebody
- * uploads on purpose, and it needs a home the moment it is there.
+ * uploads on purpose, and it needs a home the moment it is there. Six since
+ * a site can draw its pages with a font it uploaded (ADR-0147).
  *
  * Shared, because three different programs ask the same question and must
  * not answer it three ways: the API filtering a list, the database query
@@ -16,6 +17,7 @@ export const MEDIA_KINDS = [
   'video',
   'audio',
   'document',
+  'font',
   'other',
 ] as const;
 
@@ -53,5 +55,8 @@ export function mediaKindOfMime(mimeType: string): MediaKind {
   if (type.startsWith('text/') || DOCUMENT_MIME_TYPES.includes(type)) {
     return 'document';
   }
+  // A font a site can draw its pages with (docs/adr/0147), and the ones it
+  // cannot (TrueType, OpenType): all of them belong in the same folder.
+  if (type.startsWith('font/')) return 'font';
   return 'other';
 }

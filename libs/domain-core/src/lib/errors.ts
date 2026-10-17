@@ -457,6 +457,18 @@ export class MediaNotFoundError extends Error {
 }
 
 /**
+ * The font a site asked to draw with is not one it can (docs/adr/0147): a
+ * file that is not in this site's library, one that is not a WOFF2 or WOFF
+ * font, or "the uploaded font" picked when there is none.
+ */
+export class InvalidUploadedFontError extends Error {
+  constructor(reason: string) {
+    super(`The site's font cannot be used: ${reason}`);
+    this.name = 'InvalidUploadedFontError';
+  }
+}
+
+/**
  * An upload the media library will not store.
  *
  * Two callers, guarding two different things. The storage adapters raise

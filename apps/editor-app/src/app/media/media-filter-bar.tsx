@@ -24,13 +24,14 @@ export interface MediaFilterBarProps {
   showKindChoice?: boolean;
 }
 
-/** "Everything" first, then the five kinds a file can be (ADR-0070). */
+/** "Everything" first, then the six kinds a file can be (ADR-0070, ADR-0147). */
 const KIND_OPTIONS = [
   { value: 'all', labelKey: 'media.filters.kindAll' },
   { value: 'image', labelKey: 'media.filters.kindImage' },
   { value: 'video', labelKey: 'media.filters.kindVideo' },
   { value: 'audio', labelKey: 'media.filters.kindAudio' },
   { value: 'document', labelKey: 'media.filters.kindDocument' },
+  { value: 'font', labelKey: 'media.filters.kindFont' },
   { value: 'other', labelKey: 'media.filters.kindOther' },
 ] as const satisfies readonly {
   value: 'all' | MediaKind;

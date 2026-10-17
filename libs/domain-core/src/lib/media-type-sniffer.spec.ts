@@ -29,6 +29,8 @@ describe('sniffMediaType', () => {
     ['mp3 with an ID3 tag', bytes('ID3', [0x03, 0x00]), 'audio/mpeg', 'audio'],
     ['mp3 as a bare frame', bytes([0xff, 0xfb, 0x90]), 'audio/mpeg', 'audio'],
     ['ogg', bytes('OggS'), 'audio/ogg', 'audio'],
+    ['woff2', bytes('wOF2', [0x00, 0x01]), 'font/woff2', 'font'],
+    ['woff', bytes('wOFF', [0x00, 0x01]), 'font/woff', 'font'],
   ])('recognises %s from its bytes', (_name, data, mimeType, kind) => {
     const sniffed = sniffMediaType(data);
     expect(sniffed.mimeType).toBe(mimeType);

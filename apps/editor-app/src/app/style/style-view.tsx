@@ -7,6 +7,9 @@ import {
   CURATED_THEME_FONTS,
   isCssLength,
   isCuratedThemeFont,
+  uploadedFontSchema,
+  type ThemeFontChoice,
+  type UploadedFont,
 } from '@kometio/shared-types';
 import { InlineError } from '../../components/ui/inline-error';
 import { Input } from '../../components/ui/input';
@@ -34,6 +37,7 @@ import {
 } from './brand-color-field';
 import { FaviconField } from './favicon-field';
 import { StylePreview } from './style-preview';
+import { UploadedFontField } from './uploaded-font-field';
 import { ThemeSection } from './theme-section';
 import { MediaPickerProvider } from '../media/media-picker-provider';
 import { SettingsSectionHeader } from '../settings/settings-section';
@@ -52,8 +56,33 @@ export interface StyleViewProps {
 // the active filesystem theme's own default font applies (docs/adr/0021).
 const INHERIT_THEME_FONT = '__inherit__';
 
-/** What the font menu saves: one of the curated fonts, or `null` for the theme's. */
-function fontOfChoice(choice: string) {
+/**
+ * The uploaded font as the form holds it: its JSON, or `''` for none.
+ *
+ * A string and not the object, because react-hook-form cannot tell whether a
+ * field is dirty when an object becomes `null` (it reads the old object's
+ * keys on the new value and throws), and taking the font off is exactly that.
+ */
+function fontToField(font: UploadedFont | null): string {
+  return font ? JSON.stringify(font) : '';
+}
+
+function fontFromField(value: string): UploadedFont | null {
+  if (value === '') return null;
+  try {
+    const parsed = uploadedFontSchema.safeParse(JSON.parse(value));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** What the font menu saves: a curated font, the uploaded one while there is one, or `null` for the theme's. */
+function fontOfChoice(
+  choice: string,
+  uploadedFont: UploadedFont | null,
+): ThemeFontChoice | null {
+  if (choice === 'uploaded') return uploadedFont ? 'uploaded' : null;
   return isCuratedThemeFont(choice) ? choice : null;
 }
 
@@ -65,6 +94,8 @@ interface StyleFormValues {
   secondaryColorEnabled: boolean;
   secondaryColor: string | null;
   fontChoice: string;
+  /** The font the site uploaded (docs/adr/0147), kept while another is picked: see `fontToField`. */
+  uploadedFont: string;
   faviconUrl: string;
   // Empty string = "not customized" (stored as null), so the theme's own
   // width applies — the same convention as every other field here.
@@ -81,6 +112,7 @@ function toFormValues(site: SiteRecord): StyleFormValues {
     secondaryColorEnabled: site.themeSecondaryColor !== null,
     secondaryColor: site.themeSecondaryColor,
     fontChoice: site.themeFontFamily ?? INHERIT_THEME_FONT,
+    uploadedFont: fontToField(site.themeUploadedFont),
     faviconUrl: site.themeFaviconUrl ?? '',
     contentWidth: site.themeContentWidth ?? '',
     customCss: site.themeCustomCss ?? '',
@@ -163,7 +195,11 @@ export function StyleView({ site }: StyleViewProps) {
       secondaryColor: values.secondaryColorEnabled
         ? brandColor('secondary', values.secondaryColor, baseTokens?.secondary)
         : null,
-      fontFamily: fontOfChoice(values.fontChoice),
+      fontFamily: fontOfChoice(
+        values.fontChoice,
+        fontFromField(values.uploadedFont),
+      ),
+      uploadedFont: fontFromField(values.uploadedFont),
       customCss: values.customCss.trim() || null,
       contentWidth: values.contentWidth.trim() || null,
       // Owned by IntegrationsView now, not this page — round-tripped
@@ -198,6 +234,9 @@ export function StyleView({ site }: StyleViewProps) {
   });
   const secondaryColor = useWatch({ control, name: 'secondaryColor' });
   const fontChoice = useWatch({ control, name: 'fontChoice' });
+  const uploadedFont = fontFromField(
+    useWatch({ control, name: 'uploadedFont' }),
+  );
   const faviconUrl = useWatch({ control, name: 'faviconUrl' });
   // A value set from code has to say it is a change, or the bar that
   // saves never appears (see the locale settings).
@@ -208,7 +247,7 @@ export function StyleView({ site }: StyleViewProps) {
   const previewPrimary = primaryColorEnabled
     ? brandColor('primary', primaryColor, baseTokens?.primary)
     : (themeColorAsHex(baseTokens?.primary) ?? undefined);
-  const previewFont = fontOfChoice(fontChoice);
+  const previewFont = fontOfChoice(fontChoice, uploadedFont);
 
   return (
     // The favicon is chosen from the library, and the block styles' colour
@@ -316,13 +355,32 @@ export function StyleView({ site }: StyleViewProps) {
                           : font.label}
                       </SelectItem>
                     ))}
+                    {uploadedFont && (
+                      <SelectItem value="uploaded">
+                        {t('themeSettings.uploadedFont.option', {
+                          family: uploadedFont.family,
+                        })}
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
+                <UploadedFontField
+                  siteId={site.id}
+                  value={uploadedFont}
+                  onChange={(font) => {
+                    setValue('uploadedFont', fontToField(font), changed);
+                    if (font) setValue('fontChoice', 'uploaded', changed);
+                    else if (fontChoice === 'uploaded') {
+                      setValue('fontChoice', INHERIT_THEME_FONT, changed);
+                    }
+                  }}
+                />
               </div>
               <StylePreview
                 primary={previewPrimary}
                 primaryForeground={foregroundTokens?.primaryForeground}
                 font={previewFont}
+                uploadedFamily={uploadedFont?.family}
               />
             </StyleSection>
 

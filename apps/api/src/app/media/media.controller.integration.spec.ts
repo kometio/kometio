@@ -131,6 +131,30 @@ describe('MediaController (integration)', () => {
     expect(servedRes.headers['content-disposition']).toBeUndefined();
   });
 
+  // docs/adr/0147: a page's stylesheet loads it from this address.
+  it('serves a web font in place, as the font its bytes say it is', async () => {
+    const woff2 = Buffer.concat([
+      Buffer.from('wOF2', 'ascii'),
+      Buffer.alloc(60),
+    ]);
+    const uploadRes = await agent
+      .post('/media')
+      .field('siteId', siteId)
+      .attach('file', woff2, 'Biscotto.woff2')
+      .expect(201);
+
+    expect(uploadRes.body.mimeType).toBe('font/woff2');
+    expect(uploadRes.body.storageKey).toMatch(/^[^/]+\.woff2$/);
+    uploadedStorageKeys.push(uploadRes.body.storageKey);
+
+    const servedRes = await request(app.getHttpServer())
+      .get(`/uploads/${uploadRes.body.storageKey}`)
+      .expect(200);
+    expect(servedRes.headers['content-type']).toContain('font/woff2');
+    expect(servedRes.headers['x-content-type-options']).toBe('nosniff');
+    expect(servedRes.headers['content-disposition']).toBeUndefined();
+  });
+
   /*
    * The library used to refuse this. It now takes any file (ADR-0070), and
    * what has to hold instead is that nothing whose bytes proved nothing
@@ -309,6 +333,7 @@ describe('MediaController (integration)', () => {
     expect(Object.keys(res.body).sort()).toEqual([
       'audio',
       'document',
+      'font',
       'image',
       'other',
       'video',

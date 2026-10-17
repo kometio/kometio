@@ -47,6 +47,8 @@ export const siteThemeSettingsSchema = z.object({
   themeHeadScript: z.string().nullable(),
   themeBodyScript: z.string().nullable(),
   themeFaviconUrl: z.string().nullable(),
+  // Sent back as it came: the e2e never uploads a font (docs/adr/0147).
+  themeUploadedFont: z.unknown(),
   themeOverridesEnabled: z.boolean(),
   themeMotionEnabled: z.boolean(),
   themeAllowedTrackerDomains: z.array(z.unknown()),

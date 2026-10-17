@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { SiteNotFoundError } from '@kometio/domain-core';
+import {
+  InvalidUploadedFontError,
+  Media,
+  SiteNotFoundError,
+} from '@kometio/domain-core';
 import { DEFAULT_COOKIE_BANNER_SETTINGS } from '@kometio/shared-types';
 import { updateSiteBusinessInfo } from './update-site-business-info.use-case';
 import { updateSiteGeneralSettings } from './update-site-general-settings.use-case';
@@ -8,7 +12,12 @@ import { updateSiteFormSubmissionRetention } from './update-site-form-submission
 import { updateSiteThemeSettings } from './update-site-theme-settings.use-case';
 import { updateSiteCookieBannerSettings } from './update-site-cookie-banner-settings.use-case';
 import { updateSiteLocaleSettings } from './update-site-locale-settings.use-case';
-import { InMemorySiteRepository, buildSite } from '@kometio/testing';
+import {
+  InMemoryMediaRepository,
+  InMemoryMediaStorage,
+  InMemorySiteRepository,
+  buildSite,
+} from '@kometio/testing';
 
 describe('updateSiteBusinessInfo', () => {
   const tenantId = 'tenant-1';
@@ -303,7 +312,11 @@ describe('updateSiteThemeSettings', () => {
 
   function setup() {
     const siteRepository = new InMemorySiteRepository();
-    return { siteRepository };
+    return {
+      siteRepository,
+      mediaRepository: new InMemoryMediaRepository(),
+      mediaStorage: new InMemoryMediaStorage(),
+    };
   }
 
   async function seedSite(siteRepository: InMemorySiteRepository) {
@@ -332,6 +345,7 @@ describe('updateSiteThemeSettings', () => {
       headScript: null,
       bodyScript: null,
       faviconUrl: null,
+      uploadedFont: null,
       overridesEnabled: true,
       motionEnabled: true,
       allowedTrackerDomains: [],
@@ -357,6 +371,7 @@ describe('updateSiteThemeSettings', () => {
         headScript: null,
         bodyScript: null,
         faviconUrl: null,
+        uploadedFont: null,
         overridesEnabled: true,
         motionEnabled: true,
         allowedTrackerDomains: [],
@@ -381,6 +396,7 @@ describe('updateSiteThemeSettings', () => {
         headScript: null,
         bodyScript: null,
         faviconUrl: null,
+        uploadedFont: null,
         overridesEnabled: true,
         motionEnabled: true,
         allowedTrackerDomains: [],
@@ -405,6 +421,7 @@ describe('updateSiteThemeSettings', () => {
         '<script>console.log("custom")</script><script>gtag("config", "G-XXXX")</script>',
       bodyScript: null,
       faviconUrl: null,
+      uploadedFont: null,
       overridesEnabled: true,
       motionEnabled: true,
       allowedTrackerDomains: [],
@@ -452,6 +469,7 @@ describe('updateSiteThemeSettings', () => {
       headScript: null,
       bodyScript: null,
       faviconUrl: null,
+      uploadedFont: null,
       overridesEnabled: true,
       motionEnabled: true,
       allowedTrackerDomains: [],
@@ -461,6 +479,117 @@ describe('updateSiteThemeSettings', () => {
     expect(updated.themeSettings.trackerScripts).toEqual(
       site.themeSettings.trackerScripts,
     );
+  });
+
+  // docs/adr/0147: a site draws with a font it uploaded, from its own library.
+  describe('the uploaded font', () => {
+    async function fontSetup(
+      file: { siteId?: string; mimeType?: string } = {},
+    ) {
+      const deps = setup();
+      await seedSite(deps.siteRepository);
+      await deps.mediaRepository.add(
+        Media.create({
+          id: '00000000-0000-4000-8000-000000000001',
+          tenantId,
+          siteId: file.siteId ?? 'site-1',
+          filename: 'biscotto.woff2',
+          storageKey: 'abc.woff2',
+          storageProvider: 'local',
+          mimeType: file.mimeType ?? 'font/woff2',
+          size: 100,
+          width: 0,
+          height: 0,
+        }),
+      );
+      return deps;
+    }
+
+    const input = (
+      overrides: Partial<Parameters<typeof updateSiteThemeSettings>[1]> = {},
+    ) => ({
+      tenantId,
+      siteId: 'site-1',
+      primaryColor: null,
+      secondaryColor: null,
+      fontFamily: 'uploaded' as const,
+      customCss: null,
+      contentWidth: null,
+      headScript: null,
+      bodyScript: null,
+      faviconUrl: null,
+      uploadedFont: {
+        family: 'Biscotto',
+        faces: [
+          {
+            mediaId: '00000000-0000-4000-8000-000000000001',
+            url: 'http://169.254.169.254/latest/meta-data',
+            weight: 'variable' as const,
+            style: 'normal' as const,
+          },
+        ],
+      },
+      overridesEnabled: true,
+      motionEnabled: true,
+      allowedTrackerDomains: [],
+      trackerScripts: [],
+      ...overrides,
+    });
+
+    it('keeps it with the address its file is served from, not the one the request gave', async () => {
+      const deps = await fontSetup();
+
+      const updated = await updateSiteThemeSettings(deps, input());
+
+      expect(updated.themeSettings.fontFamily).toBe('uploaded');
+      expect(updated.themeSettings.uploadedFont).toEqual({
+        family: 'Biscotto',
+        faces: [
+          {
+            mediaId: '00000000-0000-4000-8000-000000000001',
+            url: 'https://fake-storage.test/abc.woff2',
+            weight: 'variable',
+            style: 'normal',
+          },
+        ],
+      });
+    });
+
+    it('refuses a file of another site', async () => {
+      const deps = await fontSetup({ siteId: 'site-2' });
+
+      await expect(
+        updateSiteThemeSettings(deps, input()),
+      ).rejects.toBeInstanceOf(InvalidUploadedFontError);
+    });
+
+    it('refuses a file that is not a web font', async () => {
+      const deps = await fontSetup({ mimeType: 'image/webp' });
+
+      await expect(
+        updateSiteThemeSettings(deps, input()),
+      ).rejects.toBeInstanceOf(InvalidUploadedFontError);
+    });
+
+    it('refuses "the uploaded font" when none was uploaded', async () => {
+      const deps = await fontSetup();
+
+      await expect(
+        updateSiteThemeSettings(deps, input({ uploadedFont: null })),
+      ).rejects.toBeInstanceOf(InvalidUploadedFontError);
+    });
+
+    it('keeps the uploaded font while another one is picked', async () => {
+      const deps = await fontSetup();
+
+      const updated = await updateSiteThemeSettings(
+        deps,
+        input({ fontFamily: 'lora' }),
+      );
+
+      expect(updated.themeSettings.fontFamily).toBe('lora');
+      expect(updated.themeSettings.uploadedFont?.family).toBe('Biscotto');
+    });
   });
 });
 

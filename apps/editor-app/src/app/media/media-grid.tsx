@@ -20,6 +20,7 @@ const EMPTY_KIND_KEY = {
   video: 'media.grid.emptyKind.video',
   audio: 'media.grid.emptyKind.audio',
   document: 'media.grid.emptyKind.document',
+  font: 'media.grid.emptyKind.font',
   other: 'media.grid.emptyKind.other',
 } as const satisfies Record<MediaKind, string>;
 

@@ -258,6 +258,6 @@ describe('media lifecycle: upload -> list -> delete', () => {
 
     expect(
       await countMediaByKind(deps, { tenantId, siteId: 'site-1' }),
-    ).toEqual({ image: 1, video: 0, audio: 0, document: 2, other: 1 });
+    ).toEqual({ image: 1, video: 0, audio: 0, document: 2, font: 0, other: 1 });
   });
 });

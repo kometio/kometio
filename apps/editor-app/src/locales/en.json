@@ -863,6 +863,7 @@
         "video": "No videos yet.",
         "audio": "No audio files yet.",
         "document": "No documents yet.",
+        "font": "No fonts yet.",
         "other": "No other files yet."
       }
     },
@@ -877,7 +878,8 @@
       "titleImage": "Choose an image",
       "titleVideo": "Choose a video",
       "titleAudio": "Choose an audio file",
-      "titleDocument": "Choose a document"
+      "titleDocument": "Choose a document",
+      "titleFont": "Choose a font"
     },
     "filters": {
       "searchLabel": "Search by name",
@@ -888,6 +890,7 @@
       "kindVideo": "Video",
       "kindAudio": "Audio",
       "kindDocument": "Documents",
+      "kindFont": "Fonts",
       "kindOther": "Other"
     },
     "folders": {
@@ -1167,6 +1170,41 @@
     "fontLabel": "Font",
     "fontInherit": "Theme default",
     "fontSystem": "System font",
+    "uploadedFont": {
+      "option": "{{family}} (uploaded)",
+      "current_one": "Uploaded font: {{family}}, {{count}} file",
+      "current_other": "Uploaded font: {{family}}, {{count}} files",
+      "upload": "Upload a font",
+      "replace": "Replace",
+      "remove": "Remove",
+      "hint": "WOFF2 or WOFF files from your computer. Visitors download them from this site, never from another server.",
+      "filesStay": "Removing it leaves its files in the library: delete them there if you no longer need them.",
+      "dialog": {
+        "title": "Upload a font",
+        "nameLabel": "Name",
+        "nameHint": "Shown only here, in Style.",
+        "filesLabel": "Files",
+        "choose": "Choose files…",
+        "filesHint": "WOFF2 or WOFF. One variable file holds every weight; otherwise up to four: regular, italic, bold and bold italic. Convert a TTF or OTF file to WOFF2 first.",
+        "weightFor": "Weight of {{name}}",
+        "styleFor": "Style of {{name}}",
+        "weightVariable": "Variable (every weight)",
+        "styleNormal": "Upright",
+        "styleItalic": "Italic",
+        "removeFile": "Remove {{name}}",
+        "licenceLabel": "I have the right to use this font on a website",
+        "submit": "Upload",
+        "uploading": "Uploading…",
+        "nameMissing": "Give the font a name.",
+        "nameRule": "The name can have letters, digits, spaces, hyphens and apostrophes, up to 60.",
+        "noFiles": "Choose at least one file.",
+        "tooMany": "Four files at most.",
+        "wrongType": "{{name}} is not a WOFF2 or WOFF file.",
+        "duplicate": "Two files have the same weight and style.",
+        "licence": "Tick the box: you need the right to use this font on a website.",
+        "failed": "{{name}} was not uploaded."
+      }
+    },
     "faviconLabel": "Site icon (favicon)",
     "customCssLabel": "Custom CSS",
     "contentWidthLabel": "Content width",

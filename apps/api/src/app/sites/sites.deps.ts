@@ -1,5 +1,7 @@
 import type {
   FormSubmissionRepositoryPort,
+  MediaRepositoryPort,
+  MediaStoragePort,
   SiteRepositoryPort,
   SiteThemeBlockStylesPort,
   ThemeCatalogPort,
@@ -13,4 +15,7 @@ export interface SitesDeps {
   siteThemeBlockStylesRepository: SiteThemeBlockStylesPort;
   themeCatalog: ThemeCatalogPort;
   deploymentSiteResolver: DeploymentSiteResolver;
+  /** The files of the font a site uploaded are checked against its library (docs/adr/0147). */
+  mediaRepository: MediaRepositoryPort;
+  mediaStorage: MediaStoragePort;
 }

@@ -21,12 +21,57 @@ describe('resolveThemeFont', () => {
   it('draws the system choice with the visitor’s own interface font', () => {
     expect(resolveThemeFont('system')).toEqual({
       cssFontFamily: 'ui-sans-serif, system-ui, sans-serif',
+      fontFaceCss: '',
     });
   });
 
   it('draws a curated font by the family its stylesheet declares', () => {
     expect(resolveThemeFont('playfair-display')).toEqual({
       cssFontFamily: "'Playfair Display', ui-sans-serif, system-ui, sans-serif",
+      fontFaceCss: '',
+    });
+  });
+
+  // docs/adr/0147
+  describe('a font the site uploaded', () => {
+    const font = {
+      family: 'Biscotto', // the owner's name: never written into the stylesheet
+      faces: [
+        {
+          mediaId: '00000000-0000-4000-8000-000000000001',
+          url: 'https://api.example.test/uploads/a.woff2',
+          weight: 'variable' as const,
+          style: 'normal' as const,
+        },
+        {
+          mediaId: '00000000-0000-4000-8000-000000000002',
+          url: 'https://api.example.test/uploads/b.woff2',
+          weight: '700' as const,
+          style: 'italic' as const,
+        },
+      ],
+    };
+
+    it('draws with one face per file, from the site’s own address', () => {
+      const resolved = resolveThemeFont('uploaded', font);
+
+      expect(resolved?.cssFontFamily).toBe(
+        "'kometio-uploaded-font', ui-sans-serif, system-ui, sans-serif",
+      );
+      const faces = resolved?.fontFaceCss.split('\n') ?? [];
+      expect(faces).toHaveLength(2);
+      expect(faces[0]).toContain('font-weight: 100 900;');
+      expect(faces[0]).toContain('font-style: normal;');
+      expect(faces[0]).toContain(
+        'url("/api/site-font?href=https%3A%2F%2Fapi.example.test%2Fuploads%2Fa.woff2")',
+      );
+      expect(faces[1]).toContain('font-weight: 700;');
+      expect(faces[1]).toContain('font-style: italic;');
+      expect(resolved?.fontFaceCss).not.toContain('Biscotto');
+    });
+
+    it('leaves the theme’s font when there is no uploaded font to draw with', () => {
+      expect(resolveThemeFont('uploaded', null)).toBeNull();
     });
   });
 });

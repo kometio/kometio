@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import {
-  CURATED_THEME_FONT_VALUES,
+  THEME_FONT_CHOICES,
   businessInfoSchema,
   cookieBannerSettingsSchema,
   cssLengthTokenSchema,
@@ -9,6 +9,7 @@ import {
   trackerDomainEntrySchema,
   trackerScriptEntrySchema,
   untranslatedPageFallbackSchema,
+  uploadedFontSchema,
 } from '@kometio/shared-types';
 
 /**
@@ -37,7 +38,7 @@ export const siteRecordSchema = businessInfoSchema.extend({
   formSubmissionRetentionDays: z.number().int().positive().nullable(),
   themePrimaryColor: hexColorSchema.nullable(),
   themeSecondaryColor: hexColorSchema.nullable(),
-  themeFontFamily: z.enum(CURATED_THEME_FONT_VALUES).nullable(),
+  themeFontFamily: z.enum(THEME_FONT_CHOICES).nullable(),
   themeCustomCss: z.string().nullable(),
   // ADR-0049 — same guarded CSS length the Tier 1 settings schema uses, not
   // a bare string: it is interpolated into a stylesheet on every page.
@@ -45,6 +46,7 @@ export const siteRecordSchema = businessInfoSchema.extend({
   themeHeadScript: z.string().nullable(),
   themeBodyScript: z.string().nullable(),
   themeFaviconUrl: z.string().nullable(),
+  themeUploadedFont: uploadedFontSchema.nullable(),
   themeOverridesEnabled: z.boolean(),
   themeMotionEnabled: z.boolean(),
   /** Whether the newsletter signup asks for a captcha (docs/adr/0145). */

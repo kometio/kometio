@@ -67,6 +67,7 @@ export function buildSiteRecord(
     themeHeadScript: null,
     themeBodyScript: null,
     themeFaviconUrl: null,
+    themeUploadedFont: null,
     themeOverridesEnabled: true,
     themeMotionEnabled: true,
     newsletterCaptchaEnabled: true,

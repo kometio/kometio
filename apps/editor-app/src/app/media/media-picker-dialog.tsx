@@ -29,6 +29,7 @@ const PICKER_TITLE = {
   video: 'media.picker.titleVideo',
   audio: 'media.picker.titleAudio',
   document: 'media.picker.titleDocument',
+  font: 'media.picker.titleFont',
   other: 'media.picker.title',
 } as const satisfies Record<MediaKind, string>;
 

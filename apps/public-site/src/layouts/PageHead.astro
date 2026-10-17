@@ -66,6 +66,14 @@ const {
 	}
 	<meta name="viewport" content="width=device-width" />
 	{
+		/*
+		 * A font the site uploaded (docs/adr/0147), from the site's own address.
+		 * The curated fonts need nothing here: their @font-face rules are in the
+		 * bundled stylesheet (theme-fonts.ts).
+		 */
+		styles.fontFaceCss && <style set:html={styles.fontFaceCss} />
+	}
+	{
 		styles.themeOverrideDeclarations && (
 			<style set:html={`:root { ${styles.themeOverrideDeclarations} }`} />
 		)

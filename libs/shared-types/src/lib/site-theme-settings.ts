@@ -55,6 +55,76 @@ export function isCuratedThemeFont(value: string): value is CuratedThemeFont {
   return CURATED_THEME_FONT_VALUES.some((font) => font === value);
 }
 
+/**
+ * A font a site uploaded and draws its pages with (docs/adr/0147).
+ *
+ * Up to four files of one family: upright and italic, regular and bold, or
+ * one variable file that holds every weight. `url` is the file's address as
+ * the library serves it; the API sets it from `mediaId` on every save, so a
+ * client can only point at a file this site already has.
+ */
+export const UPLOADED_FONT_WEIGHTS = [
+  'variable',
+  '100',
+  '200',
+  '300',
+  '400',
+  '500',
+  '600',
+  '700',
+  '800',
+  '900',
+] as const;
+
+export const uploadedFontFaceSchema = z.object({
+  mediaId: z.string().uuid(),
+  url: z.string().max(2048),
+  weight: z.enum(UPLOADED_FONT_WEIGHTS),
+  style: z.enum(['normal', 'italic']),
+});
+export type UploadedFontFace = z.infer<typeof uploadedFontFaceSchema>;
+
+export const uploadedFontSchema = z.object({
+  /**
+   * The name the owner gave it, shown in the editor. Not the family the
+   * stylesheet declares (that one is fixed, see the public site), so a name
+   * can never collide with a theme's font or a curated one.
+   */
+  family: z
+    .string()
+    .trim()
+    .min(1)
+    .max(60)
+    .regex(
+      /^[\p{L}\p{N} '-]+$/u,
+      'Letters, digits, spaces, hyphens and apostrophes only',
+    ),
+  faces: z
+    .array(uploadedFontFaceSchema)
+    .min(1)
+    .max(4)
+    .refine(
+      (faces) =>
+        new Set(faces.map((face) => `${face.weight} ${face.style}`)).size ===
+        faces.length,
+      'Two files of the font have the same weight and style',
+    ),
+});
+export type UploadedFont = z.infer<typeof uploadedFontSchema>;
+
+/** The files a site can draw with: the two web font containers (docs/adr/0147). */
+export const WEB_FONT_MIME_TYPES: readonly string[] = [
+  'font/woff2',
+  'font/woff',
+];
+
+/** What the font menu in Style may hold: a curated font, or the one the site uploaded. */
+export const THEME_FONT_CHOICES = [
+  ...CURATED_THEME_FONT_VALUES,
+  'uploaded',
+] as const;
+export type ThemeFontChoice = (typeof THEME_FONT_CHOICES)[number];
+
 // Bare hostname, optional `*.` wildcard subdomain prefix, no scheme/path —
 // CSP source-list shape (see content-security-policy.ts's own hardcoded
 // origins for the pattern this mirrors). Always rendered with an assumed
@@ -81,11 +151,14 @@ export const themeSettingsSchema = z.object({
   primaryColor: hexColorSchema.nullable(),
   secondaryColor: hexColorSchema.nullable(),
   /**
-   * One of the fonts above, or `null` for the theme's own. Not a free name
-   * any more: a name could only be looked up at a font service, and that is
-   * what this field no longer does (docs/adr/0146).
+   * One of the fonts above, `uploaded` for the site's own, or `null` for the
+   * theme's. Not a free name any more: a name could only be looked up at a
+   * font service, and that is what this field no longer does
+   * (docs/adr/0146, docs/adr/0147).
    */
-  fontFamily: z.enum(CURATED_THEME_FONT_VALUES).nullable(),
+  fontFamily: z.enum(THEME_FONT_CHOICES).nullable(),
+  /** The font the site uploaded (docs/adr/0147), kept while another is picked so that picking it again costs nothing. */
+  uploadedFont: uploadedFontSchema.nullable(),
   customCss: z.string().nullable(),
   /**
    * How wide the readable content column is on this site (ADR-0049), or

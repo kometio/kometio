@@ -56,7 +56,14 @@ describe('paginatedMediaSchema', () => {
 
 describe('mediaKindCountsSchema', () => {
   it('counts each folder of the library by kind', () => {
-    const counts = { image: 3, video: 0, audio: 0, document: 1, other: 0 };
+    const counts = {
+      image: 3,
+      video: 0,
+      audio: 0,
+      document: 1,
+      font: 0,
+      other: 0,
+    };
 
     expect(mediaKindCountsSchema.parse(counts)).toEqual(counts);
   });

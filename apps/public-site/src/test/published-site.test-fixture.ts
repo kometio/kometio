@@ -30,6 +30,7 @@ export function publishedSite(
       headScript: null,
       bodyScript: null,
       faviconUrl: null,
+      uploadedFont: null,
       overridesEnabled: true,
       motionEnabled: true,
       allowedTrackerDomains: [],

@@ -12,6 +12,8 @@ import {
   buildSite,
   InMemoryAuditLog,
   InMemoryFormSubmissionRepository,
+  InMemoryMediaRepository,
+  InMemoryMediaStorage,
   InMemorySiteRepository,
 } from '@kometio/testing';
 import { AuditRecorder } from '../audit/audit-recorder';
@@ -58,6 +60,8 @@ describe('SitesController (unit)', () => {
           siteRepository,
           undefined,
         ),
+        mediaRepository: new InMemoryMediaRepository(),
+        mediaStorage: new InMemoryMediaStorage(),
       },
       new AuditRecorder(auditLog),
     );
@@ -259,6 +263,7 @@ describe('SitesController (unit)', () => {
         headScript: null,
         bodyScript: null,
         faviconUrl: null,
+        uploadedFont: null,
         overridesEnabled: true,
         motionEnabled: true,
         allowedTrackerDomains: [],
@@ -281,6 +286,7 @@ describe('SitesController (unit)', () => {
         headScript: null,
         bodyScript: null,
         faviconUrl: null,
+        uploadedFont: null,
         overridesEnabled: true,
         motionEnabled: true,
         allowedTrackerDomains: [],

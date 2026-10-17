@@ -1275,6 +1275,7 @@ export class InMemoryMediaRepository implements MediaRepositoryPort {
       video: 0,
       audio: 0,
       document: 0,
+      font: 0,
       other: 0,
     };
     for (const item of this.media.values()) {

@@ -49,7 +49,10 @@ export const MAX_UPLOAD_BYTES_BY_KIND = {
   // real document, and still what one buffered request can reasonably
   // hold.
   document: 20 * 1024 * 1024,
-  // A zip, a font, a design file — the same ceiling the controller
+  // A web font is tens of kilobytes; one that covers Chinese or Japanese is a
+  // few megabytes. Ten is room for every honest one (docs/adr/0147).
+  font: 10 * 1024 * 1024,
+  // A zip, a design file — the same ceiling the controller
   // already puts on any request, since there is no kind-specific reason
   // to go lower or room to go higher.
   other: 64 * 1024 * 1024,

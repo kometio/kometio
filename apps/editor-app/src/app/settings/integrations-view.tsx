@@ -65,6 +65,7 @@ export function IntegrationsView({ site }: IntegrationsViewProps) {
       customCss: site.themeCustomCss,
       contentWidth: site.themeContentWidth,
       faviconUrl: site.themeFaviconUrl,
+      uploadedFont: site.themeUploadedFont,
       overridesEnabled: site.themeOverridesEnabled,
       motionEnabled: site.themeMotionEnabled,
       headScript: values.headScript.trim() || null,
