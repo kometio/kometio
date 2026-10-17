@@ -28,6 +28,9 @@ interface Props {
   // always stays `Fragment` and the published HTML is byte-identical to
   // before this prop existed (see the visual editor plan, Day 2).
   editable?: boolean;
+  // The page's header or footer, for a block drawn in one of them (and every
+  // block inside it): see BlockRenderContext.region.
+  region?: 'header' | 'footer';
 }
 
 const {
@@ -38,6 +41,7 @@ const {
   ancestors,
   currentPageTitle,
   editable,
+  region,
 } = Astro.props;
 // docs/adr/0042 — derived from `site` (already threaded through every
 // recursive <Astro.self> call further down) rather than a second, parallel
@@ -132,6 +136,7 @@ const context: BlockRenderContext = {
   ancestors,
   currentPageTitle,
   editable,
+  region,
 };
 // `safeParse`, not `parse`. This used to throw, and because every block
 // on a page renders through this same component, one block whose saved
@@ -224,6 +229,7 @@ const dispatchProps =
             ancestors={ancestors}
             currentPageTitle={currentPageTitle}
             editable={editable}
+            region={region}
           />
         ))}
     </Component>

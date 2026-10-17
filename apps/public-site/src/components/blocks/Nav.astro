@@ -1,15 +1,26 @@
 ---
 import type { NavProps } from '@kometio/shared-types';
+import type { Translator } from '@kometio/theme-runtime';
 
 type Props = NavProps & {
   /** The per-instance style class, from BlockRenderer — see blockInstanceClassName. */
   instanceClass?: string | null;
+  /** The page's header or footer, when the navigation is in one: it is what names it. */
+  region?: 'header' | 'footer';
+  i18n: Translator;
 };
 
-const { visibility, instanceClass } = Astro.props;
+const { visibility, instanceClass, region, i18n } = Astro.props;
 ---
 
+<!--
+  A name for the landmark, in the header and in the footer: with one in each
+  and no names, a reader who lists the page's landmarks gets "navigation,
+  navigation" (axe: landmark-unique). A navigation in the page's content has
+  none, which is fine while it is the only one without.
+-->
 <nav
+  aria-label={region ? i18n.t(`nav.${region}`) : undefined}
   class:list={[
     'kometio-nav',
     { 'kometio-visibility-desktop-only': visibility === 'desktop-only' },
