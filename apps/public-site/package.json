@@ -57,7 +57,7 @@
     "lucide-static": "^1.56.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "sanitize-html": "^2.18.0",
+    "sanitize-html": "^2.18.1",
     "sharp": "^0.35.5",
     "simple-icons": "^16.35.0",
     "sirv": "^3.0.2",
