@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@kometio/ports": "workspace:*",
-    "nodemailer": "^10.1.0"
+    "nodemailer": "^10.2.1"
   },
   "devDependencies": {
     "@types/nodemailer": "^8.0.2",
