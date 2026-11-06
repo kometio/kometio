@@ -19,7 +19,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "sanitize-html": "^2.18.0",
+    "sanitize-html": "^2.18.1",
     "@kometio/shared-types": "workspace:*"
   },
   "devDependencies": {
