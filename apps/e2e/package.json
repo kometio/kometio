@@ -32,9 +32,9 @@
     }
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
+    "@axe-core/playwright": "^4.14.0",
     "@kometio/env-config": "workspace:*",
-    "@playwright/test": "^1.64.0",
+    "@playwright/test": "^1.65.0",
     "i18next": "^26.4.4",
     "zod": "^4.6.7"
   }
