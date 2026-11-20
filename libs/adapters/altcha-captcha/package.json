@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "@kometio/ports": "workspace:*",
-    "altcha-lib": "^2.6.0"
+    "altcha-lib": "^2.8.0"
   }
 }
